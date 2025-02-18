@@ -9,6 +9,7 @@ namespace EdFi.Ods.AdminApi.Features.ResourceClaimActions
     {
         public int ResourceClaimId { get; set; }
         public string ResourceName { get; set; } = string.Empty;
+        public string ClaimName { get; set; } = string.Empty;
         public List<ActionForResourceClaimModel> Actions { get; set; } = new List<ActionForResourceClaimModel>();
     }
 

@@ -17,7 +17,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 public interface IGetResourceClaimActionAuthorizationStrategiesQuery
 {
-    public IReadOnlyList<ResourceClaimActionAuthStrategyModel> Execute(CommonQueryParams commonQueryParams);
+    public IReadOnlyList<ResourceClaimActionAuthStrategyModel> Execute(CommonQueryParams commonQueryParams, string? resourceName);
 }
 
 public class GetResourceClaimActionAuthorizationStrategiesQuery : IGetResourceClaimActionAuthorizationStrategiesQuery
@@ -34,25 +34,29 @@ public class GetResourceClaimActionAuthorizationStrategiesQuery : IGetResourceCl
             (StringComparer.OrdinalIgnoreCase)
         {
             { SortingColumns.DefaultIdColumn, x => x.ResourceClaimId },
-            { nameof(ResourceClaimActionAuthStrategyModel.ResourceClaimName), x => x.ResourceClaimName }
+            { nameof(ResourceClaimActionAuthStrategyModel.ResourceName), x => x.ResourceName },
+            { nameof(ResourceClaimActionAuthStrategyModel.ClaimName), x => x.ClaimName }
         };
     }
 
-    public IReadOnlyList<ResourceClaimActionAuthStrategyModel> Execute(CommonQueryParams commonQueryParams)
+    public IReadOnlyList<ResourceClaimActionAuthStrategyModel> Execute(CommonQueryParams commonQueryParams, string? resourceName)
     {
         Expression<Func<ResourceClaimActionAuthStrategyModel, object>> columnToOrderBy = _orderByColumns.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
         return _securityContext.ResourceClaimActionAuthorizationStrategies
             // Group by ResourceClaimId and ResourceName to structure the JSON correctly
+            .Where(w => resourceName == null || w.ResourceClaimAction.ResourceClaim.ResourceName == resourceName)
             .GroupBy(gb => new
             {
                 gb.ResourceClaimAction.ResourceClaimId,
-                gb.ResourceClaimAction.ResourceClaim.ResourceName
+                gb.ResourceClaimAction.ResourceClaim.ResourceName,
+                gb.ResourceClaimAction.ResourceClaim.ClaimName
             })
             .Select(group => new ResourceClaimActionAuthStrategyModel
             {
                 ResourceClaimId = group.Key.ResourceClaimId,
-                ResourceClaimName = group.Key.ResourceName,
+                ResourceName = group.Key.ResourceName,
+                ClaimName = group.Key.ClaimName,
                 // Group by ActionId and ActionName to create a list of actions within the resource
                 AuthorizationStrategiesForActions = group.GroupBy(gb => new
                 {

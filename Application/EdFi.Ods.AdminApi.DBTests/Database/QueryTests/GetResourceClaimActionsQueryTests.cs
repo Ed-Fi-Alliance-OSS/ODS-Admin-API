@@ -27,7 +27,7 @@ public class GetResourceClaimActionsQueryTests : SecurityDataTestBase
         var resourceClaimId = SetupResourceClaims().FirstOrDefault().ResourceClaimId;
         var testResourceClaimActions = SetupResourceClaimActions(actions, resourceClaimId);
         var query = new GetResourceClaimActionsQuery(securityContext, Testing.GetAppSettings());
-        results = query.Execute(new CommonQueryParams(skip, Testing.DefaultPageSizeLimit)).ToArray();
+        results = query.Execute(new CommonQueryParams(skip, Testing.DefaultPageSizeLimit), null).ToArray();
         results.SelectMany(x => x.Actions).Count().ShouldBe(testResourceClaimActions.Count);
         results.Select(x => x.ResourceClaimId).ShouldBe(testResourceClaimActions.Select(s => s.ResourceClaimId).Distinct(), true);
         results.Select(x => x.ResourceName).ShouldBe(testResourceClaimActions.Select(x => x.ResourceClaim.ResourceName).Distinct(), true);
@@ -52,13 +52,51 @@ public class GetResourceClaimActionsQueryTests : SecurityDataTestBase
         }
         //Add ResourceClaimActions
         var query = new GetResourceClaimActionsQuery(securityContext, Testing.GetAppSettings());
-        results = query.Execute(new CommonQueryParams(offset, limit)).ToArray();
+        results = query.Execute(new CommonQueryParams(offset, limit), null).ToArray();
 
         results.Length.ShouldBe(2);
         results[0].ResourceName.ShouldBe("TestResourceClaim2.00");
         results[1].ResourceName.ShouldBe("TestResourceClaim3.00");
         results[0].Actions.Any().ShouldBe(true);
         results[1].Actions.Any().ShouldBe(true);
+    }
+
+    [Test]
+    public void ShouldGetResourceClaimActionWhitResourceNameFilter()
+    {
+        var skip = 0;
+        ResourceClaimActionModel[] results = null;
+        using var securityContext = TestContext;
+        var actions = SetupActions().Select(s => s.ActionId).ToArray();
+        var resourceClaim = SetupResourceClaims().FirstOrDefault();
+        var resourceClaimId = resourceClaim.ResourceClaimId;
+        var resourceName = resourceClaim.ResourceName;
+
+        var testResourceClaimActions = SetupResourceClaimActions(actions, resourceClaimId);
+        var query = new GetResourceClaimActionsQuery(securityContext, Testing.GetAppSettings());
+        results = query.Execute(new CommonQueryParams(skip, Testing.DefaultPageSizeLimit), resourceName).ToArray();
+        results.SelectMany(x => x.Actions).Count().ShouldBe(testResourceClaimActions.Count);
+        results.Select(x => x.ResourceClaimId).ShouldBe(new[] { resourceClaimId });
+        results.Select(x => x.ResourceName).ShouldBe(new[] { resourceName });
+    }
+
+    [Test]
+    public void ShouldGetResourceClaimActionWhitIncorrectResourceNameFilter()
+    {
+        var skip = 0;
+        ResourceClaimActionModel[] results = null;
+        using var securityContext = TestContext;
+        var actions = SetupActions().Select(s => s.ActionId).ToArray();
+        var resourceClaim = SetupResourceClaims().FirstOrDefault();
+        var resourceClaimId = resourceClaim.ResourceClaimId;
+        var resourceName = "Non-existing filter";
+
+        var testResourceClaimActions = SetupResourceClaimActions(actions, resourceClaimId);
+        var query = new GetResourceClaimActionsQuery(securityContext, Testing.GetAppSettings());
+        results = query.Execute(new CommonQueryParams(skip, Testing.DefaultPageSizeLimit), resourceName).ToArray();
+        results.SelectMany(x => x.Actions).Count().ShouldBe(0);
+        results.Select(x => x.ResourceClaimId).ShouldBeEmpty();
+        results.Select(x => x.ResourceName).ShouldBeEmpty();
     }
 
     private IReadOnlyCollection<ResourceClaimAction> SetupResourceClaimActions(int[] actions, int resourceClaimId)

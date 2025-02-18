@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "4cc41c54-1b6f-4dd0-b83d-91cf4b60effa",
+		"_postman_id": "6352e231-27bf-4127-b0b2-03e749e9cd05",
 		"name": "Admin API E2E 2.0 - ResourceClaimsActions",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "22794466"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "646458"
 	},
 	"item": [
 		{
@@ -37,6 +37,9 @@
 											"        \"resourceName\": {",
 											"          \"type\": \"string\"",
 											"        },",
+											"        \"claimName\": {",
+											"          \"type\": \"string\"",
+											"        },",
 											"        \"actions\": {",
 											"          \"type\": \"array\",",
 											"          \"items\": [",
@@ -56,6 +59,7 @@
 											"      \"required\": [",
 											"        \"resourceClaimId\",",
 											"        \"resourceName\",",
+											"        \"claimName\",",
 											"        \"actions\"",
 											"      ]",
 											"    }",
@@ -123,6 +127,9 @@
 											"        \"resourceName\": {",
 											"          \"type\": \"string\"",
 											"        },",
+											"        \"claimName\": {",
+											"          \"type\": \"string\"",
+											"        },",
 											"        \"actions\": {",
 											"          \"type\": \"array\",",
 											"          \"items\": [",
@@ -142,6 +149,7 @@
 											"      \"required\": [",
 											"        \"resourceClaimId\",",
 											"        \"resourceName\",",
+											"        \"claimName\",",
 											"        \"actions\"",
 											"      ]",
 											"    }",
@@ -161,7 +169,16 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/resourceClaimActions"
+								"url": {
+									"raw": "{{API_URL}}/v2/resourceClaimActions",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"resourceClaimActions"
+									]
+								}
 							},
 							"response": []
 						},
@@ -190,6 +207,9 @@
 											"        \"resourceName\": {",
 											"          \"type\": \"string\"",
 											"        },",
+											"        \"claimName\": {",
+											"          \"type\": \"string\"",
+											"        },",
 											"        \"actions\": {",
 											"          \"type\": \"array\",",
 											"          \"items\": [",
@@ -209,6 +229,7 @@
 											"      \"required\": [",
 											"        \"resourceClaimId\",",
 											"        \"resourceName\",",
+											"        \"claimName\",",
 											"        \"actions\"",
 											"      ]",
 											"    }",
@@ -272,6 +293,9 @@
 											"        \"resourceName\": {",
 											"          \"type\": \"string\"",
 											"        },",
+											"        \"claimName\": {",
+											"          \"type\": \"string\"",
+											"        },",
 											"        \"actions\": {",
 											"          \"type\": \"array\",",
 											"          \"items\": [",
@@ -291,6 +315,7 @@
 											"      \"required\": [",
 											"        \"resourceClaimId\",",
 											"        \"resourceName\",",
+											"        \"claimName\",",
 											"        \"actions\"",
 											"      ]",
 											"    }",
@@ -328,6 +353,193 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "ResourceClaimsActions - Filter by ResourceName",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET ResourceClaimsActions: Status code is OK\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"const GetResourceClaimsActionsSchema = {",
+											"  \"type\": \"array\",",
+											"  \"items\": [",
+											"    {",
+											"      \"type\": \"object\",",
+											"      \"properties\": {",
+											"        \"resourceClaimId\": {",
+											"          \"type\": \"integer\"",
+											"        },",
+											"        \"resourceName\": {",
+											"          \"type\": \"string\"",
+											"        },",
+											"        \"claimName\": {",
+											"          \"type\": \"string\"",
+											"        },",
+											"        \"actions\": {",
+											"          \"type\": \"array\",",
+											"          \"items\": [",
+											"          {",
+											"            \"type\": \"object\",",
+											"            \"properties\": {",
+											"              \"name\": {",
+											"                \"type\": \"string\"",
+											"              }",
+											"            },",
+											"            \"required\": [",
+											"              \"name\"",
+											"            ]",
+											"          }]",
+											"        }",
+											"      },",
+											"      \"required\": [",
+											"        \"resourceClaimId\",",
+											"        \"resourceName\",",
+											"        \"claimName\",",
+											"        \"actions\"",
+											"      ]",
+											"    }",
+											"  ]",
+											"}",
+											"",
+											"pm.test(\"GET ResourceClaimsActions: Validation Schema Response\", () => {",
+											"    pm.response.to.have.jsonSchema(GetResourceClaimsActionsSchema);",
+											"});",
+											"",
+											"pm.test(\"GET ResourceClaimsActions: Response result includes resource claim action\", function () {",
+											"    const results = pm.response.json();",
+											"    pm.expect(results).to.have.lengthOf(1);",
+											"});",
+											"",
+											"pm.test(\"GET ResourceClaimsActions: Response result contains requested resource claim action\", function () {",
+											"    const results = pm.response.json();",
+											"    pm.expect(results[0].resourceName).to.eql(pm.collectionVariables.get(\"RESOURCENAMEFILTER\"));",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/resourceClaimActions?resourceName={{RESOURCENAMEFILTER}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"resourceClaimActions"
+									],
+									"query": [
+										{
+											"key": "resourceName",
+											"value": "{{RESOURCENAMEFILTER}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ResourceClaimsActions - Filter by non-existing ResourceName",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET ResourceClaimsActions: Status code is OK\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"const GetResourceClaimsActionsSchema = {",
+											"  \"type\": \"array\",",
+											"  \"items\": [",
+											"    {",
+											"      \"type\": \"object\",",
+											"      \"properties\": {",
+											"        \"resourceClaimId\": {",
+											"          \"type\": \"integer\"",
+											"        },",
+											"        \"resourceName\": {",
+											"          \"type\": \"string\"",
+											"        },",
+											"        \"claimName\": {",
+											"          \"type\": \"string\"",
+											"        },",
+											"        \"actions\": {",
+											"          \"type\": \"array\",",
+											"          \"items\": [",
+											"          {",
+											"            \"type\": \"object\",",
+											"            \"properties\": {",
+											"              \"name\": {",
+											"                \"type\": \"string\"",
+											"              }",
+											"            },",
+											"            \"required\": [",
+											"              \"name\"",
+											"            ]",
+											"          }]",
+											"        }",
+											"      },",
+											"      \"required\": [",
+											"        \"resourceClaimId\",",
+											"        \"resourceName\",",
+											"        \"claimName\",",
+											"        \"actions\"",
+											"      ]",
+											"    }",
+											"  ]",
+											"}",
+											"",
+											"pm.test(\"GET ResourceClaimsActions: Validation Schema Response\", () => {",
+											"    pm.response.to.have.jsonSchema(GetResourceClaimsActionsSchema);",
+											"});",
+											"",
+											"pm.test(\"GET ResourceClaimsActions: Response result not includes resource claim action\", function () {",
+											"    const results = pm.response.json();",
+											"    pm.expect(results).to.have.lengthOf(0);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/resourceClaimActions?resourceName=1234",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"resourceClaimActions"
+									],
+									"query": [
+										{
+											"key": "resourceName",
+											"value": "1234"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
@@ -336,9 +548,13 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": {
-			"token": "{{TOKEN}}"
-		}
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{TOKEN}}",
+				"type": "string"
+			}
+		]
 	},
 	"event": [
 		{
@@ -450,6 +666,11 @@
 		{
 			"key": "TOKEN",
 			"value": ""
+		},
+		{
+			"key": "RESOURCENAMEFILTER",
+			"value": "candidate",
+			"type": "string"
 		}
 	]
 }

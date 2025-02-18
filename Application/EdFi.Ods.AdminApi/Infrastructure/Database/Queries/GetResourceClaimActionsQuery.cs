@@ -18,7 +18,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 public interface IGetResourceClaimActionsQuery
 {
-    public IReadOnlyList<ResourceClaimActionModel> Execute(CommonQueryParams commonQueryParams);
+    public IReadOnlyList<ResourceClaimActionModel> Execute(CommonQueryParams commonQueryParams, string? resourceName);
 }
 
 public class GetResourceClaimActionsQuery : IGetResourceClaimActionsQuery
@@ -40,18 +40,20 @@ public class GetResourceClaimActionsQuery : IGetResourceClaimActionsQuery
         };
     }
 
-    public IReadOnlyList<ResourceClaimActionModel> Execute(CommonQueryParams commonQueryParams)
+    public IReadOnlyList<ResourceClaimActionModel> Execute(CommonQueryParams commonQueryParams, string? resourceName)
     {
         Expression<Func<ResourceClaimActionModel, object>> columnToOrderBy = _orderByColumns.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
         return _securityContext.ResourceClaimActions
         .Include(i => i.ResourceClaim)
         .Include(i => i.Action)
-        .GroupBy(r => new { r.ResourceClaim.ResourceClaimId, r.ResourceClaim.ResourceName })
+        .Where(w => resourceName == null || w.ResourceClaim.ResourceName == resourceName)
+        .GroupBy(r => new { r.ResourceClaim.ResourceClaimId, r.ResourceClaim.ResourceName, r.ResourceClaim.ClaimName })
         .Select(group => new ResourceClaimActionModel
         {
             ResourceClaimId = group.Key.ResourceClaimId,
             ResourceName = group.Key.ResourceName,
+            ClaimName = group.Key.ClaimName,
             Actions = group.Select(g => new ActionForResourceClaimModel { Name = g.Action.ActionName }).Distinct().ToList()
         })
         .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
