@@ -12,7 +12,7 @@ on:
         description: 'Version Name. Example -> 2.2.2 will result "admin-api-2.2.2.yaml" "admin-api-2.2.2-summary.md"'
         required: true
         type: string
-permissions: write-all
+permissions: read-all
 
 env:
     CI_COMMIT_MESSAGE: Add YAML and markdown file api-specification version ${{ inputs.version }}
@@ -25,6 +25,8 @@ jobs:
   create-doc-and-openapiyaml:
     name: Generate documentation
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         shell: pwsh
