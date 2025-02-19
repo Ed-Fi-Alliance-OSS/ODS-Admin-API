@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -15,90 +16,45 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Comma
 
 public interface IAddInstanceCommand
 {
-    Task<Instance> Execute(IAddInstanceModel instance);
+    Task<AddInstanceResult> Execute(IInstanceRequestModel instance);
 }
 
 public class AddInstanceCommand : IAddInstanceCommand
 {
     private readonly ICommandRepository<Instance> _instanceCommand;
-    private readonly IEncryptionService _encryptionService;
-    private readonly string _encryptionKey;
 
-    public AddInstanceCommand(ICommandRepository<Instance> instanceCommand, IEncryptionKeyResolver encryptionKeyResolver, IEncryptionService encryptionService)
+    public AddInstanceCommand(ICommandRepository<Instance> instanceCommand)
     {
         _instanceCommand = instanceCommand;
-        _encryptionKey = encryptionKeyResolver.GetEncryptionKey();
-        _encryptionService = encryptionService;
     }
 
-    public async Task<Instance> Execute(IAddInstanceModel instance)
+    public async Task<AddInstanceResult> Execute(IInstanceRequestModel instance)
     {
-        var cleanedDocument = ExpandoObjectHelper.NormalizeExpandoObject(instance.Document);
-        var cleanedApiCredencials = ExpandoObjectHelper.NormalizeExpandoObject(instance.ApiCredentials);
-
-        var document = JsonConvert.SerializeObject(cleanedDocument, new JsonSerializerSettings
+        var result = await _instanceCommand.AddAsync(new Instance
         {
-            ContractResolver = new DefaultContractResolver(),
-            Converters = new List<JsonConverter> { new ExpandoObjectConverter() },
-            Formatting = Formatting.Indented,
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        });
-
-        var apiCredentialsDocument = JsonConvert.SerializeObject(cleanedApiCredencials, new JsonSerializerSettings
-        {
-            ContractResolver = new DefaultContractResolver(),
-            Converters = new List<JsonConverter> { new ExpandoObjectConverter() },
-            Formatting = Formatting.Indented,
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        });
-
-        JsonNode? jnDocument = JsonNode.Parse(document);
-        JsonNode? jnApiCredentialsDocument = JsonNode.Parse(apiCredentialsDocument);
-
-        var clientId = jnApiCredentialsDocument!["clientId"]?.AsValue().ToString();
-        var clientSecret = jnApiCredentialsDocument!["clientSecret"]?.AsValue().ToString();
-
-        var encryptedClientId = string.Empty;
-        var encryptedClientSecret = string.Empty;
-
-        if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
-        {
-            _encryptionService.TryEncrypt(clientId, _encryptionKey, out encryptedClientId);
-            _encryptionService.TryEncrypt(clientSecret, _encryptionKey, out encryptedClientSecret);
-
-            jnApiCredentialsDocument!["clientId"] = encryptedClientId;
-            jnApiCredentialsDocument!["clientSecret"] = encryptedClientSecret;
-        }
-
-        try
-        {
-            return await _instanceCommand.AddAsync(new Instance
+            OdsInstanceId = instance.OdsInstanceId,
+            TenantId = instance.TenantId,
+            InstanceName = instance.Name ?? string.Empty,
+            InstanceType = instance.InstanceType,
+            Credentials = instance.Credetials,
+            Status = Enum.TryParse<InstanceStatus>(instance.Status, out var status) ? status : InstanceStatus.Pending,
+            OdsInstanceContexts = instance.OdsInstanceContexts?.Select(s => new OdsInstanceContext
             {
-                OdsInstanceId = instance.OdsInstanceId,
                 TenantId = instance.TenantId,
-                EdOrgId = instance.EdOrgId,
-                Document = jnDocument!.ToJsonString(),
-                ApiCredentials = jnApiCredentialsDocument!.ToJsonString(),
-            });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-            return null;
-        }
+                ContextKey = s.ContextKey,
+                ContextValue = s.ContextValue,
+            }).ToList(),
+            OdsInstanceDerivatives = instance.OdsInstanceDerivatives?.Select(s => new OdsInstanceDerivative
+            {
+                TenantId = instance.TenantId,
+                DerivativeType = Enum.Parse<DerivativeType>(s.DerivativeType, true),
+            }).ToList()
+        });
+        return new AddInstanceResult { Id = result.Id };
     }
-}
-
-public interface IAddInstanceModel
-{
-    int OdsInstanceId { get; }
-    int? EdOrgId { get; }
-    int TenantId { get; }
-    ExpandoObject Document { get; }
-    ExpandoObject ApiCredentials { get; }
 }
 
 public class AddInstanceResult
 {
-    public int DocId { get; set; }
+    public int Id { get; set; }
 }

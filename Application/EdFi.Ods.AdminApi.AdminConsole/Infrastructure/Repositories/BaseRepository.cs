@@ -50,7 +50,16 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
 
     private void CheckMigrations()
     {
-        if (_context.DB.GetPendingMigrations().Count() > 0)
-            _context.DB.Migrate();
+        var pendingMigrations = _context.DB.GetPendingMigrations().ToList();
+        if (pendingMigrations.Any())
+        {
+            var appliedMigrations = _context.DB.GetAppliedMigrations().ToList();
+            var migrationsToApply = pendingMigrations.Except(appliedMigrations).ToList();
+
+            if (migrationsToApply.Any())
+            {
+                _context.DB.Migrate();
+            }
+        }
     }
 }

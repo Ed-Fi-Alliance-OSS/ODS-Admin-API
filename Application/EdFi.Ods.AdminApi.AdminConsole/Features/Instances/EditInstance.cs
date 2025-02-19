@@ -3,16 +3,15 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Text.Json.Serialization;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
-using System.ComponentModel.DataAnnotations;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Validator;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using FluentValidation;
-using static EdFi.Ods.AdminApi.AdminConsole.Features.Instances.AddInstance;
-using System.Dynamic;
-using System.Text.Json;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
 
@@ -20,46 +19,42 @@ public class EditInstance : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapPatch(endpoints, "/instances/{odsinstanceid}", Execute)
-            .WithRouteOptions(b => b.WithResponseCode(204))
+        AdminApiEndpointBuilder.MapPut(endpoints, "/odsInstances/{id}", Execute)
+            .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(Validator validator, IEditInstanceCommand editInstanceCommand, EditInstanceRequest request, int odsInstanceId)
+    public async Task<IResult> Execute(InstanceValidator validator, IEditInstanceCommand editInstanceCommand, [FromBody] EditInstanceRequest request, int id)
     {
+        request.Id = id;
         await validator.GuardAsync(request);
-        var instance = await editInstanceCommand.Execute(odsInstanceId, request);
+        var instance = await editInstanceCommand.Execute(id, request);
         return Results.NoContent();
     }
 
-    public class EditInstanceRequest : IEditInstanceModel
+    public class EditInstanceRequest : IInstanceRequestModel
     {
-        [Required]
-        public ExpandoObject Document { get; set; }
-    }
 
-    public class Validator : AbstractValidator<EditInstanceRequest>
-    {
-        public Validator()
-        {
-            RuleFor(m => m.Document)
-             .NotNull()
-             .NotEmpty()
-             .Must(BeValidDocument).WithMessage("Document must be a valid JSON.");
-        }
+        public int TenantId { get; set; }
 
-        private bool BeValidDocument(ExpandoObject document)
-        {
-            try
-            {
-                var jDocument = JsonSerializer.Serialize(document);
-                Newtonsoft.Json.Linq.JToken.Parse(jDocument);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        public string? Name { get; set; }
+
+        public string? InstanceType { get; set; }
+
+        public ICollection<OdsInstanceContextModel>? OdsInstanceContexts { get; set; }
+
+        public ICollection<OdsInstanceDerivativeModel>? OdsInstanceDerivatives { get; set; }
+
+        [JsonIgnore]
+        public byte[]? Credetials { get; set; }
+
+        [JsonIgnore]
+        public string? Status { get; set; }
+
+        [JsonIgnore]
+        public int OdsInstanceId { get; set; }
+
+        [JsonIgnore]
+        public int Id { get; set; }
     }
 }

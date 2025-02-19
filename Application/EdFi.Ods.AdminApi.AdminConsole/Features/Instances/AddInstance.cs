@@ -6,11 +6,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.Dynamic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Validator;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
@@ -19,60 +24,41 @@ public class AddInstance : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapPost(endpoints, "/instances", Execute)
-      .WithRouteOptions(b => b.WithResponseCode(201))
+        AdminApiEndpointBuilder.MapPost(endpoints, "/odsInstances", Execute)
+      .WithRouteOptions(b => b.WithResponseCode(202))
       .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(Validator validator, IAddInstanceCommand addInstanceCommand, AddInstanceRequest request)
+    public async Task<IResult> Execute(InstanceValidator validator, IAddInstanceCommand addInstanceCommand, [FromBody] AddInstanceRequest request)
     {
         await validator.GuardAsync(request);
         var addedInstanceResult = await addInstanceCommand.Execute(request);
 
-        return Results.Created($"/instances/{addedInstanceResult.TenantId}/{addedInstanceResult.DocId}", addedInstanceResult);
+        return Results.Accepted($"/instances/{addedInstanceResult.Id}", addedInstanceResult);
     }
 
-    public class AddInstanceRequest : IAddInstanceModel
+    public class AddInstanceRequest : IInstanceRequestModel
     {
-        [Required]
-        public int OdsInstanceId { get; set; }
-        public int? EdOrgId { get; set; }
-        [Required]
         public int TenantId { get; set; }
-        [Required]
-        public ExpandoObject Document { get; set; }
-        [Required]
-        public ExpandoObject ApiCredentials { get; set; }
-    }
 
-    public class Validator : AbstractValidator<AddInstanceRequest>
-    {
-        public Validator()
-        {
-            RuleFor(m => m.OdsInstanceId)
-             .NotNull();
+        public string? Name { get; set; }
 
-            RuleFor(m => m.EdOrgId)
-             .NotNull();
+        public string? InstanceType { get; set; }
 
-            RuleFor(m => m.Document)
-             .NotNull()
-             .NotEmpty()
-             .Must(BeValidDocument).WithMessage("Document must be a valid JSON.");
-        }
+        public ICollection<OdsInstanceContextModel>? OdsInstanceContexts { get; set; }
 
-        private bool BeValidDocument(ExpandoObject document)
-        {
-            try
-            {
-                var jDocument = JsonSerializer.Serialize(document);
-                Newtonsoft.Json.Linq.JToken.Parse(jDocument);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        public ICollection<OdsInstanceDerivativeModel>? OdsInstanceDerivatives { get; set; }
+
+        [JsonIgnore]
+        public byte[]? Credetials { get; set; }
+
+        [JsonIgnore]
+        public string? Status { get; set; }
+
+        [JsonIgnore]
+        public int OdsInstanceId { get; set; }
+
+        [JsonIgnore]
+        public int Id { get; set; }
     }
 }

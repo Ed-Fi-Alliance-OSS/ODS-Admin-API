@@ -18,11 +18,12 @@ dotnet ef migrations add <MigrationName> --context <ContextName> --output-dir In
 In the Package Manager Console within Visual Studio, run:
 
 ```powershell
-Add-Migration <MigrationName> -Context <ContextName> -Project EdFi.Ods.AdminApi.AdminConsole -OutputDir Infrastructure/DataAccess/Artifacts/<DbProvider>
+Add-Migration <MigrationName> -Context <ContextName> -Project EdFi.Ods.AdminApi.AdminConsole -OutputDir Infrastructure/DataAccess/Artifacts/<Database>/<DbProvider>
 ```
 
 - `MigrationName`: Name of the migration (e.g., `InitialCreate`).
 - `ContextName`: Name of the context (options: `AdminConsolePgSqlContext`,`AdminConsoleMsSqlContext`)
+- `Database`: Name of the context (options: `Admin`,`Security`)
 - `DbProvider`: The database provider, this will create a folder or add the migration in the specific db provider (options: `MsSql`,`PgSql` ).
 
 ---
@@ -51,7 +52,7 @@ Update-Database -Context <ContextName> -Project EdFi.Ods.AdminApi.AdminConsole
 
 | Action              | Command (cmd)                                                                                           | Command (pmc)                                                                                  |
 |---------------------|--------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-| **Add Migration**   | `dotnet ef migrations add <MigrationName> --context <ContextName> --output-dir Infrastructure/DataAccess/Artifacts/<DbProvider> --project EdFi.Ods.AdminApi.AdminConsole` | `Add-Migration <MigrationName> -Context <ContextName> -Project EdFi.Ods.AdminApi.AdminConsole -OutputDir Infrastructure/DataAccess/Artifacts/<DbProvider>` |
+| **Add Migration**   | `dotnet ef migrations add <MigrationName> --context <ContextName> --output-dir Infrastructure/DataAccess/Artifacts/<Database>/<DbProvider> --project EdFi.Ods.AdminApi.AdminConsole` | `Add-Migration <MigrationName> -Context <ContextName> -Project EdFi.Ods.AdminApi.AdminConsole -OutputDir Infrastructure/DataAccess/Artifacts/<Database>/<DbProvider>` |
 | **Update Database** | `dotnet ef database update --context <ContextName> --project EdFi.Ods.AdminApi.AdminConsole`                               | `Update-Database -Context <ContextName> -Project EdFi.Ods.AdminApi.AdminConsole`                                  |
 
 ---

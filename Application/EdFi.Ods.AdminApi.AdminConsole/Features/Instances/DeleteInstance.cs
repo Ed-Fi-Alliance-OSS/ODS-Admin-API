@@ -20,14 +20,13 @@ public class DeleteInstance : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapDelete(endpoints, "/instances/{odsinstanceid}", Execute)
-            .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
-            .BuildForVersions(AdminApiVersions.AdminConsole);
-    }
-
-    public async Task<IResult> Execute(IDeleteInstanceCommand deleteInstanceCommand, int odsInstanceId)
-    {
-        await deleteInstanceCommand.Execute(odsInstanceId);
-        return Results.Ok();
+        AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstances/{id}", async (HttpContext context) =>
+        {
+            context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync("{\"message\": \"Method Not Allowed\"}");
+        })
+        .WithRouteOptions(b => b.WithResponseCode(405, "Method Not Allowed"))
+        .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 }

@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queries;
 
@@ -29,30 +30,10 @@ public class GetInstancesQuery : IGetInstancesQuery
     }
     public async Task<IEnumerable<Instance>> Execute()
     {
-        var instances = await _instanceQuery.GetAllAsync();
-
-        foreach (var instance in instances)
-        {
-            JsonNode? jn = JsonNode.Parse(instance.Document);
-
-            var encryptedClientId = jn!["clientId"]?.AsValue().ToString();
-            var encryptedClientSecret = jn!["clientSecret"]?.AsValue().ToString();
-
-            var clientId = string.Empty;
-            var clientSecret = string.Empty;
-
-            if (!string.IsNullOrEmpty(encryptedClientId) && !string.IsNullOrEmpty(encryptedClientSecret))
-            {
-                _encryptionService.TryDecrypt(encryptedClientId, _encryptionKey, out clientId);
-                _encryptionService.TryDecrypt(encryptedClientSecret, _encryptionKey, out clientSecret);
-
-                jn!["clientId"] = clientId;
-                jn!["clientSecret"] = clientSecret;
-            }
-
-            instance.Document = jn!.ToJsonString();
-        }
-
-        return instances.ToList();
+        return await _instanceQuery.Query()
+            .Include(i => i.OdsInstanceContexts)
+            .Include(i => i.OdsInstanceDerivatives)
+            .AsNoTracking()
+            .ToListAsync();
     }
 }

@@ -62,6 +62,16 @@ public abstract class PlatformUsersContextTestBase
         transaction.Commit();
     }
 
+    protected static async Task TransactionAsync(Func<IDbContext, Task> action)
+    {
+        using var dbContext = new AdminConsoleMsSqlContext(GetDbContextOptions());
+        using var transaction = await dbContext.Database.BeginTransactionAsync();
+        await action(dbContext);
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+
+
     protected static TResult Transaction<TResult>(Func<IDbContext, TResult> query)
     {
         var result = default(TResult);

@@ -3,24 +3,32 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using Newtonsoft.Json;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
 
 public class InstanceModel
 {
-    [JsonProperty("DocId")]
-    public int DocId { get; set; }
+    public int Id { get; set; }
+    public int TenantId { get; set; }
+    public string Name { get; set; }
+    public string InstanceType { get; set; }
+    public string? BaseUrl { get; set; }
+    public List<OdsInstanceContextForInstanceModel> OdsInstanceContexts { get; set; }
+    public List<OdsInstanceDerivativeForInstanceModel> OdsInstanceDerivatives { get; set; }
+}
 
-    [JsonProperty("InstanceId")]
+public class OdsInstanceContextForInstanceModel
+{
+    public int Id { get; set; }
+    public int InstanceId { get; set; }
+    public string ContextKey { get; set; }
+    public string ContextValue { get; set; }
+}
+
+public class OdsInstanceDerivativeForInstanceModel
+{
+    public int Id { get; set; }
     public int? InstanceId { get; set; }
-
-    [JsonProperty("TenantId")]
-    public int? TenantId { get; set; }
-
-    [JsonProperty("EdOrgId")]
-    public int? EdOrgId { get; set; }
-
-    [JsonProperty("Document")]
-    public string? Document { get; set; }
+    public string DerivativeType { get; set; }
 }

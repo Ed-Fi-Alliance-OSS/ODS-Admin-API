@@ -16,6 +16,7 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -36,39 +37,31 @@ public class EditInstanceCommandTests : PlatformUsersContextTestBase
         {
             TenantId = 1,
             OdsInstanceId = 1,
-            Document = "{\"name\": \"Instance #3 - 2024\",\"instanceType\": null}\r\n",
-            ApiCredentials = "{\"clientId\": \"test\",\"clientSecret\": \"testSecret\"}\r\n"
+            InstanceName = "Test Instance",
+            InstanceType = "Standard",
+            OdsInstanceContexts = new List<AdminApi.AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceContext>(),
+            OdsInstanceDerivatives = new List<AdminApi.AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceDerivative>()
         };
-
-
         Save(originalOdsInstance);
-        _odsInstanceId = originalOdsInstance.OdsInstanceId;
+        _odsInstanceId = originalOdsInstance.Id;
     }
 
     [Test]
     public void ShouldEditInstance()
     {
-        var Document = "{\"name\": \"Instance #4 - 2024\",\"instanceType\": null}\r\n";
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
-        };
-
-        ExpandoObject documentExpandObject = JsonSerializer.Deserialize<ExpandoObject>(Document, options);
-
-        var newInstanceData = new Mock<IEditInstanceModel>();
-        newInstanceData.Setup(v => v.Document).Returns(documentExpandObject);
-
-        var encryptionService = new EncryptionService();
-        var encryptionKey = Testing.GetEncryptionKeyResolver().GetEncryptionKey();
+        var newInstanceData = new Mock<IInstanceRequestModel>();
+        newInstanceData.Setup(v => v.OdsInstanceId).Returns(1);
+        newInstanceData.Setup(v => v.TenantId).Returns(1);
+        newInstanceData.Setup(v => v.Name).Returns("Updated Instance");
+        newInstanceData.Setup(v => v.InstanceType).Returns("Updated Type");
+        newInstanceData.Setup(v => v.OdsInstanceContexts).Returns(new List<OdsInstanceContextModel>());
+        newInstanceData.Setup(v => v.OdsInstanceDerivatives).Returns(new List<OdsInstanceDerivativeModel>());
 
         Transaction(async dbContext =>
         {
             var repository = new CommandRepository<Instance>(dbContext);
             var qRepository = new QueriesRepository<Instance>(dbContext);
-            var command = new EditInstanceCommand(repository, qRepository, Testing.GetEncryptionKeyResolver(), encryptionService);
+            var command = new EditInstanceCommand(repository, qRepository, dbContext);
 
             var result = await command.Execute(_odsInstanceId, newInstanceData.Object);
         });
@@ -77,9 +70,13 @@ public class EditInstanceCommandTests : PlatformUsersContextTestBase
         {
             var persistedInstance = dbContext.Instances;
             persistedInstance.Count().ShouldBe(1);
-            persistedInstance.First().TenantId.ShouldBe(1);
-            persistedInstance.First().OdsInstanceId.ShouldBe(1);
-            persistedInstance.First().Document.ShouldBe(Document);
+            var instance = persistedInstance.First();
+            instance.TenantId.ShouldBe(1);
+            instance.OdsInstanceId.ShouldBe(1);
+            instance.InstanceName.ShouldBe("Updated Instance");
+            instance.InstanceType.ShouldBe("Updated Type");
+            instance.OdsInstanceContexts.ShouldBeEmpty();
+            instance.OdsInstanceDerivatives.ShouldBeEmpty();
         });
     }
 }

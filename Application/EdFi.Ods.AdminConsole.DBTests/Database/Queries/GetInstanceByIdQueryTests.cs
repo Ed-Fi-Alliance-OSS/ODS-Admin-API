@@ -6,11 +6,13 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queries;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
@@ -34,54 +36,60 @@ public class GetInstanceByIdQueryTests : PlatformUsersContextTestBase
     [Test]
     public void ShouldExecute()
     {
-        var instanceDocument = "{\"instanceId\":\"DEF456\",\"tenantId\":\"def456\",\"instanceName\":\"Mock Instance 2\",\"instanceType\":\"Type B\",\"connectionType\":\"Type Y\",\"clientId\":\"CLIENT321\",\"clientSecret\":\"SECRET456\",\"baseUrl\":\"https://localhost/api\",\"authenticationUrl\":\"https://localhost/api/oauth/token\",\"resourcesUrl\":\"https://localhost/api\",\"schoolYears\":[2024,2025],\"isDefault\":false,\"verificationStatus\":null,\"provider\":\"Local\"}";
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
-        };
-
-        ExpandoObject documentExpandObject = JsonSerializer.Deserialize<ExpandoObject>(instanceDocument, options);
-
-        Instance result = null;
+        AddInstanceResult result = null;
 
         var newInstance = new TestInstance
         {
-            OdsInstanceId = 1,
             TenantId = 1,
-            EdOrgId = 1,
-            Document = documentExpandObject
+            OdsInstanceId = 1,
+            Name = "Test Instance",
+            InstanceType = "Standard",
+            OdsInstanceContexts = new List<OdsInstanceContextModel>(),
+            OdsInstanceDerivatives = new List<OdsInstanceDerivativeModel>()
         };
 
         Transaction(async dbContext =>
         {
             var repository = new CommandRepository<Instance>(dbContext);
-            var command = new AddInstanceCommand(repository, Testing.GetEncryptionKeyResolver(), new EncryptionService());
+            var command = new AddInstanceCommand(repository);
 
             result = await command.Execute(newInstance);
         });
+
         Transaction(async dbContext =>
         {
             var repository = new QueriesRepository<Instance>(dbContext);
-            var query = new GetInstanceByIdQuery(repository, Testing.GetEncryptionKeyResolver(), new EncryptionService());
-            var instance = await query.Execute(result.OdsInstanceId);
+            var query = new GetInstanceByIdQuery(repository);
+            var instance = await query.Execute(result.Id);
 
-            instance.DocId.ShouldBe(result.DocId);
+            instance.Id.ShouldBe(result.Id);
             instance.TenantId.ShouldBe(newInstance.TenantId);
             instance.OdsInstanceId.ShouldBe(newInstance.OdsInstanceId);
-            instance.EdOrgId.ShouldBe(newInstance.EdOrgId);
-            instance.Document.ShouldBe(JsonSerializer.Serialize(newInstance.Document));
+            instance.InstanceName.ShouldBe(newInstance.Name);
+            instance.InstanceType.ShouldBe(newInstance.InstanceType);
         });
     }
 
-    private class TestInstance : IAddInstanceModel
+    private class TestInstance : IInstanceRequestModel
     {
-        public int DocId { get; }
-        public int TenantId { get; set; }
         public int OdsInstanceId { get; set; }
-        public int? EdOrgId { get; set; }
-        public ExpandoObject Document { get; set; }
-        public ExpandoObject ApiCredentials { get; set; }
+        public int TenantId { get; set; }
+
+        public string Name { get; set; }
+
+        public string InstanceType { get; set; }
+
+        public ICollection<OdsInstanceContextModel> OdsInstanceContexts { get; set; }
+
+        public ICollection<OdsInstanceDerivativeModel> OdsInstanceDerivatives { get; set; }
+
+        [JsonIgnore]
+        public byte[] Credetials { get; set; }
+
+        [JsonIgnore]
+        public string Status { get; set; }
+
+        [JsonIgnore]
+        public int Id { get; set; }
     }
 }

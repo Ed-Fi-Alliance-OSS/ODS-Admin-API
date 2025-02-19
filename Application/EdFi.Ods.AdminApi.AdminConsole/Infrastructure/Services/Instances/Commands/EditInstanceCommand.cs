@@ -17,74 +17,97 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands
 {
     public interface IEditInstanceCommand
     {
-        Task<Instance> Execute(int odsinstanceid, IEditInstanceModel instance);
+        Task<Instance> Execute(int odsinstanceid, IInstanceRequestModel instance);
     }
 
     public class EditInstanceCommand : IEditInstanceCommand
     {
         private readonly ICommandRepository<Instance> _instanceCommand;
         private readonly IQueriesRepository<Instance> _instanceQuery;
-        private readonly IEncryptionService _encryptionService;
-        private readonly string _encryptionKey;
+        private readonly IDbContext _dbContext;
 
-        public EditInstanceCommand(ICommandRepository<Instance> instanceCommand, IQueriesRepository<Instance> instanceQuery, IEncryptionKeyResolver encryptionKeyResolver, IEncryptionService encryptionService)
+        public EditInstanceCommand(ICommandRepository<Instance> instanceCommand, IQueriesRepository<Instance> instanceQuery, IDbContext dbContext)
         {
             _instanceCommand = instanceCommand;
             _instanceQuery = instanceQuery;
-            _encryptionKey = encryptionKeyResolver.GetEncryptionKey();
-            _encryptionService = encryptionService;
+            _dbContext = dbContext;
         }
 
-        public async Task<Instance> Execute(int odsInstanceId, IEditInstanceModel instance)
+        public async Task<Instance> Execute(int id, IInstanceRequestModel instance)
         {
-            var cleanedDocument = ExpandoObjectHelper.NormalizeExpandoObject(instance.Document);
+            var existingInstance = await _instanceQuery.Query().SingleOrDefaultAsync(w => w.Id == id) ?? throw new NotFoundException<int>("Instance", id);
 
-            var document = JsonConvert.SerializeObject(cleanedDocument, new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver(),
-                Converters = new List<JsonConverter> { new ExpandoObjectConverter() },
-                Formatting = Formatting.Indented
-            });
-
-            JsonNode? jnDocument = JsonNode.Parse(document);
-
-            var clientId = jnDocument!["clientId"]?.AsValue().ToString();
-            var clientSecret = jnDocument!["clientSecret"]?.AsValue().ToString();
-
-            var encryptedClientId = string.Empty;
-            var encryptedClientSecret = string.Empty;
-
-            if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
-            {
-                _encryptionService.TryEncrypt(clientId, _encryptionKey, out encryptedClientId);
-                _encryptionService.TryEncrypt(clientSecret, _encryptionKey, out encryptedClientSecret);
-
-                jnDocument!["clientId"] = encryptedClientId;
-                jnDocument!["clientSecret"] = encryptedClientSecret;
-            }
-
-            try
-            {
-                var existingInstance = await _instanceQuery.Query().SingleOrDefaultAsync(w => w.OdsInstanceId == odsInstanceId) ?? throw new NotFoundException<int>("Instance", odsInstanceId);
-
-                existingInstance.Document = document;
-                await _instanceCommand.UpdateAsync(existingInstance);
-                return existingInstance;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
+            existingInstance.OdsInstanceId = instance.OdsInstanceId;
+            existingInstance.TenantId = instance.TenantId;
+            existingInstance.InstanceName = instance.Name;
+            existingInstance.InstanceType = instance.InstanceType;
+            await UpdateOdsInstanceDerivativesAsync(id, instance.TenantId, instance.OdsInstanceDerivatives);
+            await UpdateOdsInstanceContextsAsync(id, instance.TenantId, instance.OdsInstanceContexts);
+            await _instanceCommand.UpdateAsync(existingInstance);
+            return existingInstance;
         }
-    }
 
-    public interface IEditInstanceModel
-    {
-        ExpandoObject Document { get; }
+        public async Task UpdateOdsInstanceDerivativesAsync(int id, int tenantId, ICollection<OdsInstanceDerivativeModel>? updatedOdsInstanceDerivatives)
+        {
+            var existingOdsInstanceDerivatives = await _dbContext.OdsInstanceDerivatives
+                .Where(d => d.InstanceId == id)
+                .ToListAsync();
+
+            if (updatedOdsInstanceDerivatives == null)
+            {
+                _dbContext.OdsInstanceDerivatives.RemoveRange(existingOdsInstanceDerivatives);
+            }
+            else
+            {
+                _dbContext.OdsInstanceDerivatives.RemoveRange(existingOdsInstanceDerivatives);
+                foreach (var updatedItem in updatedOdsInstanceDerivatives)
+                {
+                    _dbContext.OdsInstanceDerivatives.Add(new OdsInstanceDerivative
+                    {
+                        InstanceId = id,
+                        TenantId = tenantId,
+                        DerivativeType = Enum.Parse<DerivativeType>(updatedItem.DerivativeType)
+                    });
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateOdsInstanceContextsAsync(int id, int tenantId, ICollection<OdsInstanceContextModel>? updatedOdsInstanceContexts)
+        {
+            var existingOdsInstanceContexts = await _dbContext.OdsInstanceContexts
+                .Where(c => c.InstanceId == id)
+                .ToListAsync();
+
+            if (updatedOdsInstanceContexts == null)
+            {
+                _dbContext.OdsInstanceContexts.RemoveRange(existingOdsInstanceContexts);
+            }
+            else
+            {
+                _dbContext.OdsInstanceContexts.RemoveRange(existingOdsInstanceContexts);
+                foreach (var updatedContext in updatedOdsInstanceContexts)
+                {
+                    _dbContext.OdsInstanceContexts.Add(new OdsInstanceContext
+                    {
+                        InstanceId = id,
+                        TenantId = tenantId,
+                        ContextKey = updatedContext.ContextKey,
+                        ContextValue = updatedContext.ContextValue
+                    });
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

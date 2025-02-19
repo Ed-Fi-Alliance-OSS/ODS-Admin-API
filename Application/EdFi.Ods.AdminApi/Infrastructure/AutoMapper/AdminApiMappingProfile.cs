@@ -4,6 +4,8 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.Features.Actions;
 using EdFi.Ods.AdminApi.Features.Applications;
 using EdFi.Ods.AdminApi.Features.AuthorizationStrategies;
@@ -162,5 +164,32 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dest => dest.ResourceClaimId, opt => opt.MapFrom(src => src.ResourceClaim.ResourceClaimId))
             .ForMember(dest => dest.ResourceName, opt => opt.MapFrom(src => src.ResourceClaim.ResourceName))
             .ForMember(dest => dest.Actions, opt => opt.Ignore());//Action is ignore as we build it manually
+            
+        CreateMap<Instance, InstanceModel>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dst => dst.TenantId, opt => opt.MapFrom(src => src.TenantId))
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.InstanceName))
+            .ForMember(dst => dst.InstanceType, opt => opt.MapFrom(src => src.InstanceType))
+            .ForMember(dst => dst.BaseUrl, opt => opt.MapFrom(src => src.BaseUrl))
+            .ForMember(dst => dst.OdsInstanceContexts, opt => opt.MapFrom(src => src.OdsInstanceContexts))
+            .ForMember(dst => dst.OdsInstanceDerivatives, opt => opt.MapFrom(src => src.OdsInstanceDerivatives));
+
+        CreateMap<AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceContext, OdsInstanceContextForInstanceModel>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
+            .ForMember(dst => dst.ContextKey, opt => opt.MapFrom(src => src.ContextKey))
+            .ForMember(dst => dst.ContextValue, opt => opt.MapFrom(src => src.ContextValue));
+
+        CreateMap<AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceDerivative, OdsInstanceDerivativeForInstanceModel>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
+            .ForMember(dst => dst.DerivativeType, opt => opt.MapFrom(src => src.DerivativeType));
+
+        CreateMap<Admin.DataAccess.Models.OdsInstanceContext, AdminConsole.Infrastructure.Services.Instances.Models.OdsInstanceContextModel>()
+            .ForMember(dst => dst.ContextKey, opt => opt.MapFrom(src => src.ContextKey))
+            .ForMember(dst => dst.ContextValue, opt => opt.MapFrom(src => src.ContextValue));
+
+        CreateMap<Admin.DataAccess.Models.OdsInstanceDerivative, AdminConsole.Infrastructure.Services.Instances.Models.OdsInstanceDerivativeModel>()
+            .ForMember(dst => dst.DerivativeType, opt => opt.MapFrom(src => src.DerivativeType));
     }
 }

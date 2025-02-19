@@ -16,19 +16,29 @@ public class AdminConsolePgSqlContext : DbContext, IDbContext
     public AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext> options) : base(options) { }
 
     public DbSet<HealthCheck> HealthChecks { get; set; }
+
     public DbSet<Instance> Instances { get; set; }
+
+    public DbSet<OdsInstanceContext> OdsInstanceContexts { get; set; }
+
+    public DbSet<OdsInstanceDerivative> OdsInstanceDerivatives { get; set; }
+
     public DbSet<Permission> Permissions { get; set; }
+
     public DbSet<UserProfile> UserProfiles { get; set; }
 
     public DbSet<Step> Steps { get; set; }
 
     public DatabaseFacade DB => Database;
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         const string DbProvider = DbProviders.PostgreSql;
         modelBuilder.ApplyConfiguration(new HealthCheckConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new InstanceConfiguration(DbProvider));
+        modelBuilder.ApplyConfiguration(new OdsInstanceContextConfiguration());
+        modelBuilder.ApplyConfiguration(new OdsInstanceDerivativeConfiguration());
         modelBuilder.ApplyConfiguration(new PermissionConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new UserProfileConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new StepConfiguration(DbProvider));

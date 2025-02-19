@@ -69,7 +69,8 @@ public class InitializationService : IAdminConsoleInitializationService
             var result = command.Execute(newApplication, _options);
             applicationId = result.ApplicationId;
         }
-        else {
+        else
+        {
             applicationId = adminConsoleApplication.ApplicationId;
         }
         return Task.FromResult(applicationId);

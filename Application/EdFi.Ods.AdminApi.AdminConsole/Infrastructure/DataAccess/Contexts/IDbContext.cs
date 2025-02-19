@@ -15,6 +15,10 @@ public interface IDbContext
 
     DbSet<Instance> Instances { get; set; }
 
+    DbSet<OdsInstanceContext> OdsInstanceContexts { get; set; }
+
+    DbSet<OdsInstanceDerivative> OdsInstanceDerivatives { get; set; }
+
     DbSet<Permission> Permissions { get; set; }
 
     DbSet<UserProfile> UserProfiles { get; set; }
