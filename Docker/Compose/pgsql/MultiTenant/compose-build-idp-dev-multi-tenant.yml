@@ -33,7 +33,10 @@ services:
       additional_contexts:
         assets: ../../../../
       dockerfile: dev.pgsql.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       POSTGRES_PORT: 5432
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -50,7 +53,7 @@ services:
       ASPNETCORE_ENVIRONMENT: "multitenantdocker"
       ENABLE_ADMIN_CONSOLE: ${ENABLE_ADMIN_CONSOLE:-true}
       USE_SELF_CONTAINED_AUTH: ${USE_SELF_CONTAINED_AUTH:-true}
-      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-keycloak:8080/auth/realms/myrealm}"
+      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-idp-keycloak:8080/auth/realms/myrealm}"
       OIDC_REQUIRE_METADATA: "${OIDC_REQUIRE_METADATA:-false}"
       OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
       ENABLE_CORS: "${ENABLE_CORS:-false}"
@@ -77,7 +80,10 @@ services:
       additional_contexts:
         assets: ../../../../
       dockerfile: dbadmin.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     ports:
@@ -93,7 +99,10 @@ services:
       additional_contexts:
         assets: ../../../../
       dockerfile: dbadmin.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     ports:
@@ -133,7 +142,7 @@ services:
     volumes:
       - ../../../Settings/ssl:/ssl/
       - ../../../KeyCloak/realm-and-users.json:/opt/keycloak/data/import/realm-and-users.json
-    container_name: ed-fi-keycloak
+    container_name: ed-fi-idp-keycloak
 
   db-idp-keycloak:
     image: postgres:${KEYCLOAK_DB_IMAGE_TAG:-16.2}

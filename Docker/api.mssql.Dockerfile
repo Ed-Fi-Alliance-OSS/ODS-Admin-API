@@ -13,7 +13,8 @@ LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 # Alpine image does not contain Globalization Cultures library so we need to install ICU library to get for LINQ expression to work
 # Disable the globaliztion invariant mode (set in base image)
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-ARG ADMIN_API_VERSION="2.2.0"
+ARG ADMIN_API_VERSION
+ENV ADMIN_API_VERSION="${ADMIN_API_VERSION:-2.2.0}"
 ENV ASPNETCORE_HTTP_PORTS=80
 
 WORKDIR /app

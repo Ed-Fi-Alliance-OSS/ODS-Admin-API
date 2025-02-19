@@ -1,4 +1,5 @@
 ADMIN_API_VIRTUAL_NAME=adminapi
+ADMIN_API_VERSION=2.2.0
 
 # For Authentication
 AUTHORITY=http://localhost/${ADMIN_API_VIRTUAL_NAME}
@@ -49,6 +50,6 @@ KEYCLOAK_ADMIN_CONSOLE_REALM=myrealm
 
 ENABLE_ADMIN_CONSOLE=true
 USE_SELF_CONTAINED_AUTH=false
-OIDC_AUTHORITY=http://ed-fi-keycloak:8080/auth/realms/myrealm
+# OIDC_AUTHORITY=http://ed-fi-idp-keycloak:8080/auth/realms/myrealm
 OIDC_REQUIRE_METADATA=false
 OIDC_ENABLE_SERVER_CERTIFICATE=true

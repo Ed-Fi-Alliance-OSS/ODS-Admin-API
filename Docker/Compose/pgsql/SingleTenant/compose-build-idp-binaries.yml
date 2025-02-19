@@ -19,7 +19,7 @@ services:
     hostname: nginx
     volumes:
       - ../../../Settings/ssl:/ssl/
-      - ../../../Settings/gateway/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../../Settings/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
       - adminapi
       - idp-keycloak
@@ -28,7 +28,10 @@ services:
     build:
       context: ../../../
       dockerfile: api.pgsql.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       ADMIN_POSTGRES_HOST: db-admin
       POSTGRES_PORT: 5432
       POSTGRES_USER: "${POSTGRES_USER}"
@@ -45,7 +48,7 @@ services:
       AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-false}"
       ENABLE_ADMIN_CONSOLE: ${ENABLE_ADMIN_CONSOLE:-true}
       USE_SELF_CONTAINED_AUTH: ${USE_SELF_CONTAINED_AUTH:-true}
-      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-keycloak:8080/auth/realms/myrealm}"
+      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-idp-keycloak:8080/auth/realms/myrealm}"
       OIDC_REQUIRE_METADATA: "${OIDC_REQUIRE_METADATA:-false}"
       OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
       ENABLE_CORS: "${ENABLE_CORS:-false}"
@@ -65,7 +68,10 @@ services:
     build:
       context: ../../../Settings/DB-Admin/pgsql/
       dockerfile: Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     ports:
@@ -105,7 +111,7 @@ services:
     volumes:
       - ../../../Settings/ssl:/ssl/
       - ../../../KeyCloak/realm-and-users.json:/opt/keycloak/data/import/realm-and-users.json
-    container_name: ed-fi-keycloak
+    container_name: ed-fi-idp-keycloak
 
   db-idp-keycloak:
     image: postgres:${KEYCLOAK_DB_IMAGE_TAG:-16.2}
@@ -115,6 +121,8 @@ services:
       POSTGRES_DB: ${KEYCLOAK_POSTGRES_DB:-keycloak_db}
       POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
       POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
+    ports:
+      - "5403:5432"
     container_name: ed-fi-db-idp-keycloak
 
   pb-idp-keycloak:

@@ -16,7 +16,7 @@ on:
 
 env:
   JIRA_ACCESS_TOKEN: ${{ secrets.JIRA_ACCESS_TOKEN }}
-  ADMIN_API_VERSION: "1.2"
+  ADMIN_API_VERSION: "2.2.0"
   PROJECT_ID: "13401"
   CYCLE_NAME: "Automation Cycle"
   TASK_NAME: "API Automation Task"
@@ -45,7 +45,7 @@ jobs:
 
       - name: Copy admin api common folder to docker context
         run: cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
-        
+
       - name: Copy nuget config to docker context
         run: cp ../NuGet.Config ../../Docker/Application
 

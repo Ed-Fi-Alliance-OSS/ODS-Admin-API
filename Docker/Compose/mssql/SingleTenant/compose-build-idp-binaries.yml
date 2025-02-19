@@ -30,7 +30,10 @@ services:
       additional_contexts:
          assets: ../../../../
       dockerfile: api.mssql.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       ADMIN_MSSQL_HOST: db-admin
       SQLSERVER_ADMIN_DATASOURCE: db-admin
       SQLSERVER_SECURITY_DATASOURCE: db-admin
@@ -50,7 +53,7 @@ services:
       MULTITENANCY_ENABLED: "${MULTITENANCY_ENABLED:-false}"
       ENABLE_ADMIN_CONSOLE: ${ENABLE_ADMIN_CONSOLE:-true}
       USE_SELF_CONTAINED_AUTH: ${USE_SELF_CONTAINED_AUTH:-true}
-      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-keycloak:8080/auth/realms/myrealm}"
+      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-idp-keycloak:8080/auth/realms/myrealm}"
       OIDC_REQUIRE_METADATA: "${OIDC_REQUIRE_METADATA:-false}"
       OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
       ENABLE_CORS: "${ENABLE_CORS:-false}"
@@ -70,7 +73,10 @@ services:
     build:
       context: ../../../Settings/DB-Admin/mssql/
       dockerfile: Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       SA_PASSWORD: "${SA_PASSWORD:-P@55w0rd}"
       ACCEPT_EULA: "Y"
       SQLSERVER_ADMIN_DATASOURCE: db-admin
@@ -106,7 +112,7 @@ services:
       KC_DB_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
       KC_HTTP_RELATIVE_PATH: "/${KEYCLOAK_RELATIVE_PATH:-auth}/"
       KC_SPI_LOGIN_PROTOCOL_OPENID_CONNECT_LEGACY_IFRAME_CHECK: false
-      KC_LOG_LEVEL: ${KEYCLOAK_LOG_LEVEL:-OFF}
+      KC_LOG_LEVEL: ${KEYCLOAK_LOG_LEVEL:-ERROR}
       KC_LOG: console
       KC_HTTPS_CERTIFICATE_FILE: /ssl/server.crt
       KC_HTTPS_CERTIFICATE_KEY_FILE: /ssl/server.key
@@ -119,7 +125,7 @@ services:
     volumes:
       - ../../../Settings/ssl:/ssl/
       - ../../../KeyCloak/realm-and-users.json:/opt/keycloak/data/import/realm-and-users.json
-    container_name: ed-fi-keycloak
+    container_name: ed-fi-idp-keycloak
 
   db-idp-keycloak:
     image: postgres:${KEYCLOAK_DB_IMAGE_TAG:-16.2}

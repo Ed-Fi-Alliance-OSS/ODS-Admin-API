@@ -28,7 +28,10 @@ services:
       additional_contexts:
          assets: ../../../../
       dockerfile: api.mssql.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       ADMIN_MSSQL_HOST: db-admin
       SQLSERVER_ADMIN_DATASOURCE: db-admin
       SQLSERVER_SECURITY_DATASOURCE: db-admin
@@ -48,7 +51,7 @@ services:
       MULTITENANCY_ENABLED: "${MULTITENANCY_ENABLED:-false}"
       ENABLE_ADMIN_CONSOLE: ${ENABLE_ADMIN_CONSOLE:-true}
       USE_SELF_CONTAINED_AUTH: ${USE_SELF_CONTAINED_AUTH:-true}
-      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-keycloak:8080/auth/realms/myrealm}"
+      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-idp-keycloak:8080/auth/realms/myrealm}"
       OIDC_REQUIRE_METADATA: "${OIDC_REQUIRE_METADATA:-false}"
       OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
       ENABLE_CORS: "${ENABLE_CORS:-false}"
@@ -67,7 +70,10 @@ services:
     build:
       context: ../../../Settings/DB-Admin/mssql/
       dockerfile: Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       SA_PASSWORD: "${SA_PASSWORD:-P@55w0rd}"
       ACCEPT_EULA: "Y"
       SQLSERVER_ADMIN_DATASOURCE: db-admin
