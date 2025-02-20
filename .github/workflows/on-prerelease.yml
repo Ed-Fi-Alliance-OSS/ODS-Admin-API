@@ -153,7 +153,8 @@ jobs:
       - sbom-create
       - pack
     permissions:
-      actions: write
+      actions: read
+      contents: write
     steps:
       - name: Download the SBOM
         uses: Ed-Fi-Alliance-OSS/slsa-github-generator/.github/actions/secure-download-artifact@main
