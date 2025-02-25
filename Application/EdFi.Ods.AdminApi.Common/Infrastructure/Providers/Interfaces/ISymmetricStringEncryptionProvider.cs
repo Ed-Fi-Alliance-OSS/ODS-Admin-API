@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Providers.Interfaces;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 
 /// <summary>
 /// Defines an interface for providing symmetric encryption of string values.

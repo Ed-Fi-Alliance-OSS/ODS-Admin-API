@@ -7,10 +7,10 @@ using AspNetCoreRateLimit;
 using EdFi.Ods.AdminApi.AdminConsole;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Providers;
-using EdFi.Ods.AdminApi.Infrastructure.Providers.Interfaces;
 using log4net;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
 using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using FakeItEasy;
@@ -44,7 +45,7 @@ public static class Testing
     public static IEncryptionKeyResolver GetEncryptionKeyResolver()
     {
         var encryptionKeyResolver = A.Fake<IEncryptionKeyResolver>();
-        A.CallTo(() => encryptionKeyResolver.GetEncryptionKey()).Returns("lskdjflskdjf");
+        A.CallTo(() => encryptionKeyResolver.GetEncryptionKey()).Returns("TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0=");
         return encryptionKeyResolver;
     }
 }

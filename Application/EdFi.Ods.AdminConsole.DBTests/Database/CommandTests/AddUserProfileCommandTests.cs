@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.UserProfiles.Commands;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
@@ -33,9 +32,6 @@ public class AddUserProfileCommandTests : PlatformUsersContextTestBase
     public void ShouldExecute()
     {
         var userProfileDocument = "{\"tenantId\": \"abc123\",\"firstName\": \"John\",\"lastName\": \"Doe\",\"userName\": \"jdoe\",\"email\": \"john.doe@example.com\",\"preferences\": [{\"code\": \"language\",\"value\": \"en\"},{\"code\": \"timezone\",\"value\": \"America\\/New_York\"}],\"extensions\": [{\"code\": \"extraInfo\",\"data\": \"some value\"}],\"tenants\": [{\"createdBy\": \"admin\",\"createdDateTime\": \"2022-01-15T12:00:00Z\",\"domains\": [\"companyA.com\"],\"isDemo\": false,\"isIdentityProviders\": [\"Google\", \"Azure AD\"],\"lastModifiedBy\": \"admin\",\"lastModifiedDateTime\": \"2022-05-20T08:30:00Z\",\"organizationIdentifier\": \"ORG001\",\"organizationName\": \"Company A\",\"state\": \"active\",\"subscriptions\": [],\"subscriptionsMigrated\": true,\"tenantId\": \"tenant1\",\"tenantStatus\": \"active\",\"tenantType\": \"standard\"},{\"createdBy\": \"admin\",\"createdDateTime\": \"2021-03-10T09:00:00Z\",\"domains\": [\"companyB.com\"],\"isDemo\": true,\"isIdentityProviders\": [\"Okta\"],\"lastModifiedBy\": \"admin\",\"lastModifiedDateTime\": \"2023-07-11T13:45:00Z\",\"organizationIdentifier\": \"ORG002\",\"organizationName\": \"Company B\",\"state\": \"inactive\",\"subscriptions\": [],\"subscriptionsMigrated\": false,\"tenantId\": \"tenant2\",\"tenantStatus\": \"inactive\",\"tenantType\": \"demo\"}],\"selectedTenant\": {\"createdBy\": \"admin\",\"createdDateTime\": \"2022-01-15T12:00:00Z\",\"domains\": [\"companyA.com\"],\"isDemo\": false,\"isIdentityProviders\": [\"Google\", \"Azure AD\"],\"lastModifiedBy\": \"admin\",\"lastModifiedDateTime\": \"2022-05-20T08:30:00Z\",\"organizationIdentifier\": \"ORG001\",\"organizationName\": \"Company A\",\"state\": \"active\",\"subscriptions\": [],\"subscriptionsMigrated\": true,\"tenantId\": \"tenant1\",\"tenantStatus\": \"active\",\"tenantType\": \"standard\"},\"tenantsTotalCount\": 2}";
-
-        var encryptionService = new EncryptionService();
-        var encryptionKey = Testing.GetEncryptionKeyResolver().GetEncryptionKey();
 
         Transaction(async dbContext =>
         {

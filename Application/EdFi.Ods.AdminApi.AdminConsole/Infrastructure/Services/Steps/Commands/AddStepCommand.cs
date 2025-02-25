@@ -3,8 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Text.Json.Nodes;
-using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 
@@ -18,14 +16,10 @@ public interface IAddStepCommand
 public class AddStepCommand : IAddStepCommand
 {
     private readonly ICommandRepository<Step> _stepCommand;
-    private readonly IEncryptionService _encryptionService;
-    private readonly string _encryptionKey;
 
-    public AddStepCommand(ICommandRepository<Step> stepCommand, IEncryptionKeyResolver encryptionKeyResolver, IEncryptionService encryptionService)
+    public AddStepCommand(ICommandRepository<Step> stepCommand)
     {
         _stepCommand = stepCommand;
-        _encryptionKey = encryptionKeyResolver.GetEncryptionKey();
-        _encryptionService = encryptionService;
     }
 
     public async Task<Step> Execute(IAddStepModel step)

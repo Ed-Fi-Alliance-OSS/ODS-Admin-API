@@ -46,7 +46,7 @@ public class GetPermissionsByTenantIdQueryTests : PlatformUsersContextTestBase
         Transaction(async dbContext =>
         {
             var repository = new CommandRepository<Permission>(dbContext);
-            var command = new AddPermissionCommand(repository, Testing.GetEncryptionKeyResolver(), new EncryptionService());
+            var command = new AddPermissionCommand(repository);
 
             result = await command.Execute(newPermission);
         });
@@ -54,7 +54,7 @@ public class GetPermissionsByTenantIdQueryTests : PlatformUsersContextTestBase
         Transaction(async dbContext =>
         {
             var repository = new QueriesRepository<Permission>(dbContext);
-            var query = new GetPermissionsByTenantIdQuery(repository, Testing.GetEncryptionKeyResolver(), new EncryptionService());
+            var query = new GetPermissionsByTenantIdQuery(repository);
             var permissions = await query.Execute(result.TenantId);
             permissions.Count().ShouldBe(1);
             permissions.FirstOrDefault().DocId.ShouldBe(result.DocId);

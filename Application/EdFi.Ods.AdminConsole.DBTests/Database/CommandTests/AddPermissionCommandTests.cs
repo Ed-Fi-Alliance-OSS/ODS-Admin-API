@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Permissions.Commands;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -35,7 +36,7 @@ public class AddPermissionCommandTests : PlatformUsersContextTestBase
     {
         var permissionDocument = "{\"data\":[],\"type\":\"Response\"}";
 
-        var encryptionService = new EncryptionService();
+        var aes256SymmetricStringEncryptionProvider = new Aes256SymmetricStringEncryptionProvider();
         var encryptionKey = Testing.GetEncryptionKeyResolver().GetEncryptionKey();
 
         Transaction(async dbContext =>
@@ -49,7 +50,7 @@ public class AddPermissionCommandTests : PlatformUsersContextTestBase
                 Document = permissionDocument
             };
 
-            var command = new AddPermissionCommand(repository, Testing.GetEncryptionKeyResolver(), encryptionService);
+            var command = new AddPermissionCommand(repository);
 
             var result = await command.Execute(newPermission);
         });
@@ -73,8 +74,8 @@ public class AddPermissionCommandTests : PlatformUsersContextTestBase
 
             if (!string.IsNullOrEmpty(encryptedClientId) && !string.IsNullOrEmpty(encryptedClientSecret))
             {
-                encryptionService.TryDecrypt(encryptedClientId, encryptionKey, out clientId);
-                encryptionService.TryDecrypt(encryptedClientSecret, encryptionKey, out clientSecret);
+                aes256SymmetricStringEncryptionProvider.TryDecrypt(encryptedClientId, Convert.FromBase64String(encryptionKey), out clientId);
+                aes256SymmetricStringEncryptionProvider.TryDecrypt(encryptedClientSecret, Convert.FromBase64String(encryptionKey), out clientSecret);
 
                 clientId.ShouldBe(clientId);
                 clientSecret.ShouldBe(clientSecret);

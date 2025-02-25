@@ -46,7 +46,7 @@ public class GetStepsByTenantIdQueryTests : PlatformUsersContextTestBase
         Transaction(async dbContext =>
         {
             var repository = new CommandRepository<Step>(dbContext);
-            var command = new AddStepCommand(repository, Testing.GetEncryptionKeyResolver(), new EncryptionService());
+            var command = new AddStepCommand(repository);
 
             result = await command.Execute(newStep);
         });
@@ -54,7 +54,7 @@ public class GetStepsByTenantIdQueryTests : PlatformUsersContextTestBase
         Transaction(async dbContext =>
         {
             var repository = new QueriesRepository<Step>(dbContext);
-            var query = new GetStepsByTenantIdQuery(repository, Testing.GetEncryptionKeyResolver(), new EncryptionService());
+            var query = new GetStepsByTenantIdQuery(repository);
             var steps = await query.Execute(result.TenantId);
             steps.Count().ShouldBe(1);
             steps.FirstOrDefault().DocId.ShouldBe(result.DocId);

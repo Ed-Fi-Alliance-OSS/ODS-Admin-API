@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Steps.Commands;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -35,7 +36,7 @@ public class AddStepCommandTests : PlatformUsersContextTestBase
     {
         var stepDocument = "[{\"number\":1,\"description\":\"Step1\",\"startedAt\":\"2022-01-01T09:00:00\",\"completedAt\":\"2022-01-01T09:30:00\",\"status\":\"Completed\"},{\"number\":2,\"description\":\"Step2\",\"startedAt\":\"2022-01-01T09:30:00\",\"completedAt\":\"2022-01-01T09:45:00\",\"status\":\"Completed\"},{\"number\":3,\"description\":\"Step3\",\"startedAt\":\"2022-01-01T09:45:00\",\"completedAt\":\"2022-01-01T10:00:00\",\"status\":\"Completed\"}]";
 
-        var encryptionService = new EncryptionService();
+        var aes256SymmetricStringEncryptionProvider = new Aes256SymmetricStringEncryptionProvider();
         var encryptionKey = Testing.GetEncryptionKeyResolver().GetEncryptionKey();
 
         Transaction(async dbContext =>
@@ -49,7 +50,7 @@ public class AddStepCommandTests : PlatformUsersContextTestBase
                 Document = stepDocument
             };
 
-            var command = new AddStepCommand(repository, Testing.GetEncryptionKeyResolver(), encryptionService);
+            var command = new AddStepCommand(repository);
 
             var result = await command.Execute(newStep);
         });
@@ -73,8 +74,8 @@ public class AddStepCommandTests : PlatformUsersContextTestBase
 
             if (!string.IsNullOrEmpty(encryptedClientId) && !string.IsNullOrEmpty(encryptedClientSecret))
             {
-                encryptionService.TryDecrypt(encryptedClientId, encryptionKey, out clientId);
-                encryptionService.TryDecrypt(encryptedClientSecret, encryptionKey, out clientSecret);
+                aes256SymmetricStringEncryptionProvider.TryDecrypt(encryptedClientId, Convert.FromBase64String(encryptionKey), out clientId);
+                aes256SymmetricStringEncryptionProvider.TryDecrypt(encryptedClientSecret, Convert.FromBase64String(encryptionKey), out clientSecret);
 
                 clientId.ShouldBe(clientId);
                 clientSecret.ShouldBe(clientSecret);

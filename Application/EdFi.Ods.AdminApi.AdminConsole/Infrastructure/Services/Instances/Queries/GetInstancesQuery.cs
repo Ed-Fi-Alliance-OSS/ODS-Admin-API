@@ -19,14 +19,10 @@ public interface IGetInstancesQuery
 public class GetInstancesQuery : IGetInstancesQuery
 {
     private readonly IQueriesRepository<Instance> _instanceQuery;
-    private readonly IEncryptionService _encryptionService;
-    private readonly string _encryptionKey;
 
-    public GetInstancesQuery(IQueriesRepository<Instance> instanceQuery, IEncryptionKeyResolver encryptionKeyResolver, IEncryptionService encryptionService)
+    public GetInstancesQuery(IQueriesRepository<Instance> instanceQuery)
     {
         _instanceQuery = instanceQuery;
-        _encryptionKey = encryptionKeyResolver.GetEncryptionKey();
-        _encryptionService = encryptionService;
     }
     public async Task<IEnumerable<Instance>> Execute()
     {

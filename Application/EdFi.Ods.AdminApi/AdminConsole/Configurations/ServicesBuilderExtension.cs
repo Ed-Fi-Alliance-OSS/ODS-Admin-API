@@ -33,7 +33,6 @@ public static class ServicesBuilderExtension
 
         builder.Services.AddTransient<IEncryptionKeySettings>(sp => sp.GetService<IOptions<AdminConsoleSettings>>()!.Value);
         builder.Services.AddTransient<IEncryptionKeyResolver, OptionsEncryptionKeyResolver>();
-        builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 
         builder.Services.AddTransient<IAdminConsoleTenantsService, TenantService>();
         builder.Services.AddTransient<IAdminConsoleInstancesService, InstanceService>();

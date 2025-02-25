@@ -4,11 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Security.Cryptography;
-using EdFi.Ods.AdminApi.AdminConsole;
-using EdFi.Ods.AdminApi.Infrastructure.Providers.Interfaces;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using log4net;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Providers;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 
 /// <summary>
 /// Implements AES 256 bit symmetric key encryption of string values.
