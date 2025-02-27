@@ -25,7 +25,7 @@ public class AddInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPost(endpoints, "/odsInstances", Execute)
-      .WithRouteOptions(b => b.WithResponseCode(202))
+      .WithRouteOptions(b => b.WithResponseCode(201))
       .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
@@ -34,7 +34,7 @@ public class AddInstance : IFeature
         await validator.GuardAsync(request);
         var addedInstanceResult = await addInstanceCommand.Execute(request);
 
-        return Results.Accepted($"/instances/{addedInstanceResult.Id}", addedInstanceResult);
+        return Results.Created($"/instances/{addedInstanceResult.Id}", addedInstanceResult);
     }
 
     public class AddInstanceRequest : IInstanceRequestModel
@@ -50,7 +50,7 @@ public class AddInstance : IFeature
         public ICollection<OdsInstanceDerivativeModel>? OdsInstanceDerivatives { get; set; }
 
         [JsonIgnore]
-        public byte[]? Credetials { get; set; }
+        public byte[]? Credentials { get; set; }
 
         [JsonIgnore]
         public string? Status { get; set; }

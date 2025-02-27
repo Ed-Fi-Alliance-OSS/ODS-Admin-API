@@ -36,7 +36,7 @@ public class AddInstanceCommand : IAddInstanceCommand
             TenantId = instance.TenantId,
             InstanceName = instance.Name ?? string.Empty,
             InstanceType = instance.InstanceType,
-            Credentials = instance.Credetials,
+            Credentials = instance.Credentials,
             Status = Enum.TryParse<InstanceStatus>(instance.Status, out var status) ? status : InstanceStatus.Pending,
             OdsInstanceContexts = instance.OdsInstanceContexts?.Select(s => new OdsInstanceContext
             {

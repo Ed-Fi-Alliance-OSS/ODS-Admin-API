@@ -42,6 +42,15 @@ public static class Testing
         return options;
     }
 
+    public static IOptions<AdminConsoleSettings> GetAdminConsoleSettings()
+    {
+        AdminConsoleSettings appSettings = new AdminConsoleSettings();
+        appSettings.VendorCompany = "Ed-Fi Administrative Tools";
+        appSettings.ApplicationName = "Ed-Fi Health Check";
+        IOptions<AdminConsoleSettings> options = Options.Create(appSettings);
+        return options;
+    }
+
     public static IEncryptionKeyResolver GetEncryptionKeyResolver()
     {
         var encryptionKeyResolver = A.Fake<IEncryptionKeyResolver>();

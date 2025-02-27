@@ -8,6 +8,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -214,7 +215,7 @@ public static class WebApplicationBuilderExtensions
                 sp => new PostgresSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
 
             webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                sp => new PostgresUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
+                sp => new AdminConsolePostgresUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
         }
         else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
         {
@@ -229,7 +230,7 @@ public static class WebApplicationBuilderExtensions
                 (sp) => new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
 
             webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                (sp) => new SqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
+                (sp) => new AdminConsoleSqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
         }
         else
         {

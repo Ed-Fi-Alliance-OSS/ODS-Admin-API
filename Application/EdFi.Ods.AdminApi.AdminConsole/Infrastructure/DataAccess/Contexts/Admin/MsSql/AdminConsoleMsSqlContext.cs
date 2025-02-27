@@ -7,12 +7,39 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.ModelConfiguratio
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.MsSql;
 
 public class AdminConsoleMsSqlContext : DbContext, IDbContext
 {
-    public AdminConsoleMsSqlContext(DbContextOptions<AdminConsoleMsSqlContext> options) : base(options) { }
+    private IDbContextTransaction? _transaction;
+
+    public AdminConsoleMsSqlContext(DbContextOptions<AdminConsoleMsSqlContext> options) : base(options)
+    {
+        _transaction = null;
+    }
+
+    public IDbContextTransaction BeginTransaction()
+    {
+        _transaction = Database.BeginTransaction();
+        return _transaction;
+    }
+
+    public void CommitTransaction()
+    {
+        _transaction?.Commit();
+    }
+
+    public void RollbackTransaction()
+    {
+        _transaction?.Rollback();
+    }
+
+    public void DisposeTransaction()
+    {
+        _transaction?.Dispose();
+    }
 
     public DbSet<HealthCheck> HealthChecks { get; set; }
 
@@ -29,7 +56,6 @@ public class AdminConsoleMsSqlContext : DbContext, IDbContext
     public DbSet<Step> Steps { get; set; }
 
     public DatabaseFacade DB => Database;
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

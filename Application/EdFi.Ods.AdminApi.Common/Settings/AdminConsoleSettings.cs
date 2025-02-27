@@ -9,4 +9,6 @@ public class AdminConsoleSettings : IEncryptionKeySettings
 {
     public CorsSettings CorsSettings { get; set; } = new CorsSettings();
     public string EncryptionKey { get; set; } = string.Empty;
+    public string VendorCompany { get; set; } = string.Empty;
+    public string ApplicationName { get; set; } = string.Empty;
 }

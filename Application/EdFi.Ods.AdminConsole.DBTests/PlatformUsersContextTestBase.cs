@@ -5,10 +5,12 @@
 
 using System;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.MsSql;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Respawn;
@@ -71,7 +73,6 @@ public abstract class PlatformUsersContextTestBase
         await transaction.CommitAsync();
     }
 
-
     protected static TResult Transaction<TResult>(Func<IDbContext, TResult> query)
     {
         var result = default(TResult);
@@ -87,6 +88,13 @@ public abstract class PlatformUsersContextTestBase
     protected static DbContextOptions<AdminConsoleMsSqlContext> GetDbContextOptions()
     {
         var builder = new DbContextOptionsBuilder<AdminConsoleMsSqlContext>();
+        builder.UseSqlServer(ConnectionString);
+        return builder.Options;
+    }
+
+    protected static DbContextOptions<AdminConsoleSqlServerUsersContext> GetUserDbContextOptions()
+    {
+        var builder = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>();
         builder.UseSqlServer(ConnectionString);
         return builder.Options;
     }

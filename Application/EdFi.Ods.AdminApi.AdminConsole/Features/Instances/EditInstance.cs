@@ -20,7 +20,7 @@ public class EditInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPut(endpoints, "/odsInstances/{id}", Execute)
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
@@ -46,7 +46,7 @@ public class EditInstance : IFeature
         public ICollection<OdsInstanceDerivativeModel>? OdsInstanceDerivatives { get; set; }
 
         [JsonIgnore]
-        public byte[]? Credetials { get; set; }
+        public byte[]? Credentials { get; set; }
 
         [JsonIgnore]
         public string? Status { get; set; }
