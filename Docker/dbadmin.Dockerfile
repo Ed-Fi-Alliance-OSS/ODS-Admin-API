@@ -11,12 +11,15 @@ FROM base AS setup
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
 USER root
+
 COPY Settings/DB-Admin/pgsql/run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
-COPY Application/EdFi.Ods.AdminApi/Artifacts/PgSql/Structure/Admin/ /tmp/AdminApiScripts/PgSql
+COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/PgSql/Structure/Admin/ /tmp/AdminApiScripts/PgSql
 COPY Settings/dev/adminapi-test-seeddata.sql /tmp/AdminApiScripts/PgSql/adminapi-test-seeddata.sql
+
 RUN dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
     dos2unix /tmp/AdminApiScripts/PgSql/* && \
-    chmod -R 777 /tmp/AdminApiScripts/PgSql/*
+    chmod -R 777 /tmp/AdminApiScripts/PgSql/* && \
+    apk del unzip dos2unix
 
 USER postgres
 

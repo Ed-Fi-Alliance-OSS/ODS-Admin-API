@@ -460,11 +460,31 @@ function RestartAdminApiContainer {
 }
 
 function BuildAdminApiDevDockerImage {
-    &docker build -t adminapi-dev --no-cache -f "$dockerRoot/dev.pgsql.Dockerfile" .
+    Push-Location $dockerRoot
+    try {
+        ">>> Building dev.pgsql.Dockerfile" | Out-Host
+        &docker build `
+            -t adminapi-dev-pgsql `
+            --build-context assets=$(Resolve-Path "..") `
+            --no-cache `
+            -f "dev.pgsql.Dockerfile" `
+            .
+
+        ">>> Building dev.mssql.Dockerfile" | Out-Host
+        &docker build `
+            -t adminapi-dev-mssql `
+            --build-context assets=$(Resolve-Path "..") `
+            --no-cache `
+            -f "dev.mssql.Dockerfile" `
+            .
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 function RunAdminApiDevDockerContainer {
-    &docker run --env-file "$solutionRoot/EdFi.Ods.AdminApi/.env" -p 80:80 -v "$dockerRoot/Settings/ssl:/ssl/" adminapi-dev
+    &docker run --env-file "$solutionRoot/EdFi.Ods.AdminApi/.env" -p 80:80 -v "$dockerRoot/Settings/ssl:/ssl/" adminapi-dev-pgsql
 }
 
 function RunAdminApiDevDockerCompose {

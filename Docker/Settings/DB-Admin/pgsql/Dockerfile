@@ -30,7 +30,9 @@ RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi
     rm -r /tmp/AdminApiScripts/AdminApi && \
     dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
     dos2unix /tmp/AdminApiScripts/PgSql/* && \
-    chmod -R 777 /tmp/AdminApiScripts/PgSql
+    chmod -R 777 /tmp/AdminApiScripts/PgSql && \
+    apk del dos2unix unzip
+
 USER postgres
 
 EXPOSE 5432

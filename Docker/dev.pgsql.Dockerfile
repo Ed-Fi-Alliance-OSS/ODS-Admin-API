@@ -11,14 +11,14 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0.403-alpine3.20@sha256:07cb8622ca6c4d7600b4
 ARG ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-"Production"}
 
 WORKDIR /source
-COPY Application/NuGet.Config EdFi.Ods.AdminApi/
-COPY Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
+COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
+COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
 
-COPY Application/NuGet.Config EdFi.Ods.AdminApi.AdminConsole/
-COPY Application/EdFi.Ods.AdminApi.AdminConsole EdFi.Ods.AdminApi.AdminConsole/
+COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.AdminConsole/
+COPY --from=assets ./Application/EdFi.Ods.AdminApi.AdminConsole EdFi.Ods.AdminApi.AdminConsole/
 
-COPY Application/NuGet.Config EdFi.Ods.AdminApi.Common/
-COPY Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
+COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
+COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
 
 WORKDIR /source/EdFi.Ods.AdminApi
 RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
@@ -49,7 +49,8 @@ RUN cp /app/log4net.txt /app/log4net.config && \
     dos2unix /app/*.sh && \
     dos2unix /app/log4net.config && \
     chmod 500 /app/*.sh -- ** && \
-    chown -R edfi /app
+    chown -R edfi /app && \
+    apk del dos2unix
 
 EXPOSE ${ASPNETCORE_HTTP_PORTS}
 USER edfi
