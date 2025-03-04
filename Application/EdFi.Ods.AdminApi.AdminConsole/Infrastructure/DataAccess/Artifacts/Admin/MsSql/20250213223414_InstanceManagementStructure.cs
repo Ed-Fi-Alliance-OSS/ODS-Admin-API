@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -28,6 +28,11 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Artifacts.Adm
 
             migrationBuilder.DropColumn(
                 name: "EdOrgId",
+                schema: "adminconsole",
+                table: "Instances");
+
+            migrationBuilder.DropColumn(
+                name: "ApiCredentials",
                 schema: "adminconsole",
                 table: "Instances");
 
@@ -262,6 +267,13 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Artifacts.Adm
                 schema: "adminconsole",
                 table: "Instances",
                 type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "ApiCredentials",
+                schema: "adminconsole",
+                table: "Instances",
+                type: "nvarchar(max)",
                 nullable: true);
 
             migrationBuilder.CreateIndex(

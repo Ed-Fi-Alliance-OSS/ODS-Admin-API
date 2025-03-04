@@ -3,8 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Text;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
+using EdFi.Ods.AdminApi.AdminConsole.Features.WorkerInstances;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.Features.Actions;
 using EdFi.Ods.AdminApi.Features.Applications;
@@ -21,6 +23,7 @@ using EdFi.Ods.AdminApi.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using Newtonsoft.Json;
 using OverrideAuthStategyOnClaimSetRequest = EdFi.Ods.AdminApi.Features.ClaimSets.ResourceClaims.EditAuthStrategy.OverrideAuthStategyOnClaimSetRequest;
 using Profile = AutoMapper.Profile;
 
@@ -164,7 +167,7 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dest => dest.ResourceClaimId, opt => opt.MapFrom(src => src.ResourceClaim.ResourceClaimId))
             .ForMember(dest => dest.ResourceName, opt => opt.MapFrom(src => src.ResourceClaim.ResourceName))
             .ForMember(dest => dest.Actions, opt => opt.Ignore());//Action is ignore as we build it manually
-            
+
         CreateMap<Instance, InstanceModel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dst => dst.TenantId, opt => opt.MapFrom(src => src.TenantId))
@@ -173,6 +176,25 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.BaseUrl, opt => opt.MapFrom(src => src.BaseUrl))
             .ForMember(dst => dst.OdsInstanceContexts, opt => opt.MapFrom(src => src.OdsInstanceContexts))
             .ForMember(dst => dst.OdsInstanceDerivatives, opt => opt.MapFrom(src => src.OdsInstanceDerivatives));
+
+        CreateMap<Instance, InstanceWorkerModel>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dst => dst.TenantId, opt => opt.MapFrom(src => src.TenantId))
+            .ForMember(dst => dst.TenantName, opt => opt.MapFrom(src => src.TenantName))
+            .ForMember(dst => dst.OdsInstanceId, opt => opt.MapFrom(src => src.OdsInstanceId))
+            .ForMember(dst => dst.InstanceName, opt => opt.MapFrom(src => src.InstanceName))
+            .ForMember(dst => dst.ResourceUrl, opt => opt.MapFrom(src => src.ResourceUrl ?? string.Empty))
+            .ForMember(dst => dst.oAuthUrl, opt => opt.MapFrom(src => src.OAuthUrl))
+            .ForMember(dst => dst.Status, opt => opt.MapFrom(src => Enum.GetName(src.Status)))
+            .AfterMap((src, dst) =>
+            {
+                if (src.Credentials != null)
+                {
+                    var credentials = JsonConvert.DeserializeObject<InstanceWorkerModelDTO>(Encoding.UTF8.GetString(src.Credentials));
+                    dst.ClientId = credentials?.ClientId;
+                    dst.ClientSecret = credentials?.Secret;
+                }
+            });
 
         CreateMap<AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceContext, OdsInstanceContextForInstanceModel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))

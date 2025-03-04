@@ -42,6 +42,7 @@ public class AddInstanceCommandTests : PlatformUsersContextTestBase
             var newInstance = new TestInstance
             {
                 TenantId = 1,
+                TenantName = "Test Tenant",
                 OdsInstanceId = 1,
                 Name = "Test Instance",
                 InstanceType = "Standard",
@@ -64,6 +65,7 @@ public class AddInstanceCommandTests : PlatformUsersContextTestBase
 
             var persistedInstance = persistedInstances.First();
             persistedInstance.TenantId.ShouldBe(1);
+            persistedInstance.TenantName.ShouldBe("Test Tenant");
             persistedInstance.OdsInstanceId.ShouldBe(1);
             persistedInstance.InstanceName.ShouldBe("Test Instance");
             persistedInstance.InstanceType.ShouldBe("Standard");
@@ -74,6 +76,7 @@ public class AddInstanceCommandTests : PlatformUsersContextTestBase
     {
         public int OdsInstanceId { get; set; }
         public int TenantId { get; set; }
+        public string TenantName { get; set; }
         public string Name { get; set; }
         public string InstanceType { get; set; }
         public ICollection<OdsInstanceContextModel> OdsInstanceContexts { get; set; }

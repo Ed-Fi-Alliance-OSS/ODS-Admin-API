@@ -28,6 +28,13 @@ public class InstanceValidator : AbstractValidator<IInstanceRequestModel>
             .NotEmpty()
             .MaximumLength(100);
 
+        RuleFor(x => x.TenantId)
+            .NotNull().NotEmpty();
+
+        RuleFor(x => x.TenantName)
+            .NotEmpty()
+            .MaximumLength(250);
+
         RuleFor(x => x.OdsInstanceContexts)
             .Must(odsInstanceContexts => odsInstanceContexts == null || odsInstanceContexts.GroupBy(c => c.ContextKey).All(g => g.Count() == 1))
             .WithMessage("ContextKey values must be unique within the list.");

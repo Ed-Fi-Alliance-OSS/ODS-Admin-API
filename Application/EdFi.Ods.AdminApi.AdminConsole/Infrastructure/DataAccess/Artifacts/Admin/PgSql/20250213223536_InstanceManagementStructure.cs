@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -29,6 +29,11 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Artifacts.Adm
 
             migrationBuilder.DropColumn(
                 name: "EdOrgId",
+                schema: "adminconsole",
+                table: "Instances");
+
+            migrationBuilder.DropColumn(
+                name: "ApiCredentials",
                 schema: "adminconsole",
                 table: "Instances");
 
@@ -263,6 +268,13 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Artifacts.Adm
                 schema: "adminconsole",
                 table: "Instances",
                 type: "integer",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "ApiCredentials",
+                schema: "adminconsole",
+                table: "Instances",
+                type: "text",
                 nullable: true);
 
             migrationBuilder.CreateIndex(

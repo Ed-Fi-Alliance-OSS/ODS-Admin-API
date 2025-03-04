@@ -36,6 +36,7 @@ public class EditInstanceCommandTests : PlatformUsersContextTestBase
         var originalOdsInstance = new Instance
         {
             TenantId = 1,
+            TenantName = "Test Tenant",
             OdsInstanceId = 1,
             InstanceName = "Test Instance",
             InstanceType = "Standard",
@@ -52,6 +53,7 @@ public class EditInstanceCommandTests : PlatformUsersContextTestBase
         var newInstanceData = new Mock<IInstanceRequestModel>();
         newInstanceData.Setup(v => v.OdsInstanceId).Returns(1);
         newInstanceData.Setup(v => v.TenantId).Returns(1);
+        newInstanceData.Setup(v => v.TenantName).Returns("UpdateTenantName");
         newInstanceData.Setup(v => v.Name).Returns("Updated Instance");
         newInstanceData.Setup(v => v.InstanceType).Returns("Updated Type");
         newInstanceData.Setup(v => v.OdsInstanceContexts).Returns(new List<OdsInstanceContextModel>());
@@ -72,6 +74,7 @@ public class EditInstanceCommandTests : PlatformUsersContextTestBase
             persistedInstance.Count().ShouldBe(1);
             var instance = persistedInstance.First();
             instance.TenantId.ShouldBe(1);
+            instance.TenantName.ShouldBe("UpdateTenantName");
             instance.OdsInstanceId.ShouldBe(1);
             instance.InstanceName.ShouldBe("Updated Instance");
             instance.InstanceType.ShouldBe("Updated Type");

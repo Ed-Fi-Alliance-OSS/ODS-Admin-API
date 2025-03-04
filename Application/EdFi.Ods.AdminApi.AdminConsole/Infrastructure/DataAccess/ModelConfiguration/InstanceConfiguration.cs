@@ -25,6 +25,7 @@ public class InstanceConfiguration : IEntityTypeConfiguration<Instance>
         entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
         entity.Property(e => e.TenantId).IsRequired();
+        entity.Property(e => e.TenantName).HasMaxLength(250).IsRequired();
         entity.Property(e => e.InstanceName).HasMaxLength(100);
         entity.Property(e => e.InstanceType).HasMaxLength(100);
         entity.Property(e => e.BaseUrl).HasMaxLength(250);

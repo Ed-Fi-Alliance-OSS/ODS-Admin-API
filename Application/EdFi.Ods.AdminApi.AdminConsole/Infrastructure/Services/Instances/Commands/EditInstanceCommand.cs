@@ -46,7 +46,8 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Comma
 
             existingInstance.OdsInstanceId = instance.OdsInstanceId;
             existingInstance.TenantId = instance.TenantId;
-            existingInstance.InstanceName = instance.Name;
+            existingInstance.TenantName = instance.TenantName ?? string.Empty;
+            existingInstance.InstanceName = instance.Name ?? string.Empty;
             existingInstance.InstanceType = instance.InstanceType;
             await UpdateOdsInstanceDerivativesAsync(id, instance.TenantId, instance.OdsInstanceDerivatives);
             await UpdateOdsInstanceContextsAsync(id, instance.TenantId, instance.OdsInstanceContexts);

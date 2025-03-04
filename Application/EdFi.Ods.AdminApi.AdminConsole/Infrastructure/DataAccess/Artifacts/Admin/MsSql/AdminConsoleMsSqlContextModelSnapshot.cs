@@ -101,6 +101,11 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Artifacts.MsS
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
 
+                    b.Property<string>("TenantName")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Status");

@@ -40,7 +40,7 @@ public class AddInstance : IFeature
     public class AddInstanceRequest : IInstanceRequestModel
     {
         public int TenantId { get; set; }
-
+        public string? TenantName { get; set; }
         public string? Name { get; set; }
 
         public string? InstanceType { get; set; }

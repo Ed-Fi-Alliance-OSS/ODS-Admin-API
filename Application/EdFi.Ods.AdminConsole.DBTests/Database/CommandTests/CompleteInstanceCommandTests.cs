@@ -106,6 +106,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
     {
         public int OdsInstanceId { get; set; }
         public int TenantId { get; set; }
+        public string? TenantName { get; set; }
         public string Name { get; set; }
         public string InstanceType { get; set; }
         public ICollection<OdsInstanceContextModel> OdsInstanceContexts { get; set; }

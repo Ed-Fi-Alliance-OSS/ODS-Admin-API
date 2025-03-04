@@ -9,6 +9,7 @@ public class Instance
 {
     public int Id { get; set; }
     public int TenantId { get; set; }
+    public string TenantName { get; set; } = string.Empty;
     public int? OdsInstanceId { get; set; }
     public string InstanceName { get; set; } = string.Empty;
     public string? InstanceType { get; set; }

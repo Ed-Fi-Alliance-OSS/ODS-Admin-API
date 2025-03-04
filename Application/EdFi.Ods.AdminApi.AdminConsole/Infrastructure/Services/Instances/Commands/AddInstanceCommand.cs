@@ -34,6 +34,7 @@ public class AddInstanceCommand : IAddInstanceCommand
         {
             OdsInstanceId = instance.OdsInstanceId,
             TenantId = instance.TenantId,
+            TenantName = instance.TenantName ?? string.Empty,
             InstanceName = instance.Name ?? string.Empty,
             InstanceType = instance.InstanceType,
             Credentials = instance.Credentials,

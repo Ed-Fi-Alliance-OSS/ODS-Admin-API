@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "6a8135a3-f87b-431d-b3da-d26d4c0e2161",
+		"_postman_id": "81744839-8da5-4530-981a-23b507d064c9",
 		"name": "Admin API E2E 2.0 - AdminConsole - Instances",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "22794466"
@@ -53,7 +53,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"name\": \"Instance test #1 - 2024 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance test #1 - 2024 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -122,11 +122,7 @@
 											"\r",
 											"pm.test(\"GET OdsInstances: Response result includes odsInstances\", function () {\r",
 											"    const results = pm.response.json();\r",
-											"    pm.expect(results.length).to.be.greaterThan(0);   \r",
-											"\r",
-											"    if (results[0].id){\r",
-											"        pm.collectionVariables.set(\"CreatedOdsInstanceId\", results[0].id);\r",
-											"    }\r",
+											"    pm.expect(results.length).to.be.greaterThan(0);\r",
 											"});\r",
 											"\r",
 											"const GetOdsInstancesSchema = {\r",
@@ -265,13 +261,9 @@
 											"\r",
 											"const results = pm.response.json();\r",
 											"\r",
-											"pm.test(\"GET Instances: Response result includes instances\", function () {\r",
+											"pm.test(\"GET Instances: Response result includes ods instances\", function () {\r",
 											"    pm.expect(results.length).to.be.greaterThan(0);\r",
 											"});\r",
-											"\r",
-											"if(results[0].Id) {\r",
-											"    pm.collectionVariables.set(\"CreatedOdsInstanceId\", results[0].Id);\r",
-											"}\r",
 											"\r",
 											"const GetInstancesSchema = {\r",
 											"  \"type\": \"array\",\r",
@@ -404,6 +396,652 @@
 										}
 									]
 								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instances: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const results = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instances: Response result includes instances\", function () {\r",
+											"    pm.expect(results.length).to.be.greaterThan(0);\r",
+											"});\r",
+											"\r",
+											"const GetInstancesSchema = {\r",
+											"  \"type\": \"array\",\r",
+											"  \"items\": [\r",
+											"    {\r",
+											"      \"type\": \"object\",\r",
+											"      \"properties\": {\r",
+											"        \"tenantId\": {\r",
+											"          \"type\": \"integer\"\r",
+											"        },\r",
+											"        \"tenantName\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"odsInstanceId\": {\r",
+											"          \"type\": \"integer\"\r",
+											"        },\r",
+											"        \"instanceName\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"resourceUrl\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"oauthUrl\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"clientId\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"clientSecret\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"status\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"      },\r",
+											"      \"required\": [\r",
+											"        \"tenantId\",\r",
+											"        \"tenantName\",\r",
+											"        \"odsInstanceId\"\r",
+											"      ]\r",
+											"    }\r",
+											"  ]\r",
+											"}\r",
+											"\r",
+											"pm.test(\"GET OdsInstances: Validation Schema Response\", () => {\r",
+											"    pm.response.to.have.jsonSchema(GetInstancesSchema);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances?status=completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "completed"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response result includes Instance\", function () {\r",
+											"    const results = pm.response.json();\r",
+											"    if (results.odsInstanceId){\r",
+											"        pm.collectionVariables.set(\"CreatedOdsInstanceId\", results.odsInstanceId);\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Pending",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instances: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instances: Response result should be empty\", function () {\r",
+											"    const results = pm.response.json();\r",
+											"    pm.expect(results.length).to.equal(0);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances?status=pending",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "pending"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instances: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const results = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instances: Response result includes instances\", function () {\r",
+											"    pm.expect(results.length).to.be.greaterThan(0);\r",
+											"});\r",
+											"\r",
+											"const GetInstancesSchema = {\r",
+											"  \"type\": \"array\",\r",
+											"  \"items\": [\r",
+											"    {\r",
+											"      \"type\": \"object\",\r",
+											"      \"properties\": {\r",
+											"        \"tenantId\": {\r",
+											"          \"type\": \"integer\"\r",
+											"        },\r",
+											"        \"tenantName\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"odsInstanceId\": {\r",
+											"          \"type\": \"integer\"\r",
+											"        },\r",
+											"        \"instanceName\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"resourceUrl\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"oauthUrl\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"clientId\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"clientSecret\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"status\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"      },\r",
+											"      \"required\": [\r",
+											"        \"tenantId\",\r",
+											"        \"tenantName\",\r",
+											"        \"odsInstanceId\"\r",
+											"      ]\r",
+											"    }\r",
+											"  ]\r",
+											"}\r",
+											"\r",
+											"pm.test(\"GET OdsInstances: Validation Schema Response\", () => {\r",
+											"    pm.response.to.have.jsonSchema(GetInstancesSchema);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances?status=completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "completed"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances by TenantName",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instances: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const results = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instances: Response result includes instances\", function () {\r",
+											"    pm.expect(results.length).to.be.greaterThan(0);\r",
+											"});\r",
+											"\r",
+											"const GetInstancesSchema = {\r",
+											"  \"type\": \"array\",\r",
+											"  \"items\": [\r",
+											"    {\r",
+											"      \"type\": \"object\",\r",
+											"      \"properties\": {\r",
+											"        \"tenantId\": {\r",
+											"          \"type\": \"integer\"\r",
+											"        },\r",
+											"        \"tenantName\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"odsInstanceId\": {\r",
+											"          \"type\": \"integer\"\r",
+											"        },\r",
+											"        \"instanceName\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"resourceUrl\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"oauthUrl\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"clientId\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"clientSecret\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"        \"status\": {\r",
+											"          \"type\": \"string\"\r",
+											"        },\r",
+											"      },\r",
+											"      \"required\": [\r",
+											"        \"tenantId\",\r",
+											"        \"tenantName\",\r",
+											"        \"odsInstanceId\"\r",
+											"      ]\r",
+											"    }\r",
+											"  ]\r",
+											"}\r",
+											"\r",
+											"pm.test(\"GET OdsInstances: Validation Schema Response\", () => {\r",
+											"    pm.response.to.have.jsonSchema(GetInstancesSchema);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances?tenantname=tenant1",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									],
+									"query": [
+										{
+											"key": "tenantname",
+											"value": "tenant1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances by TenantName Not Found",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instances: Status code is 200\", function () {\r",
+											"        pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"GET Instances: Response most be empty\", function () {\r",
+											"    const results = pm.response.json();\r",
+											"    pm.expect(results.length).to.equal(0);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances?tenantname=tenant2",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									],
+									"query": [
+										{
+											"key": "tenantname",
+											"value": "tenant2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Expired Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Unauthorized\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"0": {
+											"key": "token",
+											"value": "{{EXPIREDTOKEN}}",
+											"type": "string"
+										}
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/instances"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - Invalid Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Unauthorized\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"0": {
+											"key": "token",
+											"value": "{{INVALIDTOKEN}}",
+											"type": "string"
+										}
+									}
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/instances"
 							},
 							"response": []
 						},
@@ -605,39 +1243,14 @@
 											"            const result = response.json();\r",
 											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
 											"            else {\r",
-											"            pm.sendRequest({\r",
-											"                url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
-											"                method: 'DELETE',\r",
-											"                header: header\r",
-											"            },\r",
-											"            function (err, response) {\r",
-											"                if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"                const result = response.json();\r",
-											"                if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"            });\r",
-											"\r",
-											"            pm.sendRequest({\r",
-											"            url: `${pm.variables.get(\"API_URL\")}/v2/odsInstances`,\r",
-											"                method: 'GET',\r",
-											"                header: header\r",
-											"            },\r",
-											"            function (err, response) {\r",
-											"                if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"                const result = response.json();\r",
-											"                if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"                else {\r",
+											"                pm.sendRequest({\r",
+											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
+											"                    method: 'DELETE',\r",
+											"                    header: header\r",
+											"                },\r",
+											"                function (err, response) {\r",
+											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
 											"                    pm.sendRequest({\r",
-											"                        url: `${pm.variables.get(\"API_URL\")}/v2/odsInstances/${result[0].id}`,\r",
-											"                            method: 'DELETE',\r",
-											"                            header: header\r",
-											"                        },\r",
-											"                        function (err, response) {\r",
-											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"                            const result = response.json();\r",
-											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"                        });\r",
-											"                        \r",
-											"                        pm.sendRequest({\r",
 											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
 											"                            method: 'GET',\r",
 											"                            header: header\r",
@@ -659,13 +1272,11 @@
 											"                                });\r",
 											"                            }\r",
 											"                        });\r",
-											"                    }\r",
 											"                });\r",
 											"            }\r",
 											"        });\r",
 											"    }\r",
-											"});\r",
-											""
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}

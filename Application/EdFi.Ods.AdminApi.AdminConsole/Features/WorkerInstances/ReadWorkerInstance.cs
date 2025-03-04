@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AutoMapper;
+using EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queries;
 using EdFi.Ods.AdminApi.Common.Features;
@@ -15,24 +16,24 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
-namespace EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
+namespace EdFi.Ods.AdminApi.AdminConsole.Features.WorkerInstances;
 
-public class ReadInstances : IFeature
+public class ReadWorkerInstance : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstances", GetInstances)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/instances", GetInstances)
             .BuildForVersions(AdminApiVersions.AdminConsole);
 
-        AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstances/{id}", GetInstanceById)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/instances/{id}", GetInstanceById)
             .WithRouteOptions(b => b.WithResponse<InstanceModel>(200))
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    internal async Task<IResult> GetInstances(IMapper mapper, [FromServices] IGetInstancesQuery getInstancesQuery, string? status)
+    internal async Task<IResult> GetInstances(IMapper mapper, [FromServices] IGetInstancesQuery getInstancesQuery, string? tenantName, string? status)
     {
-        var instances = await getInstancesQuery.Execute(status: status);
-        var instanceModels = mapper.Map<List<InstanceModel>>(instances);
+        var instances = await getInstancesQuery.Execute(tenantName, status);
+        var instanceModels = mapper.Map<List<InstanceWorkerModel>>(instances);
         return Results.Ok(instanceModels);
     }
 
@@ -41,7 +42,7 @@ public class ReadInstances : IFeature
         var instance = await getInstanceByIdQuery.Execute(Id);
         if (instance != null)
         {
-            var model = mapper.Map<InstanceModel>(instance);
+            var model = mapper.Map<InstanceWorkerModel>(instance);
             return Results.Ok(model);
         }
         return Results.NotFound();

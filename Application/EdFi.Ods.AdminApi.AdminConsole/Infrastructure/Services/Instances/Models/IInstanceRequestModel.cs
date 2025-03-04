@@ -18,6 +18,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Model
         int Id { get; set; }
         int OdsInstanceId { get; }
         int TenantId { get; }
+        string? TenantName { get; }
         string? Name { get; }
         string? InstanceType { get; }
         ICollection<OdsInstanceContextModel>? OdsInstanceContexts { get; }
