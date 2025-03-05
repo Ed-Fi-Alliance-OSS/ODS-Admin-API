@@ -11,7 +11,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Steps.Queries;
 
 public interface IGetStepsByIdQuery
 {
-    Task<Step> Execute(int tenantId, int docId);
+    Task<Step?> Execute(int tenantId, int docId);
 }
 
 public class GetStepsByIdQuery : IGetStepsByIdQuery
@@ -23,7 +23,7 @@ public class GetStepsByIdQuery : IGetStepsByIdQuery
         _stepQuery = stepQuery;
     }
 
-    public async Task<Step> Execute(int tenantId, int docId)
+    public async Task<Step?> Execute(int tenantId, int docId)
     {
         var step = await _stepQuery.Query().SingleOrDefaultAsync(step => step.TenantId == tenantId && step.DocId == docId);
         return step;

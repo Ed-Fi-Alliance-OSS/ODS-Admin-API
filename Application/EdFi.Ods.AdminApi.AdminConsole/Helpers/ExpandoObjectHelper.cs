@@ -3,13 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Helpers
@@ -18,35 +13,40 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Helpers
     {
         public static ExpandoObject NormalizeExpandoObject(ExpandoObject expando)
         {
-            var dictionary = (IDictionary<string, object>)expando;
+            var dictionary = expando as IDictionary<string, object>;
             var normalized = new ExpandoObject() as IDictionary<string, object>;
 
-            foreach (var kvp in dictionary)
+            if (dictionary != null)
             {
-                if (kvp.Value is JsonElement jsonElement)
+                foreach (var kvp in dictionary)
                 {
-                    normalized[kvp.Key] = jsonElement.ValueKind switch
+                    if (kvp.Value is JsonElement jsonElement)
                     {
-                        JsonValueKind.String => jsonElement.GetString(),
-                        JsonValueKind.Number => jsonElement.GetDecimal(), // Cambia según el tipo esperado
-                        JsonValueKind.True => true,
-                        JsonValueKind.False => false,
-                        JsonValueKind.Null => null,
-                        JsonValueKind.Object => JsonConvert.DeserializeObject<ExpandoObject>(jsonElement.GetRawText()),
-                        _ => jsonElement.ToString()
-                    };
-                }
-                else if (kvp.Value is ExpandoObject nestedExpando)
-                {
-                    normalized[kvp.Key] = NormalizeExpandoObject(nestedExpando);
-                }
-                else
-                {
-                    normalized[kvp.Key] = kvp.Value;
+                        object? jsonElementValue = jsonElement.ValueKind switch
+                        {
+                            JsonValueKind.String => jsonElement.GetString(),
+                            JsonValueKind.Number => jsonElement.GetDecimal(),
+                            JsonValueKind.True => true,
+                            JsonValueKind.False => false,
+                            JsonValueKind.Null => null,
+                            JsonValueKind.Object => JsonConvert.DeserializeObject<ExpandoObject>(jsonElement.GetRawText()),
+                            _ => jsonElement.ToString()
+                        };
+
+                        normalized[kvp.Key] = jsonElementValue ?? jsonElement.ToString();
+                    }
+                    else if (kvp.Value is ExpandoObject nestedExpando)
+                    {
+                        normalized[kvp.Key] = NormalizeExpandoObject(nestedExpando);
+                    }
+                    else
+                    {
+                        normalized[kvp.Key] = kvp.Value;
+                    }
                 }
             }
 
-            return (ExpandoObject)normalized;
+            return normalized as ExpandoObject ?? throw new Exception();
         }
 
     }

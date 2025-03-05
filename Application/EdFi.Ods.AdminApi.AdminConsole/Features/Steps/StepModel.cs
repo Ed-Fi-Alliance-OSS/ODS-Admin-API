@@ -13,7 +13,7 @@ public class StepModel
     public int? Number { get; set; }
 
     [JsonProperty("description")]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     [JsonProperty("startedAt")]
     public DateTime? StartedAt { get; set; }
@@ -22,5 +22,5 @@ public class StepModel
     public DateTime? CompletedAt { get; set; }
 
     [JsonProperty("status")]
-    public string Status { get; set; }
+    public string? Status { get; set; }
 }

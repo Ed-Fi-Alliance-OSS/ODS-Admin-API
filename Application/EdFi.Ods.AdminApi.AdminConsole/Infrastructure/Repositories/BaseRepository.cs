@@ -23,17 +23,10 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     protected string _initialConnectionString;
     protected BaseRepository(IDbContext context)
     {
-        try
-        {
-            _context = context;
-            CheckMigrations();
-            _dbSet = context.Set<T>();
-            _initialConnectionString = _context.DB.GetConnectionString()!;
-        }
-        catch (Exception ex)
-        {
-
-        }
+        _context = context;
+        CheckMigrations();
+        _dbSet = context.Set<T>();
+        _initialConnectionString = _context.DB.GetConnectionString()!;
     }
 
     public virtual void SwitchConnectionString(string connectionString)

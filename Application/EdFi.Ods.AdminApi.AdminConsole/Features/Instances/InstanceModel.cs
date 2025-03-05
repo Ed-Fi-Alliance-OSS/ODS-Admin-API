@@ -11,24 +11,24 @@ public class InstanceModel
 {
     public int Id { get; set; }
     public int TenantId { get; set; }
-    public string Name { get; set; }
-    public string InstanceType { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string InstanceType { get; set; } = string.Empty;
     public string? BaseUrl { get; set; }
-    public List<OdsInstanceContextForInstanceModel> OdsInstanceContexts { get; set; }
-    public List<OdsInstanceDerivativeForInstanceModel> OdsInstanceDerivatives { get; set; }
+    public List<OdsInstanceContextForInstanceModel>? OdsInstanceContexts { get; set; }
+    public List<OdsInstanceDerivativeForInstanceModel>? OdsInstanceDerivatives { get; set; }
 }
 
 public class OdsInstanceContextForInstanceModel
 {
     public int Id { get; set; }
     public int InstanceId { get; set; }
-    public string ContextKey { get; set; }
-    public string ContextValue { get; set; }
+    public string ContextKey { get; set; } = string.Empty;
+    public string ContextValue { get; set; } = string.Empty;
 }
 
 public class OdsInstanceDerivativeForInstanceModel
 {
     public int Id { get; set; }
-    public int? InstanceId { get; set; }
-    public string DerivativeType { get; set; }
+    public int InstanceId { get; set; }
+    public string DerivativeType { get; set; } = string.Empty;
 }

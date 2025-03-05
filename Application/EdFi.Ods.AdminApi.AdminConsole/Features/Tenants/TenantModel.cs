@@ -15,5 +15,5 @@ public class TenantModel
     [SwaggerSchema(Description = AdminConsoleConstants.TenantIdDescription, Nullable = false)]
     public int TenantId { get; set; }
     [SwaggerSchema(Description = AdminConsoleConstants.TenantIdDescription, Nullable = false, Format = "{\r\n            \"name\": \"Tenant1\",\r\n            \"edfiApiDiscoveryUrl\": \"https://api.ed-fi.org/v7.2/api\"\r\n        }")]
-    public ExpandoObject Document { get; set; }
+    public ExpandoObject? Document { get; set; }
 }

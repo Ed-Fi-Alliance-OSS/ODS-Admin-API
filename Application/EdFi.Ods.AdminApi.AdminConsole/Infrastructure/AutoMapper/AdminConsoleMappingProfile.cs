@@ -14,7 +14,7 @@ public class AdminConsoleMappingProfile : Profile
 {
     public AdminConsoleMappingProfile()
     {
-        CreateMap<HealthCheck, HealthCheckModel>().ConvertUsing(src => JsonConvert.DeserializeObject<HealthCheckModel>(src.Document));
+        CreateMap<HealthCheck, HealthCheckModel?>().ConvertUsing(src => JsonConvert.DeserializeObject<HealthCheckModel>(src.Document));
 
     }
 }

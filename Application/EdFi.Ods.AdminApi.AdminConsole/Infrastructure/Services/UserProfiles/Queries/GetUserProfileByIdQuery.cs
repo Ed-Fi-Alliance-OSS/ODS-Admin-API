@@ -13,7 +13,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.UserProfiles.Qu
 
 public interface IGetUserProfileByIdQuery
 {
-    Task<UserProfile> Execute(int tenantId, int docId);
+    Task<UserProfile?> Execute(int tenantId, int docId);
 }
 
 public class GetUserProfileByIdQuery : IGetUserProfileByIdQuery
@@ -25,7 +25,7 @@ public class GetUserProfileByIdQuery : IGetUserProfileByIdQuery
         _userProfileQuery = userProfileQuery;
     }
 
-    public async Task<UserProfile> Execute(int tenantId, int docId)
+    public async Task<UserProfile?> Execute(int tenantId, int docId)
     {
         var userProfile = await _userProfileQuery.Query().SingleOrDefaultAsync(UserProfile => UserProfile.DocId == docId && UserProfile.TenantId == tenantId);
         return userProfile;

@@ -38,7 +38,7 @@ public class AddUserProfile : IFeature
         [Required]
         public int TenantId { get; set; }
         [Required]
-        public string Document { get; set; }
+        public string Document { get; set; } = string.Empty;
     }
 
     public class Validator : AbstractValidator<AddUserProfileRequest>

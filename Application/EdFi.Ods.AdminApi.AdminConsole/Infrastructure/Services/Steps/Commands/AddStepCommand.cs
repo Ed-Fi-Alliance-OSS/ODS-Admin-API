@@ -10,7 +10,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Steps.Commands;
 
 public interface IAddStepCommand
 {
-    Task<Step> Execute(IAddStepModel step);
+    Task<Step?> Execute(IAddStepModel step);
 }
 
 public class AddStepCommand : IAddStepCommand
@@ -22,7 +22,7 @@ public class AddStepCommand : IAddStepCommand
         _stepCommand = stepCommand;
     }
 
-    public async Task<Step> Execute(IAddStepModel step)
+    public async Task<Step?> Execute(IAddStepModel step)
     {
         try
         {

@@ -12,7 +12,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.HealthChecks.Qu
 
 public interface IGetHealthCheckQuery
 {
-    Task<HealthCheck> Execute(int docId);
+    Task<HealthCheck?> Execute(int docId);
 }
 
 public class GetHealthCheckQuery : IGetHealthCheckQuery
@@ -23,7 +23,7 @@ public class GetHealthCheckQuery : IGetHealthCheckQuery
     {
         _healthCheckQuery = healthCheckQuery;
     }
-    public async Task<HealthCheck> Execute(int tenantId)
+    public async Task<HealthCheck?> Execute(int tenantId)
     {
         var healthCheck = await _healthCheckQuery.Query().SingleOrDefaultAsync(healthCheck => healthCheck.TenantId == tenantId);
         return healthCheck;

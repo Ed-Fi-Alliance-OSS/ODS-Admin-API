@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.Steps;
 
-public class AddStep: IFeature
+public class AddStep : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
@@ -27,7 +27,10 @@ public class AddStep: IFeature
         await validator.GuardAsync(request);
         var addedStepResult = await addStepCommand.Execute(request);
 
-        return Results.Created($"/steps/{addedStepResult.TenantId}/{addedStepResult.DocId}", addedStepResult);
+        if (addedStepResult != null)
+            return Results.Created($"/steps/{addedStepResult.TenantId}/{addedStepResult.DocId}", addedStepResult);
+        else
+            return Results.BadRequest();
     }
 
     public class AddStepRequest : IAddStepModel
@@ -38,7 +41,7 @@ public class AddStep: IFeature
         [Required]
         public int TenantId { get; set; }
         [Required]
-        public string Document { get; set; }
+        public string Document { get; set; } = string.Empty;
     }
 
     public class Validator : AbstractValidator<AddStepRequest>

@@ -15,7 +15,7 @@ public class OdsInstanceModel
 {
     [JsonPropertyName("id")]
     public int OdsInstanceId { get; set; }
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public string? InstanceType { get; set; }
 }
 

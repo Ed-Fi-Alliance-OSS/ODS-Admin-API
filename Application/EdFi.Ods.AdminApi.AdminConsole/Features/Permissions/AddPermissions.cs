@@ -10,11 +10,12 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.Permissions;
 
-public class AddPermission: IFeature
+public class AddPermission : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
@@ -28,7 +29,12 @@ public class AddPermission: IFeature
         await validator.GuardAsync(request);
         var addedPermissionResult = await addPermissionCommand.Execute(request);
 
-        return Results.Created($"/permissions/{addedPermissionResult.TenantId}/{addedPermissionResult.DocId}", addedPermissionResult);
+        if (addedPermissionResult != null)
+            return Results.Created($"/permissions/{addedPermissionResult.TenantId}/{addedPermissionResult.DocId}", addedPermissionResult);
+        else
+        {
+            return Results.BadRequest();
+        }
     }
 
     public class AddPermissionRequest : IAddPermissionModel
@@ -39,7 +45,7 @@ public class AddPermission: IFeature
         [Required]
         public int TenantId { get; set; }
         [Required]
-        public string Document { get; set; }
+        public string Document { get; set; } = string.Empty;
     }
 
     public class Validator : AbstractValidator<AddPermissionRequest>

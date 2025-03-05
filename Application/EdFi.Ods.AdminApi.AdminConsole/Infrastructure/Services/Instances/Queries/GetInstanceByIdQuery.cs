@@ -13,7 +13,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queri
 
 public interface IGetInstanceByIdQuery
 {
-    Task<Instance> Execute(int odsInstanceId);
+    Task<Instance?> Execute(int odsInstanceId);
 }
 
 public class GetInstanceByIdQuery : IGetInstanceByIdQuery
@@ -25,7 +25,7 @@ public class GetInstanceByIdQuery : IGetInstanceByIdQuery
         _instanceQuery = instanceQuery;
     }
 
-    public async Task<Instance> Execute(int id)
+    public async Task<Instance?> Execute(int id)
     {
         var instance = await _instanceQuery.Query()
             .Include(i => i.OdsInstanceContexts)

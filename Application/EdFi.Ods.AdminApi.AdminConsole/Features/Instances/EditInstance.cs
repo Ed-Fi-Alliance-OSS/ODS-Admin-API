@@ -34,11 +34,11 @@ public class EditInstance : IFeature
 
     public class EditInstanceRequest : IInstanceRequestModel
     {
-
         public int TenantId { get; set; }
-        public string? TenantName { get; set; }
 
-        public string? Name { get; set; }
+        public string TenantName { get; set; } = string.Empty;
+
+        public string Name { get; set; } = string.Empty;
 
         public string? InstanceType { get; set; }
 
