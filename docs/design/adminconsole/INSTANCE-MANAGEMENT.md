@@ -35,7 +35,7 @@ C4Container
             ContainerDb(Admin, "EdFi_Admin,<br />EdFi_Security")
         }
     }
-    
+   
     Rel(AdminConsole, AdminAPI, "Issues HTTP requests")
 
     Rel(Instance, AdminAPI, "Reads instance requests,<br />Write instance status")
@@ -46,7 +46,7 @@ C4Container
 
     Rel(OdsApi, ods3, "Reads and writes")
     UpdateRelStyle(OdsApi, ods3, $offsetX="10")
-    
+   
     Rel(AdminAPI, Admin, "Reads and writes")
     UpdateRelStyle(AdminAPI, Admin, $offsetY="50", $offsetX="10")
 
@@ -56,11 +56,28 @@ C4Container
     UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
 ```
 
+## Functional Requirements
+
+Users will need the ability to perform the following operations for ODS database
+instances:
+
+1. Create a new instance and insert records into the `dbo.OdsInstances` and related tables.
+2. Rename an existing instance and update the records (including connection string) in `dbo.OdsInstances`.
+3. Delete an existing instance and delete records from `dbo.OdsInstances`.
+4. Backup an existing instance
+5. Restore an existing instance from backup
+
+The first three operations will also require updating the `Status` field in the
+`adminconsole.Instance` table. From this perspective, the delete operation will
+be a _soft delete_ for audit purposes. That is, the
+`adminconsole.Instance.Status` field will be set to "DELETED" instead of
+physically deleting the row.
+
 ## Solution Design
 
 The Instance Management Worker will be a command line interface (CLI)
 application that should run on a schedule, e.g. as a Cron job in Linux or a
-Windows Scheduled Task. The Worker's responsibility is to create (and delete?)
+Windows Scheduled Task. The Worker's responsibility is to create and manage
 ODS database instances ("CREATE DATABASE"). It will pull task information from
 Admin API 2, and create databases directly in the RDBMS. It writes status back
 to Admin API 2 so that it can update the instance management tables used by the
@@ -85,6 +102,8 @@ out incrementally as needed based on feedback from the field:
 > synchronization problem between these two tables.
 
 ### v1: Single Worker
+
+### New Instance
 
 ```mermaid
 sequenceDiagram
@@ -112,20 +131,117 @@ sequenceDiagram
         AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceContext
         AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceDerivative
 
-        note right of EdFi_Admin: Credentials for Health Check Worker        
+        note right of EdFi_Admin: Credentials for Health Check Worker       
         rect rgb(191, 223, 255)
             AdminAPI --> EdFi_Admin: INSERT INTO dbo.ApiClients
             AdminAPI --> EdFi_Admin: INSERT INTO dbo.ApiClientOdsInstances
         end
 
         AdminAPI ->> EdFi_Admin: UPDATE adminconsole.Instances (status, credentials)
-        
+       
         AdminAPI ->> EdFi_Admin: COMMIT
 
     end
 
     AdminAPI -->> Worker: 200 OK
 ```
+
+### Delete Instance
+
+```mermaid
+sequenceDiagram
+    actor Console
+    actor Worker
+    participant AdminAPI
+    participant EdFi_Admin
+    participant DbServer
+
+    Console ->> AdminAPI: DELETE /adminconsole/odsInstances/{id}
+    AdminAPI ->> EdFi_Admin: UPDATE adminconsole.Instance SET status = "PENDING_DELETE"
+    AdminAPI -->> Console: 204 Ok
+
+    Worker ->> AdminAPI: GET /adminconsole/instances?status=PENDING_DELETE
+    AdminAPI ->> EdFi_Admin: Fetch instances with status=PENDING_DELETE
+    EdFi_Admin -->> AdminAPI: List of instances
+
+    AdminAPI -->> Worker: List of instances
+
+    loop For each instance in list
+        Worker ->> DbServer: Drop database
+
+        alt Drop successful
+            Worker ->> AdminAPI: POST /adminconsole/instances/{id}/deleted
+
+            AdminAPI ->> EdFi_Admin: BEGIN TRANSACTION
+            AdminAPI --> EdFi_Admin: UPDATE Status = DELETED FROM adminconsole.Instance Status
+            AdminAPI ->> EdFi_Admin: DELETE FROM dbo.OdsInstanceDerivative
+            AdminAPI ->> EdFi_Admin: DELETE FROM dbo.OdsInstanceContext
+            AdminAPI ->> EdFi_Admin: DELETE FROM dbo.OdsInstances
+            AdminAPI ->> EdFi_Admin: DELETE FROM dbo.ApiClients and dbo.ApiClientOdsInstances
+            AdminAPI ->> EdFi_Admin: COMMIT TRANSACTION
+
+            AdminAPI -->> Worker: 204 OK
+        else Drop failed
+            Worker ->> AdminAPI: POST /adminconsole/instances/{id}/deleteFailed
+            AdminAPI --> EdFi_Admin: UPDATE Status = DELETE_FAILED FROM adminconsole.Instance Status
+        end
+    end
+```
+
+### Rename Instance
+
+```mermaid
+sequenceDiagram
+    actor Console
+    actor Worker
+    participant AdminAPI
+    participant EdFi_Admin
+    participant DbServer
+
+    Console ->> AdminAPI: DELETE /adminconsole/odsInstances/{id}
+    AdminAPI ->> EdFi_Admin: UPDATE adminconsole.Instance SET status = "PENDING_RENAME"
+    AdminAPI -->> Console: 204 Ok
+
+    Worker ->> AdminAPI: GET /adminconsole/instances?status=PENDING_RENAME
+    AdminAPI ->> EdFi_Admin: Fetch instances with status=PENDING_RENAME
+    EdFi_Admin -->> AdminAPI: List of instances
+
+    AdminAPI -->> Worker: List of instances
+
+    loop For each instance in list
+        Worker ->> DbServer: Rename database
+
+        alt Drop successful
+            Worker ->> AdminAPI: POST /adminconsole/instances/{id}/renamed
+
+            AdminAPI ->> EdFi_Admin: BEGIN TRANSACTION
+        AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstances
+        AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceContext
+        AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceDerivative
+
+        note right of EdFi_Admin: Credentials for Health Check Worker       
+        rect rgb(191, 223, 255)
+            AdminAPI --> EdFi_Admin: INSERT INTO dbo.ApiClients
+            AdminAPI --> EdFi_Admin: INSERT INTO dbo.ApiClientOdsInstances
+        end
+
+        AdminAPI ->> EdFi_Admin: UPDATE adminconsole.Instances (status, credentials)
+
+            AdminAPI -->> Worker: 204 OK
+        else Rename failed
+            Worker ->> AdminAPI: POST /adminconsole/instances/{id}/renameFailed
+            AdminAPI --> EdFi_Admin: UPDATE Status = RENAME_FAILED FROM adminconsole.Instance Status
+        end
+    end
+```
+
+### Backup Instance
+
+TBD
+
+### Restore Backup
+
+TBD
 
 #### Health Check Client Credentials
 
@@ -177,14 +293,14 @@ sequenceDiagram
         AdminAPI ->> EdFi_Admin_New: INSERT INTO dbo.OdsInstanceContext
         AdminAPI ->> EdFi_Admin_New: INSERT INTO dbo.OdsInstanceDerivative
 
-        note right of EdFi_Admin: Credentials for Health Check Worker        
+        note right of EdFi_Admin: Credentials for Health Check Worker       
         rect rgb(191, 223, 255)
             AdminAPI --> EdFi_Admin_New: INSERT INTO dbo.ApiClients
             AdminAPI --> EdFi_Admin_New: INSERT INTO dbo.ApiClientOdsInstances
         end
 
         AdminAPI ->> EdFi_Admin: UPDATE adminconsole.Instance (status, credentials)
-        
+       
         AdminAPI ->> EdFi_Admin: COMMIT
 
     end
@@ -225,9 +341,9 @@ sequenceDiagram
     AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceContext
     AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceDerivative
     AdminAPI ->> EdFi_Admin: INSERT key & secret INTO dbo.Application
-    
+   
     AdminAPI ->> EdFi_Admin: UPDATE adminconsole.Instance.Document including key & secret
-    
+   
     AdminAPI ->> EdFi_Admin: COMMIT
 
     AdminAPI -->> Worker: 200 OK

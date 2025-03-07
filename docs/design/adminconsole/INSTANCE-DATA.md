@@ -54,7 +54,7 @@ Also supports `GET /adminconsole/odsInstances/{id}`
 * **Description**:
   * Validate the incoming payload.
   * Insert data into the `adminconsole.Instance` table.
-  * Respond with `202 Accepted` and include the new jobId created.
+  * Respond with `202 Accepted` and include the new id created.
 * **Validation**:
 
   | Property                             | Rules                                                      |
@@ -104,6 +104,10 @@ Also supports `GET /adminconsole/odsInstances/{id}`
   * Validate the incoming payload.
   * Updates both the `adminconsole.Instance` and the `dbo.OdsInstances` tables.
   * Respond with `202 No Content`
+  * If the `name` has changed:
+    * Set the status to `PENDING_RENAME` in the `adminconsole.Instance` table.
+    * Delete records from `dbo.OdsInstances` tables, so that the ODS/API does
+      not try to use this database while it is being renamed.
 * **Validation**:
 
   | Property                             | Rules                                                      |
@@ -140,7 +144,22 @@ Also supports `GET /adminconsole/odsInstances/{id}`
 
 ### DELETE /adminconsole/odsInstances/{id}
 
-* Not supported at this time. Respond with `405 Method Not Allowed`.
+* **Purpose**: Mark an instance for deletion.
+* **Description**:
+  * Updates the status of the instance to `PENDING_DELETE`.
+  * This operation performs a soft delete by updating the status field; the record remains in the table.
+  * Does not immediately remove the instance; it is scheduled for deletion in other related systems.
+  * The instance must have a status of `COMPLETED` before it can be marked as `PENDING_DELETE`.
+  * Responds with `202 Accepted`.
+
+* **Validation**:
+  * The instance must exist.
+  * The current status must be `COMPLETED`. If not, the request is rejected with `409 Conflict`.
+
+* **Response Codes**:
+  * `202 Accepted` – The instance was successfully marked for deletion.
+  * `404 Not Found` – The specified instance does not exist.
+  * `409 Conflict` – The instance cannot be deleted because it is not in a `COMPLETED` state.
 
 ### GET /adminconsole/instances
 
@@ -155,7 +174,7 @@ Also supports `GET /adminconsole/instances/{id}`
   * Returns a separate object for each ODS Instance Context.
   * The `resourceUrl` is constructed from the tenant's base URL plus instance
     context information.
-  * `odsInstanceId` will be null if the `status` is not "Completed".
+  * `odsInstanceId` will be null if the `status` is not `COMPLETED`.
   * Return all values without the need for paging.
   * Respond with 200
 * **Query String Parameters**:
@@ -186,17 +205,13 @@ Also supports `GET /adminconsole/instances/{id}`
 
 ### POST /adminconsole/instances/{id}/completed
 
-> [!NOTE]
-> In Admin API 2.4, this may be deprecated in favor of
-> `/adminconsole/instances/jobs/{id}/completed`, which is described below.
-
 * **Purpose**: Updates the given `adminconsole.Instance` record by changing the
-  status to "Completed".
+  status to `COMPLETED`.
 * **Description**:
   * Responds with `204 No Content` if the record is _already complete_ or if the operations described below succeed.
   * Responds with `404 Not Found` if the Id does not exist.
   * As described in [Instance Management Worker](./INSTANCE-MANAGEMENT.md), this
-    action does the following work if the status is not already "Completed",
+    action does the following work if the status is not already `COMPLETED`,
     using a single database transaction:
     * Insert into `dbo.OdsInstances`.
     * If needed, insert into `dbo.OdsInstanceContexts` and `dbo.OdsInstanceDerivatives`.
@@ -204,13 +219,62 @@ Also supports `GET /adminconsole/instances/{id}`
     * Insert into `dbo.ApiClientOdsInstances`.
     * Update `adminconsole.Instance` to set:
       * New credentials
-      * Status = "Completed"
+      * Status = `COMPLETED`
+
+### PUT /adminconsole/instances/{id}
+
+* Not supported at this time. Respond with `405 Method Not Allowed`.
+
+### DELETE /adminconsole/instances/{id}
+
+* Not supported at this time. Respond with `405 Method Not Allowed`.
+
+### POST /adminconsole/instances/{id}/deleted
+
+* **Purpose**: Marks the given `adminconsole.Instance` record as `DELETED`.
+* **Description**:
+  * Responds with `204 No Content` if the record is already marked as "Deleted" or if the operations described below succeed.
+  * Responds with `404 Not Found` if the specified ID does not exist.
+  * As described in [Instance Management Worker](./INSTANCE-MANAGEMENT.md), this action performs the following operations in a single database transaction if the status is not already `DELETED`:
+    * Delete the corresponding record from `dbo.OdsInstances`.
+    * If applicable, delete related records from `dbo.OdsInstanceContexts` and `dbo.OdsInstanceDerivatives`.
+    * Delete associated records from `dbo.ApiClients` and `dbo.ApiClientOdsInstances`.
+    * Update the `adminconsole.Instance` record to:
+      * **Status** = `DELETED`.
+
+### POST /adminconsole/instances/{id}/deleteFailed
+
+* **Purpose**: Marks the given `adminconsole.Instance` record as `DELETE_FAILED` if the database drop operation performed by the Instance Management Worker has failed.
+* **Description**:
+  * Responds with `204 No Content` if the record is already marked as `DELETE_FAILED` or if the operation succeeds.
+  * Responds with `404 Not Found` if the specified ID does not exist.
+  * As described in [Instance Management Worker](./INSTANCE-MANAGEMENT.md), this action updates the `adminconsole.Instance` record to:
+    * **Status** = `DELETE_FAILED`.
+
+### POST /adminconsole/instances/{id}/renamed
+
+* **Purpose**: Marks the given `adminconsole.Instance` record as `COMPLETED`.
+* **Description**:
+  * Responds with `204 No Content` if the record is already marked as `COMPLETED` or if the operations described below succeed.
+  * Responds with `404 Not Found` if the specified ID does not exist.
+  * As described in [Instance Management Worker](./INSTANCE-MANAGEMENT.md), this action performs the following operations in a single database transaction if the status is not already `COMPLETED`:
+    * Update the name and connection string
+    * Re-insert into the `dbo.OdsInstances` tables and create new Health Check Worker credentials following the procedure used for `POST /adminconsole/instances/{id}/completed`.
+    * Set `adminconsole.Instance.Status='COMPLETED'`.
+
+### POST /adminconsole/instances/{id}/renameFailed
+
+* **Purpose**: Marks the given `adminconsole.Instance` record as `RENAME_FAILED` if the database drop operation performed by the Instance Management Worker has failed.
+* **Description**:
+  * Responds with `204 No Content` if the record is already marked as `RENAME_FAILED` or if the operation succeeds.
+  * Responds with `404 Not Found` if the specified ID does not exist.
+  * As described in [Instance Management Worker](./INSTANCE-MANAGEMENT.md), this action sets `adminconsole.Instance.Status='RENAME_FAILED'`.
+
+## Future
+
+These endpoints will not be supported in Admin API 2.3, but are under consideration for a future version.
 
 ### POST /adminconsole/instances/jobs/start
-
-> [!NOTE]
-> This endpoint might not be included in the Admin API 2.3 for Admin Console 1.
-> Job support is a low priority for future consideration.
 
 * **Purpose**: Start processing jobs from the `adminconsole.Instance` table.
 * **Description**:
@@ -252,24 +316,12 @@ Also supports `GET /adminconsole/instances/{id}`
 
 ### POST /adminconsole/instances/jobs/{id}/completed
 
-> [!NOTE]
-> This endpoint might not be included in the Admin API 2.3 for Admin Console 1.
-> If it is included, then `/adminconsole/instances/{id}/completed` will be removed.
-
 * **Purpose**: Mark a job as complete and perform transactional updates.
 * **Enhancements**:
   * Accept a job completion payload.
   * Add resultant data to tables `OdsInstances`, `OdsInstanceContext`, `OdsInstanceDerivatives` and update `adminconsole.Instance` status column to mark job as `Compelete` within a single transaction.
   * Roll back on failure.
   * Respond with `200 Ok`.
-
-### PUT /adminconsole/instances/{id}
-
-* Not supported at this time. Respond with `405 Method Not Allowed`.
-
-### DELETE /adminconsole/instances/{id}
-
-* Not supported at this time. Respond with `405 Method Not Allowed`.
 
 ## Data Storage
 
