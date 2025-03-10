@@ -29,6 +29,9 @@ public enum InstanceStatus
     Pending,
     Completed,
     InProgress,
+    Pending_Delete,
+    Deleted,
+    Delete_Failed,
     Error
 }
 
