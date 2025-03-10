@@ -36,6 +36,8 @@ public static class FeatureConstants
     public const string OdsInstanceIdValidationMessage = "Please provide valid ods instance id. The id {OdsInstanceId} does not exist.";
     public const string ClaimSetIdToCopy = "ClaimSet id to copy";
     public const string ProfileName = "Profile name";
+    public const string ProfileAlreadyExistsMessage = "A Profile with this name already exists in the database. Please enter a unique name.";
+    public const string AnotherProfileAlreadyExistsMessage = "Another Profile with this name already exists in the database. Please enter a unique name.";
     public const string ProfileDefinition = "Profile definition";
     public const string OdsInstanceName = "Ods Instance name";
     public const string OdsInstanceInstanceType = "Ods Instance type";

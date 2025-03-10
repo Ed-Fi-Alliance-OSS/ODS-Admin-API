@@ -8,6 +8,7 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
@@ -45,10 +46,20 @@ public class AddProfile : IFeature
 
     public class Validator : AbstractValidator<AddProfileRequest>
     {
-        public Validator()
+        private readonly IGetProfilesQuery _getProfilesQuery;
+
+        public Validator(IGetProfilesQuery getProfilesQuery)
         {
+            _getProfilesQuery = getProfilesQuery;
+
             RuleFor(m => m.Name).NotEmpty();
+
+            RuleFor(m => m.Name)
+                .Must(BeAUniqueName)
+                .WithMessage(FeatureConstants.ProfileAlreadyExistsMessage);
+
             RuleFor(m => m.Definition).NotEmpty();
+
             RuleFor(m => m).Custom((profile, context) =>
             {
                 if (!string.IsNullOrEmpty(profile.Definition))
@@ -57,6 +68,11 @@ public class AddProfile : IFeature
                     validator.Validate(profile.Name!, profile.Definition, context);
                 }
             });
+        }
+
+        private bool BeAUniqueName(string? profileName)
+        {
+            return _getProfilesQuery.Execute().TrueForAll(x => x.ProfileName != profileName);
         }
     }
 }

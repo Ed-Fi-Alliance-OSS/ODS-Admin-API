@@ -8,6 +8,7 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
@@ -28,6 +29,7 @@ public class EditProfile : IFeature
     [ProfileRequestExample]
     public async Task<IResult> Handle(Validator validator, IEditProfileCommand editProfileCommand, IMapper mapper, EditProfileRequest request, int id)
     {
+        request.Id = id;
         await validator.GuardAsync(request);
         request.Id = id;
         editProfileCommand.Execute(request);
@@ -50,10 +52,23 @@ public class EditProfile : IFeature
 
     public class Validator : AbstractValidator<EditProfileRequest>
     {
-        public Validator()
+        private readonly IGetProfilesQuery _getProfilesQuery;
+        private readonly IGetProfileByIdQuery _getProfileByIdQuery;
+
+        public Validator(IGetProfilesQuery getProfilesQuery, IGetProfileByIdQuery getProfileByIdQuery)
         {
+            _getProfilesQuery = getProfilesQuery;
+            _getProfileByIdQuery = getProfileByIdQuery;
+
             RuleFor(m => m.Name).NotEmpty();
+
+            RuleFor(m => m.Name)
+                .Must(BeAUniqueName)
+                .WithMessage(FeatureConstants.AnotherProfileAlreadyExistsMessage)
+                .When(m => !string.IsNullOrEmpty(m.Name) && BeAnExistingOdsInstance(m.Id) && NameIsChanged(m));
+
             RuleFor(m => m.Definition).NotEmpty();
+
             RuleFor(m => m).Custom((profile, context) =>
             {
                 if (!string.IsNullOrEmpty(profile.Definition))
@@ -62,6 +77,23 @@ public class EditProfile : IFeature
                     validator.Validate(profile.Name!, profile.Definition, context);
                 }
             });
+        }
+
+        private bool BeAnExistingOdsInstance(int id)
+        {
+            _getProfileByIdQuery.Execute(id);
+            return true;
+        }
+
+        private bool NameIsChanged(IEditProfileModel model)
+        {
+            return _getProfileByIdQuery.Execute(model.Id).ProfileName != model.Name;
+        }
+
+
+        private bool BeAUniqueName(string? profileName)
+        {
+            return _getProfilesQuery.Execute().TrueForAll(x => x.ProfileName != profileName);
         }
     }
 }

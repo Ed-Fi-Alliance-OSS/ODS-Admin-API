@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "51e72d10-30a7-4d05-a404-8664b7886c37",
+		"_postman_id": "06134786-54cf-428e-837f-b0729762b90b",
 		"name": "Admin API E2E 2.0 - Profiles",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21286036"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -21,7 +21,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -42,7 +43,8 @@
 											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -58,17 +60,68 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										""
-									]
+								"url": "{{API_URL}}/v2/Profiles/"
+							},
+							"response": []
+						},
+						{
+							"name": "Profiles Duplicate Name",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Profiles Invalid: Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"errors\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.title.toLowerCase()).to.contain(\"validation\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response errors include messages by property\", function () {\r",
+											"    pm.expect(response.errors[\"Name\"].length).to.equal(1);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response errors include messages with wrong element name\", function () {\r",
+											"    pm.expect(response.errors[\"Name\"][0].toLowerCase()).to.contain(\"a profile with this name already exists in the database. please enter a unique name.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"Test-Profile\",\r\n    \"Definition\": \"<Profile name=\\\"Test-Profile\\\"><Resource name=\\\"School\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"EducationOrganizationAddresses\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"City\\\" /><Property name=\\\"StateAbbreviationType\\\" /><Property name=\\\"PostalCode\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"EducationOrganizationAddresses\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Latitude\\\" /><Property name=\\\"Longitude\\\" /></Collection></WriteContentType></Resource></Profile>\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/Profiles/"
 							},
 							"response": []
 						},
@@ -127,17 +180,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/"
 							},
 							"response": []
 						},
@@ -197,17 +240,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/"
 							},
 							"response": []
 						},
@@ -267,17 +300,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/"
 							},
 							"response": []
 						},
@@ -544,17 +567,7 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/"
 							},
 							"response": []
 						},
@@ -605,17 +618,7 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/profiles/{{CreatedProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"profiles",
-										"{{CreatedProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/profiles/{{CreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -660,17 +663,115 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/profiles/{{NotExistProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"profiles",
-										"{{NotExistProfileId}}"
-									]
+								"url": "{{API_URL}}/v2/profiles/{{NotExistProfileId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Profiles Duplicate Name",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/Profiles`,\r",
+											"  method: 'POST',\r",
+											"  header: header,\r",
+											"  body: {\r",
+											"    mode: 'raw',\r",
+											"    raw:JSON.stringify({\r",
+											"        \"Name\": \"Other-Test-Profile\",\r",
+											"        \"Definition\": \"<Profile name=\\\"Other-Test-Profile\\\"><Resource name=\\\"School\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"EducationOrganizationAddresses\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"City\\\" /><Property name=\\\"StateAbbreviationType\\\" /><Property name=\\\"PostalCode\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"EducationOrganizationAddresses\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Latitude\\\" /><Property name=\\\"Longitude\\\" /></Collection></WriteContentType></Resource></Profile>\"\r",
+											"    }), \r",
+											"  }\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const id = response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"  if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"OtherCreatedProfileId\", id);\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"PUT Profiles: Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"errors\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.title.toLowerCase()).to.contain(\"validation\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response errors include messages by property\", function () {\r",
+											"    pm.expect(response.errors[\"Name\"].length).to.equal(1);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Profiles Invalid: Response errors include messages with wrong element name\", function () {\r",
+											"    pm.expect(response.errors[\"Name\"][0].toLowerCase()).to.contain(\"another profile with this name already exists in the database. please enter a unique name.\");\r",
+											"});\r",
+											"\r",
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/profiles/${pm.collectionVariables.get(\"OtherCreatedProfileId\")}`,\r",
+											"  method: 'DELETE',\r",
+											"  header: header\r",
+											"},\r",
+											"function (err, profileResponse) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"Name\": \"Test-Profile\",\r\n    \"Definition\": \"<Profile name=\\\"Test-Profile\\\"><Resource name=\\\"School\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"EducationOrganizationAddresses\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"City\\\" /><Property name=\\\"StateAbbreviationType\\\" /><Property name=\\\"PostalCode\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"EducationOrganizationAddresses\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Latitude\\\" /><Property name=\\\"Longitude\\\" /></Collection></WriteContentType></Resource></Profile>\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/Profiles/{{OtherCreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -737,17 +838,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										"{{CreatedProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -802,17 +893,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/profiles/{{NotExistProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"profiles",
-										"{{NotExistProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/profiles/{{NotExistProfileId}}"
 							},
 							"response": []
 						},
@@ -871,17 +952,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										"{{CreatedProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -941,17 +1012,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										"{{CreatedProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -1011,17 +1072,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"Profiles",
-										"{{CreatedProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/Profiles/{{CreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -1044,17 +1095,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/profiles/{{CreatedProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"profiles",
-										"{{CreatedProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/profiles/{{CreatedProfileId}}"
 							},
 							"response": []
 						},
@@ -1090,17 +1131,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/profiles/{{NotExistProfileId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"profiles",
-										"{{NotExistProfileId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/profiles/{{NotExistProfileId}}"
 							},
 							"response": []
 						}
@@ -1136,13 +1167,9 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{TOKEN}}",
-				"type": "string"
-			}
-		]
+		"bearer": {
+			"token": "{{TOKEN}}"
+		}
 	},
 	"event": [
 		{
@@ -1262,6 +1289,11 @@
 		{
 			"key": "CreatedProfileId",
 			"value": ""
+		},
+		{
+			"key": "OtherCreatedProfileId",
+			"value": "",
+			"type": "string"
 		}
 	]
 }
