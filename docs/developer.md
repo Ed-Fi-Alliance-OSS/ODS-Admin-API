@@ -169,7 +169,7 @@ Furthermore, when using Keycloak, the Register and Token endpoints will not be a
         "SigningKey": "",
         "AllowRegistration": false,
         "OIDC": {
-            "Authority": "https://localhost/auth/realms/myrealm",
+            "Authority": "https://localhost/auth/realms/edfi-admin-console",
             "ValidateIssuer": true,
             "RequireHttpsMetadata": false,
             "EnableServerCertificateCustomValidationCallback": true

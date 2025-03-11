@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Linq;
 using System.Reflection;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
@@ -11,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Api;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
@@ -105,10 +107,9 @@ public static class WebApplicationBuilderExtensions
                         ClientCredentials = new OpenApiOAuthFlow
                         {
                             TokenUrl = new Uri($"{issuer}/{SecurityConstants.TokenEndpoint}"),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { SecurityConstants.Scopes.AdminApiFullAccess, "Unrestricted access to all Admin API endpoints" },
-                            }
+                            Scopes = SecurityConstants.Scopes.AllScopes.ToDictionary(
+                                x => x.Scope,
+                                x => x.ScopeDescription),
                         },
                     },
                     In = ParameterLocation.Header,

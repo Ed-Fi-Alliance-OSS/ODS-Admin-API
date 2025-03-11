@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Server.AspNetCore;
 using Swashbuckle.AspNetCore.Annotations;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 
 namespace EdFi.Ods.AdminApi.Features.Connect;
 

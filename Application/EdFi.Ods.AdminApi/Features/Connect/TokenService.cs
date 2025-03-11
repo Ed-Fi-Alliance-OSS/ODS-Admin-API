@@ -6,6 +6,7 @@
 using System.Security.Authentication;
 using System.Security.Claims;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using OpenIddict.Abstractions;
 
@@ -19,12 +20,13 @@ public interface ITokenService
 public class TokenService : ITokenService
 {
     private readonly IOpenIddictApplicationManager _applicationManager;
-
+    private readonly IConfiguration _configuration;
     private const string DENIED_AUTHENTICATION_MESSAGE = "Access Denied. Please review your information and try again.";
 
-    public TokenService(IOpenIddictApplicationManager applicationManager)
+    public TokenService(IOpenIddictApplicationManager applicationManager, IConfiguration configuration)
     {
         _applicationManager = applicationManager;
+        _configuration = configuration;
     }
 
     public async Task<ClaimsPrincipal> Handle(OpenIddictRequest request)
@@ -53,14 +55,21 @@ public class TokenService : ITokenService
             throw new AuthenticationException(DENIED_AUTHENTICATION_MESSAGE);
 
         var displayName = await _applicationManager.GetDisplayNameAsync(application);
-
         var identity = new ClaimsIdentity(JwtBearerDefaults.AuthenticationScheme);
         identity.AddClaim(OpenIddictConstants.Claims.Subject, request.ClientId!, OpenIddictConstants.Destinations.AccessToken);
         identity.AddClaim(OpenIddictConstants.Claims.Name, displayName!, OpenIddictConstants.Destinations.AccessToken);
-
+        var roles = Roles.AllRoles.Select(obj => obj.RoleName).ToList();
+        var rolesClaim = _configuration?.GetValue<string>("AppSettings:roleClaimAttribute") ?? "roles";
+        foreach (var role in roles)
+        {
+            identity.AddClaim(new Claim(rolesClaim, role, OpenIddictConstants.Destinations.AccessToken));
+        }
         var principal = new ClaimsPrincipal(identity);
         principal.SetScopes(requestedScopes);
-
+        foreach (var claim in principal.Claims)
+        {
+            claim.SetDestinations(OpenIddictConstants.Destinations.AccessToken);
+        }
         return principal;
     }
 }
