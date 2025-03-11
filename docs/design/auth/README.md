@@ -11,7 +11,8 @@ and authorization.
 System administrators interact directly with Admin API to perform ODS/API
 configuration tasks and manage client credentials. Authentication and
 authorization are [self-contained](./SELF-CONTAINED.md): there is no need for a
-third party Identity Provider (IdP).
+third party Identity Provider (IdP). There is a single `OAuth` scope available:
+`edfi_admin_api/full_access`.
 
 ```mermaid
 C4Context
@@ -64,6 +65,8 @@ C4Container
 
 ## Version 2.3 and above
 
+### Self-Contained and Third Party IdP
+
 The [self-contained authentication](./SELF-CONTAINED.md) in Admin API 2.0
 through 2.2 was adequate for the application's needs. This support provided
 only the `client_credentials` grant flow. OpenIdDict _can_ support users, not
@@ -81,6 +84,38 @@ For backwards compatibility, existing Admin API deployments will be able to
 continue utilizing the self-contained authentication without the need to connect
 a third party IdP. However, they will not be able to support Admin Console in
 this mode.
+
+### Differential Access Rights
+
+#### Client Authorization
+
+The Admin API now supports multiple applications, and the generated tokens will
+need to reflect the client's role:
+
+* `adminapi-client`: all clients who access Admin API should have this role.
+* `adminconsole-user`: user accounts that access the Admin Console will _also_ have this role.
+
+Thus, the Admin API should reject any token that does not have the
+`adminapi-client` role, and the Admin Console should similarly reject a token
+that does not have the `adminconsole-user` role.
+
+Roles will be described in the JWT with a new claim called
+`http://schemas.microsoft.com/ws/2008/06/identity/claims/role`. This claim name
+is for role-based access control in ASP.NET Identity.
+
+#### Resource Authorization
+
+Resources (endpoints) will be protected using OAuth Scopes. Admin API already
+has a Scope of `edfi_admin_api/full_access` that provides access to all
+reosurces. New scopes are needed for more limited access:
+
+* Admin Console will have two user types: system administrators with full
+  access, and tenant administrators with more limited access. Details about this
+  more limited access are yet to be determined. **New scope:
+  `edfi_admin_api/tenant_access`**.
+* The instance management and health check workers do not require full access to
+  the API. Their access can be limited with a **new scope:
+  `edfi_admin_api/worker`**.
 
 ### System Context 2.3+
 
