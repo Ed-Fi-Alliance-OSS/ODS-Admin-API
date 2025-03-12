@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
+
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 
 public class Instance
@@ -22,6 +24,37 @@ public class Instance
 
     public ICollection<OdsInstanceContext>? OdsInstanceContexts { get; set; }
     public ICollection<OdsInstanceDerivative>? OdsInstanceDerivatives { get; set; }
+
+    public static Instance From(IInstanceRequestModel requestModel)
+    {
+        return new Instance
+        {
+            OdsInstanceId = requestModel.OdsInstanceId,
+            TenantId = requestModel.TenantId,
+            TenantName = requestModel.TenantName ?? string.Empty,
+            InstanceName = requestModel.Name ?? string.Empty,
+            InstanceType = requestModel.InstanceType,
+            Credentials = requestModel.Credentials,
+            Status = Enum.TryParse<InstanceStatus>(requestModel.Status, out var status)
+                ? status
+                : InstanceStatus.Pending,
+            OdsInstanceContexts = requestModel
+                .OdsInstanceContexts?.Select(s => new OdsInstanceContext
+                {
+                    TenantId = requestModel.TenantId,
+                    ContextKey = s.ContextKey,
+                    ContextValue = s.ContextValue,
+                })
+                .ToList(),
+            OdsInstanceDerivatives = requestModel
+                .OdsInstanceDerivatives?.Select(s => new OdsInstanceDerivative
+                {
+                    TenantId = requestModel.TenantId,
+                    DerivativeType = Enum.Parse<DerivativeType>(s.DerivativeType, true),
+                })
+                .ToList()
+        };
+    }
 }
 
 public enum InstanceStatus
@@ -34,4 +67,3 @@ public enum InstanceStatus
     Delete_Failed,
     Error
 }
-

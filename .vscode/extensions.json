@@ -4,6 +4,8 @@
       "EditorConfig.EditorConfig",
       "ms-dotnettools.csharp",
       "ms-vscode.powershell",
+      "csharpier.csharpier-vscode",
+      "humao.rest-client",
       "streetsidesoftware.code-spell-checker",
       "bierner.markdown-mermaid",
       "DavidAnson.vscode-markdownlint"

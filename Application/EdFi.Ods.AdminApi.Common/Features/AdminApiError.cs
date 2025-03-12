@@ -10,35 +10,27 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace EdFi.Ods.AdminApi.Common.Features;
 
 [SwaggerSchema(Title = "AdminApiError", Description = "Wrapper schema for all error responses")]
-public class AdminApiError
+public static class AdminApiError
 {
-    protected AdminApiError(string title)
-    {
-        Title = title;
-        Errors = new[] { title };
-    }
+    public static IResult Validation(IEnumerable<ValidationFailure> errors) =>
+        Results.ValidationProblem(
+            errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(f => f.ErrorMessage).ToArray())
+        );
 
-    protected AdminApiError(string title, IEnumerable<string> errors) : this(title)
-    {
-        Errors = errors;
-    }
+    public static IResult Unexpected(string message) => Results.Problem(statusCode: 500, title: message);
 
-    public string Title { get; }
-    public IEnumerable<string> Errors { get; }
+    public static IResult Unexpected(string message, IEnumerable<string> errors) =>
+        Results.Problem(
+            statusCode: 500,
+            title: message,
+            extensions: new Dictionary<string, object?> { { "errors", errors } }
+        );
 
-    public static IResult Validation(IEnumerable<ValidationFailure> errors)
-        => Results.ValidationProblem(errors
-            .GroupBy(e => e.PropertyName).ToDictionary(g => g.Key, g => g.Select(f => f.ErrorMessage).ToArray()));
+    public static IResult Unexpected(Exception exception) =>
+        Results.Problem(statusCode: 500, title: exception.Message);
 
-    public static IResult Unexpected(string message)
-        => Results.Problem(statusCode: 500, title: message);
-
-    public static IResult Unexpected(string message, IEnumerable<string> errors)
-        => Results.Problem(statusCode: 500, title: message, extensions: new Dictionary<string, object?> { { "errors", errors } });
-
-    public static IResult Unexpected(Exception exception)
-        => Results.Problem(statusCode: 500, title: exception.Message);
-
-    public static IResult NotFound<T>(string resourceName, T id)
-        => Results.NotFound($"Not found: {resourceName} with ID {id}");
+    public static IResult NotFound<T>(string resourceName, T id) =>
+        Results.NotFound($"Not found: {resourceName} with ID {id}");
 }

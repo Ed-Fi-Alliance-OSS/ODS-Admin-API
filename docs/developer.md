@@ -2,18 +2,19 @@
 
 ## Contents
 
-* [Admin API Developer Instructions](#admin-api-developer-instructions)
-  * [Contents](#contents)
-  * [Development Pre-Requisites](#development-pre-requisites)
-  * [Build Script](#build-script)
-  * [Running on Localhost](#running-on-localhost)
-    * [Configuring Admin API to Run with the ODS/API](#configuring-admin-api-to-run-with-the-odsapi)
-    * [Resetting the Database State](#resetting-the-database-state)
-    * [Running Locally in Docker](#running-locally-in-docker)
-  * [Testing Admin API](#testing-admin-api)
-  * [Application Architecture](#application-architecture)
-    * [Database Layer](#database-layer)
-    * [Validation](#validation)
+- [Admin API Developer Instructions](#admin-api-developer-instructions)
+  - [Contents](#contents)
+  - [Development Pre-Requisites](#development-pre-requisites)
+  - [Build Script](#build-script)
+  - [Running on Localhost](#running-on-localhost)
+    - [Configuring Admin API to Run with the ODS/API](#configuring-admin-api-to-run-with-the-odsapi)
+    - [Resetting the Database State](#resetting-the-database-state)
+    - [Running Locally in Docker](#running-locally-in-docker)
+    - [Using Keycloak (IDP)](#using-keycloak-idp)
+  - [Testing Admin API](#testing-admin-api)
+  - [Application Architecture](#application-architecture)
+    - [Database Layer](#database-layer)
+    - [Validation](#validation)
 
 ## Development Pre-Requisites
 
@@ -163,27 +164,44 @@ To use Keycloak for authenticating the API, you need to configure the parameters
 
 Furthermore, when using Keycloak, the Register and Token endpoints will not be available in Swagger or for direct calls. Attempting to access these endpoints will result in a 404 error.
 
-```
-"Authentication": {
-        "IssuerUrl": "",
-        "SigningKey": "",
-        "AllowRegistration": false,
-        "OIDC": {
-            "Authority": "https://localhost/auth/realms/edfi-admin-console",
-            "ValidateIssuer": true,
-            "RequireHttpsMetadata": false,
-            "EnableServerCertificateCustomValidationCallback": true
-        }
-    },
+```json
+{
+  "Authentication": {
+    "IssuerUrl": "",
+    "SigningKey": "",
+    "AllowRegistration": false,
+    "OIDC": {
+      "Authority": "https://localhost/auth/realms/edfi-admin-console",
+      "ValidateIssuer": true,
+      "RequireHttpsMetadata": false,
+      "EnableServerCertificateCustomValidationCallback": true
+    }
+  }
+}
 ```
 
 ## Testing Admin API
 
-In source code there are two test projects:
+In source code there are two types of test projects:
 
-* Unit tests that are completely isolated.
+* Unit tests that are completely isolated (`*.UnitTests`).
+  * Execute with `build.ps1 -Command UnitTests`
+  * Collect code coverage analysis with `build.ps1 -Command UnitTests
+    -RunCoverageAnalysis`. This generates an HTML report in the `coveragereport`
+    directory.
 * The DB Tests project is a set of _integration_ tests that exercise the
-  repository layer.
+  repository layer (`*.DBTests`).
+  * Execute with `build.ps1 -Command IntegrationTest`
+  * Collect code coverage analysis with `build.ps1 -Command IntegrationTest
+    -RunCoverageAnalysis`. This generates an HTML report in the `coveragereport`
+    directory.
+
+Alternatively, run `build.ps1 -Command BuildAndTest [-RunCoverageAnalysis]` to
+get both Unit _and_ DBTests in the same execution.
+
+> [!NOTE]
+> Coverage analysis requires installation of the `reportgenerator` tool:
+> `dotnet tool install dotnet tool install -g dotnet-reportgenerator-globaltool -g`
 
 Additionally there is a set of end-to-end (E2E) tests in Postman. See the [E2E
 Tests/README.md](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for
