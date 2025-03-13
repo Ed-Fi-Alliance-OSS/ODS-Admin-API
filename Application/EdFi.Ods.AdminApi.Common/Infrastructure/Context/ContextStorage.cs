@@ -17,7 +17,7 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Context
     public class HashtableContextStorage : IContextStorage
     {
 
-        public Hashtable UnderlyingHashtable { get; } = new Hashtable();
+        public Hashtable UnderlyingHashtable { get; } = [];
 
         public void SetValue(string key, object value)
         {

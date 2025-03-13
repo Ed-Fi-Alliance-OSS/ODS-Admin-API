@@ -9,11 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 
-public class AdminConsolePostgresUsersContext : PostgresUsersContext
+public class AdminConsolePostgresUsersContext(DbContextOptions options) : PostgresUsersContext(options)
 {
-    public AdminConsolePostgresUsersContext(DbContextOptions options)
-            : base(options) { }
-
     public void UseTransaction(IDbContextTransaction transaction)
     {
         Database.UseTransaction(transaction.GetDbTransaction());

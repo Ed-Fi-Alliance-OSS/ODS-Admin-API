@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Security.PgSql;
 
-public class AdminConsoleSecurityPgSqlContext : DbContext
+public class AdminConsoleSecurityPgSqlContext(DbContextOptions<AdminConsoleSecurityPgSqlContext> options) : DbContext(options)
 {
-    public AdminConsoleSecurityPgSqlContext(DbContextOptions<AdminConsoleSecurityPgSqlContext> options) : base(options) { }
 }

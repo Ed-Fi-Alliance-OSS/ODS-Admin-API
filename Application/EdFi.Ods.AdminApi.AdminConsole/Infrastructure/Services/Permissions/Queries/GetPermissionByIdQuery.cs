@@ -14,14 +14,9 @@ public interface IGetPermissionByIdQuery
     Task<Permission?> Execute(int tenantId, int DocId);
 }
 
-public class GetPermissionByIdQuery : IGetPermissionByIdQuery
+public class GetPermissionByIdQuery(IQueriesRepository<Permission> permissionQuery) : IGetPermissionByIdQuery
 {
-    private readonly IQueriesRepository<Permission> _permissionQuery;
-
-    public GetPermissionByIdQuery(IQueriesRepository<Permission> permissionQuery)
-    {
-        _permissionQuery = permissionQuery;
-    }
+    private readonly IQueriesRepository<Permission> _permissionQuery = permissionQuery;
 
     public async Task<Permission?> Execute(int tenantId, int DocId)
     {

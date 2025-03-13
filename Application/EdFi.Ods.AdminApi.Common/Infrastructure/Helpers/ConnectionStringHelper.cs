@@ -15,7 +15,7 @@ public static class ConnectionStringHelper
     public static bool ValidateConnectionString(string databaseEngine, string? connectionString)
     {
         bool result = true;
-        if (databaseEngine.ToLowerInvariant() == DatabaseEngineEnum.SqlServer.ToLowerInvariant())
+        if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.InvariantCultureIgnoreCase))
         {
             try
             {
@@ -32,7 +32,7 @@ public static class ConnectionStringHelper
                 }
             }
         }
-        else if (databaseEngine.ToLowerInvariant() == DatabaseEngineEnum.PostgreSql.ToLowerInvariant())
+        else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.InvariantCultureIgnoreCase))
         {
             try
             {

@@ -14,14 +14,9 @@ public interface IGetStepsByIdQuery
     Task<Step?> Execute(int tenantId, int docId);
 }
 
-public class GetStepsByIdQuery : IGetStepsByIdQuery
+public class GetStepsByIdQuery(IQueriesRepository<Step> stepQuery) : IGetStepsByIdQuery
 {
-    private readonly IQueriesRepository<Step> _stepQuery;
-
-    public GetStepsByIdQuery(IQueriesRepository<Step> stepQuery)
-    {
-        _stepQuery = stepQuery;
-    }
+    private readonly IQueriesRepository<Step> _stepQuery = stepQuery;
 
     public async Task<Step?> Execute(int tenantId, int docId)
     {

@@ -14,14 +14,9 @@ public interface IAddInstanceCommand
     Task<AddInstanceResult> Execute(IInstanceRequestModel instance);
 }
 
-public class AddInstanceCommand : IAddInstanceCommand
+public class AddInstanceCommand(ICommandRepository<Instance> instanceCommand) : IAddInstanceCommand
 {
-    private readonly ICommandRepository<Instance> _instanceCommand;
-
-    public AddInstanceCommand(ICommandRepository<Instance> instanceCommand)
-    {
-        _instanceCommand = instanceCommand;
-    }
+    private readonly ICommandRepository<Instance> _instanceCommand = instanceCommand;
 
     public async Task<AddInstanceResult> Execute(IInstanceRequestModel instance)
     {

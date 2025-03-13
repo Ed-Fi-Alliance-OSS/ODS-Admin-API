@@ -7,19 +7,13 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.ModelConfiguratio
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.PgSql;
 
-public class AdminConsolePgSqlContext : DbContext, IDbContext
+public class AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext> options) : DbContext(options), IDbContext
 {
-    private IDbContextTransaction? _transaction;
-
-    public AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext> options) : base(options)
-    {
-        _transaction = null;
-    }
+    private IDbContextTransaction? _transaction = null;
 
     public IDbContextTransaction BeginTransaction()
     {

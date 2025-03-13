@@ -13,14 +13,10 @@ public interface IGetStepsQuery
     Task<IEnumerable<Step>> Execute();
 }
 
-public class GetStepsQuery : IGetStepsQuery
+public class GetStepsQuery(IQueriesRepository<Step> stepQuery) : IGetStepsQuery
 {
-    private readonly IQueriesRepository<Step> _stepQuery;
+    private readonly IQueriesRepository<Step> _stepQuery = stepQuery;
 
-    public GetStepsQuery(IQueriesRepository<Step> stepQuery)
-    {
-        _stepQuery = stepQuery;
-    }
     public async Task<IEnumerable<Step>> Execute()
     {
         var steps = await _stepQuery.GetAllAsync();

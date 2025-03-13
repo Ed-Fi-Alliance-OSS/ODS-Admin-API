@@ -9,13 +9,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.ModelConfiguration;
 
-public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
+public class UserProfileConfiguration(string dbProvider) : IEntityTypeConfiguration<UserProfile>
 {
-    private readonly string _dbProvider;
-    public UserProfileConfiguration(string dbProvider)
-    {
-        _dbProvider = dbProvider;
-    }
+    private readonly string _dbProvider = dbProvider;
 
     public void Configure(EntityTypeBuilder<UserProfile> entity)
     {

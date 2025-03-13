@@ -23,14 +23,14 @@ public class CompleteInstance : IFeature
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Handle(ICompleteInstanceCommand completeInstanceCommand, int instanceid)
+    public static async Task<IResult> Handle(ICompleteInstanceCommand completeInstanceCommand, int instanceid)
     {
         try
         {
             if (instanceid < 1)
                 return Results.BadRequest("Instance Id not valid.");
 
-            var completedInstanceResult = await completeInstanceCommand.Execute(instanceid);
+            await completeInstanceCommand.Execute(instanceid);
 
             return Results.NoContent();
         }

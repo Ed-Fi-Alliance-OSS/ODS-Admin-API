@@ -3,42 +3,25 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
-using EdFi.Ods.AdminApi.AdminConsole.Helpers;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
-using Microsoft.EntityFrameworkCore;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands
 {
     public interface IEditInstanceCommand
     {
-        Task<Instance> Execute(int odsinstanceid, IInstanceRequestModel instance);
+        Task<Instance> Execute(int id, IInstanceRequestModel instance);
     }
 
-    public class EditInstanceCommand : IEditInstanceCommand
+    public class EditInstanceCommand(ICommandRepository<Instance> instanceCommand, IQueriesRepository<Instance> instanceQuery, IDbContext dbContext) : IEditInstanceCommand
     {
-        private readonly ICommandRepository<Instance> _instanceCommand;
-        private readonly IQueriesRepository<Instance> _instanceQuery;
-        private readonly IDbContext _dbContext;
-
-        public EditInstanceCommand(ICommandRepository<Instance> instanceCommand, IQueriesRepository<Instance> instanceQuery, IDbContext dbContext)
-        {
-            _instanceCommand = instanceCommand;
-            _instanceQuery = instanceQuery;
-            _dbContext = dbContext;
-        }
+        private readonly ICommandRepository<Instance> _instanceCommand = instanceCommand;
+        private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
+        private readonly IDbContext _dbContext = dbContext;
 
         public async Task<Instance> Execute(int id, IInstanceRequestModel instance)
         {

@@ -12,13 +12,9 @@ public interface IAddHealthCheckCommand
     Task<HealthCheck> Execute(IAddHealthCheckModel newHealthCheck);
 }
 
-public class AddHealthCheckCommand : IAddHealthCheckCommand
+public class AddHealthCheckCommand(ICommandRepository<HealthCheck> healtCheckCommand) : IAddHealthCheckCommand
 {
-    private readonly ICommandRepository<HealthCheck> _healtCheckCommand;
-    public AddHealthCheckCommand(ICommandRepository<HealthCheck> healtCheckCommand)
-    {
-        _healtCheckCommand = healtCheckCommand;
-    }
+    private readonly ICommandRepository<HealthCheck> _healtCheckCommand = healtCheckCommand;
 
     public async Task<HealthCheck> Execute(IAddHealthCheckModel newHealthCheck)
     {

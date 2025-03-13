@@ -4,13 +4,11 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.ComponentModel.DataAnnotations;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Permissions.Commands;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.Permissions;
@@ -24,7 +22,7 @@ public class AddPermission : IFeature
       .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(Validator validator, IAddPermissionCommand addPermissionCommand, AddPermissionRequest request)
+    public static async Task<IResult> Execute(Validator validator, IAddPermissionCommand addPermissionCommand, AddPermissionRequest request)
     {
         await validator.GuardAsync(request);
         var addedPermissionResult = await addPermissionCommand.Execute(request);
@@ -67,7 +65,7 @@ public class AddPermission : IFeature
              .Must(BeValidDocument).WithMessage("Document must be a valid JSON.");
         }
 
-        private bool BeValidDocument(string document)
+        private static bool BeValidDocument(string document)
         {
             try
             {

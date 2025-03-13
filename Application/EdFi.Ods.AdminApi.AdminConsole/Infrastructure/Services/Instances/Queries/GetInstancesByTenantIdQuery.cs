@@ -14,19 +14,14 @@ public interface IGetInstancesByTenantIdQuery
     Task<IEnumerable<Instance>> Execute(int tenantId);
 }
 
-public class GetInstancesByTenantIdQuery : IGetInstancesByTenantIdQuery
+public class GetInstancesByTenantIdQuery(IQueriesRepository<Instance> instanceQuery) : IGetInstancesByTenantIdQuery
 {
-    private readonly IQueriesRepository<Instance> _instanceQuery;
-
-    public GetInstancesByTenantIdQuery(IQueriesRepository<Instance> instanceQuery)
-    {
-        _instanceQuery = instanceQuery;
-    }
+    private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
 
     public async Task<IEnumerable<Instance>> Execute(int tenantId)
     {
 
         var instances = await _instanceQuery.Query().Where(instance => instance.TenantId == tenantId).ToListAsync();
-        return instances.ToList();
+        return [.. instances];
     }
 }

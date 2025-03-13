@@ -3,10 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Dynamic;
-using System.Text.Json;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Permissions.Queries;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Steps.Queries;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -32,13 +28,13 @@ public class ReadSteps : IFeature
            .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    internal async Task<IResult> GetSteps([FromServices] IGetStepsQuery getStepsQuery)
+    internal static async Task<IResult> GetSteps([FromServices] IGetStepsQuery getStepsQuery)
     {
-    	var steps = await getStepsQuery.Execute();
+        var steps = await getStepsQuery.Execute();
         return Results.Ok(steps);
     }
 
-    internal async Task<IResult> GetStepById([FromServices] IGetStepsByIdQuery GetStepsByIdQuery, int tenantId, int id)
+    internal static async Task<IResult> GetStepById([FromServices] IGetStepsByIdQuery GetStepsByIdQuery, int tenantId, int id)
     {
         var step = await GetStepsByIdQuery.Execute(tenantId, id);
 
@@ -49,10 +45,10 @@ public class ReadSteps : IFeature
         return Results.NotFound();
     }
 
-    internal async Task<IResult> GetStepsByTenantId([FromServices] IGetStepsByTenantIdQuery GetStepsByTenantIdQuery, int tenantId)
+    internal static async Task<IResult> GetStepsByTenantId([FromServices] IGetStepsByTenantIdQuery GetStepsByTenantIdQuery, int tenantId)
     {
-    	var steps = await GetStepsByTenantIdQuery.Execute(tenantId);
-        
+        var steps = await GetStepsByTenantIdQuery.Execute(tenantId);
+
         if (steps.Any())
         {
             return Results.Ok(steps);

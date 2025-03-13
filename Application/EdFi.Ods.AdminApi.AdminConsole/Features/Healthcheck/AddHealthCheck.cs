@@ -23,7 +23,7 @@ public class AddHealthCheck : IFeature
       .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(Validator validator, IAddHealthCheckCommand addHealthCheckCommand, AddHealthCheckRequest request)
+    public static async Task<IResult> Execute(Validator validator, IAddHealthCheckCommand addHealthCheckCommand, AddHealthCheckRequest request)
     {
         await validator.GuardAsync(request);
         var addedHealthCheck = await addHealthCheckCommand.Execute(request);
@@ -63,7 +63,7 @@ public class AddHealthCheck : IFeature
                  .Must(BeValidDocument).WithMessage("Document must be a valid JSON.");
         }
 
-        private bool BeValidDocument(string document)
+        private static bool BeValidDocument(string document)
         {
             try
             {

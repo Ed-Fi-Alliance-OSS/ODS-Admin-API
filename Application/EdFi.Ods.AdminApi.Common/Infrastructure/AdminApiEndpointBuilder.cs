@@ -3,16 +3,13 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.Common.Helpers;
-using Swashbuckle.AspNetCore.Annotations;
+using System.Data;
 using EdFi.Ods.AdminApi.Common.Features;
-using EdFi.Ods.AdminApi.Common.Infrastructure;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
-using System.Data;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.Common.Infrastructure;
 
@@ -32,10 +29,10 @@ public class AdminApiEndpointBuilder
     private readonly HttpVerb? _verb;
     private readonly string _route;
     private readonly Delegate? _handler;
-    private readonly List<Action<RouteHandlerBuilder>> _routeOptions = new();
+    private readonly List<Action<RouteHandlerBuilder>> _routeOptions = [];
     private readonly string _pluralResourceName;
     private bool _allowAnonymous = false;
-    private IEnumerable<string> _authorizationPolicies = new List<string>();
+    private IEnumerable<string> _authorizationPolicies = [];
 
     public static AdminApiEndpointBuilder MapGet(IEndpointRouteBuilder endpoints, string route, Delegate handler)
         => new(endpoints, HttpVerb.GET, route, handler);
@@ -70,7 +67,7 @@ public class AdminApiEndpointBuilder
     /// <returns></returns>
     public AdminApiEndpointBuilder RequireAuthorization(PolicyDefinition authorizationPolicies)
     {
-        _authorizationPolicies = new List<string>() { authorizationPolicies.PolicyName };
+        _authorizationPolicies = [authorizationPolicies.PolicyName];
         return this;
     }
 
@@ -119,7 +116,7 @@ public class AdminApiEndpointBuilder
                 }
                 builder.RequireAuthorization(rolesPolicy.Select(policy => policy.PolicyName).ToArray());
 
-                if (_authorizationPolicies != null && _authorizationPolicies.Count() > 0)
+                if (_authorizationPolicies.Any())
                 {
                     builder.RequireAuthorization(_authorizationPolicies.ToArray());
                 }

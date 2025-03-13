@@ -22,7 +22,7 @@ public class AddUserProfile : IFeature
       .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(Validator validator, IAddUserProfileCommand addUserProfileCommand, AddUserProfileRequest request)
+    public static async Task<IResult> Execute(Validator validator, IAddUserProfileCommand addUserProfileCommand, AddUserProfileRequest request)
     {
         await validator.GuardAsync(request);
         var addedUserProfileResult = await addUserProfileCommand.Execute(request);
@@ -60,7 +60,7 @@ public class AddUserProfile : IFeature
              .Must(BeValidDocument).WithMessage("Document must be a valid JSON.");
         }
 
-        private bool BeValidDocument(string document)
+        private static bool BeValidDocument(string document)
         {
             try
             {

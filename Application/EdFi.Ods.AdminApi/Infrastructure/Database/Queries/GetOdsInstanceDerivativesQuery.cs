@@ -6,7 +6,6 @@
 using System.Linq.Expressions;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -32,7 +31,8 @@ public class GetOdsInstanceDerivativesQuery : IGetOdsInstanceDerivativesQuery
     {
         _usersContext = usersContext;
         _options = options;
-        var isSQLServerEngine = _options.Value.DatabaseEngine?.ToLowerInvariant() == DatabaseEngineEnum.SqlServer.ToLowerInvariant();
+        var DatabaseEngine = _options.Value.DatabaseEngine ??= DatabaseEngineEnum.SqlServer;
+        var isSQLServerEngine = DatabaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase);
         _orderByColumnOds = new Dictionary<string, Expression<Func<OdsInstanceDerivative, object>>>
             (StringComparer.OrdinalIgnoreCase)
         {
@@ -40,25 +40,23 @@ public class GetOdsInstanceDerivativesQuery : IGetOdsInstanceDerivativesQuery
             { SortingColumns.OdsInstanceDerivativeOdsInstanceIdColumn, x => x.OdsInstance.OdsInstanceId },
             { SortingColumns.DefaultIdColumn, x => x.OdsInstanceDerivativeId }
         };
-
     }
 
     public List<OdsInstanceDerivative> Execute()
     {
-        return _usersContext.OdsInstanceDerivatives
+        return [.. _usersContext.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
-            .OrderBy(p => p.DerivativeType).ToList();
+            .OrderBy(p => p.DerivativeType)];
     }
 
     public List<OdsInstanceDerivative> Execute(CommonQueryParams commonQueryParams)
     {
         Expression<Func<OdsInstanceDerivative, object>> columnToOrderBy = _orderByColumnOds.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
-        return _usersContext.OdsInstanceDerivatives
+        return [.. _usersContext.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
-            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
-            .ToList();
+            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)];
     }
 }
 

@@ -13,14 +13,10 @@ public interface IGetHealthChecksQuery
     Task<IEnumerable<HealthCheck>> Execute();
 }
 
-public class GetHealthChecksQuery : IGetHealthChecksQuery
+public class GetHealthChecksQuery(IQueriesRepository<HealthCheck> healthCheckQuery) : IGetHealthChecksQuery
 {
-    private readonly IQueriesRepository<HealthCheck> _healthCheckQuery;
+    private readonly IQueriesRepository<HealthCheck> _healthCheckQuery = healthCheckQuery;
 
-    public GetHealthChecksQuery(IQueriesRepository<HealthCheck> healthCheckQuery)
-    {
-        _healthCheckQuery = healthCheckQuery;
-    }
     public async Task<IEnumerable<HealthCheck>> Execute()
     {
         return await _healthCheckQuery.GetAllAsync();

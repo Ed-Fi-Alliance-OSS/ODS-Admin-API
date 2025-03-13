@@ -11,7 +11,7 @@ public class AppSettingsFile
     public required SwaggerSettings SwaggerSettings { get; set; }
     public required AdminConsoleSettings AdminConsoleSettings { get; set; }
     public string? EdFiApiDiscoveryUrl { get; set; }
-    public string[] ConnectionStrings { get; set; } = new string[0];
+    public string[] ConnectionStrings { get; set; } = [];
     public Dictionary<string, TenantSettings> Tenants { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 

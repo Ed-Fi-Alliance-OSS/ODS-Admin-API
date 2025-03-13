@@ -11,16 +11,11 @@ public interface IContextProvider<T>
     void Set(T? context);
 }
 
-public class ContextProvider<T> : IContextProvider<T>
+public class ContextProvider<T>(IContextStorage contextStorage) : IContextProvider<T>
 {
     private static readonly string? _contextKey = typeof(T?).FullName;
 
-    private readonly IContextStorage _contextStorage;
-
-    public ContextProvider(IContextStorage contextStorage)
-    {
-        _contextStorage = contextStorage;
-    }
+    private readonly IContextStorage _contextStorage = contextStorage;
 
     public T? Get() => _contextStorage.GetValue<T>(_contextKey!);
 

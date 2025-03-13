@@ -5,11 +5,8 @@
 
 using System;
 using System.Threading.Tasks;
-using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.MsSql;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
@@ -23,11 +20,11 @@ public abstract class PlatformUsersContextTestBase
 {
     private readonly Checkpoint _checkpoint = new()
     {
-        TablesToIgnore = new[]
-        {
+        TablesToIgnore =
+        [
             "__MigrationHistory", "DeployJournal", "AdminConsoleDeployJournal"
-        },
-        SchemasToExclude = Array.Empty<string>()
+        ],
+        SchemasToExclude = []
     };
 
     protected static string ConnectionString => AdminConnectionString;
@@ -55,7 +52,7 @@ public abstract class PlatformUsersContextTestBase
         });
     }
 
-    protected static async void Transaction(Action<IDbContext> action)
+    protected static void Transaction(Action<IDbContext> action)
     {
         using var dbContext = new AdminConsoleMsSqlContext(GetDbContextOptions());
         using var transaction = (dbContext).Database.BeginTransaction();

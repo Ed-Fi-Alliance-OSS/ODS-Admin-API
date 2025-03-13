@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 
-public static class StringExtensions
+public static partial class StringExtensions
 {
     public static string ToTitleCase(this string input)
         => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(input);
@@ -23,7 +23,7 @@ public static class StringExtensions
     {
         var listOfStrings = inputStrings.ToList();
 
-        return listOfStrings.Any()
+        return listOfStrings.Count != 0
             ? string.Join(separator, listOfStrings)
             : string.Empty;
     }
@@ -35,7 +35,7 @@ public static class StringExtensions
 
     public static string ToPascalCase(this string input)
     {
-        var matches = Regex.Match(input, "^(?<word>^[a-z]+|[A-Z]+|[A-Z][a-z]+)+$");
+        var matches = ToPascalCaseRegex().Match(input);
         var groupWords = matches.Groups["word"];
 
         var thread = Thread.CurrentThread.CurrentCulture.TextInfo;
@@ -45,6 +45,6 @@ public static class StringExtensions
         return stringBuilder.ToString();
     }
 
+    [GeneratedRegex("^(?<word>^[a-z]+|[A-Z]+|[A-Z][a-z]+)+$")]
+    private static partial Regex ToPascalCaseRegex();
 }
-
-

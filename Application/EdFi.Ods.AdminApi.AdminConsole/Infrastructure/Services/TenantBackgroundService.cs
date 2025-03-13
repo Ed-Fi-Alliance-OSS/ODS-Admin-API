@@ -14,20 +14,17 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 
 public class TenantBackgroundService : BackgroundService
 {
-    private IDisposable _optionsChangedListener;
-    private AppSettingsFile _currentAppSettings;
+    private readonly IDisposable _optionsChangedListener;
     private static readonly ILog _log = LogManager.GetLogger(typeof(TenantService));
     private readonly IServiceScopeFactory _serviceScopeFactory;
     public TenantBackgroundService(IOptionsMonitor<AppSettingsFile> optionsMonitor, IServiceScopeFactory serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _optionsChangedListener = optionsMonitor.OnChange(async (opt, listener) => await OnAppSettingsChangedAsync(opt, listener))!;
-        _currentAppSettings = optionsMonitor.CurrentValue;
+        _optionsChangedListener = optionsMonitor.OnChange(async (opt) => await OnAppSettingsChangedAsync())!;
     }
 
-    private async Task OnAppSettingsChangedAsync(AppSettingsFile newAppSettings, string? listener)
+    private async Task OnAppSettingsChangedAsync()
     {
-        _currentAppSettings = newAppSettings;
         using IServiceScope scope = _serviceScopeFactory.CreateScope();
         _log.Info("The appsettings file has been modified");
 
@@ -45,10 +42,10 @@ public class TenantBackgroundService : BackgroundService
         }
     }
 
-    public override async Task StopAsync(CancellationToken stoppingToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _log.Info("Stopping background");
-        await base.StopAsync(stoppingToken);
+        await base.StopAsync(cancellationToken);
     }
 
     public override void Dispose()

@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,17 +11,13 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.HealthChecks.Qu
 
 public interface IGetHealthCheckQuery
 {
-    Task<HealthCheck?> Execute(int docId);
+    Task<HealthCheck?> Execute(int tenantId);
 }
 
-public class GetHealthCheckQuery : IGetHealthCheckQuery
+public class GetHealthCheckQuery(IQueriesRepository<HealthCheck> healthCheckQuery) : IGetHealthCheckQuery
 {
-    private readonly IQueriesRepository<HealthCheck> _healthCheckQuery;
+    private readonly IQueriesRepository<HealthCheck> _healthCheckQuery = healthCheckQuery;
 
-    public GetHealthCheckQuery(IQueriesRepository<HealthCheck> healthCheckQuery)
-    {
-        _healthCheckQuery = healthCheckQuery;
-    }
     public async Task<HealthCheck?> Execute(int tenantId)
     {
         var healthCheck = await _healthCheckQuery.Query().SingleOrDefaultAsync(healthCheck => healthCheck.TenantId == tenantId);

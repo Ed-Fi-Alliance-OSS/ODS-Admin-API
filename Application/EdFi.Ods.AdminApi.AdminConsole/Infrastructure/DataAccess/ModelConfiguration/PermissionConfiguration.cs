@@ -9,13 +9,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.ModelConfiguration;
 
-public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
+public class PermissionConfiguration(string dbProvider) : IEntityTypeConfiguration<Permission>
 {
-    private readonly string _dbProvider;
-    public PermissionConfiguration(string dbProvider)
-    {
-        _dbProvider = dbProvider;
-    }
+    private readonly string _dbProvider = dbProvider;
 
     public void Configure(EntityTypeBuilder<Permission> entity)
     {

@@ -7,7 +7,5 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure;
 
 public static class OperationalContext
 {
-#pragma warning disable S1075 
     public const string DefaultOperationalContextUri = "uri://ed-fi-api-host.org";
-#pragma warning disable S1075
 }

@@ -8,18 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 
-public interface IQueriesRepository<T> : IBaseRepository<T> where T : class
+public interface IQueriesRepository<T> : IBaseRepository where T : class
 {
     Task<IEnumerable<T>> GetAllAsync();
     IQueryable<T> Query();
 }
 
-public class QueriesRepository<T> : BaseRepository<T>, IQueriesRepository<T> where T : class
+public class QueriesRepository<T>(IDbContext context) : BaseRepository<T>(context), IQueriesRepository<T> where T : class
 {
-    public QueriesRepository(IDbContext context)
-        : base(context)
-    { }
-
     public async Task<IEnumerable<T>> GetAllAsync()
     {
         return await _dbSet.AsNoTracking().ToListAsync();

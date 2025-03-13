@@ -2,11 +2,8 @@
 // Licensed to the Ed-Fi Alliance under one or more agreements.
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
-using System.Text.Json;
+
 using AutoMapper;
-using EdFi.Ods.AdminApi.AdminConsole.Features.Permissions;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Permissions.Queries;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.UserProfiles.Queries;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -31,7 +28,7 @@ public class ReadUserProfiles : IFeature
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    internal async Task<IResult> GetUserProfileById(IMapper mapper, IGetUserProfileByIdQuery getUserProfileQuery, int tenantId, int id)
+    internal static async Task<IResult> GetUserProfileById(IMapper mapper, IGetUserProfileByIdQuery getUserProfileQuery, int tenantId, int id)
     {
         var userProfile = await getUserProfileQuery.Execute(tenantId, id);
         if (userProfile != null)
@@ -39,13 +36,13 @@ public class ReadUserProfiles : IFeature
         return Results.NotFound();
     }
 
-    internal async Task<IResult> GetUserProfiles(IMapper mapper, IGetUserProfilesQuery getUserProfilesQuery)
+    internal static async Task<IResult> GetUserProfiles(IMapper mapper, IGetUserProfilesQuery getUserProfilesQuery)
     {
         var userProfiles = await getUserProfilesQuery.Execute();
         return Results.Ok(userProfiles);
     }
 
-    internal async Task<IResult> GetUserProfilesByTenant(IMapper mapper, IGetUserProfilesByTenantIdQuery getUserProfilesQuery, int tenantId)
+    internal static async Task<IResult> GetUserProfilesByTenant(IMapper mapper, IGetUserProfilesByTenantIdQuery getUserProfilesQuery, int tenantId)
     {
         var userProfiles = await getUserProfilesQuery.Execute(tenantId);
         if (userProfiles.Any())

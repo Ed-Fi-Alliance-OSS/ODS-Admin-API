@@ -4,19 +4,18 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 
-public interface IBaseRepository<T> where T : class
+public interface IBaseRepository
 {
     void SwitchConnectionString(string connectionString);
     void ResetConnectionString();
     Task SaveChangesAsync();
 }
 
-public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
+public abstract class BaseRepository<T> : IBaseRepository where T : class
 {
     protected readonly IDbContext _context;
     protected DbSet<T> _dbSet;
@@ -51,12 +50,12 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     private void CheckMigrations()
     {
         var pendingMigrations = _context.DB.GetPendingMigrations().ToList();
-        if (pendingMigrations.Any())
+        if (pendingMigrations.Count != 0)
         {
             var appliedMigrations = _context.DB.GetAppliedMigrations().ToList();
             var migrationsToApply = pendingMigrations.Except(appliedMigrations).ToList();
 
-            if (migrationsToApply.Any())
+            if (migrationsToApply.Count != 0)
             {
                 _context.DB.Migrate();
             }

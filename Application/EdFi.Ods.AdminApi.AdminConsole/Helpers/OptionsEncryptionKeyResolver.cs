@@ -7,14 +7,9 @@ using EdFi.Ods.AdminApi.Common.Settings;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Helpers;
 
-public class OptionsEncryptionKeyResolver : IEncryptionKeyResolver
+public class OptionsEncryptionKeyResolver(IEncryptionKeySettings encryptionKeySettings) : IEncryptionKeyResolver
 {
-    private readonly string _encryptionKey;
-
-    public OptionsEncryptionKeyResolver(IEncryptionKeySettings encryptionKeySettings)
-    {
-        _encryptionKey = encryptionKeySettings.EncryptionKey;
-    }
+    private readonly string _encryptionKey = encryptionKeySettings.EncryptionKey;
 
     public string GetEncryptionKey()
     {

@@ -3,8 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Text.Json.Nodes;
-using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -13,17 +11,12 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queri
 
 public interface IGetInstanceByIdQuery
 {
-    Task<Instance?> Execute(int odsInstanceId);
+    Task<Instance?> Execute(int id);
 }
 
-public class GetInstanceByIdQuery : IGetInstanceByIdQuery
+public class GetInstanceByIdQuery(IQueriesRepository<Instance> instanceQuery) : IGetInstanceByIdQuery
 {
-    private readonly IQueriesRepository<Instance> _instanceQuery;
-
-    public GetInstanceByIdQuery(IQueriesRepository<Instance> instanceQuery)
-    {
-        _instanceQuery = instanceQuery;
-    }
+    private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
 
     public async Task<Instance?> Execute(int id)
     {

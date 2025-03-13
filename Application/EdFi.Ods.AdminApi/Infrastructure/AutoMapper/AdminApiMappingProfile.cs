@@ -190,7 +190,7 @@ public class AdminApiMappingProfile : Profile
             {
                 if (src.Credentials != null)
                 {
-                    var credentials = JsonConvert.DeserializeObject<InstanceWorkerModelDTO>(Encoding.UTF8.GetString(src.Credentials));
+                    var credentials = JsonConvert.DeserializeObject<InstanceWorkerModelDto>(Encoding.UTF8.GetString(src.Credentials));
                     dst.ClientId = credentials?.ClientId;
                     dst.ClientSecret = credentials?.Secret;
                 }

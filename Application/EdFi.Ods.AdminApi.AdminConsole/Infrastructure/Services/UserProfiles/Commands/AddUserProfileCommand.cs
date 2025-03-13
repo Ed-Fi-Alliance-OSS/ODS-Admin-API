@@ -3,8 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Text.Json.Nodes;
-using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 
@@ -12,17 +10,12 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.UserProfiles.Co
 
 public interface IAddUserProfileCommand
 {
-    Task<UserProfile> Execute(IAddUserProfileModel userProfile);
+    Task<UserProfile> Execute(IAddUserProfileModel newUserProfile);
 }
 
-public class AddUserProfileCommand : IAddUserProfileCommand
+public class AddUserProfileCommand(ICommandRepository<UserProfile> userProfileCommand) : IAddUserProfileCommand
 {
-    private readonly ICommandRepository<UserProfile> _userProfileCommand;
-
-    public AddUserProfileCommand(ICommandRepository<UserProfile> userProfileCommand)
-    {
-        _userProfileCommand = userProfileCommand;
-    }
+    private readonly ICommandRepository<UserProfile> _userProfileCommand = userProfileCommand;
 
     public async Task<UserProfile> Execute(IAddUserProfileModel newUserProfile)
     {

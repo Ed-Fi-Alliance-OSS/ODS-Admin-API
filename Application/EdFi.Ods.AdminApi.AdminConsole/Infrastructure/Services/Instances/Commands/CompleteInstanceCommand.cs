@@ -3,11 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
 using System.Dynamic;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.MsSql;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -23,22 +21,14 @@ public interface ICompleteInstanceCommand
     Task<Instance> Execute(int id);
 }
 
-public class CompleteInstanceCommand : ICompleteInstanceCommand
+public class CompleteInstanceCommand(IOptions<AdminConsoleSettings> options, IUsersContext context, IQueriesRepository<Instance> instanceQuery, ICommandRepository<Instance> instanceCommand) : ICompleteInstanceCommand
 {
-    private readonly AdminConsoleSettings _options;
-    private readonly IUsersContext _context;
-    private readonly IQueriesRepository<Instance> _instanceQuery;
-    private readonly ICommandRepository<Instance> _instanceCommand;
+    private readonly AdminConsoleSettings _options = options.Value;
+    private readonly IUsersContext _context = context;
+    private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
+    private readonly ICommandRepository<Instance> _instanceCommand = instanceCommand;
 
-    public CompleteInstanceCommand(IOptions<AdminConsoleSettings> options, IUsersContext context, IQueriesRepository<Instance> instanceQuery, ICommandRepository<Instance> instanceCommand)
-    {
-        _options = options.Value;
-        _context = context;
-        _instanceQuery = instanceQuery;
-        _instanceCommand = instanceCommand;
-    }
-
-    public OdsInstance NewOdsInstance(Instance adminConsoleInstance)
+    public static OdsInstance NewOdsInstance(Instance adminConsoleInstance)
     {
         var newOdsInstance = new OdsInstance()
         {
@@ -49,7 +39,7 @@ public class CompleteInstanceCommand : ICompleteInstanceCommand
 
         if (adminConsoleInstance.OdsInstanceContexts != null && adminConsoleInstance.OdsInstanceContexts.Count > 0)
         {
-            newOdsInstance.OdsInstanceContexts = new List<Admin.DataAccess.Models.OdsInstanceContext>();
+            newOdsInstance.OdsInstanceContexts = [];
             foreach (var adminConsoleOdsInstanceContext in adminConsoleInstance.OdsInstanceContexts)
             {
                 var odsInstanceContext = new Admin.DataAccess.Models.OdsInstanceContext()
@@ -63,7 +53,7 @@ public class CompleteInstanceCommand : ICompleteInstanceCommand
 
         if (adminConsoleInstance.OdsInstanceDerivatives != null && adminConsoleInstance.OdsInstanceDerivatives.Count > 0)
         {
-            newOdsInstance.OdsInstanceDerivatives = new List<Admin.DataAccess.Models.OdsInstanceDerivative>();
+            newOdsInstance.OdsInstanceDerivatives = [];
             foreach (var adminConsoleOdsInstanceDerivatives in adminConsoleInstance.OdsInstanceDerivatives)
             {
                 var odsInstanceDerivative = new Admin.DataAccess.Models.OdsInstanceDerivative()
@@ -80,13 +70,9 @@ public class CompleteInstanceCommand : ICompleteInstanceCommand
 
     private async Task<ApiClient> NewApiClient()
     {
-        var application = await _context.Applications.Where(app => app.ApplicationName.Equals(_options.ApplicationName)).FirstOrDefaultAsync();
-        if (application == null)
-            throw new Exception("Application not found.");
+        var application = await _context.Applications.Where(app => app.ApplicationName.Equals(_options.ApplicationName)).FirstAsync();
 
         var user = await _context.Users.Where(user => user.Vendor.VendorName.Equals(_options.VendorCompany)).FirstOrDefaultAsync();
-        if (application == null)
-            throw new Exception("Vendor not found.");
 
         var apiClient = new ApiClient(true)
         {

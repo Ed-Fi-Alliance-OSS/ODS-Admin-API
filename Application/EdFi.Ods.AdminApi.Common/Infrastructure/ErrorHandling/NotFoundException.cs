@@ -10,15 +10,8 @@ public interface INotFoundException
     public string Message { get; }
 }
 
-public class NotFoundException<T> : Exception, INotFoundException
+public class NotFoundException<T>(string resourceName, T id) : Exception($"Not found: {resourceName} with ID {id}. It may have been recently deleted."), INotFoundException
 {
-    public string ResourceName { get; }
-    public T Id { get; }
-
-    public NotFoundException(string resourceName, T id)
-        : base($"Not found: {resourceName} with ID {id}. It may have been recently deleted.")
-    {
-        ResourceName = resourceName;
-        Id = id;
-    }
+    public string ResourceName { get; } = resourceName;
+    public T Id { get; } = id;
 }

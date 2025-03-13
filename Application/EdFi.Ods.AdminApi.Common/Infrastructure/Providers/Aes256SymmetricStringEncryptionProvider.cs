@@ -57,17 +57,15 @@ public class Aes256SymmetricStringEncryptionProvider : ISymmetricStringEncryptio
 
         ICryptoTransform encryptor = aesInstance.CreateEncryptor(aesInstance.Key, aesInstance.IV);
 
-        using (MemoryStream msEncrypt = new MemoryStream())
+        using (MemoryStream msEncrypt = new())
         {
-            using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+            using CryptoStream csEncrypt = new(msEncrypt, encryptor, CryptoStreamMode.Write);
+            using (StreamWriter swEncrypt = new(csEncrypt))
             {
-                using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                {
-                    swEncrypt.Write(value);
-                }
-
-                encryptedBytes = msEncrypt.ToArray();
+                swEncrypt.Write(value);
             }
+
+            encryptedBytes = msEncrypt.ToArray();
         }
 
         byte[] hmacSignatureValue = GenerateHmacSignature();
@@ -79,7 +77,7 @@ public class Aes256SymmetricStringEncryptionProvider : ISymmetricStringEncryptio
         {
             byte[] hmacSignature;
 
-            using (HMACSHA256 hmac = new HMACSHA256(key))
+            using (HMACSHA256 hmac = new(key))
             {
                 hmacSignature = hmac.ComputeHash(encryptedBytes);
             }
@@ -151,16 +149,10 @@ public class Aes256SymmetricStringEncryptionProvider : ISymmetricStringEncryptio
 
         ICryptoTransform decryptor = aesInstance.CreateDecryptor(aesInstance.Key, aesInstance.IV);
 
-        using (MemoryStream msDecrypt = new MemoryStream(encryptedBytes))
-        {
-            using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-            {
-                using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                {
-                    output = srDecrypt.ReadToEnd();
-                }
-            }
-        }
+        using MemoryStream msDecrypt = new(encryptedBytes);
+        using CryptoStream csDecrypt = new(msDecrypt, decryptor, CryptoStreamMode.Read);
+        using StreamReader srDecrypt = new(csDecrypt);
+        output = srDecrypt.ReadToEnd();
 
         return true;
 
@@ -168,7 +160,7 @@ public class Aes256SymmetricStringEncryptionProvider : ISymmetricStringEncryptio
         {
             bool signatureCheckResult;
 
-            using (HMACSHA256 hmac = new HMACSHA256(key))
+            using (HMACSHA256 hmac = new(key))
             {
                 byte[] computedHashValue = hmac.ComputeHash(encryptedBytes);
                 signatureCheckResult = hashValue.SequenceEqual(computedHashValue);

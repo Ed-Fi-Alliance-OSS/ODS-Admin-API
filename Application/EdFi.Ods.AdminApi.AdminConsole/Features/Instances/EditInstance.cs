@@ -24,11 +24,11 @@ public class EditInstance : IFeature
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(InstanceValidator validator, IEditInstanceCommand editInstanceCommand, [FromBody] EditInstanceRequest request, int id)
+    public static async Task<IResult> Execute(InstanceValidator validator, IEditInstanceCommand editInstanceCommand, [FromBody] EditInstanceRequest request, int id)
     {
         request.Id = id;
         await validator.GuardAsync(request);
-        var instance = await editInstanceCommand.Execute(id, request);
+        await editInstanceCommand.Execute(id, request);
         return Results.NoContent();
     }
 

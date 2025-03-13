@@ -11,14 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.MsSql;
 
-public class AdminConsoleMsSqlContext : DbContext, IDbContext
+public class AdminConsoleMsSqlContext(DbContextOptions<AdminConsoleMsSqlContext> options) : DbContext(options), IDbContext
 {
-    private IDbContextTransaction? _transaction;
-
-    public AdminConsoleMsSqlContext(DbContextOptions<AdminConsoleMsSqlContext> options) : base(options)
-    {
-        _transaction = null;
-    }
+    private IDbContextTransaction? _transaction = null;
 
     public IDbContextTransaction BeginTransaction()
     {

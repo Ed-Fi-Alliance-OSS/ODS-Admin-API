@@ -13,20 +13,21 @@ public static class QueryStringMappingHelper
 {
     public static Expression<Func<T, object>> GetColumnToOrderBy<T>(this Dictionary<string, Expression<Func<T, object>>> mapping, string? orderBy)
     {
-        orderBy = orderBy ?? string.Empty;
-        Expression<Func<T, object>>? result;
+        orderBy ??= string.Empty;
 
-        if (mapping == null)
-            throw new ArgumentNullException(nameof(mapping));
-
-        if (string.IsNullOrEmpty(orderBy))
-            return mapping.First().Value;
-
-        if (!mapping.TryGetValue(orderBy.ToLowerInvariant(), out result))
+        if (mapping != null)
         {
-            throw new ValidationException([new ValidationFailure(nameof(orderBy), $"The orderBy value {orderBy} is not allowed. The allowed values are {string.Join(",", mapping.Keys)}")]);
+            if (string.IsNullOrEmpty(orderBy))
+                return mapping.First().Value;
+
+            if (!mapping.TryGetValue(orderBy.ToLowerInvariant(), out Expression<Func<T, object>>? result))
+            {
+                throw new ValidationException([new ValidationFailure(nameof(orderBy), $"The orderBy value {orderBy} is not allowed. The allowed values are {string.Join(",", mapping.Keys)}")]);
+            }
+
+            return result;
         }
 
-        return result;
+        throw new ArgumentNullException(nameof(mapping));
     }
 }

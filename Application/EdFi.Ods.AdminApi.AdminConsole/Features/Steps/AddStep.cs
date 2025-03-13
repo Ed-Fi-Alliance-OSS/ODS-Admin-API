@@ -22,7 +22,7 @@ public class AddStep : IFeature
         .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public async Task<IResult> Execute(Validator validator, IAddStepCommand addStepCommand, AddStepRequest request)
+    public static async Task<IResult> Execute(Validator validator, IAddStepCommand addStepCommand, AddStepRequest request)
     {
         await validator.GuardAsync(request);
         var addedStepResult = await addStepCommand.Execute(request);
@@ -60,7 +60,7 @@ public class AddStep : IFeature
              .Must(BeValidDocument).WithMessage("Document must be a valid JSON.");
         }
 
-        private bool BeValidDocument(string document)
+        private static bool BeValidDocument(string document)
         {
             try
             {

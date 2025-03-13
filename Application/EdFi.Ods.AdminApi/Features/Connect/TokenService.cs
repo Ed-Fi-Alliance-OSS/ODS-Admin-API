@@ -17,17 +17,11 @@ public interface ITokenService
     Task<ClaimsPrincipal> Handle(OpenIddictRequest request);
 }
 
-public class TokenService : ITokenService
+public class TokenService(IOpenIddictApplicationManager applicationManager, IConfiguration configuration) : ITokenService
 {
-    private readonly IOpenIddictApplicationManager _applicationManager;
-    private readonly IConfiguration _configuration;
+    private readonly IOpenIddictApplicationManager _applicationManager = applicationManager;
+    private readonly IConfiguration _configuration = configuration;
     private const string DENIED_AUTHENTICATION_MESSAGE = "Access Denied. Please review your information and try again.";
-
-    public TokenService(IOpenIddictApplicationManager applicationManager, IConfiguration configuration)
-    {
-        _applicationManager = applicationManager;
-        _configuration = configuration;
-    }
 
     public async Task<ClaimsPrincipal> Handle(OpenIddictRequest request)
     {
@@ -51,7 +45,7 @@ public class TokenService : ITokenService
             .ToList();
 
         var missingScopes = requestedScopes.Where(s => !appScopes.Contains(s)).ToList();
-        if (missingScopes.Any())
+        if (missingScopes.Count != 0)
             throw new AuthenticationException(DENIED_AUTHENTICATION_MESSAGE);
 
         var displayName = await _applicationManager.GetDisplayNameAsync(application);

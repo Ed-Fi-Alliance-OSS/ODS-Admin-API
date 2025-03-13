@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-namespace EdFi.Ods.AdminApi.Common.Helpers;
+namespace EdFi.Ods.AdminApi.Common.Settings;
 
 public static class FileHelpers
 {
@@ -17,11 +17,9 @@ public static class FileHelpers
             {
                 if (File.Exists(filePath))
                 {
-                    using (var fs = File.OpenRead(filePath))
-                    {
-                        return System.Security.Cryptography.SHA1
-                            .Create().ComputeHash(fs);
-                    }
+                    using var fs = File.OpenRead(filePath);
+                    return System.Security.Cryptography.SHA1
+                        .Create().ComputeHash(fs);
                 }
                 else
                 {

@@ -13,14 +13,9 @@ public interface IAddStepCommand
     Task<Step?> Execute(IAddStepModel step);
 }
 
-public class AddStepCommand : IAddStepCommand
+public class AddStepCommand(ICommandRepository<Step> stepCommand) : IAddStepCommand
 {
-    private readonly ICommandRepository<Step> _stepCommand;
-
-    public AddStepCommand(ICommandRepository<Step> stepCommand)
-    {
-        _stepCommand = stepCommand;
-    }
+    private readonly ICommandRepository<Step> _stepCommand = stepCommand;
 
     public async Task<Step?> Execute(IAddStepModel step)
     {

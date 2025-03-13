@@ -8,5 +8,5 @@ namespace EdFi.Ods.AdminApi.Common.Settings;
 public class CorsSettings
 {
     public bool EnableCors { get; set; }
-    public string[] AllowedOrigins { get; set; } = new string[0];
+    public string[] AllowedOrigins { get; set; } = [];
 }

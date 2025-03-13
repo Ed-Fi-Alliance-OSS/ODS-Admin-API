@@ -20,7 +20,7 @@ public struct CommonQueryParams
     [FromQuery(Name = "direction")]
     public string? Direction { get; set; }
     [BindNever]
-    public bool IsDescending => SortingDirectionHelper.IsDescendingSorting(Direction);
+    public readonly bool IsDescending => SortingDirectionHelper.IsDescendingSorting(Direction);
     public CommonQueryParams() { }
     public CommonQueryParams(int? offset, int? limit)
     {

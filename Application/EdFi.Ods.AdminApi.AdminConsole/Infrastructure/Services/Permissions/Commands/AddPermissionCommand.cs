@@ -13,14 +13,9 @@ public interface IAddPermissionCommand
     Task<Permission?> Execute(IAddPermissionModel permission);
 }
 
-public class AddPermissionCommand : IAddPermissionCommand
+public class AddPermissionCommand(ICommandRepository<Permission> permissionCommand) : IAddPermissionCommand
 {
-    private readonly ICommandRepository<Permission> _permissionCommand;
-
-    public AddPermissionCommand(ICommandRepository<Permission> permissionCommand)
-    {
-        _permissionCommand = permissionCommand;
-    }
+    private readonly ICommandRepository<Permission> _permissionCommand = permissionCommand;
 
     public async Task<Permission?> Execute(IAddPermissionModel permission)
     {

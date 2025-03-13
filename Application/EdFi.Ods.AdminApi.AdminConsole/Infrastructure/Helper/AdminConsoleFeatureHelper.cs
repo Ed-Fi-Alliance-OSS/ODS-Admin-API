@@ -3,11 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Reflection;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
-using System.Reflection;
 
-namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Helpers;
+namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Helper;
 
 public static class AdminConsoleFeatureHelper
 {

@@ -3,24 +3,15 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Net;
 using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
-public class ValidateApplicationExistsQuery
+public class ValidateApplicationExistsQuery(IUsersContext context)
 {
-    private readonly IUsersContext _context;
-
-    public ValidateApplicationExistsQuery(IUsersContext context)
-    {
-        _context = context;
-    }
+    private readonly IUsersContext _context = context;
 
     public bool Execute(IAddApplicationModel applicationModel)
     {
@@ -45,12 +36,12 @@ public class ValidateApplicationExistsQuery
                         )).AsEnumerable()
                 .Where(b =>
                     ((b.Profiles == null
-                        || (b.Profiles != null && !b.Profiles.Any()))
+                        || (b.Profiles != null && b.Profiles.Count == 0))
                     && (applicationModel.ProfileIds == null
                         || (applicationModel.ProfileIds != null && applicationModel.ProfileIds.Any())))
                     || ((b.Profiles != null && applicationModel.ProfileIds != null)
-                        && (!(b.Profiles.Any() || applicationModel.ProfileIds.Any())
-                            || ((b.Profiles.Any() && applicationModel.ProfileIds.Any())
+                        && (!(b.Profiles.Count != 0 || applicationModel.ProfileIds.Any())
+                            || ((b.Profiles.Count != 0 && applicationModel.ProfileIds.Any())
                                 && (b.Profiles.Count == applicationModel.ProfileIds.Count())
                                 && (b.Profiles.All(c => applicationModel.ProfileIds.Contains(c.ProfileId)))
                                 )
@@ -59,11 +50,11 @@ public class ValidateApplicationExistsQuery
                     ).Select(
                     applications => new
                     {
-                        ApplicationName = applications.ApplicationName,
-                        VendorId = applications.Vendor.VendorId,
+                        applications.ApplicationName,
+                        applications.Vendor.VendorId,
                         ProfileIds = applications.Profiles.Select(k => k.ProfileId).ToList(),
                         EducationOrganizationIds = applications.ApplicationEducationOrganizations.Select(k => k.EducationOrganizationId).ToList(),
-                        ClaimSetName = applications.ClaimSetName,
+                        applications.ClaimSetName,
                         ApiClients = applications.ApiClients.Select(k => k.Application.ApplicationId).ToList(),
                     }).ToList();
 
@@ -75,14 +66,14 @@ public class ValidateApplicationExistsQuery
                     && a.ApiClient.Application.ClaimSetName == applicationModel.ClaimSetName)
                 .Select(m => new
                 {
-                    ApplicationId = m.ApiClient.Application.ApplicationId,
-                    OdsInstanceId = m.OdsInstance.OdsInstanceId
+                    m.ApiClient.Application.ApplicationId,
+                    m.OdsInstance.OdsInstanceId
                 }).ToList();
-        if (existingApplication.Any())
+        if (existingApplication.Count != 0)
         {
             if ((existingInstance == null
                 || (existingInstance != null
-                    && !existingInstance.Any()))
+                    && existingInstance.Count == 0))
              && (applicationModel.OdsInstanceIds == null
                 || (applicationModel.OdsInstanceIds != null && !applicationModel.OdsInstanceIds.Any()))
               )

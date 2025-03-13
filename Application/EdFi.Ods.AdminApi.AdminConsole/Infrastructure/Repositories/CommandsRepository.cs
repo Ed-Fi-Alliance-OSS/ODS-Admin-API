@@ -4,12 +4,11 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 
-public interface ICommandRepository<T> : IBaseRepository<T> where T : class
+public interface ICommandRepository<T> : IBaseRepository where T : class
 {
     Task<T> AddAsync(T entity);
     Task<T> UpdateAsync(T entity);
@@ -21,12 +20,8 @@ public interface ICommandRepository<T> : IBaseRepository<T> where T : class
     void DisposeTransaction();
 }
 
-public class CommandRepository<T> : BaseRepository<T>, ICommandRepository<T> where T : class
+public class CommandRepository<T>(IDbContext context) : BaseRepository<T>(context), ICommandRepository<T> where T : class
 {
-    public CommandRepository(IDbContext context)
-        : base(context)
-    { }
-
     public async Task<T> AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);

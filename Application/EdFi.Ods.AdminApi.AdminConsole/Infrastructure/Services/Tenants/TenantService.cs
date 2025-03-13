@@ -17,25 +17,17 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Tenants;
 public interface IAdminConsoleTenantsService
 {
     Task InitializeTenantsAsync();
-    Task<List<TenantModel>> GetTenantsAsync(bool fromCache);
+    Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(int tenantId);
 }
 
-public class TenantService : IAdminConsoleTenantsService
+public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
+    IMemoryCache memoryCache) : IAdminConsoleTenantsService
 {
     private const string ADMIN_DB_KEY = "EdFi_Admin";
-    private readonly IOptions<AppSettingsFile> _options;
-    protected AppSettingsFile _appSettings;
-    private readonly IMemoryCache _memoryCache;
+    protected AppSettingsFile _appSettings = options.Value;
+    private readonly IMemoryCache _memoryCache = memoryCache;
     private static readonly ILog _log = LogManager.GetLogger(typeof(TenantService));
-
-    public TenantService(IOptionsSnapshot<AppSettingsFile> options,
-        IMemoryCache memoryCache)
-    {
-        _options = options;
-        _memoryCache = memoryCache;
-        _appSettings = _options.Value;
-    }
 
     public async Task InitializeTenantsAsync()
     {
@@ -46,7 +38,7 @@ public class TenantService : IAdminConsoleTenantsService
 
     public async Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false)
     {
-        List<TenantModel> results = new List<TenantModel>();
+        List<TenantModel> results;
 
         if (fromCache)
         {
@@ -57,7 +49,7 @@ public class TenantService : IAdminConsoleTenantsService
             }
         }
 
-        results = new List<TenantModel>();
+        results = [];
         //check multitenancy
         if (_appSettings.AppSettings.MultiTenancy)
         {
@@ -67,8 +59,8 @@ public class TenantService : IAdminConsoleTenantsService
                 var connectionString = tenantConfig.Value.ConnectionStrings.First(p => p.Key == ADMIN_DB_KEY).Value;
                 if (!ConnectionStringHelper.ValidateConnectionString(_appSettings.AppSettings.DatabaseEngine!, connectionString))
                 {
-                    _log.Warn($"Tenant {tenantConfig.Key} has a wrong connection string for database {ADMIN_DB_KEY}");
-
+                    _log.WarnFormat("Tenant {Key} has an invalid connection string for database {ADMIN_DB_KEY}. Database engine is {engine}",
+                        tenantConfig.Key, ADMIN_DB_KEY, _appSettings.AppSettings.DatabaseEngine);
                 }
                 dynamic document = new ExpandoObject();
                 document.edfiApiDiscoveryUrl = tenantConfig.Value.EdFiApiDiscoveryUrl;
@@ -105,7 +97,7 @@ public class TenantService : IAdminConsoleTenantsService
     private async Task<List<TenantModel>> GetTenantsFromCacheAsync()
     {
         var tenants = await Task.FromResult(_memoryCache.Get<List<TenantModel>>(AdminConsoleConstants.TenantsCacheKey));
-        return tenants ?? new List<TenantModel>();
+        return tenants ?? [];
     }
 }
 

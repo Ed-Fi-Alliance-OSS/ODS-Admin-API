@@ -11,12 +11,11 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Helpers
 {
     public static class ExpandoObjectHelper
     {
-        public static ExpandoObject NormalizeExpandoObject(ExpandoObject expando)
+        public static ExpandoObject NormalizeExpandoObject(ExpandoObject expando, Exception exception)
         {
-            var dictionary = expando as IDictionary<string, object>;
             var normalized = new ExpandoObject() as IDictionary<string, object>;
 
-            if (dictionary != null)
+            if (expando is IDictionary<string, object> dictionary)
             {
                 foreach (var kvp in dictionary)
                 {
@@ -37,7 +36,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Helpers
                     }
                     else if (kvp.Value is ExpandoObject nestedExpando)
                     {
-                        normalized[kvp.Key] = NormalizeExpandoObject(nestedExpando);
+                        normalized[kvp.Key] = NormalizeExpandoObject(nestedExpando, new Exception());
                     }
                     else
                     {
@@ -46,7 +45,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Helpers
                 }
             }
 
-            return normalized as ExpandoObject ?? throw new Exception();
+            return normalized as ExpandoObject ?? throw exception;
         }
 
     }

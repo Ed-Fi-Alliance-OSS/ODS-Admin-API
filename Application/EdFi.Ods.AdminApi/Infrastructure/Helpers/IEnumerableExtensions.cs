@@ -5,7 +5,6 @@
 
 
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
 
@@ -24,7 +23,7 @@ public static class IEnumerableExtensions
     {
         var listOfStrings = inputStrings.ToList();
 
-        return listOfStrings.Any()
+        return listOfStrings.Count != 0
             ? string.Join(separator, listOfStrings)
             : string.Empty;
     }
@@ -33,11 +32,9 @@ public static class IEnumerableExtensions
     {
         try
         {
-            if (offset == null)
-                offset = settings.Value.DefaultPageSizeOffset;
+            offset ??= settings.Value.DefaultPageSizeOffset;
 
-            if (limit == null)
-                limit = settings.Value.DefaultPageSizeLimit;
+            limit ??= settings.Value.DefaultPageSizeLimit;
 
             return source.Skip(offset.Value).Take(limit.Value);
         }

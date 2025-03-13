@@ -64,16 +64,10 @@ public class AdminApiVersions
         return result;
     }
 
-    public class AdminApiVersion
+    public class AdminApiVersion(double version, string displayName)
     {
-        public double Version { get; }
-        public string DisplayName { get; }
+        public double Version { get; } = version;
+        public string DisplayName { get; } = displayName;
         public override string ToString() => DisplayName;
-
-        public AdminApiVersion(double version, string displayName)
-        {
-            Version = version;
-            DisplayName = displayName;
-        }
     }
 }

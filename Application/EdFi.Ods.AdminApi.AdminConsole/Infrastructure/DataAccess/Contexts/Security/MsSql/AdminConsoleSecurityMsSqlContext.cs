@@ -3,11 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.ModelConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Security.MsSql;
-public class AdminConsoleSecurityMsSqlContext : DbContext
+public class AdminConsoleSecurityMsSqlContext(DbContextOptions<AdminConsoleSecurityMsSqlContext> options) : DbContext(options)
 {
-    public AdminConsoleSecurityMsSqlContext(DbContextOptions<AdminConsoleSecurityMsSqlContext> options) : base(options) { }
 }

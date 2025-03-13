@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Linq;
 using System.Reflection;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
@@ -30,9 +29,11 @@ namespace EdFi.Ods.AdminApi.Infrastructure;
 
 public static class WebApplicationBuilderExtensions
 {
+    private static readonly string[] _value = ["api"];
+
     public static void AddServices(this WebApplicationBuilder webApplicationBuilder)
     {
-        IConfiguration config = webApplicationBuilder.Configuration;
+        ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         EnableMultiTenancySupport(webApplicationBuilder);
         var executingAssembly = Assembly.GetExecutingAssembly();
@@ -126,8 +127,7 @@ public static class WebApplicationBuilderExtensions
                             Reference = new OpenApiReference
                                 { Type = ReferenceType.SecurityScheme, Id = "oauth" },
                         },
-                        new[] { "api" }
-                    }
+_value }
                 }
             );
 

@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Text.Json.Serialization;
-using EdFi.Ods.AdminApi.Common.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 

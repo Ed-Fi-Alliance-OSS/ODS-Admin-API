@@ -9,13 +9,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.ModelConfiguration;
 
-public class StepConfiguration : IEntityTypeConfiguration<Step>
+public class StepConfiguration(string dbProvider) : IEntityTypeConfiguration<Step>
 {
-    private readonly string _dbProvider;
-    public StepConfiguration(string dbProvider)
-    {
-        _dbProvider = dbProvider;
-    }
+    private readonly string _dbProvider = dbProvider;
 
     public void Configure(EntityTypeBuilder<Step> entity)
     {

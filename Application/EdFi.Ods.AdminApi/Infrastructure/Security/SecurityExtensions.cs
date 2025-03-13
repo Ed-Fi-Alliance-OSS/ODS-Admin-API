@@ -10,7 +10,6 @@ using EdFi.Ods.AdminApi.Features.Connect;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
@@ -115,7 +114,7 @@ public static class SecurityExtensions
             .AddJwtBearer("IdentityProvider", options =>
             {
                 var oidcIssuer = configuration.Get<string>("Authentication:OIDC:Authority");
-                if (!String.IsNullOrEmpty(oidcIssuer))
+                if (!string.IsNullOrEmpty(oidcIssuer))
                 {
                     var oidcValidationCallback = configuration.Get<bool>("Authentication:OIDC:EnableServerCertificateCustomValidationCallback");
                     var requireHttpsMetadata = configuration.Get<bool>("Authentication:OIDC:RequireHttpsMetadata");
@@ -131,12 +130,10 @@ public static class SecurityExtensions
                         RoleClaimType = "realm_access.roles",
                         IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
                         {
-#pragma warning disable S4830 // Server certificates should be verified during SSL/TLS connections
                             var handler = new HttpClientHandler
                             {
                                 ServerCertificateCustomValidationCallback = (request, cert, chain, errors) => oidcValidationCallback
                             };
-#pragma warning restore S4830
                             // Server certificates should be verified during SSL/TLS connections
                             // Get public keys from keycloak
                             var client = new HttpClient(handler);
@@ -153,7 +150,7 @@ public static class SecurityExtensions
             authenticationBuilder.AddJwtBearer(options =>
             {
                 var oidcIssuer = configuration.Get<string>("Authentication:OIDC:Authority");
-                if (!String.IsNullOrEmpty(oidcIssuer))
+                if (!string.IsNullOrEmpty(oidcIssuer))
                 {
                     var oidcValidationCallback = configuration.Get<bool>("Authentication:OIDC:EnableServerCertificateCustomValidationCallback");
                     var requireHttpsMetadata = configuration.Get<bool>("Authentication:OIDC:RequireHttpsMetadata");
@@ -169,12 +166,10 @@ public static class SecurityExtensions
                         RoleClaimType = "realm_access.roles",
                         IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
                         {
-#pragma warning disable S4830 // Server certificates should be verified during SSL/TLS connections
                             var handler = new HttpClientHandler
                             {
                                 ServerCertificateCustomValidationCallback = (request, cert, chain, errors) => oidcValidationCallback
                             };
-#pragma warning restore S4830
                             // Server certificates should be verified during SSL/TLS connections
                             // Get public keys from keycloak
                             var client = new HttpClient(handler);
