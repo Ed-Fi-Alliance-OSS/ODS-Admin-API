@@ -201,7 +201,7 @@ get both Unit _and_ DBTests in the same execution.
 
 > [!NOTE]
 > Coverage analysis requires installation of the `reportgenerator` tool:
-> `dotnet tool install dotnet tool install -g dotnet-reportgenerator-globaltool -g`
+> `dotnet tool install -g dotnet-reportgenerator-globaltool`
 
 Additionally there is a set of end-to-end (E2E) tests in Postman. See the [E2E
 Tests/README.md](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for
