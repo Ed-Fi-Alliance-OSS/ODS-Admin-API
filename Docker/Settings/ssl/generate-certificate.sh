@@ -6,7 +6,7 @@
 # See the LICENSE and NOTICES files in the project root for more information.
 
 set -e
-set -x
+set +x
 
-openssl dhparam -out dhparam.pem 2048
-openssl req -subj '/CN=localhost' -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.crt -days 365 -addext "subjectAltName = DNS:nginx"
+openssl dhparam -out dhparam.pem 4096
+openssl req -x509 -newkey rsa:4096 -nodes -keyout server.key -out server.crt -days 365 -addext "subjectAltName = DNS:localhost,DNS:nginx"
