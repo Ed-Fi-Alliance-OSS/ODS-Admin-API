@@ -25,7 +25,7 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Security
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
         {
             var user = context.User;
-            var roleClaimAttribute = _configuration.GetValue<string>("AppSettings:roleClaimAttribute");
+            var roleClaimAttribute = _configuration.GetValue<string>("AppSettings:RoleClaimAttribute");
             var realmAccessClaim = user.FindAll(c => c.Type == roleClaimAttribute);
             if (realmAccessClaim != null && requirement?.Roles?.Count() > 0)
             {
