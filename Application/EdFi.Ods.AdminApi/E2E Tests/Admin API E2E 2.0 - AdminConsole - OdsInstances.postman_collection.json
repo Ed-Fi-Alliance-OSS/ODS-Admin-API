@@ -1,13 +1,13 @@
 {
 	"info": {
-		"_postman_id": "ee7c7db8-6ba4-45c8-921f-9f7152ab27b3",
+		"_postman_id": "d3e1891d-7241-492a-816c-7f4a72e8f86a",
 		"name": "Admin API E2E 2.0 - AdminConsole - OdsInstances",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "42411115"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37902114"
 	},
 	"item": [
 		{
-			"name": "v2",
+			"name": "adminconsole",
 			"item": [
 				{
 					"name": "OdsInstances",
@@ -60,7 +60,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -102,7 +111,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -145,7 +163,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -204,7 +231,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -332,7 +368,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -406,7 +451,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -478,7 +533,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -550,7 +615,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -624,7 +699,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -683,7 +768,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -694,8 +789,105 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"DELETE AdminConsole OdsInstances: Status code is Method Not Allowed\", function () {\r",
-											"    pm.response.to.have.status(405);\r",
+											"pm.test(\"DELETE Admin Console OdsInstances: Status code is Accepted\", function () {\r",
+											"    pm.response.to.have.status(409); //Has to verified 202\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const jsHelperVar = pm.variables.get('jsHelper');\r",
+											"const jsHelper = eval(jsHelperVar);\r",
+											"\r",
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/adminconsole/odsInstances`,\r",
+											"  method: 'POST',\r",
+											"  header: header,\r",
+											"  body: {\r",
+											"    mode: 'raw',\r",
+											"    raw:JSON.stringify({\r",
+											"        \"tenantId\": 1,\r",
+											"        \"tenantName\": \"tenant1\",\r",
+											"        \"name\": \"Test999999999\",\r",
+											"        \"instanceType\": \"Test999999999\",\r",
+											"        \"odsInstanceContexts\": [],\r",
+											"        \"odsInstanceDerivatives\": []\r",
+											"    }), \r",
+											"  }\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const id = response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"  console.log(\"ID OdsInstance: \" + id)\r",
+											"  if(id)\r",
+											"    {\r",
+											"        \r",
+											"        pm.sendRequest({\r",
+											"            url: `${pm.variables.get(\"API_URL\")}/adminconsole/instances/${id}/completed`,\r",
+											"            method: 'POST',\r",
+											"            header: header\r",
+											"            },\r",
+											"            function (odsInstanceErr, odsInstanceResponse) {\r",
+											"            if(odsInstanceErr) \r",
+											"            { \r",
+											"                console.log(\"Error on completed the instance:\", odsInstanceErr); \r",
+											"            } \r",
+											"            pm.collectionVariables.set(\"AdminConsoleCreatedOdsInstanceIdToDelete\", id);\r",
+											"            console.log(\"ID OdsInstance Collection: \" + pm.collectionVariables.get(\"AdminConsoleCreatedOdsInstanceIdToDelete\"))\r",
+											"            console.log(JSON.stringify(odsInstanceResponse))\r",
+											"        });\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceIdToDelete}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceIdToDelete}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Not Found",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"DELETE AdminConsole OdsInstances: Status code is Not Found\", function () {\r",
+											"    pm.response.to.have.status(404);\r",
 											"});\r",
 											""
 										],
@@ -707,7 +899,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/999999999",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"999999999"
+									]
+								}
 							},
 							"response": []
 						}
@@ -718,9 +920,13 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": {
-			"token": "{{TOKEN}}"
-		}
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{TOKEN}}",
+				"type": "string"
+			}
+		]
 	},
 	"event": [
 		{
