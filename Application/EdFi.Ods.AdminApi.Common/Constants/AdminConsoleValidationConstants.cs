@@ -16,4 +16,5 @@ public static class AdminConsoleValidationConstants
     public const string OdsIntanceIdIsNotValid = "The instance id is not valid.";
     public const string OdsIntanceIdStatusIsNotCompleted = "The instance cannot be deleted because it is not in a COMPLETED status.";
     public const string OdsInstanceIdStatusIsNotPendingDelete = "The instance status is invalid; it is not marked as 'Pending Delete'.";
+    public const string OdsIntanceIdStatusIsPendingRename = "The instance cannot be set rename failed because it is not in a PENDING_RENAME status.";
 }
