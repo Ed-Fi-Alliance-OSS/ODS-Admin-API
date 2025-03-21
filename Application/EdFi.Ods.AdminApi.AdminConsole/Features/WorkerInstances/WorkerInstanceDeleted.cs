@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AutoMapper;
@@ -29,6 +30,12 @@ public class WorkerInstanceDeleted : IFeature
             .WithRouteOptions(b => b.WithResponseCode(400))
             .WithRouteOptions(b => b.WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.AdminConsole);
+        AdminApiEndpointBuilder.MapPost(endpoints, "/instances/{id}/deletefailed", HandleDeleteFailed)
+            .WithRouteOptions(b => b.WithResponseCode(204))
+            .WithRouteOptions(b => b.WithResponseCode(400))
+            .WithRouteOptions(b => b.WithResponseCode(404))
+            .WithRouteOptions(b => b.WithResponseCode(409 ))
+            .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
     internal static async Task<IResult> Handle([FromServices] IDeletedInstanceCommand deletedInstanceCommand, [FromRoute] int id)
@@ -48,6 +55,28 @@ public class WorkerInstanceDeleted : IFeature
         catch (Exception ex)
         {
             return Results.BadRequest(ex.Message);
+        }
+    }
+
+    internal static async Task<IResult> HandleDeleteFailed([FromServices] IDeleteInstanceFailedCommand deletedInstanceCommand, [FromRoute] int id)
+    {
+        try
+        {
+            if (id < 1)
+                return Results.BadRequest("Instance Id not valid.");
+
+            await deletedInstanceCommand.Execute(id);
+            return Results.NoContent();
+        }
+        catch (NotFoundException<int> ex)
+        {
+            return Results.NotFound(ex.Message);
+        }
+        catch (AdminApiException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.Conflict)
+                return Results.Conflict(ex.Message);
+            throw;
         }
     }
 }

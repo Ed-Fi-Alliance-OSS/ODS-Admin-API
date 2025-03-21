@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "81744839-8da5-4530-981a-23b507d064c9",
+		"_postman_id": "5418f216-0818-45bc-bef4-b50c7e92966f",
 		"name": "Admin API E2E 2.0 - AdminConsole - Instances",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "22794466"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42536960",
+		"_collection_link": "https://test33-6887.postman.co/workspace/1172~f1493713-c50a-41d2-a415-221caeb3f42d/collection/42536960-5418f216-0818-45bc-bef4-b50c7e92966f?action=share&source=collection_link&creator=42536960"
 	},
 	"item": [
 		{
@@ -53,14 +54,23 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance test #1 - 2024 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1768\",\r\n  \"name\": \"Instance test #1 - 2025\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -102,7 +112,18 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceId}}",
+										"completed"
+									]
+								}
 							},
 							"response": []
 						},
@@ -175,7 +196,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -567,7 +597,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -852,7 +892,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances?tenantname=tenant1",
+									"raw": "{{API_URL}}/adminconsole/instances?tenantname=tenant1768",
 									"host": [
 										"{{API_URL}}"
 									],
@@ -863,7 +903,7 @@
 									"query": [
 										{
 											"key": "tenantname",
-											"value": "tenant1"
+											"value": "tenant1768"
 										}
 									]
 								}
@@ -967,13 +1007,17 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": {
-										"0": {
-											"key": "token",
-											"value": "{{EXPIREDTOKEN}}",
-											"type": "string"
+									"bearer": [
+										{
+											"key": "0",
+											"value": {
+												"key": "token",
+												"value": "{{EXPIREDTOKEN}}",
+												"type": "string"
+											},
+											"type": "any"
 										}
-									}
+									]
 								},
 								"method": "GET",
 								"header": [],
@@ -986,7 +1030,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1022,13 +1075,17 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": {
-										"0": {
-											"key": "token",
-											"value": "{{INVALIDTOKEN}}",
-											"type": "string"
+									"bearer": [
+										{
+											"key": "0",
+											"value": {
+												"key": "token",
+												"value": "{{INVALIDTOKEN}}",
+												"type": "string"
+											},
+											"type": "any"
 										}
-									}
+									]
 								},
 								"method": "GET",
 								"header": [],
@@ -1041,7 +1098,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1083,7 +1149,18 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances/999999/completed"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/999999/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"999999",
+										"completed"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1116,9 +1193,13 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": {
-										"token": "{{EXPIREDTOKEN}}"
-									}
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{EXPIREDTOKEN}}",
+											"type": "string"
+										}
+									]
 								},
 								"method": "POST",
 								"header": [],
@@ -1131,7 +1212,18 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceId}}",
+										"completed"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1164,9 +1256,13 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": {
-										"token": "{{INVALIDTOKEN}}"
-									}
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{INVALIDTOKEN}}",
+											"type": "string"
+										}
+									]
 								},
 								"method": "POST",
 								"header": [],
@@ -1179,7 +1275,343 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceId}}",
+										"completed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create OdsInstance To Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole OdsInstances: Response includes location in header\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"    if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedOdsInstanceToDeleteId\", id);\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant to delete{{$guid}}\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Not Found - Delete Failed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Not Found\", function () {\r",
+											"    pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/999999/deletefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"999999",
+										"deletefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - Delete Failed Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Conflict, instance is not marked as 'Pending Delete'\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}/deletefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+										"deletefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances to Delete - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+										"completed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - Delete Status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code for Pending Delete\", function () {\r",
+											"    pm.response.to.have.status(202);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsinstances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsinstances",
+										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - Delete Failed Successful",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Delete Failed\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}/deletefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+										"deletefailed"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1286,7 +1718,134 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances",
+										"{{CreatedOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"DELETE OdsInstances: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (err, response) {\r",
+											"    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"    const result = response.json();\r",
+											"    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"    else {\r",
+											"        pm.sendRequest({\r",
+											"            url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts/${result[0].id}`,\r",
+											"            method: 'DELETE',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"        });\r",
+											"\r",
+											"        pm.sendRequest({\r",
+											"        url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives`,\r",
+											"            method: 'GET',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"            else {\r",
+											"                pm.sendRequest({\r",
+											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
+											"                    method: 'DELETE',\r",
+											"                    header: header\r",
+											"                },\r",
+											"                function (err, response) {\r",
+											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                    pm.sendRequest({\r",
+											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
+											"                            method: 'GET',\r",
+											"                            header: header\r",
+											"                        },\r",
+											"                        function (err, response) {\r",
+											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                            const result = response.json();\r",
+											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                            else {\r",
+											"                                pm.sendRequest({\r",
+											"                                url: `${pm.variables.get(\"API_URL\")}/v2/applications/${result[0].id}`,\r",
+											"                                    method: 'DELETE',\r",
+											"                                    header: header\r",
+											"                                },\r",
+											"                                function (err, response) {\r",
+											"                                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                                    const result = response.json();\r",
+											"                                    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                                });\r",
+											"                            }\r",
+											"                        });\r",
+											"                });\r",
+											"            }\r",
+											"        });\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances",
+										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}"
+									]
+								}
 							},
 							"response": []
 						}
@@ -1297,9 +1856,13 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": {
-			"token": "{{TOKEN}}"
-		}
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{TOKEN}}",
+				"type": "string"
+			}
+		]
 	},
 	"event": [
 		{
@@ -1424,6 +1987,10 @@
 			"key": "INVALIDTOKEN",
 			"value": "0123456789",
 			"type": "string"
+		},
+		{
+			"key": "AdminConsoleCreatedOdsInstanceId",
+			"value": ""
 		}
 	]
 }
