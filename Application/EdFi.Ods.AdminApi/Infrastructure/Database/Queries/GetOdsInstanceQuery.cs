@@ -15,14 +15,9 @@ public interface IGetOdsInstanceQuery
     OdsInstance Execute(int odsInstanceId);
 }
 
-public class GetOdsInstanceQuery : IGetOdsInstanceQuery
+public class GetOdsInstanceQuery(IUsersContext userContext) : IGetOdsInstanceQuery
 {
-    private readonly IUsersContext _usersContext;
-
-    public GetOdsInstanceQuery(IUsersContext userContext)
-    {
-        _usersContext = userContext;
-    }
+    private readonly IUsersContext _usersContext = userContext;
 
     public OdsInstance Execute(int odsInstanceId)
     {

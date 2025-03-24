@@ -7,10 +7,8 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
-using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.Infrastructure.Extensions;
 using FluentValidation;
 
 namespace EdFi.Ods.AdminApi.Features.OdsInstances;
@@ -65,7 +63,7 @@ public class DeleteOdsInstance : IFeature
         private bool NotHaveApplicationsRelationships<T>(Request model, int odsIntanceId, ValidationContext<T> context)
         {
             context.MessageFormatter.AppendArgument("Table", "Applications");
-            List<Admin.DataAccess.Models.Application> appList = _getApplicationByOdsInstanceIdQuery.Execute(odsIntanceId) ?? new List<Admin.DataAccess.Models.Application>();
+            List<Application> appList = _getApplicationByOdsInstanceIdQuery.Execute(odsIntanceId) ?? [];
             return appList.Count == 0;
         }
 

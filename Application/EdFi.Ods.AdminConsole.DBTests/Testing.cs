@@ -3,8 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
 using EdFi.Ods.AdminApi.AdminConsole.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
@@ -37,18 +37,21 @@ public static class Testing
 
     public static IOptions<AppSettings> GetAppSettings()
     {
-        AppSettings appSettings = new AppSettings();
-        IOptions<AppSettings> options = Options.Create(appSettings);
-        return options;
+        AppSettings appSettings = new()
+        {
+            DatabaseEngine = DatabaseEngineEnum.PostgreSql.ToString()
+        };
+        return Options.Create(appSettings);
     }
 
     public static IOptions<AdminConsoleSettings> GetAdminConsoleSettings()
     {
-        AdminConsoleSettings appSettings = new AdminConsoleSettings();
-        appSettings.VendorCompany = "Ed-Fi Administrative Tools";
-        appSettings.ApplicationName = "Ed-Fi Health Check";
-        IOptions<AdminConsoleSettings> options = Options.Create(appSettings);
-        return options;
+        AdminConsoleSettings appSettings = new()
+        {
+            VendorCompany = "Ed-Fi Administrative Tools",
+            ApplicationName = "Ed-Fi Health Check"
+        };
+        return Options.Create(appSettings);
     }
 
     public static IEncryptionKeyResolver GetEncryptionKeyResolver()

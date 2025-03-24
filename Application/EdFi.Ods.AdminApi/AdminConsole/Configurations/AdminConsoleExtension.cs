@@ -14,7 +14,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace EdFi.Ods.AdminApi.AdminConsole;
+namespace EdFi.Ods.AdminApi.AdminConsole.Configurations;
 
 public static class AdminConsoleExtension
 {
@@ -42,25 +42,23 @@ public static class AdminConsoleExtension
             {
                 foreach (var item in options!.Value.Tenants)
                 {
-                    using (var scopeInstances = app.Services.CreateScope())
+                    using var scopeInstances = app.Services.CreateScope();
+                    var tenantConfigurationProvider = scopeInstances.ServiceProvider.GetService<ITenantConfigurationProvider>();
+                    var tenantConfigurationContextProvider = scopeInstances.ServiceProvider.GetService<IContextProvider<TenantConfiguration>>();
+                    if (tenantConfigurationProvider!.Get().TryGetValue(item.Key, out var tenantConfiguration))
                     {
-                        var tenantConfigurationProvider = scopeInstances.ServiceProvider.GetService<ITenantConfigurationProvider>();
-                        var tenantConfigurationContextProvider = scopeInstances.ServiceProvider.GetService<IContextProvider<TenantConfiguration>>();
-                        if (tenantConfigurationProvider!.Get().TryGetValue(item.Key, out var tenantConfiguration))
+                        //assign connection string to the dbcontext when is multitenant
+                        tenantConfigurationContextProvider!.Set(tenantConfiguration);
+                        IAdminConsoleInitializationService? adminConsoleInitializationService = scopeInstances.ServiceProvider.GetService<IAdminConsoleInitializationService>();
+                        IAdminConsoleInstancesService? adminConsoleInstancesService = scopeInstances.ServiceProvider.GetService<IAdminConsoleInstancesService>();
+                        if (adminConsoleInitializationService != null)
                         {
-                            //assign connection string to the dbcontext when is multitenant
-                            tenantConfigurationContextProvider!.Set(tenantConfiguration);
-                            IAdminConsoleInitializationService? adminConsoleInitializationService = scopeInstances.ServiceProvider.GetService<IAdminConsoleInitializationService>();
-                            IAdminConsoleInstancesService? adminConsoleInstancesService = scopeInstances.ServiceProvider.GetService<IAdminConsoleInstancesService>();
-                            if (adminConsoleInitializationService != null)
-                            {
-                                applicationId = await adminConsoleInitializationService.InitializeApplications(app);
-                            }
-
-                            if (adminConsoleInstancesService != null)
-                                await adminConsoleInstancesService.InitializeInstancesAsync(tenantId, applicationId);
-                            tenantId++;
+                            applicationId = await adminConsoleInitializationService.InitializeApplications(app);
                         }
+
+                        if (adminConsoleInstancesService != null)
+                            await adminConsoleInstancesService.InitializeInstancesAsync(tenantId, applicationId);
+                        tenantId++;
                     }
                 }
             }

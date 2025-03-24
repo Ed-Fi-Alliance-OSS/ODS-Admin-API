@@ -24,10 +24,10 @@ using static EdFi.Ods.AdminApi.Features.Vendors.AddVendor;
 namespace EdFi.Ods.AdminConsole.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
+public class RenameInstanceCommandTests : PlatformUsersContextTestBase
 {
     [Test]
-    public async Task ShouldCompleteInstance()
+    public async Task ShouldRenameInstance()
     {
         AdminConsoleSqlServerUsersContext userDbContext = new(GetUserDbContextOptions());
         var addVendorCommand = new AddVendorCommand(userDbContext);
@@ -41,55 +41,44 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
             ContactEmailAddress = "test"
         });
 
-        var application = addApplicationCommand.Execute(new AddApplicationRequest
+        _ = addApplicationCommand.Execute(new AddApplicationRequest
         {
             ApplicationName = Testing.GetAdminConsoleSettings().Value.ApplicationName,
             ClaimSetName = "test",
             ProfileIds = null,
             VendorId = vendor?.VendorId ?? 0
         }, Testing.GetAppSettings());
-
-        var newInstanceId = 0;
-
-        await TransactionAsync(async dbContext =>
-        {
-            var repository = new CommandRepository<Instance>(dbContext);
-            var command = new AddInstanceCommand(repository);
-
-            var result = await command.Execute(new TestInstance
-            {
-                TenantId = 1,
-                OdsInstanceId = 1,
-                Name = "Test Complete Instance",
-                InstanceType = "Standard",
-                TenantName = "tenant1"
-            });
-
-            newInstanceId = result.Id;
-        });
 
         var dbContext = new AdminConsoleMsSqlContext(GetDbContextOptions());
 
         var repository = new CommandRepository<Instance>(dbContext);
         var qRepository = new QueriesRepository<Instance>(dbContext);
 
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
-        var completeResult = await command.Execute(newInstanceId);
+        var instance = await repository.AddAsync(new Instance()
+        {
+            TenantId = 1,
+            OdsInstanceId = 1,
+            TenantName = "tenant1",
+            InstanceName = "Test Rename Instance",
+            InstanceType = "Standard",
+            Status = InstanceStatus.Pending_Rename
+        });
 
-        completeResult.ShouldNotBeNull();
-        completeResult.Id.ShouldBeGreaterThan(0);
+        var command = new RenameInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
+        var renameResult = await command.Execute(instance.Id);
 
-        userDbContext.OdsInstances.ToList().Count.ShouldBe(1);
+        renameResult.ShouldNotBeNull();
+        renameResult.Id.ShouldBeGreaterThan(0);
+
         userDbContext.OdsInstances.First().ShouldNotBeNull();
-        userDbContext.OdsInstances.First().Name.ShouldBe("Test Complete Instance");
+        userDbContext.OdsInstances.First().Name.ShouldBe("Test Rename Instance");
         userDbContext.OdsInstances.First().InstanceType.ShouldBe("Standard");
-        userDbContext.OdsInstances.First().ConnectionString.ShouldBe("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Complete Instance\";Pooling=False");
+        userDbContext.OdsInstances.First().ConnectionString.ShouldBe("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Rename Instance\";Pooling=False");
     }
 
     [Test]
-    public async Task ShouldNotCompleteInstance_NotFoundException()
+    public async Task ShouldNotRenameInstance_NotFoundException()
     {
-
         AdminConsoleSqlServerUsersContext userDbContext = new(GetUserDbContextOptions());
         var addVendorCommand = new AddVendorCommand(userDbContext);
         var addApplicationCommand = new AddApplicationCommand(userDbContext);
@@ -121,7 +110,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
             {
                 TenantId = 1,
                 OdsInstanceId = 1,
-                Name = "Test Complete Instance",
+                Name = "Test Rename Instance",
                 InstanceType = "Standard"
             });
 
@@ -132,19 +121,19 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
 
         var repository = new CommandRepository<Instance>(dbContext);
         var qRepository = new QueriesRepository<Instance>(dbContext);
-        Instance completeResult = null;
+        Instance renameResult = null;
 
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
+        var command = new RenameInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
         try
         {
-            completeResult = await command.Execute(int.MaxValue);
+            renameResult = await command.Execute(int.MaxValue);
         }
         catch (Exception ex)
         {
             ex.GetType().ShouldBeEquivalentTo(typeof(NotFoundException<int>));
         }
 
-        completeResult.ShouldBeNull();
+        renameResult.ShouldBeNull();
     }
 
     private class TestInstance : IInstanceRequestModel

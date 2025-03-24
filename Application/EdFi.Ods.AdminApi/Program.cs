@@ -5,6 +5,7 @@
 
 using AspNetCoreRateLimit;
 using EdFi.Ods.AdminApi.AdminConsole;
+using EdFi.Ods.AdminApi.AdminConsole.Configurations;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
