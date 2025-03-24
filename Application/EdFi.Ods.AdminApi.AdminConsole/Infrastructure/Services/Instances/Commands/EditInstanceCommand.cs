@@ -32,7 +32,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Comma
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             var existingInstance = await _instanceQuery.Query().SingleOrDefaultAsync(w => w.Id == id) ?? throw new NotFoundException<int>("Instance", id);
 
-            if (!instance.Name.Equals(existingInstance.InstanceName, StringComparison.InvariantCultureIgnoreCase) && instance.Status == InstanceStatus.Completed.ToString())
+            if (!instance.Name.Equals(existingInstance.InstanceName, StringComparison.InvariantCultureIgnoreCase) && existingInstance.Status == InstanceStatus.Completed)
             {
                 existingInstance.Status = InstanceStatus.Pending_Rename;
 
