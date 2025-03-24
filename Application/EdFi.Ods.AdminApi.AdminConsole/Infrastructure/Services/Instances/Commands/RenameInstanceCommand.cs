@@ -47,6 +47,9 @@ public class RenameInstanceCommand(
         var adminConsoleInstance = await _instanceQuery.Query().Include(w => w.OdsInstanceContexts).Include(w => w.OdsInstanceDerivatives)
         .SingleOrDefaultAsync(w => w.Id == id) ?? throw new NotFoundException<int>("Instance", id);
 
+        if (adminConsoleInstance.Status == InstanceStatus.Completed)
+            return adminConsoleInstance;
+
         if (adminConsoleInstance.Status != InstanceStatus.Pending_Rename)
             throw new AdminApiException($"Invalid operation on instance with name {adminConsoleInstance.InstanceName}.")
             {
@@ -57,9 +60,6 @@ public class RenameInstanceCommand(
 
         try
         {
-            if (adminConsoleInstance.Status == InstanceStatus.Completed)
-                return adminConsoleInstance;
-
             /// Droping if necessary
             if (adminConsoleInstance.OdsInstanceId > 0)
             {
