@@ -16,7 +16,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Comma
 
 public interface IRenameFailedInstanceCommand
 {
-    Task Execute(int id);
+    Task<Instance> Execute(int id);
 }
 
 public class RenameFailedInstanceCommand(IQueriesRepository<Instance> instanceQuery, ICommandRepository<Instance> instanceCommand) : IRenameFailedInstanceCommand
@@ -24,9 +24,11 @@ public class RenameFailedInstanceCommand(IQueriesRepository<Instance> instanceQu
     private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
     private readonly ICommandRepository<Instance> _instanceCommand = instanceCommand;
 
-    public async Task Execute(int id)
+    public async Task<Instance> Execute(int id)
     {
         var existingInstance = await _instanceQuery.Query().FirstOrDefaultAsync(i => i.Id == id) ?? throw new NotFoundException<int>("Instance", id);
+        if (existingInstance.Status == InstanceStatus.Rename_Failed)
+            return existingInstance;
         if (existingInstance.Status != InstanceStatus.Pending_Rename)
         {
             var exception = new AdminApiException(AdminConsoleValidationConstants.OdsIntanceIdStatusIsPendingRename);
@@ -35,5 +37,6 @@ public class RenameFailedInstanceCommand(IQueriesRepository<Instance> instanceQu
         }
         existingInstance.Status = InstanceStatus.Rename_Failed;
         await _instanceCommand.UpdateAsync(existingInstance);
+        return existingInstance;
     }
 }

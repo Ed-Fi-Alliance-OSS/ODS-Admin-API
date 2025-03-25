@@ -1,17 +1,17 @@
 {
 	"info": {
-		"_postman_id": "5418f216-0818-45bc-bef4-b50c7e92966f",
+		"_postman_id": "75fba13b-ddd0-454b-9ee0-e65f400ed16c",
 		"name": "Admin API E2E 2.0 - AdminConsole - Instances",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "42536960",
-		"_collection_link": "https://test33-6887.postman.co/workspace/1172~f1493713-c50a-41d2-a415-221caeb3f42d/collection/42536960-5418f216-0818-45bc-bef4-b50c7e92966f?action=share&source=collection_link&creator=42536960"
+		"_collection_link": "https://test33-6887.postman.co/workspace/ADMINAPI-1177~6897fc80-fd1c-4f87-a848-18d7cdfdb498/collection/42536960-75fba13b-ddd0-454b-9ee0-e65f400ed16c?action=share&source=collection_link&creator=42536960"
 	},
 	"item": [
 		{
-			"name": "v2",
+			"name": "AdminConsole",
 			"item": [
 				{
-					"name": "AdminConsole Instances",
+					"name": "Instances",
 					"item": [
 						{
 							"name": "Create OdsInstance",
@@ -42,7 +42,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											""
+											"pm.collectionVariables.set(\"AdminConsoleTenantName\", \"tenant-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -54,7 +54,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1768\",\r\n  \"name\": \"Instance test #1 - 2025\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"{{AdminConsoleTenantName}}\",\r\n  \"name\": \"Instance test #1 - 2025 - {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -892,7 +892,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances?tenantname=tenant1768",
+									"raw": "{{API_URL}}/adminconsole/instances?tenantname={{AdminConsoleTenantName}}",
 									"host": [
 										"{{API_URL}}"
 									],
@@ -903,7 +903,7 @@
 									"query": [
 										{
 											"key": "tenantname",
-											"value": "tenant1768"
+											"value": "{{AdminConsoleTenantName}}"
 										}
 									]
 								}
@@ -1289,9 +1289,14 @@
 								}
 							},
 							"response": []
-						},
+						}
+					]
+				},
+				{
+					"name": "Delete Instances",
+					"item": [
 						{
-							"name": "Create OdsInstance To Delete",
+							"name": "OdsInstance - Create",
 							"event": [
 								{
 									"listen": "test",
@@ -1306,7 +1311,7 @@
 											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
 											"    if(id)\r",
 											"    {\r",
-											"        pm.collectionVariables.set(\"AdminConsoleCreatedOdsInstanceToDeleteId\", id);\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedBaseOdsInstanceToDeleteId\", id);\r",
 											"    }\r",
 											"});\r",
 											""
@@ -1331,7 +1336,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant to delete{{$guid}}\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"TenantToDelete-{{$guid}}\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1352,13 +1357,76 @@
 							"response": []
 						},
 						{
-							"name": "Instances Not Found - Delete Failed",
+							"name": "Instance by Id - Pending",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"POST Instances: Status code is Not Found\", function () {\r",
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Pending\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Not Found -  Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances Delete: Status code is Not Found\", function () {\r",
 											"    pm.response.to.have.status(404);\r",
 											"});"
 										],
@@ -1390,7 +1458,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/999999/deletefailed",
+									"raw": "{{API_URL}}/adminconsole/instances/999999/delete",
 									"host": [
 										"{{API_URL}}"
 									],
@@ -1398,7 +1466,239 @@
 										"adminconsole",
 										"instances",
 										"999999",
-										"deletefailed"
+										"delete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Delete Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances Delete: Status code is Conflict (Status <> Completed)\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (err, response) {\r",
+											"    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"    const result = response.json();\r",
+											"    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"    else {\r",
+											"        pm.sendRequest({\r",
+											"            url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts/${result[0].id}`,\r",
+											"            method: 'DELETE',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"        });\r",
+											"\r",
+											"        pm.sendRequest({\r",
+											"        url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives`,\r",
+											"            method: 'GET',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"            else {\r",
+											"                pm.sendRequest({\r",
+											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
+											"                    method: 'DELETE',\r",
+											"                    header: header\r",
+											"                },\r",
+											"                function (err, response) {\r",
+											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                    pm.sendRequest({\r",
+											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
+											"                            method: 'GET',\r",
+											"                            header: header\r",
+											"                        },\r",
+											"                        function (err, response) {\r",
+											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                            const result = response.json();\r",
+											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                            else {\r",
+											"                                /*pm.sendRequest({\r",
+											"                                url: `${pm.variables.get(\"API_URL\")}/v2/applications/${result[0].id}`,\r",
+											"                                    method: 'DELETE',\r",
+											"                                    header: header\r",
+											"                                },\r",
+											"                                function (err, response) {\r",
+											"                                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                                    const result = response.json();\r",
+											"                                    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                                });*/\r",
+											"                            }\r",
+											"                        });\r",
+											"                });\r",
+											"            }\r",
+											"        });\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Instance - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Completed): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+										"completed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Completed)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Completed\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 									]
 								}
 							},
@@ -1443,14 +1743,14 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}/deletefailed",
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deletefailed",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
 										"adminconsole",
 										"instances",
-										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
 										"deletefailed"
 									]
 								}
@@ -1458,13 +1758,183 @@
 							"response": []
 						},
 						{
-							"name": "Instances to Delete - Completed",
+							"name": "Instances - Delete",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"POST Instances: Status code is No Content\", function () {\r",
+											"pm.test(\"POST Instances Delete: Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(202);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (err, response) {\r",
+											"    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"    const result = response.json();\r",
+											"    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"    else {\r",
+											"        pm.sendRequest({\r",
+											"            url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts/${result[0].id}`,\r",
+											"            method: 'DELETE',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"        });\r",
+											"\r",
+											"        pm.sendRequest({\r",
+											"        url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives`,\r",
+											"            method: 'GET',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"            else {\r",
+											"                pm.sendRequest({\r",
+											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
+											"                    method: 'DELETE',\r",
+											"                    header: header\r",
+											"                },\r",
+											"                function (err, response) {\r",
+											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                    pm.sendRequest({\r",
+											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
+											"                            method: 'GET',\r",
+											"                            header: header\r",
+											"                        },\r",
+											"                        function (err, response) {\r",
+											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                            const result = response.json();\r",
+											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                            else {\r",
+											"                \r",
+											"                            }\r",
+											"                        });\r",
+											"                });\r",
+											"            }\r",
+											"        });\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - Pending Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending_Delete)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Pending_Delete\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance - Deleted",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Delete): Status code is No Content\", function () {\r",
 											"    pm.response.to.have.status(204);\r",
 											"});"
 										],
@@ -1496,29 +1966,29 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}/completed",
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
 										"adminconsole",
 										"instances",
-										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
-										"completed"
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+										"deleted"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "Instances  - Delete Status",
+							"name": "Instance - Status Already Delete",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"POST Instances: Status code for Pending Delete\", function () {\r",
-											"    pm.response.to.have.status(202);\r",
+											"pm.test(\"POST Instances (Delete): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -1537,7 +2007,7 @@
 								}
 							],
 							"request": {
-								"method": "DELETE",
+								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
@@ -1549,21 +2019,538 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsinstances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
 										"adminconsole",
-										"odsinstances",
-										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}"
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+										"deleted"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "Instances  - Delete Failed Successful",
+							"name": "Instance by Id - Deleted",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Deleted)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Deleted\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance - (Delete Failed) - Create",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole OdsInstances: Response includes location in header\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"    if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId\", id);\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"TenantToDelete-{{$guid}}\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - (Delete Failed) - Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Conflict, instance is not marked as 'Pending Delete'\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+										"deletefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Instance - (Delete Failed) - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Completed): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+										"completed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - (Delete Failed) - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending_Delete)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Completed\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - (Delete Failed) - Conflict  (Not Pending Delete)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Conflict, instance is not marked as 'Pending Delete'\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+										"deletefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - (Delete Failed) - Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances Delete: Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(202);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (err, response) {\r",
+											"    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"    const result = response.json();\r",
+											"    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"    else {\r",
+											"        pm.sendRequest({\r",
+											"            url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts/${result[0].id}`,\r",
+											"            method: 'DELETE',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"        });\r",
+											"\r",
+											"        pm.sendRequest({\r",
+											"        url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives`,\r",
+											"            method: 'GET',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"            else {\r",
+											"                pm.sendRequest({\r",
+											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
+											"                    method: 'DELETE',\r",
+											"                    header: header\r",
+											"                },\r",
+											"                function (err, response) {\r",
+											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                    pm.sendRequest({\r",
+											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
+											"                            method: 'GET',\r",
+											"                            header: header\r",
+											"                        },\r",
+											"                        function (err, response) {\r",
+											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                            const result = response.json();\r",
+											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                            else {\r",
+											"                                \r",
+											"                            }\r",
+											"                        });\r",
+											"                });\r",
+											"            }\r",
+											"        });\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - (Delete Failed) - Pending Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending_Delete)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Pending_Delete\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - (Delete Failed) - Successful",
 							"event": [
 								{
 									"listen": "test",
@@ -1601,14 +2588,14 @@
 									}
 								},
 								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}/deletefailed",
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
 										"adminconsole",
 										"instances",
-										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
 										"deletefailed"
 									]
 								}
@@ -1616,16 +2603,15 @@
 							"response": []
 						},
 						{
-							"name": "OdsInstances",
+							"name": "Instances - (Delete Failed) - Status already Delete Failed",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"DELETE OdsInstances: Status code is OK\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											""
+											"pm.test(\"POST Instances: Status code is Delete Failed\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1635,80 +2621,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"let header = {\r",
-											"    \"Content-Type\": \"application/json\",\r",
-											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
-											"};\r",
-											"\r",
-											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
-											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
-											"}\r",
-											"\r",
-											"pm.sendRequest({\r",
-											"  url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts`,\r",
-											"  method: 'GET',\r",
-											"  header: header\r",
-											"},\r",
-											"function (err, response) {\r",
-											"    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"    const result = response.json();\r",
-											"    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"    else {\r",
-											"        pm.sendRequest({\r",
-											"            url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts/${result[0].id}`,\r",
-											"            method: 'DELETE',\r",
-											"            header: header\r",
-											"        },\r",
-											"        function (err, response) {\r",
-											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"            const result = response.json();\r",
-											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"        });\r",
-											"\r",
-											"        pm.sendRequest({\r",
-											"        url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives`,\r",
-											"            method: 'GET',\r",
-											"            header: header\r",
-											"        },\r",
-											"        function (err, response) {\r",
-											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"            const result = response.json();\r",
-											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"            else {\r",
-											"                pm.sendRequest({\r",
-											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
-											"                    method: 'DELETE',\r",
-											"                    header: header\r",
-											"                },\r",
-											"                function (err, response) {\r",
-											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"                    pm.sendRequest({\r",
-											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
-											"                            method: 'GET',\r",
-											"                            header: header\r",
-											"                        },\r",
-											"                        function (err, response) {\r",
-											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"                            const result = response.json();\r",
-											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"                            else {\r",
-											"                                pm.sendRequest({\r",
-											"                                url: `${pm.variables.get(\"API_URL\")}/v2/applications/${result[0].id}`,\r",
-											"                                    method: 'DELETE',\r",
-											"                                    header: header\r",
-											"                                },\r",
-											"                                function (err, response) {\r",
-											"                                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
-											"                                    const result = response.json();\r",
-											"                                    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"                                });\r",
-											"                            }\r",
-											"                        });\r",
-											"                });\r",
-											"            }\r",
-											"        });\r",
-											"    }\r",
-											"});"
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1716,33 +2629,413 @@
 								}
 							],
 							"request": {
-								"method": "DELETE",
+								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": {
-									"raw": "{{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}",
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
-										"v2",
-										"odsInstances",
-										"{{CreatedOdsInstanceId}}"
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+										"deletefailed"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "OdsInstances - Delete",
+							"name": "Instance by Id - (Delete Failed) - Delete Failed",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"DELETE OdsInstances: Status code is OK\", function () {\r",
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Delete_Failed)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Delete_Failed\"); \r",
+											"});\r",
 											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Unauthorized - Expired Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Unauthorized\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{EXPIREDTOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+										"deleted"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Unauthorized - Invalid Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Unauthorized\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{INVALIDTOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
+										"deleted"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Rename Instances",
+					"item": [
+						{
+							"name": "OdsInstance - Create",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole OdsInstances: Response includes location in header\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"    if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedBaseOdsInstanceToRenameId\", id);\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"AdminConsoleTenantNameInstanceToRename\", \"tenant-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"name\": \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - Pending",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Pending\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Not Found -  Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances Delete: Status code is Not Found\", function () {\r",
+											"    pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/999999/renamed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"999999",
+										"renamed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Renamed Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances Delete: Status code is Conflict (Status <> Completed)\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1809,7 +3102,7 @@
 											"                            const result = response.json();\r",
 											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
 											"                            else {\r",
-											"                                pm.sendRequest({\r",
+											"                                /*pm.sendRequest({\r",
 											"                                url: `${pm.variables.get(\"API_URL\")}/v2/applications/${result[0].id}`,\r",
 											"                                    method: 'DELETE',\r",
 											"                                    header: header\r",
@@ -1818,7 +3111,7 @@
 											"                                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
 											"                                    const result = response.json();\r",
 											"                                    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
-											"                                });\r",
+											"                                });*/\r",
 											"                            }\r",
 											"                        });\r",
 											"                });\r",
@@ -1833,17 +3126,1275 @@
 								}
 							],
 							"request": {
-								"method": "DELETE",
+								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{API_URL}}/v2/odsInstances/{{AdminConsoleCreatedOdsInstanceToDeleteId}}",
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
-										"v2",
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+										"renamed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Instance - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Completed): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+										"completed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Completed)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Completed\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - Rename Failed Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Conflict, instance is not marked as 'Pending Rename'\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renameFailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+										"renameFailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance - Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"AdminConsoleTenantNameInstanceToRename\", \"tenant-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\":  \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"name\":  \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
 										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceToDeleteId}}"
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - Pending Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending_Rename)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Pending_Rename\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance - Renamed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Renamed): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+										"renamed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance - Status Already Renamed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Renamed): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+										"renamed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - Renamed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Completed)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Completed\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance - (Rename Failed) - Create",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole OdsInstances: Response includes location in header\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"    if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedRenameFailedOdsInstanceId\", id);\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"AdminConsoleTenantNameInstanceToRenameFailed\", \"tenant-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"name\": \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - (Rename Failed) - Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Conflict, instance is not marked as 'Pending Rename'\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Instance - (Rename Failed) - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances (Completed): Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/completed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"completed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - (Rename Failed) - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Completed)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Completed\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - (Rename Failed) - Conflict  (Not Pending Rename)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Conflict, instance is not marked as 'Pending Rename'\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - (Rename Failed) - Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances Rename: Status code is No Content\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (err, response) {\r",
+											"    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"    const result = response.json();\r",
+											"    if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"    else {\r",
+											"        pm.sendRequest({\r",
+											"            url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceContexts/${result[0].id}`,\r",
+											"            method: 'DELETE',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"        });\r",
+											"\r",
+											"        pm.sendRequest({\r",
+											"        url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives`,\r",
+											"            method: 'GET',\r",
+											"            header: header\r",
+											"        },\r",
+											"        function (err, response) {\r",
+											"            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"            const result = response.json();\r",
+											"            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"            else {\r",
+											"                pm.sendRequest({\r",
+											"                    url: `${pm.variables.get(\"API_URL\")}/v2/OdsInstanceDerivatives/${result[0].id}`,\r",
+											"                    method: 'DELETE',\r",
+											"                    header: header\r",
+											"                },\r",
+											"                function (err, response) {\r",
+											"                    if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                    pm.sendRequest({\r",
+											"                        url: `${pm.variables.get(\"API_URL\")}/v2/applications`,\r",
+											"                            method: 'GET',\r",
+											"                            header: header\r",
+											"                        },\r",
+											"                        function (err, response) {\r",
+											"                            if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"                            const result = response.json();\r",
+											"                            if(!result[0].id) { console.log('Error in Pre-request ', result); }\r",
+											"                            else {\r",
+											"                                \r",
+											"                            }\r",
+											"                        });\r",
+											"                });\r",
+											"            }\r",
+											"        });\r",
+											"    }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance - (Rename Failed) - Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"AdminConsoleTenantNameInstanceToRenameFailed\", \"tenant-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\":  \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"name\":  \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"odsInstances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - (Rename Failed) - Pending Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Pending_Rename)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Pending_Rename\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances  - (Rename Failed) - Successful",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Rename Failed\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - (Rename Failed) - Status already Rename Failed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Rename Failed\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamefailed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instance by Id - (Rename Failed) - Rename Failed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Instance by Id: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET Instance By Id: Response contains expected status (Rename_Failed)\", function () {\r",
+											"    pm.expect(response).to.have.property(\"status\"); \r",
+											"    pm.expect(response.status).to.eql(\"Rename_Failed\"); \r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Unauthorized - Expired Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Unauthorized\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{EXPIREDTOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamed"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Instances Unauthorized - Invalid Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is Unauthorized\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{INVALIDTOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"instances",
+										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
+										"renamed"
 									]
 								}
 							},

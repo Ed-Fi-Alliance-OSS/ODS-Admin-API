@@ -53,7 +53,7 @@ public class RenameInstanceCommand(
         if (adminConsoleInstance.Status != InstanceStatus.Pending_Rename)
             throw new AdminApiException($"Invalid operation on instance with name {adminConsoleInstance.InstanceName}.")
             {
-                StatusCode = System.Net.HttpStatusCode.BadRequest
+                StatusCode = System.Net.HttpStatusCode.Conflict
             };
 
         using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);

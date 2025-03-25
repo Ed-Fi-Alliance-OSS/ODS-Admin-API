@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "d3e1891d-7241-492a-816c-7f4a72e8f86a",
+		"_postman_id": "3cb40f72-cbcb-48e7-a821-fd293789b0c5",
 		"name": "Admin API E2E 2.0 - AdminConsole - OdsInstances",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "37902114"
+		"_exporter_id": "42536960",
+		"_collection_link": "https://test33-6887.postman.co/workspace/ADMINAPI-1177~6897fc80-fd1c-4f87-a848-18d7cdfdb498/collection/42536960-3cb40f72-cbcb-48e7-a821-fd293789b0c5?action=share&source=collection_link&creator=42536960"
 	},
 	"item": [
 		{
@@ -790,7 +791,7 @@
 									"script": {
 										"exec": [
 											"pm.test(\"DELETE Admin Console OdsInstances: Status code is Accepted\", function () {\r",
-											"    pm.response.to.have.status(409); //Has to verified 202\r",
+											"    pm.response.to.have.status(202); //Has to verified 202\r",
 											"});\r",
 											""
 										],
