@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "3cb40f72-cbcb-48e7-a821-fd293789b0c5",
+		"_postman_id": "458df9f0-c957-4c0f-b3d2-771f615ef22e",
 		"name": "Admin API E2E 2.0 - AdminConsole - OdsInstances",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "42536960",
-		"_collection_link": "https://test33-6887.postman.co/workspace/ADMINAPI-1177~6897fc80-fd1c-4f87-a848-18d7cdfdb498/collection/42536960-3cb40f72-cbcb-48e7-a821-fd293789b0c5?action=share&source=collection_link&creator=42536960"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "42411115",
+		"_collection_link": "https://dewfdaf.postman.co/workspace/ADMINAPI-1176~ddd19801-3c24-4c02-a38b-a15bf7e53e1e/collection/42411115-458df9f0-c957-4c0f-b3d2-771f615ef22e?action=share&source=collection_link&creator=42411115"
 	},
 	"item": [
 		{
@@ -61,16 +61,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -112,16 +103,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -164,16 +146,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -232,16 +205,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -369,16 +333,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -452,17 +407,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -534,17 +479,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -616,17 +551,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -700,17 +625,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -769,17 +684,30 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceId}}"
-									]
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is No Content - Delete\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []
 						},
@@ -866,17 +794,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceIdToDelete}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedOdsInstanceIdToDelete}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -900,17 +818,765 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/999999999",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"999999999"
-									]
+								"url": "{{API_URL}}/adminconsole/odsInstances/999999999"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "OdsInstances - Delete",
+					"item": [
+						{
+							"name": "OdsInstances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created - Delete\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole OdsInstances: Response includes location in header - Delete\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"    if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedOdsInstanceId\", id);\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 - Delete\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": null,\r\n  \"odsInstanceDerivatives\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance - Conflict",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created - Delete\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is No Content - Delete\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance - Not Found",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Not Found - Delete\", function () {\r",
+											"    pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let id = pm.variables.get(\"AdminConsoleCreatedOdsInstanceId\"); \r",
+											"id = parseInt(id) + 10; \r",
+											"pm.variables.set(\"ModifiedAdminConsoleOdsInstanceId\", id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{ModifiedAdminConsoleOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Accepted - Delete\", function () {\r",
+											"    pm.response.to.have.status(202);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET AdminConsole Instances: The response includes a status property with the value 'Pending_Delete' - Delete\", function () {\r",
+											"    pm.response.to.have.jsonBody();\r",
+											"    let jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.have.property(\"status\", \"Pending_Delete\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance Unauthorized - Invalid Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"DELETE OdsInstances: Status code is Unauthorized - Delete\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{INVALIDTOKEN}}"
+									}
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstance Unauthorized - Expired Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"DELETE OdsInstances: Status code is Unauthorized - Delete\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{EXPIREDTOKEN}}"
+									}
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "OdsInstance - Rename",
+					"item": [
+						{
+							"name": "OdsInstances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Created - Rename\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole OdsInstances: Response includes location in header - Rename\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    const id = pm.response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"    if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"AdminConsoleCreatedOdsInstanceId\", id);\r",
+											"    }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 - Rename\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": null,\r\n  \"odsInstanceDerivatives\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"PUT AdminConsole OdsInstances: Status code is OK - Rename\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											"\r",
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/adminconsole/odsInstances/${pm.collectionVariables.get(\"AdminConsoleCreatedOdsInstanceId\")}`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (odsInstanceErr, odsInstanceResponse) {\r",
+											"  if(odsInstanceErr) \r",
+											"  { \r",
+											"    console.log(\"Error :\", odsInstanceErr); \r",
+											"  } \r",
+											"  const result = odsInstanceResponse.json();\r",
+											"  pm.test(\"PUT AdminConsole OdsInstances: Response includes updated AdminConsole OdsInstances - Rename\", function () {\r",
+											"    pm.expect(result.name).to.equal(\"Instance #1 - 2024 - Rename\");\r",
+											"    pm.expect(result.instanceType).to.equal(\"enterprise1\");\r",
+											"\r",
+											"    pm.expect(result.odsInstanceContexts.length).to.be.greaterThan(0);\r",
+											"    pm.expect(result.odsInstanceContexts[0].contextValue).to.equal(\"2025\");\r",
+											"\r",
+											"    pm.expect(result.odsInstanceDerivatives.length).to.be.greaterThan(0);\r",
+											"    pm.expect(result.odsInstanceDerivatives[0].derivativeType).to.equal(\"Snapshot\");\r",
+											"   });\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 - Rename\",\r\n  \"instanceType\": \"enterprise1\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2025\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"Snapshot\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Not Found",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole OdsInstances: Status code is Not Found - Rename\", function () {\r",
+											"    pm.response.to.have.status(404);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let id = pm.variables.get(\"AdminConsoleCreatedOdsInstanceId\"); \r",
+											"id = parseInt(id) + 10; \r",
+											"pm.variables.set(\"ModifiedAdminConsoleOdsInstanceId\", id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024\",\r\n  \"instanceType\": \"enterprise1\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2025\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"Snapshot\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{ModifiedAdminConsoleOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET AdminConsole Instances: The response includes a status property with the value different than 'Pending_Rename'- Rename\", function () {\r",
+											"    let jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.status).not.to.equal(\"Pending_Rename\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"PUT AdminConsole OdsInstances: Status code is OK - Rename\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											"\r",
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/adminconsole/odsInstances/${pm.collectionVariables.get(\"AdminConsoleCreatedOdsInstanceId\")}`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (odsInstanceErr, odsInstanceResponse) {\r",
+											"  if(odsInstanceErr) \r",
+											"  { \r",
+											"    console.log(\"Error :\", odsInstanceErr); \r",
+											"  } \r",
+											"  const result = odsInstanceResponse.json();\r",
+											"  pm.test(\"PUT AdminConsole OdsInstances: Response includes updated AdminConsole OdsInstances - Rename\", function () {\r",
+											"    pm.expect(result.name).to.equal(\"updated Instance #1 - 2024 - Rename\");\r",
+											"    pm.expect(result.instanceType).to.equal(\"updated enterprise1\");\r",
+											"\r",
+											"    pm.expect(result.odsInstanceContexts.length).to.be.greaterThan(0);\r",
+											"    pm.expect(result.odsInstanceContexts[0].contextValue).to.equal(\"2025\");\r",
+											"\r",
+											"    pm.expect(result.odsInstanceDerivatives.length).to.be.greaterThan(0);\r",
+											"    pm.expect(result.odsInstanceDerivatives[0].derivativeType).to.equal(\"Snapshot\");\r",
+											"   });\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"updated Instance #1 - 2024 - Rename\",\r\n  \"instanceType\": \"updated enterprise1\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2025\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"Snapshot\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET AdminConsole Instances: The response includes a status property with the value different than 'Pending_Rename' - Rename\", function () {\r",
+											"    let jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData.status).not.to.equal(\"Pending_Rename\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Completed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Instances: Status code is No Content - Rename\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"PUT AdminConsole OdsInstances: Status code is OK - Rename\", function () {\r",
+											"    pm.response.to.have.status(204);\r",
+											"});\r",
+											"\r",
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/adminconsole/odsInstances/${pm.collectionVariables.get(\"AdminConsoleCreatedOdsInstanceId\")}`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},\r",
+											"function (odsInstanceErr, odsInstanceResponse) {\r",
+											"  if(odsInstanceErr) \r",
+											"  { \r",
+											"    console.log(\"Error :\", odsInstanceErr); \r",
+											"  } \r",
+											"  const result = odsInstanceResponse.json();\r",
+											"  pm.test(\"PUT AdminConsole OdsInstances: Response includes updated AdminConsole OdsInstances - Rename\", function () {\r",
+											"    pm.expect(result.name).to.equal(\"Instance #1 - 2024 - Renamed\");\r",
+											"    pm.expect(result.instanceType).to.equal(\"updated enterprise1\");\r",
+											"\r",
+											"    pm.expect(result.odsInstanceContexts.length).to.be.greaterThan(0);\r",
+											"    pm.expect(result.odsInstanceContexts[0].contextValue).to.equal(\"2025\");\r",
+											"\r",
+											"    pm.expect(result.odsInstanceDerivatives.length).to.be.greaterThan(0);\r",
+											"    pm.expect(result.odsInstanceDerivatives[0].derivativeType).to.equal(\"Snapshot\");\r",
+											"   });\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 - Renamed\",\r\n  \"instanceType\": \"updated enterprise1\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2025\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"Snapshot\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Instances - Status Rename",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET AdminConsole Instances: The response includes a status property with the value 'Pending_Rename' - Rename\", function () {\r",
+											"    let jsonData = pm.response.json();\r",
+											"    pm.expect(jsonData).to.have.property(\"status\", \"Pending_Rename\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances Unauthorized - Invalid Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"PUT OdsInstances: Status code is Unauthorized - Rename\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{INVALIDTOKEN}}"
+									}
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 renamed\",\r\n  \"instanceType\": \"updated enterprise1\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2025\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"Snapshot\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances Unauthorized - Expired Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"PUT OdsInstances: Status code is Unauthorized - Rename\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "{{EXPIREDTOKEN}}"
+									}
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 renamed\",\r\n  \"instanceType\": \"updated enterprise1\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2025\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"Snapshot\"\r\n    }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						}
@@ -921,13 +1587,9 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{TOKEN}}",
-				"type": "string"
-			}
-		]
+		"bearer": {
+			"token": "{{TOKEN}}"
+		}
 	},
 	"event": [
 		{
@@ -1055,6 +1717,11 @@
 		{
 			"key": "AdminConsoleCreatedOdsInstanceId",
 			"value": ""
+		},
+		{
+			"key": "OdsInstanceId_v2",
+			"value": "",
+			"type": "string"
 		}
 	]
 }
