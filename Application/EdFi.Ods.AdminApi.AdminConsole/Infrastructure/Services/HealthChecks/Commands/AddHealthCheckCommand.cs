@@ -9,25 +9,38 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.HealthChecks.Commands;
 public interface IAddHealthCheckCommand
 {
-    Task<HealthCheck> Execute(IAddHealthCheckModel newHealthCheck);
+    Task<HealthCheck?> Execute(IAddHealthCheckModel healthCheck);
 }
 
-public class AddHealthCheckCommand(ICommandRepository<HealthCheck> healtCheckCommand) : IAddHealthCheckCommand
+public class AddHealthCheckCommand(ICommandRepository<HealthCheck> healtCheckCommand, IQueriesRepository<HealthCheck> healthCheckQuery) : IAddHealthCheckCommand
 {
     private readonly ICommandRepository<HealthCheck> _healtCheckCommand = healtCheckCommand;
+    private readonly IQueriesRepository<HealthCheck> _healthCheckQuery = healthCheckQuery;
 
-    public async Task<HealthCheck> Execute(IAddHealthCheckModel newHealthCheck)
+    public async Task<HealthCheck?> Execute(IAddHealthCheckModel healthCheck)
     {
-        return await _healtCheckCommand.AddAsync(new HealthCheck
+        var existingHealthCheckRow = _healthCheckQuery.Query().Where(h => h.InstanceId == healthCheck.InstanceId && h.TenantId == healthCheck.TenantId).FirstOrDefault();
+
+        if (existingHealthCheckRow != null)
         {
-            DocId = newHealthCheck.DocId,
-            InstanceId = newHealthCheck.InstanceId,
-            EdOrgId = newHealthCheck.EdOrgId,
-            TenantId = newHealthCheck.TenantId,
-            Document = newHealthCheck.Document
-        });
+            existingHealthCheckRow.Document = healthCheck.Document;
+            await _healtCheckCommand.UpdateAsync(existingHealthCheckRow);
+            return null;
+        }
+        else
+        {
+            return await _healtCheckCommand.AddAsync(new HealthCheck
+            {
+                DocId = healthCheck.DocId,
+                InstanceId = healthCheck.InstanceId,
+                EdOrgId = healthCheck.EdOrgId,
+                TenantId = healthCheck.TenantId,
+                Document = healthCheck.Document
+            });
+        }
     }
 }
+
 public interface IAddHealthCheckModel
 {
     int DocId { get; }
