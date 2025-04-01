@@ -19,13 +19,13 @@ public class ReadHealthcheck : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/healthcheck", GetHealthchecks)
       .BuildForVersions(AdminApiVersions.AdminConsole);
 
-        AdminApiEndpointBuilder.MapGet(endpoints, "/healthcheck/{tenantId}", GetHealthcheck)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/healthcheck/{instanceId}", GetHealthcheck)
       .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    internal static async Task<IResult> GetHealthcheck(IMapper mapper, IGetHealthCheckQuery getHealthCheckQuery, int tenantId)
+    internal static async Task<IResult> GetHealthcheck(IMapper mapper, IGetHealthCheckQuery getHealthCheckQuery, int instanceId)
     {
-        var healthChecks = await getHealthCheckQuery.Execute(tenantId);
+        var healthChecks = await getHealthCheckQuery.Execute(instanceId);
         if (healthChecks != null)
         {
             return Results.Ok(healthChecks);
