@@ -25,22 +25,9 @@ public class CompleteInstance : IFeature
 
     public static async Task<IResult> Handle(ICompleteInstanceCommand completeInstanceCommand, int instanceid)
     {
-        try
-        {
-            if (instanceid < 1)
-                return Results.BadRequest("Instance Id not valid.");
-
-            await completeInstanceCommand.Execute(instanceid);
-
-            return Results.NoContent();
-        }
-        catch (NotFoundException<int> ex)
-        {
-            return Results.NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return Results.BadRequest(ex.Message);
-        }
+        if (instanceid < 1)
+            return Results.BadRequest("Instance Id not valid.");
+        await completeInstanceCommand.Execute(instanceid);
+        return Results.NoContent();
     }
 }

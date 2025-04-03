@@ -12,6 +12,9 @@ AUTHORITY=http://localhost/${ADMIN_API_VIRTUAL_NAME}
 ISSUER_URL=https://localhost/${ADMIN_API_VIRTUAL_NAME}
 SIGNING_KEY=<Create a new string as symmetric encryption key>
 
+# For Ed-Fi ODS / API
+EDFI_API_DISCOVERY_URL=https://api.ed-fi.org/v7.2/api/
+
 ENABLE_ADMIN_CONSOLE=true
 USE_SELF_CONTAINED_AUTH=false
 # OIDC_AUTHORITY=http://ed-fi-idp-keycloak:8080/auth/realms/edfi-admin-console

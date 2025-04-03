@@ -54,6 +54,7 @@ services:
       OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
       ENABLE_CORS: "${ENABLE_CORS:-false}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-https://localhost}"
+      EDFI_API_DISCOVERY_URL: "${EDFI_API_DISCOVERY_URL:-https://api.ed-fi.org/v7.2/api/}"
     depends_on:
       - pb-admin
       - idp-keycloak

@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "458df9f0-c957-4c0f-b3d2-771f615ef22e",
+		"_postman_id": "d1ae1252-8f7f-4db1-bdab-bf88fcb387a1",
 		"name": "Admin API E2E 2.0 - AdminConsole - OdsInstances",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "42411115",
-		"_collection_link": "https://dewfdaf.postman.co/workspace/ADMINAPI-1176~ddd19801-3c24-4c02-a38b-a15bf7e53e1e/collection/42411115-458df9f0-c957-4c0f-b3d2-771f615ef22e?action=share&source=collection_link&creator=42411115"
+		"_exporter_id": "42411115"
 	},
 	"item": [
 		{
@@ -54,7 +53,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance #1 - 2024\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -96,7 +95,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 without OdsInstanceContext\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance #1 - 2024 without OdsInstanceContext\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -139,7 +138,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 without OdsInstanceDerivative\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance #1 - 2024 without OdsInstanceDerivative\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -868,7 +867,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 - Delete\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": null,\r\n  \"odsInstanceDerivatives\": null\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance #1 - 2024 - Delete\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": null,\r\n  \"odsInstanceDerivatives\": null\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1112,7 +1111,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"Test\",\r\n  \"name\": \"Instance #1 - 2024 - Rename\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": null,\r\n  \"odsInstanceDerivatives\": null\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance #1 - 2024 - Rename\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": null,\r\n  \"odsInstanceDerivatives\": null\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"

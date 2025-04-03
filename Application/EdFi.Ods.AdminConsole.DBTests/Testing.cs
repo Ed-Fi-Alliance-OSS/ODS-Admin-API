@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Collections.Generic;
 using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -42,6 +43,60 @@ public static class Testing
             DatabaseEngine = DatabaseEngineEnum.PostgreSql.ToString()
         };
         return Options.Create(appSettings);
+    }
+
+    public static IOptionsSnapshot<AppSettingsFile> GetOptionsSnapshot()
+    {
+        var appSettingsFile = new AppSettingsFile
+        {
+            AppSettings = new AppSettings
+            {
+                DefaultPageSizeOffset = 0,
+                DefaultPageSizeLimit = 100,
+                DatabaseEngine = "PostgreSql",
+                EncryptionKey = "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0=",
+                MultiTenancy = true,
+                PreventDuplicateApplications = true,
+                EnableAdminConsoleAPI = true
+            },
+            SwaggerSettings = new SwaggerSettings(),
+            AdminConsoleSettings = new AdminConsoleSettings
+            {
+                VendorCompany = "Ed-Fi Administrative Tools",
+                ApplicationName = "Ed-Fi Health Check"
+            },
+            EdFiApiDiscoveryUrl = "https://api.ed-fi.org/v7.2/api/",
+            ConnectionStrings = new[] { "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;" },
+            Tenants = new Dictionary<string, TenantSettings>
+            {
+                {
+                    "tenant1", new TenantSettings
+                    {
+                        ConnectionStrings = new Dictionary<string, string>
+                        {
+                            { "EdFi_Admin", "Data Source=.\\SQLEXPRESS;Initial Catalog=EdFi_Admin_1;Integrated Security=True;Encrypt=false;Trusted_Connection=true" },
+                            { "EdFi_Security", "Data Source=.\\SQLEXPRESS;Initial Catalog=EdFi_Security;Integrated Security=True;Encrypt=false;Trusted_Connection=true" }
+                        },
+                        EdFiApiDiscoveryUrl = "https://api.ed-fi.org/v7.2/api/"
+                    }
+                },
+                {
+                    "tenant2", new TenantSettings
+                    {
+                        ConnectionStrings = new Dictionary<string, string>
+                        {
+                            { "EdFi_Admin", "Data Source=.\\SQLEXPRESS;Initial Catalog=EdFi_Admin_1;Integrated Security=True;Encrypt=false;Trusted_Connection=true" },
+                            { "EdFi_Security", "Data Source=.\\SQLEXPRESS;Initial Catalog=EdFi_Security;Integrated Security=True;Encrypt=false;Trusted_Connection=true" }
+                        },
+                        EdFiApiDiscoveryUrl = "https://api.ed-fi.org/v7.2/api/"
+                    }
+                }
+            }
+        };
+
+        var optionsSnapshot = A.Fake<IOptionsSnapshot<AppSettingsFile>>();
+        A.CallTo(() => optionsSnapshot.Value).Returns(appSettingsFile);
+        return optionsSnapshot;
     }
 
     public static IOptions<AdminConsoleSettings> GetAdminConsoleSettings()

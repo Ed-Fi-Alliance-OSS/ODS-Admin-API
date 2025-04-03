@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "75fba13b-ddd0-454b-9ee0-e65f400ed16c",
+		"_postman_id": "7841a8e4-64ce-42f8-a4bc-bb54a0be46a5",
 		"name": "Admin API E2E 2.0 - AdminConsole - Instances",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "42536960",
-		"_collection_link": "https://test33-6887.postman.co/workspace/ADMINAPI-1177~6897fc80-fd1c-4f87-a848-18d7cdfdb498/collection/42536960-75fba13b-ddd0-454b-9ee0-e65f400ed16c?action=share&source=collection_link&creator=42536960"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "42411115"
 	},
 	"item": [
 		{
@@ -42,7 +41,7 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"pm.collectionVariables.set(\"AdminConsoleTenantName\", \"tenant-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+											"pm.collectionVariables.set(\"AdminConsoleTenantName\", \"tenant1\");"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -61,16 +60,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -112,18 +102,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedOdsInstanceId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []
 						},
@@ -196,16 +175,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/v2/odsInstances"
 							},
 							"response": []
 						},
@@ -597,17 +567,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -1007,17 +967,13 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "0",
-											"value": {
-												"key": "token",
-												"value": "{{EXPIREDTOKEN}}",
-												"type": "string"
-											},
-											"type": "any"
+									"bearer": {
+										"0": {
+											"key": "token",
+											"value": "{{EXPIREDTOKEN}}",
+											"type": "string"
 										}
-									]
+									}
 								},
 								"method": "GET",
 								"header": [],
@@ -1030,16 +986,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances"
 							},
 							"response": []
 						},
@@ -1075,17 +1022,13 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "0",
-											"value": {
-												"key": "token",
-												"value": "{{INVALIDTOKEN}}",
-												"type": "string"
-											},
-											"type": "any"
+									"bearer": {
+										"0": {
+											"key": "token",
+											"value": "{{INVALIDTOKEN}}",
+											"type": "string"
 										}
-									]
+									}
 								},
 								"method": "GET",
 								"header": [],
@@ -1098,16 +1041,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances"
 							},
 							"response": []
 						},
@@ -1149,18 +1083,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/999999/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"999999",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/999999/completed"
 							},
 							"response": []
 						},
@@ -1193,13 +1116,9 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{EXPIREDTOKEN}}",
-											"type": "string"
-										}
-									]
+									"bearer": {
+										"token": "{{EXPIREDTOKEN}}"
+									}
 								},
 								"method": "POST",
 								"header": [],
@@ -1212,18 +1131,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedOdsInstanceId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []
 						},
@@ -1256,13 +1164,9 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{INVALIDTOKEN}}",
-											"type": "string"
-										}
-									]
+									"bearer": {
+										"token": "{{INVALIDTOKEN}}"
+									}
 								},
 								"method": "POST",
 								"header": [],
@@ -1275,18 +1179,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedOdsInstanceId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []
 						}
@@ -1336,23 +1229,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"TenantToDelete-{{$guid}}\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -1405,17 +1289,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -1457,18 +1331,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/999999/delete",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"999999",
-										"delete"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/999999/delete"
 							},
 							"response": []
 						},
@@ -1574,17 +1437,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -1626,18 +1479,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/completed"
 							},
 							"response": []
 						},
@@ -1690,17 +1532,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -1742,18 +1574,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deletefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-										"deletefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deletefailed"
 							},
 							"response": []
 						},
@@ -1850,17 +1671,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -1913,17 +1724,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -1965,18 +1766,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-										"deleted"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted"
 							},
 							"response": []
 						},
@@ -2018,18 +1808,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-										"deleted"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted"
 							},
 							"response": []
 						},
@@ -2082,17 +1861,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -2137,23 +1906,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"TenantToDelete-{{$guid}}\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"Instance test #2 - 2025 {{$guid}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -2195,18 +1955,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-										"deletefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed"
 							},
 							"response": []
 						},
@@ -2248,18 +1997,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/completed"
 							},
 							"response": []
 						},
@@ -2312,17 +2050,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -2364,18 +2092,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-										"deletefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed"
 							},
 							"response": []
 						},
@@ -2472,17 +2189,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -2535,17 +2242,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -2587,18 +2284,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-										"deletefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed"
 							},
 							"response": []
 						},
@@ -2640,18 +2326,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-										"deletefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}/deletefailed"
 							},
 							"response": []
 						},
@@ -2704,17 +2379,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedDeleteFailedOdsInstanceToDeleteId}}"
 							},
 							"response": []
 						},
@@ -2747,13 +2412,9 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{EXPIREDTOKEN}}",
-											"type": "string"
-										}
-									]
+									"bearer": {
+										"token": "{{EXPIREDTOKEN}}"
+									}
 								},
 								"method": "POST",
 								"header": [],
@@ -2766,18 +2427,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-										"deleted"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted"
 							},
 							"response": []
 						},
@@ -2810,13 +2460,9 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{INVALIDTOKEN}}",
-											"type": "string"
-										}
-									]
+									"bearer": {
+										"token": "{{INVALIDTOKEN}}"
+									}
 								},
 								"method": "POST",
 								"header": [],
@@ -2829,18 +2475,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}",
-										"deleted"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToDeleteId}}/deleted"
 							},
 							"response": []
 						}
@@ -2890,23 +2525,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"name\": \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"{{AdminConsoleTenantNameInstanceToRename}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -2959,17 +2585,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
 							},
 							"response": []
 						},
@@ -3011,18 +2627,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/999999/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"999999",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/999999/renamed"
 							},
 							"response": []
 						},
@@ -3128,18 +2733,7 @@
 							"request": {
 								"method": "POST",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed"
 							},
 							"response": []
 						},
@@ -3181,18 +2775,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/completed"
 							},
 							"response": []
 						},
@@ -3245,17 +2828,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
 							},
 							"response": []
 						},
@@ -3297,18 +2870,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renameFailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-										"renameFailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renameFailed"
 							},
 							"response": []
 						},
@@ -3352,17 +2914,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
 							},
 							"response": []
 						},
@@ -3415,17 +2967,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
 							},
 							"response": []
 						},
@@ -3467,18 +3009,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed"
 							},
 							"response": []
 						},
@@ -3520,18 +3051,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed"
 							},
 							"response": []
 						},
@@ -3584,17 +3104,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}"
 							},
 							"response": []
 						},
@@ -3639,23 +3149,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"name\": \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"tenantId\": 1,\r\n  \"tenantName\": \"tenant1\",\r\n  \"name\": \"{{AdminConsoleTenantNameInstanceToRenameFailed}}\",\r\n  \"instanceType\": \"enterprise\",\r\n  \"odsInstanceContexts\": [\r\n    {\r\n      \"contextKey\": \"schoolYearFromRoute\",\r\n      \"contextValue\": \"2024\"\r\n    }\r\n  ],\r\n  \"odsInstanceDerivatives\": [\r\n    {\r\n      \"derivativeType\": \"ReadReplica\"\r\n    }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances"
 							},
 							"response": []
 						},
@@ -3697,18 +3198,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed"
 							},
 							"response": []
 						},
@@ -3750,18 +3240,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/completed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"completed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/completed"
 							},
 							"response": []
 						},
@@ -3814,17 +3293,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -3866,18 +3335,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed"
 							},
 							"response": []
 						},
@@ -3974,18 +3432,7 @@
 							"request": {
 								"method": "POST",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed"
 							},
 							"response": []
 						},
@@ -4028,17 +3475,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"odsInstances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/odsInstances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -4091,17 +3528,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -4143,18 +3570,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed"
 							},
 							"response": []
 						},
@@ -4196,18 +3612,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamefailed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamefailed"
 							},
 							"response": []
 						},
@@ -4260,17 +3665,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -4303,13 +3698,9 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{EXPIREDTOKEN}}",
-											"type": "string"
-										}
-									]
+									"bearer": {
+										"token": "{{EXPIREDTOKEN}}"
+									}
 								},
 								"method": "POST",
 								"header": [],
@@ -4322,18 +3713,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed"
 							},
 							"response": []
 						},
@@ -4366,13 +3746,9 @@
 							"request": {
 								"auth": {
 									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{INVALIDTOKEN}}",
-											"type": "string"
-										}
-									]
+									"bearer": {
+										"token": "{{INVALIDTOKEN}}"
+									}
 								},
 								"method": "POST",
 								"header": [],
@@ -4385,18 +3761,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"adminconsole",
-										"instances",
-										"{{AdminConsoleCreatedRenameFailedOdsInstanceId}}",
-										"renamed"
-									]
-								}
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed"
 							},
 							"response": []
 						}
@@ -4407,13 +3772,9 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{TOKEN}}",
-				"type": "string"
-			}
-		]
+		"bearer": {
+			"token": "{{TOKEN}}"
+		}
 	},
 	"event": [
 		{
