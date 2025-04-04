@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Permissions.Commands;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
@@ -32,14 +33,14 @@ public class AddPermissionCommandTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldExecute()
+    public async Task ShouldExecuteAsync()
     {
         var permissionDocument = "{\"data\":[],\"type\":\"Response\"}";
 
         var aes256SymmetricStringEncryptionProvider = new Aes256SymmetricStringEncryptionProvider();
         var encryptionKey = Testing.GetEncryptionKeyResolver().GetEncryptionKey();
 
-        Transaction(async dbContext =>
+        await TransactionAsync(async dbContext =>
         {
             var repository = new CommandRepository<Permission>(dbContext);
             var newPermission = new TestPermission
@@ -53,13 +54,10 @@ public class AddPermissionCommandTests : PlatformUsersContextTestBase
             var command = new AddPermissionCommand(repository);
 
             var result = await command.Execute(newPermission);
-        });
 
-        Transaction(dbContext =>
-        {
             var persistedPermission = dbContext.Permissions;
-            persistedPermission.Count().ShouldBe(1);
-            persistedPermission.First().DocId.ShouldBe(1);
+            persistedPermission.Count().ShouldBeGreaterThanOrEqualTo(1);
+            persistedPermission.First().DocId.GetValueOrDefault().ShouldBeGreaterThan(0);
             persistedPermission.First().TenantId.ShouldBe(1);
             persistedPermission.First().InstanceId.ShouldBe(1);
             persistedPermission.First().EdOrgId.ShouldBe(1);

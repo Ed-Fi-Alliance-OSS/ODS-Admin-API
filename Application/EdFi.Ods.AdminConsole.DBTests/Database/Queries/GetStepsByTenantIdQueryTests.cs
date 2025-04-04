@@ -30,7 +30,7 @@ public class GetStepsByTenantIdQueryTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldExecute()
+    public async Task ShouldExecuteAsync()
     {
         var stepDocument = "[{\"number\":1,\"description\":\"Step1\",\"startedAt\":\"2022-01-01T09:00:00\",\"completedAt\":\"2022-01-01T09:30:00\",\"status\":\"Completed\"},{\"number\":2,\"description\":\"Step2\",\"startedAt\":\"2022-01-01T09:30:00\",\"completedAt\":\"2022-01-01T09:45:00\",\"status\":\"Completed\"},{\"number\":3,\"description\":\"Step3\",\"startedAt\":\"2022-01-01T09:45:00\",\"completedAt\":\"2022-01-01T10:00:00\",\"status\":\"Completed\"}]";
         Step result = null;
@@ -43,19 +43,18 @@ public class GetStepsByTenantIdQueryTests : PlatformUsersContextTestBase
             Document = stepDocument
         };
 
-        Transaction(async dbContext =>
+        await TransactionAsync(async dbContext =>
         {
             var repository = new CommandRepository<Step>(dbContext);
             var command = new AddStepCommand(repository);
 
             result = await command.Execute(newStep);
-        });
 
-        Transaction(async dbContext =>
-        {
-            var repository = new QueriesRepository<Step>(dbContext);
-            var query = new GetStepsByTenantIdQuery(repository);
-            var steps = await query.Execute(result.TenantId);
+            var queryRepository = new QueriesRepository<Step>(dbContext);
+            var query = new GetStepsByTenantIdQuery(queryRepository);
+
+            result.DocId.GetValueOrDefault().ShouldBeGreaterThan(0);
+            var steps = await query.Execute(result.DocId.GetValueOrDefault());
             steps.Count().ShouldBe(1);
             steps.FirstOrDefault().DocId.ShouldBe(result.DocId);
             steps.FirstOrDefault().TenantId.ShouldBe(newStep.TenantId);

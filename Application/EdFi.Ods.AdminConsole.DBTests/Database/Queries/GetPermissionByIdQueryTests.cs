@@ -29,7 +29,7 @@ public class GetPermissionByIdQueryTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldExecute()
+    public async Task ShouldExecuteAsync()
     {
         var permissionDocument = "{\"data\":[],\"type\":\"Response\"}";
         Permission result = null;
@@ -42,18 +42,15 @@ public class GetPermissionByIdQueryTests : PlatformUsersContextTestBase
             Document = permissionDocument
         };
 
-        Transaction(async dbContext =>
+        await TransactionAsync(async dbContext =>
         {
             var repository = new CommandRepository<Permission>(dbContext);
             var command = new AddPermissionCommand(repository);
 
             result = await command.Execute(newPermission);
-        });
 
-        Transaction(async dbContext =>
-        {
-            var repository = new QueriesRepository<Permission>(dbContext);
-            var query = new GetPermissionByIdQuery(repository);
+            var queryRepository = new QueriesRepository<Permission>(dbContext);
+            var query = new GetPermissionByIdQuery(queryRepository);
             var permission = await query.Execute(result.TenantId, result.DocId.Value);
 
             permission.DocId.ShouldBe(result.DocId);

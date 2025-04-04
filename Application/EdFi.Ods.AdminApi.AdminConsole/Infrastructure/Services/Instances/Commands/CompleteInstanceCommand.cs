@@ -30,6 +30,7 @@ public interface ICompleteInstanceCommand
 public class CompleteInstanceCommand(
     IOptions<AppSettings> options,
     IOptions<AdminConsoleSettings> adminConsoleOptions,
+    IOptionsMonitor<TestingSettings> testingSettings,
     IUsersContext context,
     IQueriesRepository<Instance> instanceQuery,
     ICommandRepository<Instance> instanceCommand,
@@ -38,6 +39,7 @@ public class CompleteInstanceCommand(
 {
     private readonly AppSettings _options = options.Value;
     private readonly AdminConsoleSettings _adminConsoleOptions = adminConsoleOptions.Value;
+    private readonly TestingSettings _testingSettings = testingSettings.CurrentValue;
     private readonly IUsersContext _context = context;
     private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
     private readonly ICommandRepository<Instance> _instanceCommand = instanceCommand;
@@ -89,6 +91,9 @@ public class CompleteInstanceCommand(
 
         await _instanceCommand.UpdateAsync(adminConsoleInstance);
         await _instanceCommand.SaveChangesAsync();
+
+        if (_testingSettings.InjectException)
+            throw new AdminApiException("Exception to test");
 
         scope.Complete();
 

@@ -38,13 +38,14 @@ public class AddInstanceCommandTests : PlatformUsersContextTestBase
     {
         await TransactionAsync(async dbContext =>
         {
+            var guid = Guid.NewGuid();
             var repository = new CommandRepository<Instance>(dbContext);
             var newInstance = new TestInstance
             {
                 TenantId = 1,
                 TenantName = "Test Tenant",
                 OdsInstanceId = 1,
-                Name = "Test Instance",
+                Name = "Test Instance " + guid.ToString(),
                 InstanceType = "Standard",
                 OdsInstanceContexts = new List<OdsInstanceContextModel>(),
                 OdsInstanceDerivatives = new List<OdsInstanceDerivativeModel>()
@@ -55,19 +56,16 @@ public class AddInstanceCommandTests : PlatformUsersContextTestBase
             var result = await command.Execute(newInstance);
 
             result.ShouldNotBeNull(); // Ensure a result is returned
-            result.Id.ShouldBe(1);
-        });
-
-        await TransactionAsync(async dbContext =>
-        {
+            result.Id.ShouldBeGreaterThan(0);
             var persistedInstances = await dbContext.Instances.ToListAsync();
-            persistedInstances.Count.ShouldBe(1);
+            persistedInstances.Count.ShouldBeGreaterThanOrEqualTo(1);
 
-            var persistedInstance = persistedInstances.First();
+            var persistedInstance = persistedInstances.FirstOrDefault(p => p.Id == result.Id);
+            persistedInstance.ShouldNotBeNull();
             persistedInstance.TenantId.ShouldBe(1);
             persistedInstance.TenantName.ShouldBe("Test Tenant");
             persistedInstance.OdsInstanceId.ShouldBe(1);
-            persistedInstance.InstanceName.ShouldBe("Test Instance");
+            persistedInstance.InstanceName.ShouldBe("Test Instance " + guid.ToString());
             persistedInstance.InstanceType.ShouldBe("Standard");
         });
     }

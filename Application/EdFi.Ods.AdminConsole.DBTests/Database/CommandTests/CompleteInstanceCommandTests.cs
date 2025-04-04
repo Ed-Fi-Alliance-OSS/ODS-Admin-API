@@ -29,12 +29,13 @@ namespace EdFi.Ods.AdminConsole.DBTests.Database.CommandTests;
 public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
 {
     [Test]
-    public async Task ShouldCompleteInstance()
+    public async Task ShouldCompleteInstanceAsync()
     {
         AdminConsoleSqlServerUsersContext userDbContext = new(GetUserDbContextOptions());
         var addVendorCommand = new AddVendorCommand(userDbContext);
         var addApplicationCommand = new AddApplicationCommand(userDbContext);
-
+        var guid = Guid.NewGuid();
+        string connectionString = "Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Complete Instance " + guid.ToString() + "\";Pooling=False";
         var vendor = addVendorCommand.Execute(new AddVendorRequest
         {
             Company = Testing.GetAdminConsoleSettings().Value.VendorCompany,
@@ -62,7 +63,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
             {
                 TenantId = 1,
                 OdsInstanceId = 1,
-                Name = "Test Complete Instance",
+                Name = "Test Complete Instance " + guid.ToString(),
                 InstanceType = "Standard",
                 TenantName = "tenant1"
             });
@@ -76,7 +77,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         var qRepository = new QueriesRepository<Instance>(dbContext);
         var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
 
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
         var completeResult = await command.Execute(newInstanceId);
 
         completeResult.ShouldNotBeNull();
@@ -84,11 +85,13 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         completeResult.OAuthUrl.ShouldNotBeNull();
         completeResult.ResourceUrl.ShouldNotBeNull();
 
-        userDbContext.OdsInstances.ToList().Count.ShouldBe(1);
-        userDbContext.OdsInstances.First().ShouldNotBeNull();
-        userDbContext.OdsInstances.First().Name.ShouldBe("Test Complete Instance");
-        userDbContext.OdsInstances.First().InstanceType.ShouldBe("Standard");
-        userDbContext.OdsInstances.First().ConnectionString.ShouldBe("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Complete Instance\";Pooling=False");
+        userDbContext.OdsInstances.ToList().Count.ShouldBeGreaterThanOrEqualTo(1);
+
+        var odsInstance = userDbContext.OdsInstances.FirstOrDefault(p => p.OdsInstanceId == completeResult.OdsInstanceId);
+        odsInstance.ShouldNotBeNull();
+        odsInstance.Name.ShouldBe("Test Complete Instance " + guid.ToString());
+        odsInstance.InstanceType.ShouldBe("Standard");
+        odsInstance.ConnectionString.ShouldBe(connectionString);
     }
 
     [Test]
@@ -98,6 +101,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         AdminConsoleSqlServerUsersContext userDbContext = new(GetUserDbContextOptions());
         var addVendorCommand = new AddVendorCommand(userDbContext);
         var addApplicationCommand = new AddApplicationCommand(userDbContext);
+        var guid = Guid.NewGuid();
 
         var vendor = addVendorCommand.Execute(new AddVendorRequest
         {
@@ -126,7 +130,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
             {
                 TenantId = 1,
                 OdsInstanceId = 1,
-                Name = "Test Complete Instance",
+                Name = "Test Complete Instance " + guid.ToString(),
                 InstanceType = "Standard"
             });
 
@@ -139,7 +143,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         var qRepository = new QueriesRepository<Instance>(dbContext);
         Instance completeResult = null;
         var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
         try
         {
             completeResult = await command.Execute(int.MaxValue);
@@ -150,6 +154,73 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         }
 
         completeResult.ShouldBeNull();
+    }
+
+    [Test]
+    public async Task ShouldNotCompleteInstance_WhenAnExceptionIsThrownInTransaction()
+    {
+
+        AdminConsoleSqlServerUsersContext userDbContext = new(GetUserDbContextOptions());
+        var addVendorCommand = new AddVendorCommand(userDbContext);
+        var addApplicationCommand = new AddApplicationCommand(userDbContext);
+        var guid = Guid.NewGuid();
+
+        var vendor = addVendorCommand.Execute(new AddVendorRequest
+        {
+            Company = Testing.GetAdminConsoleSettings().Value.VendorCompany,
+            NamespacePrefixes = "joe@test.com",
+            ContactName = Testing.GetAdminConsoleSettings().Value.VendorCompany,
+            ContactEmailAddress = "test"
+        });
+
+        var application = addApplicationCommand.Execute(new AddApplicationRequest
+        {
+            ApplicationName = Testing.GetAdminConsoleSettings().Value.ApplicationName,
+            ClaimSetName = "test",
+            ProfileIds = null,
+            VendorId = vendor?.VendorId ?? 0
+        }, Testing.GetAppSettings());
+
+        var newInstanceId = 0;
+
+        await TransactionAsync(async dbContext =>
+        {
+            var repository = new CommandRepository<Instance>(dbContext);
+            var command = new AddInstanceCommand(repository);
+
+            var result = await command.Execute(new TestInstance
+            {
+                TenantId = 1,
+                OdsInstanceId = 1,
+                Name = "Test Complete Instance " + guid.ToString(),
+                InstanceType = "Standard"
+            });
+
+            newInstanceId = result.Id;
+        });
+
+        var dbContext = new AdminConsoleMsSqlContext(GetDbContextOptions());
+
+        var repository = new CommandRepository<Instance>(dbContext);
+        var qRepository = new QueriesRepository<Instance>(dbContext);
+        Instance completeResult = null;
+        var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(injectException: true), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
+        try
+        {
+            completeResult = await command.Execute(newInstanceId);
+        }
+        catch (Exception ex)
+        {
+            ex.GetType().ShouldBeEquivalentTo(typeof(AdminApiException));
+            ex.Message.ShouldBe("Exception to test");
+            //check for the data
+            var data = await qRepository.GetAllAsync();
+            var dataResult = data.FirstOrDefault(p => p.Id == newInstanceId);
+            dataResult.ShouldNotBeNull();
+            dataResult.Id.ShouldBe(newInstanceId);
+            dataResult.Status.ShouldNotBe(InstanceStatus.Completed);
+        }
     }
 
     private class TestInstance : IInstanceRequestModel

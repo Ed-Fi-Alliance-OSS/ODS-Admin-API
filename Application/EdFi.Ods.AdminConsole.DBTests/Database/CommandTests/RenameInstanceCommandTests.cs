@@ -13,9 +13,12 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Models;
+using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using NUnit.Framework;
 using Shouldly;
 using static EdFi.Ods.AdminApi.Features.Applications.AddApplication;
@@ -32,7 +35,7 @@ public class RenameInstanceCommandTests : PlatformUsersContextTestBase
         AdminConsoleSqlServerUsersContext userDbContext = new(GetUserDbContextOptions());
         var addVendorCommand = new AddVendorCommand(userDbContext);
         var addApplicationCommand = new AddApplicationCommand(userDbContext);
-
+        var guid = Guid.NewGuid();
         var vendor = addVendorCommand.Execute(new AddVendorRequest
         {
             Company = Testing.GetAdminConsoleSettings().Value.VendorCompany,
@@ -57,23 +60,43 @@ public class RenameInstanceCommandTests : PlatformUsersContextTestBase
         var instance = await repository.AddAsync(new Instance()
         {
             TenantId = 1,
-            OdsInstanceId = 1,
             TenantName = "tenant1",
-            InstanceName = "Test Rename Instance",
+            InstanceName = "Test Rename Instance " + guid.ToString(),
             InstanceType = "Standard",
-            Status = InstanceStatus.Pending_Rename
+            Status = InstanceStatus.Pending
         });
 
-        var command = new RenameInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
-        var renameResult = await command.Execute(instance.Id);
+        var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
+        var completeResult = await command.Execute(instance.Id);
+        completeResult.Status.ShouldBe(InstanceStatus.Completed);
+
+        var commandEdit = new EditInstanceCommand(repository, qRepository, dbContext, userDbContext);
+
+        var editInstanceData = new Mock<IInstanceRequestModel>();
+        editInstanceData.Setup(v => v.OdsInstanceId).Returns(completeResult.OdsInstanceId.GetValueOrDefault());
+        editInstanceData.Setup(v => v.TenantId).Returns(completeResult.TenantId);
+        editInstanceData.Setup(v => v.TenantName).Returns(completeResult.TenantName);
+        editInstanceData.Setup(v => v.Name).Returns("Updated Instance Rename " + guid.ToString());
+        editInstanceData.Setup(v => v.InstanceType).Returns(completeResult.InstanceType);
+        editInstanceData.Setup(v => v.OdsInstanceContexts).Returns(new List<OdsInstanceContextModel>());
+        editInstanceData.Setup(v => v.OdsInstanceDerivatives).Returns(new List<OdsInstanceDerivativeModel>());
+
+        var resultEdit = await commandEdit.Execute(instance.Id, editInstanceData.Object);
+
+        resultEdit.Status.ShouldBe(InstanceStatus.Pending_Rename);
+
+        var commandRename = new RenameInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
+        var renameResult = await commandRename.Execute(instance.Id);
 
         renameResult.ShouldNotBeNull();
         renameResult.Id.ShouldBeGreaterThan(0);
+        renameResult.Status.ShouldBe(InstanceStatus.Completed);
 
-        userDbContext.OdsInstances.First().ShouldNotBeNull();
-        userDbContext.OdsInstances.First().Name.ShouldBe("Test Rename Instance");
-        userDbContext.OdsInstances.First().InstanceType.ShouldBe("Standard");
-        userDbContext.OdsInstances.First().ConnectionString.ShouldBe("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Rename Instance\";Pooling=False");
+        userDbContext.OdsInstances.First(p => p.OdsInstanceId == renameResult.OdsInstanceId).ShouldNotBeNull();
+        userDbContext.OdsInstances.First(p => p.OdsInstanceId == renameResult.OdsInstanceId).Name.ShouldBe("Updated Instance Rename " + guid.ToString());
+        userDbContext.OdsInstances.First(p => p.OdsInstanceId == renameResult.OdsInstanceId).InstanceType.ShouldBe("Standard");
+        userDbContext.OdsInstances.First(p => p.OdsInstanceId == renameResult.OdsInstanceId).ConnectionString.ShouldBe("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Updated Instance Rename " + guid.ToString() + "\";Pooling=False");
     }
 
     [Test]

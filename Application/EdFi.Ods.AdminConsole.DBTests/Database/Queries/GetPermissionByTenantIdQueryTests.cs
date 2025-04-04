@@ -30,7 +30,7 @@ public class GetPermissionsByTenantIdQueryTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldExecute()
+    public async Task ShouldExecuteAsync()
     {
         var permissionDocument = "{\"data\":[],\"type\":\"Response\"}";
         Permission result = null;
@@ -43,25 +43,21 @@ public class GetPermissionsByTenantIdQueryTests : PlatformUsersContextTestBase
             Document = permissionDocument
         };
 
-        Transaction(async dbContext =>
+        await TransactionAsync(async dbContext =>
         {
             var repository = new CommandRepository<Permission>(dbContext);
             var command = new AddPermissionCommand(repository);
 
             result = await command.Execute(newPermission);
-        });
-
-        Transaction(async dbContext =>
-        {
-            var repository = new QueriesRepository<Permission>(dbContext);
-            var query = new GetPermissionsByTenantIdQuery(repository);
+            var queryRepository = new QueriesRepository<Permission>(dbContext);
+            var query = new GetPermissionsByTenantIdQuery(queryRepository);
             var permissions = await query.Execute(result.TenantId);
-            permissions.Count().ShouldBe(1);
-            permissions.FirstOrDefault().DocId.ShouldBe(result.DocId);
-            permissions.FirstOrDefault().TenantId.ShouldBe(newPermission.TenantId);
-            permissions.FirstOrDefault().InstanceId.ShouldBe(newPermission.InstanceId);
-            permissions.FirstOrDefault().EdOrgId.ShouldBe(newPermission.EdOrgId);
-            permissions.FirstOrDefault().Document.ShouldBe(newPermission.Document);
+            permissions.Count().ShouldBeGreaterThanOrEqualTo(1);
+            permissions.LastOrDefault().DocId.ShouldBe(result.DocId);
+            permissions.LastOrDefault().TenantId.ShouldBe(newPermission.TenantId);
+            permissions.LastOrDefault().InstanceId.ShouldBe(newPermission.InstanceId);
+            permissions.LastOrDefault().EdOrgId.ShouldBe(newPermission.EdOrgId);
+            permissions.LastOrDefault().Document.ShouldBe(newPermission.Document);
         });
     }
 

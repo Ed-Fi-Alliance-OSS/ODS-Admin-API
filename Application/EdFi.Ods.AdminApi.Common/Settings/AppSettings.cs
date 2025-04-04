@@ -13,6 +13,7 @@ public class AppSettingsFile
     public string? EdFiApiDiscoveryUrl { get; set; }
     public string[] ConnectionStrings { get; set; } = [];
     public Dictionary<string, TenantSettings> Tenants { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public required TestingSettings Testing { get; set; }
 }
 
 public class AppSettings

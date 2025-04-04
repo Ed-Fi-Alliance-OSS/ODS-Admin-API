@@ -34,7 +34,7 @@ public class GetInstanceByIdQueryTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldExecute()
+    public async Task ShouldExecuteAsync()
     {
         AddInstanceResult result = null;
 
@@ -49,18 +49,15 @@ public class GetInstanceByIdQueryTests : PlatformUsersContextTestBase
             OdsInstanceDerivatives = new List<OdsInstanceDerivativeModel>()
         };
 
-        Transaction(async dbContext =>
+        await TransactionAsync(async dbContext =>
         {
             var repository = new CommandRepository<Instance>(dbContext);
             var command = new AddInstanceCommand(repository);
 
             result = await command.Execute(newInstance);
-        });
 
-        Transaction(async dbContext =>
-        {
-            var repository = new QueriesRepository<Instance>(dbContext);
-            var query = new GetInstanceByIdQuery(repository);
+            var queryRepository = new QueriesRepository<Instance>(dbContext);
+            var query = new GetInstanceByIdQuery(queryRepository);
             var instance = await query.Execute(result.Id);
 
             instance.Id.ShouldBe(result.Id);
