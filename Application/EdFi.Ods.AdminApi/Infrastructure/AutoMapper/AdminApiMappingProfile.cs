@@ -175,6 +175,7 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.InstanceType, opt => opt.MapFrom(src => src.InstanceType))
             .ForMember(dst => dst.BaseUrl, opt => opt.MapFrom(src => src.BaseUrl))
             .ForMember(dst => dst.OdsInstanceContexts, opt => opt.MapFrom(src => src.OdsInstanceContexts))
+            .ForMember(dst => dst.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dst => dst.OdsInstanceDerivatives, opt => opt.MapFrom(src => src.OdsInstanceDerivatives));
 
         CreateMap<Instance, InstanceWorkerModel>()

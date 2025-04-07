@@ -11,6 +11,7 @@ public class InstanceModel
     public int TenantId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string InstanceType { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
     public string? BaseUrl { get; set; }
     public List<OdsInstanceContextForInstanceModel>? OdsInstanceContexts { get; set; }
     public List<OdsInstanceDerivativeForInstanceModel>? OdsInstanceDerivatives { get; set; }
