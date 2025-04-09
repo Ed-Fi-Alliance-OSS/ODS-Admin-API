@@ -25,6 +25,7 @@ public class AppSettings
     public bool MultiTenancy { get; set; }
     public bool PreventDuplicateApplications { get; set; }
     public bool EnableAdminConsoleAPI { get; set; }
+    public bool IgnoresCertificateErrors { get; set; }
 }
 
 public class SwaggerSettings

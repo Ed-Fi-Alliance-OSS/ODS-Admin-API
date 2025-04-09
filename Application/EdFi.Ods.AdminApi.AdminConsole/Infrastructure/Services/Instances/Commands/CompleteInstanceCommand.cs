@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Dynamic;
-using System.Net;
 using System.Transactions;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
@@ -111,18 +110,23 @@ public class CompleteInstanceCommand(
             throw new HttpRequestException("Discovery URL not found in tenant document.");
         }
 
-        #region Uncomment this code when ODS Docker Environment is Running        
-#pragma warning disable S125 // Sections of code should not be commented out
-        /*
-        string finalUri = discoveryUrl
-        if (_options.MultiTenancy && (documentDictionary.TryGetValue("name", out var tenantName) && tenantName is string name) && !discoveryUrl.Contains(name))
+        string finalUri = discoveryUrl;
+        if (_options.MultiTenancy && (documentDictionary.TryGetValue("name", out var tenantName) && tenantName is string name)
+            && !name.Equals("default")
+            && !discoveryUrl.Contains(name))
         {
             var baseUri = new Uri(discoveryUrl);
             finalUri = new Uri(baseUri, name).ToString();
         }
-        
 
-        using var httpClient = new HttpClient();
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (request, cert, chain, errors) => _options.IgnoresCertificateErrors,
+            ClientCertificateOptions = ClientCertificateOption.Manual
+        };
+
+        var httpClient = new HttpClient(handler);
+
         var response = await httpClient.GetAsync(finalUri);
 
         if (!response.IsSuccessStatusCode)
@@ -146,23 +150,5 @@ public class CompleteInstanceCommand(
 
         instance.OAuthUrl = oauth;
         instance.ResourceUrl = dataManagementApi;
-        */
-#pragma warning restore S125 // Sections of code should not be commented out
-        #endregion
-
-        #region Remove this code when ODS Docker Environment is Running
-        var oAuthUri = "oauth/token";
-        var resourceUri = "data/v3";
-        var baseUri = new Uri(discoveryUrl);
-        if (_options.MultiTenancy && (documentDictionary.TryGetValue("name", out var tenantName) && tenantName is string name) && !discoveryUrl.Contains(name))
-        {
-            instance.OAuthUrl = new Uri(baseUri, string.Concat(tenantName, oAuthUri)).ToString();
-            instance.ResourceUrl = new Uri(baseUri, string.Concat(tenantName, resourceUri)).ToString();
-            return;
-        }
-
-        instance.OAuthUrl = new Uri(baseUri, oAuthUri).ToString();
-        instance.ResourceUrl = new Uri(baseUri, resourceUri).ToString();
-        #endregion
     }
 }

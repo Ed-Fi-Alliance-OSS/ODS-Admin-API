@@ -7,7 +7,8 @@ ISSUER_URL=https://localhost/${ADMIN_API_VIRTUAL_NAME}
 SIGNING_KEY=<Create a new string as symmetric encryption key>
 
 # For Ed-Fi ODS / API
-EDFI_API_DISCOVERY_URL=https://api.ed-fi.org/v7.2/api/
+EDFI_API_DISCOVERY_URL=https://localhost/api/
+IGNORES_CERTIFICATE_ERRORS=true
 
 PAGING_OFFSET=0
 PAGING_LIMIT=25
@@ -56,3 +57,9 @@ USE_SELF_CONTAINED_AUTH=false
 # OIDC_AUTHORITY=http://ed-fi-idp-keycloak:8080/auth/realms/edfi-admin-console
 OIDC_REQUIRE_METADATA=false
 OIDC_ENABLE_SERVER_CERTIFICATE=true
+
+
+# Ods Api
+TAG=7.1
+API_HEALTHCHECK_TEST="curl -f http://localhost/health"
+ODS_CONNECTION_STRING_ENCRYPTION_KEY=<Create a new string as symmetric encryption key>

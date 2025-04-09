@@ -56,13 +56,19 @@ jobs:
         run: |
           docker compose \
             -f '../../Docker/Compose/pgsql/MultiTenant/compose-build-dev-multi-tenant.yml' \
+            -f '../../Docker/Compose/pgsql/MultiTenant/compose-build-ods-multi-tenant.yml' \
             --env-file './E2E Tests/gh-action-setup/.automation_pgsql.env' \
             up -d
 
       - name: Verify containers are running
         run: |
-          chmod +x './E2E Tests/gh-action-setup/inspect.sh'
-          './E2E Tests/gh-action-setup/inspect.sh' adminapi
+          chmod +x './E2E Tests/gh-action-setup/admin_inspect.sh'
+          './E2E Tests/gh-action-setup/admin_inspect.sh' adminapi
+
+      - name: Verify Ods containers are running
+        run: |
+          chmod +x './E2E Tests/gh-action-setup/ods_inspect.sh'
+          './E2E Tests/gh-action-setup/ods_inspect.sh' ed-fi-ods-api
 
       - name: Setup node
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
@@ -94,7 +100,7 @@ jobs:
           mkdir docker-logs
           docker logs ed-fi-db-admin-adminapi-tenant1 > docker-logs/ed-fi-db-admin-adminapi-tenant1.log
           docker logs ed-fi-db-admin-adminapi-tenant2 > docker-logs/ed-fi-db-admin-adminapi-tenant2.log
-          docker logs adminapi-packaged > docker-logs/adminapi-packaged.log
+          docker logs adminapi > docker-logs/adminapi.log
 
       - name: Upload Docker logs
         if: failure()
