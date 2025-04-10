@@ -86,9 +86,9 @@ public class InitializationService : IAdminConsoleInitializationService
         IAddVendorModel vendor = new AddVendorRequest
         {
             Company = vendorCompany,
-            NamespacePrefixes = vendorContactEmailAddress,
+            NamespacePrefixes = vendorNamespacePrefixes,
             ContactName = vendorContactName,
-            ContactEmailAddress = vendorNamespacePrefixes
+            ContactEmailAddress = vendorContactEmailAddress
         };
         return command.Execute(vendor);
     }
