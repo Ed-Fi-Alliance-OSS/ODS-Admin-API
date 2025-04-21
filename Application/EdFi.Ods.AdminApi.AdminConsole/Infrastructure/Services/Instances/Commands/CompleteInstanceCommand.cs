@@ -69,7 +69,8 @@ public class CompleteInstanceCommand(
         if (_tenantConfigurationProvider.Get().TryGetValue(adminConsoleInstance.TenantName, out TenantConfiguration? tenantConfiguration) && tenantConfiguration != null)
         {
             var databaseEngine = _options.DatabaseEngine ?? throw new NotFoundException<string>("AppSettings", "DatabaseEngine");
-            newOdsInstance.ConnectionString = ConnectionStringHelper.ConnectionStringRename(databaseEngine, tenantConfiguration.AdminConnectionString, adminConsoleInstance.InstanceName);
+            string templatePrefix = "Ods_";
+            newOdsInstance.ConnectionString = ConnectionStringHelper.ConnectionStringRename(databaseEngine, tenantConfiguration.AdminConnectionString, templatePrefix + adminConsoleInstance.InstanceName);
         }
 
         _context.ApiClients.Add(newApiClient);
