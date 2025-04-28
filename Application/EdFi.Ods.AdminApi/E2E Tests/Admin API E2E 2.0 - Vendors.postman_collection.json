@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "e84cf599-e459-4c3c-b468-d51f44bc16eb",
+		"_postman_id": "c2f46729-edb4-4105-8dff-e780d432f24f",
 		"name": "Admin API E2E 2.0 - Vendors",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -168,7 +169,54 @@
 										"v2",
 										"vendors"
 									]
+							},
+							"response": []
+						},
+						{
+							"name": "Vendors - Invalid Prefix exceed length",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST Vendors Invalid: Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"POST Vendors Invalid: Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"errors\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Vendors Invalid: Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.title.toLowerCase()).to.contain(\"validation\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST Vendors Invalid: Response errors include messages by property\", function () {\r",
+											"    pm.expect(response.errors[\"NamespacePrefixes\"].length).to.equal(1);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"company\": \"Test Company\",\r\n    \"namespacePrefixes\": \"uri://abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl.org\",\r\n    \"contactName\": \"Test User\",\r\n    \"contactEmailAddress\": \"test@test-ed-fi.org\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/vendors"
 							},
 							"response": []
 						},
