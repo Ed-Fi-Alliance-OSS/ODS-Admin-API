@@ -35,7 +35,7 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         var addVendorCommand = new AddVendorCommand(userDbContext);
         var addApplicationCommand = new AddApplicationCommand(userDbContext);
         var guid = Guid.NewGuid();
-        string connectionString = "Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Complete Instance " + guid.ToString() + "\";Pooling=False";
+        string connectionString = "Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Ods_Test Complete Instance " + guid.ToString() + "\";Pooling=False";
         var vendor = addVendorCommand.Execute(new AddVendorRequest
         {
             Company = Testing.GetAdminConsoleSettings().Value.VendorCompany,

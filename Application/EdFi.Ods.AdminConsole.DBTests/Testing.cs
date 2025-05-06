@@ -40,7 +40,8 @@ public static class Testing
     {
         AppSettings appSettings = new()
         {
-            DatabaseEngine = DatabaseEngineEnum.PostgreSql.ToString()
+            DatabaseEngine = DatabaseEngineEnum.PostgreSql.ToString(),
+            IgnoresCertificateErrors = true
         };
         return Options.Create(appSettings);
     }
@@ -57,7 +58,8 @@ public static class Testing
                 EncryptionKey = "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0=",
                 MultiTenancy = true,
                 PreventDuplicateApplications = true,
-                EnableAdminConsoleAPI = true
+                EnableAdminConsoleAPI = true,
+                IgnoresCertificateErrors = true,
             },
             SwaggerSettings = new SwaggerSettings(),
             AdminConsoleSettings = new AdminConsoleSettings

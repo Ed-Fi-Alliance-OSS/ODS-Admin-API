@@ -29,12 +29,14 @@ public class DeletedInstanceCommand : IDeletedInstanceCommand
     private readonly IUsersContext _context;
     private readonly IQueriesRepository<Instance> _instanceQuery;
     private readonly ICommandRepository<Instance> _instanceCommand;
+    private readonly TestingSettings _testingSettings;
 
-    public DeletedInstanceCommand(IUsersContext context, IQueriesRepository<Instance> instanceQuery, ICommandRepository<Instance> instanceCommand)
+    public DeletedInstanceCommand(IUsersContext context, IQueriesRepository<Instance> instanceQuery, ICommandRepository<Instance> instanceCommand, IOptionsMonitor<TestingSettings> testingSettings)
     {
         _context = context;
         _instanceQuery = instanceQuery;
         _instanceCommand = instanceCommand;
+        _testingSettings = testingSettings.CurrentValue;
     }
 
     public async Task Execute(int id)
@@ -53,12 +55,12 @@ public class DeletedInstanceCommand : IDeletedInstanceCommand
                 .Include(i => i.OdsInstanceDerivatives)
                 .SingleOrDefaultAsync(w => w.OdsInstanceId == odsInstanceId);
 
-            var apiclientOdsInstance = await _context.ApiClientOdsInstances.Include(i => i.ApiClient).SingleOrDefaultAsync(w => w.OdsInstance.OdsInstanceId == odsInstanceId);
+            var apiclientOdsInstance = _context.ApiClientOdsInstances.Include(i => i.ApiClient).Where(w => w.OdsInstance.OdsInstanceId == odsInstanceId);
 
             if (apiclientOdsInstance != null)
             {
-                _context.ApiClientOdsInstances.Remove(apiclientOdsInstance);
-                _context.ApiClients.Remove(apiclientOdsInstance.ApiClient);
+                _context.ApiClientOdsInstances.RemoveRange(apiclientOdsInstance);
+                _context.ApiClients.RemoveRange(apiclientOdsInstance.Select(p => p.ApiClient).Distinct());
             }
             if (odsInstance != null)
             {
@@ -70,13 +72,15 @@ public class DeletedInstanceCommand : IDeletedInstanceCommand
 
             adminConsoleInstance.Status = InstanceStatus.Deleted;
 
+            _testingSettings.CheckIfHasToThrowException();
+
             await _instanceCommand.UpdateAsync(adminConsoleInstance);
             scope.Complete();
         }
         catch (Exception)
         {
             adminConsoleInstance.Status = InstanceStatus.Delete_Failed;
-            await _instanceCommand.SaveChangesAsync();
+            await _instanceCommand.UpdateAsync(adminConsoleInstance);
             throw;
         }
     }

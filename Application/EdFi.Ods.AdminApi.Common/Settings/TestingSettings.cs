@@ -8,10 +8,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.Common.Settings;
 
 public class TestingSettings
 {
     public bool InjectException { get; set; }
+
+    public void CheckIfHasToThrowException()
+    {
+        if (InjectException)
+            throw new AdminApiException("Exception to test");
+    }
 }

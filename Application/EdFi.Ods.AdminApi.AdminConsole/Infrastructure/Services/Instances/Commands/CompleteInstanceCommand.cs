@@ -92,8 +92,7 @@ public class CompleteInstanceCommand(
         await _instanceCommand.UpdateAsync(adminConsoleInstance);
         await _instanceCommand.SaveChangesAsync();
 
-        if (_testingSettings.InjectException)
-            throw new AdminApiException("Exception to test");
+        _testingSettings.CheckIfHasToThrowException();
 
         scope.Complete();
 
