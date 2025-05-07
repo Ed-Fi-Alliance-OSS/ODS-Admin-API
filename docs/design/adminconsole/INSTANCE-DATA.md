@@ -141,10 +141,11 @@ Also supports `GET /adminconsole/odsInstances/{id}`
     ]
   }
   ```
+
 <hr />
 
 > [!IMPORTANT]
-> The following diagram represents the possible values the Instances 
+> The following diagram represents the possible values the Instances
 > have during the Worker's process
 
 <hr />
@@ -271,6 +272,19 @@ Also supports `GET /adminconsole/instances/{id}`
     * Update `adminconsole.Instance` to set:
       * New credentials
       * Status = `COMPLETED`
+* **Validation**:
+
+  | Property                             | Rules                                                      |
+  | ------------------------------------ | ---------------------------------------------------------- |
+  | connectionString                     | Valid mssql or pgsql connection string.                    |
+
+* **Sample Payload**:
+
+  ```json
+  {
+    "connectionString": "host=localhost;port=5431;username=username;password=password;database=database;application name=AppName;"
+  }
+  ```
 
 ### PUT /adminconsole/instances/{id}
 

@@ -46,29 +46,4 @@ public static class ConnectionStringHelper
         }
         return result;
     }
-
-    public static string ConnectionStringRename(string databaseEngine, string? connectionString, string newDbName)
-    {
-        if (string.IsNullOrEmpty(connectionString))
-            return string.Empty;
-
-        if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.InvariantCultureIgnoreCase))
-        {
-            var connectrionStringBuilder = new SqlConnectionStringBuilder(connectionString)
-            {
-                InitialCatalog = newDbName
-            };
-            return connectrionStringBuilder.ToString();
-        }
-        else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.InvariantCultureIgnoreCase))
-        {
-            var connectrionStringBuilder = new NpgsqlConnectionStringBuilder(connectionString)
-            {
-                Database = newDbName
-            };
-            return connectrionStringBuilder.ToString();
-        }
-        else
-            throw new NotSupportedException();
-    }
 }

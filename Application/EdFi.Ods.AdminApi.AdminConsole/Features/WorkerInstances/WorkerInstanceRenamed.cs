@@ -6,9 +6,10 @@
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using static EdFi.Ods.AdminApi.AdminConsole.Features.Instances.CompleteInstance;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.WorkerInstances;
 
@@ -23,9 +24,11 @@ public class WorkerInstanceRenamed : IFeature
             .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
-    public static async Task<IResult> Handle(IRenameInstanceCommand renameInstanceCommand, int instanceid)
+    public static async Task<IResult> Handle(Validator validator, IRenameInstanceCommand renameInstanceCommand, int instanceid, [FromBody] CompleteInstanceRequest request)
     {
-        await renameInstanceCommand.Execute(instanceid);
+        await validator.GuardAsync(request);
+
+        await renameInstanceCommand.Execute(instanceid, request.ConnectionString);
         return Results.NoContent();
     }
 }

@@ -77,8 +77,8 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         var qRepository = new QueriesRepository<Instance>(dbContext);
         var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
 
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
-        var completeResult = await command.Execute(newInstanceId);
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, tenantService);
+        var completeResult = await command.Execute(newInstanceId, connectionString);
 
         completeResult.ShouldNotBeNull();
         completeResult.Id.ShouldBeGreaterThan(0);
@@ -143,10 +143,10 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         var qRepository = new QueriesRepository<Instance>(dbContext);
         Instance completeResult = null;
         var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, tenantService);
         try
         {
-            completeResult = await command.Execute(int.MaxValue);
+            completeResult = await command.Execute(int.MaxValue, "some connection string");
         }
         catch (Exception ex)
         {
@@ -205,10 +205,10 @@ public class CompleteInstanceCommandTests : PlatformUsersContextTestBase
         var qRepository = new QueriesRepository<Instance>(dbContext);
         Instance completeResult = null;
         var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(injectException: true), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(injectException: true), userDbContext, qRepository, repository, tenantService);
         try
         {
-            completeResult = await command.Execute(newInstanceId);
+            completeResult = await command.Execute(newInstanceId, "some connection string");
         }
         catch (Exception ex)
         {

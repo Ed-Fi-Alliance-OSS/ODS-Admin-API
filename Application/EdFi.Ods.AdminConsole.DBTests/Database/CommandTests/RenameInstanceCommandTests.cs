@@ -67,8 +67,8 @@ public class RenameInstanceCommandTests : PlatformUsersContextTestBase
         });
 
         var tenantService = new TenantService(Testing.GetOptionsSnapshot(), new MemoryCache(new MemoryCacheOptions()));
-        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest(), tenantService);
-        var completeResult = await command.Execute(instance.Id);
+        var command = new CompleteInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), Testing.GetTestingSettings(), userDbContext, qRepository, repository, tenantService);
+        var completeResult = await command.Execute(instance.Id, "Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Test Rename Instance " + guid.ToString() + "\";Pooling=False");
         completeResult.Status.ShouldBe(InstanceStatus.Completed);
 
         var commandEdit = new EditInstanceCommand(repository, qRepository, dbContext, userDbContext);
@@ -79,15 +79,15 @@ public class RenameInstanceCommandTests : PlatformUsersContextTestBase
         editInstanceData.Setup(v => v.TenantName).Returns(completeResult.TenantName);
         editInstanceData.Setup(v => v.Name).Returns("Updated Instance Rename " + guid.ToString());
         editInstanceData.Setup(v => v.InstanceType).Returns(completeResult.InstanceType);
-        editInstanceData.Setup(v => v.OdsInstanceContexts).Returns(new List<OdsInstanceContextModel>());
-        editInstanceData.Setup(v => v.OdsInstanceDerivatives).Returns(new List<OdsInstanceDerivativeModel>());
+        editInstanceData.Setup(v => v.OdsInstanceContexts).Returns([]);
+        editInstanceData.Setup(v => v.OdsInstanceDerivatives).Returns([]);
 
         var resultEdit = await commandEdit.Execute(instance.Id, editInstanceData.Object);
 
         resultEdit.Status.ShouldBe(InstanceStatus.Pending_Rename);
 
-        var commandRename = new RenameInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
-        var renameResult = await commandRename.Execute(instance.Id);
+        var commandRename = new RenameInstanceCommand(Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository);
+        var renameResult = await commandRename.Execute(instance.Id, "Host=localhost;Port=5432;Username=postgres;Password=admin;Database=\"Updated Instance Rename " + guid.ToString() + "\";Pooling=False");
 
         renameResult.ShouldNotBeNull();
         renameResult.Id.ShouldBeGreaterThan(0);
@@ -146,10 +146,10 @@ public class RenameInstanceCommandTests : PlatformUsersContextTestBase
         var qRepository = new QueriesRepository<Instance>(dbContext);
         Instance renameResult = null;
 
-        var command = new RenameInstanceCommand(Testing.GetAppSettings(), Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository, new TenantConfigurationProviderTest());
+        var command = new RenameInstanceCommand(Testing.GetAdminConsoleSettings(), userDbContext, qRepository, repository);
         try
         {
-            renameResult = await command.Execute(int.MaxValue);
+            renameResult = await command.Execute(int.MaxValue, "some connection string");
         }
         catch (Exception ex)
         {

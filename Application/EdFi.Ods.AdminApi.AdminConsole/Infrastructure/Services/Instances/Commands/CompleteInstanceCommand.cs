@@ -11,8 +11,6 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
-using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -23,7 +21,7 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Comma
 
 public interface ICompleteInstanceCommand
 {
-    Task<Instance> Execute(int id);
+    Task<Instance> Execute(int id, string connectionString);
 }
 
 public class CompleteInstanceCommand(
@@ -33,7 +31,6 @@ public class CompleteInstanceCommand(
     IUsersContext context,
     IQueriesRepository<Instance> instanceQuery,
     ICommandRepository<Instance> instanceCommand,
-    ITenantConfigurationProvider tenantConfigurationProvider,
     IAdminConsoleTenantsService adminConsoleTenantsService) : ICompleteInstanceCommand
 {
     private readonly AppSettings _options = options.Value;
@@ -42,10 +39,9 @@ public class CompleteInstanceCommand(
     private readonly IUsersContext _context = context;
     private readonly IQueriesRepository<Instance> _instanceQuery = instanceQuery;
     private readonly ICommandRepository<Instance> _instanceCommand = instanceCommand;
-    private readonly ITenantConfigurationProvider _tenantConfigurationProvider = tenantConfigurationProvider;
     private readonly IAdminConsoleTenantsService _adminConsoleTenantsService = adminConsoleTenantsService;
 
-    public async Task<Instance> Execute(int id)
+    public async Task<Instance> Execute(int id, string connectionString)
     {
         var common = new InstanceCommon(_adminConsoleOptions, _context);
         var newApiClient = await common.NewApiClient();
@@ -59,19 +55,13 @@ public class CompleteInstanceCommand(
             return adminConsoleInstance;
 
         var newOdsInstance = InstanceCommon.NewOdsInstance(adminConsoleInstance);
+        newOdsInstance.ConnectionString = connectionString;
 
         var apiClientOdsInstance = new ApiClientOdsInstance()
         {
             ApiClient = newApiClient,
             OdsInstance = newOdsInstance
         };
-
-        if (_tenantConfigurationProvider.Get().TryGetValue(adminConsoleInstance.TenantName, out TenantConfiguration? tenantConfiguration) && tenantConfiguration != null)
-        {
-            var databaseEngine = _options.DatabaseEngine ?? throw new NotFoundException<string>("AppSettings", "DatabaseEngine");
-            string templatePrefix = "Ods_";
-            newOdsInstance.ConnectionString = ConnectionStringHelper.ConnectionStringRename(databaseEngine, tenantConfiguration.AdminConnectionString, templatePrefix + adminConsoleInstance.InstanceName);
-        }
 
         _context.ApiClients.Add(newApiClient);
         _context.OdsInstances.Add(newOdsInstance);

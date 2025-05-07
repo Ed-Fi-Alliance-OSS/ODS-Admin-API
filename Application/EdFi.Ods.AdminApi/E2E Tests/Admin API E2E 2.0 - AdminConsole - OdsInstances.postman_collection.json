@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e6bc7f72-731b-4a5a-9515-96963a5f9307",
+		"_postman_id": "70201886-77da-4ac3-8025-bf60c4ab74d6",
 		"name": "Admin API E2E 2.0 - AdminConsole - OdsInstances",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "22794466"
@@ -824,6 +824,15 @@
 							"request": {
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []
@@ -1038,6 +1047,15 @@
 							"request": {
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []
@@ -1499,6 +1517,15 @@
 							"request": {
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
 							},
 							"response": []

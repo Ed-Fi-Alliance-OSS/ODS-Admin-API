@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f06b0372-a73c-4631-beb4-9f160a92d344",
+		"_postman_id": "ea8032b3-fc18-4722-b4dc-67aaf0714065",
 		"name": "Admin API E2E 2.0 - AdminConsole - Instances",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "22794466"
@@ -65,6 +65,122 @@
 							"response": []
 						},
 						{
+							"name": "Complete Instance Without Connection String",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"errors\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.title.toLowerCase()).to.contain(\"validation\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Response errors include messages by property\", function () {\r",
+											"    pm.expect(response.errors[\"ConnectionString\"].length).to.equal(1);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+							},
+							"response": []
+						},
+						{
+							"name": "Complete Instance With Invalid Connection String",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"errors\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.title.toLowerCase()).to.contain(\"validation\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST AdminConsole Complete Instance Invalid: Response errors include messages by property\", function () {\r",
+											"    pm.expect(response.errors[\"ConnectionString\"].length).to.equal(1);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"Invalid_Connection_String\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedOdsInstanceId}}/completed"
+							},
+							"response": []
+						},
+						{
 							"name": "Complete Instance",
 							"event": [
 								{
@@ -95,7 +211,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1076,7 +1192,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1124,7 +1240,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1172,7 +1288,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1472,7 +1588,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1990,7 +2106,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2620,7 +2736,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2733,6 +2849,15 @@
 							"request": {
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedBaseOdsInstanceToRenameId}}/renamed"
 							},
 							"response": []
@@ -2768,7 +2893,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2863,7 +2988,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3002,7 +3127,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3044,7 +3169,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3233,7 +3358,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3432,6 +3557,15 @@
 							"request": {
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": "{{API_URL}}/adminconsole/instances/{{AdminConsoleCreatedRenameFailedOdsInstanceId}}/renamed"
 							},
 							"response": []
@@ -3706,7 +3840,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -3754,7 +3888,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "",
+									"raw": "{\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
