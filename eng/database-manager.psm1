@@ -57,7 +57,8 @@ IF EXISTS (SELECT 1 FROM sys.databases WHERE name = '$databaseName')
 GO
 "@
 
-    Write-Host "Dropping the $databaseName Database."
+    Install-Module sqlserver -Force
+    Import-Module sqlserver -Force
     Invoke-SqlCmd -ConnectionString $masterConnection -Query $dropDatabase
 }
 
@@ -141,6 +142,10 @@ function Invoke-DbDeploy {
     )
 
     Write-Host "Executing: $DbDeployExe $(Get-MaskedConnectionString $arguments)" -ForegroundColor Magenta
+    if ($DbDeployExe -like "*.exe") {
+        $DbDeployExe = $DbDeployExe -replace "\.exe$", ""
+    }
+
     &$DbDeployExe @arguments
 
     if ($LASTEXITCODE -ne 0) {
@@ -577,7 +582,7 @@ function Invoke-PrepareDatabasesForTesting {
         $UseIntegratedSecurity,
 
         [string]
-        $DbUser,
+        $DbUsername,
 
         [string]
         $DbPassword,
@@ -600,6 +605,7 @@ function Invoke-PrepareDatabasesForTesting {
         ToolsPath = $ToolsPath
         RestApiPackagePrerelease = $RestApiPackagePrerelease
     }
+
     $dbPackagePath = Get-RestApiPackage @arguments
 
     $installArguments = @{
@@ -627,6 +633,7 @@ function Invoke-PrepareDatabasesForTesting {
     $removeArguments.DatabaseName = "EdFi_Security_Test"
     Write-Host "Installing the Security database to $($installArguments.DatabaseName)" -ForegroundColor Cyan
     Remove-SqlServerDatabase @removeArguments
+
     Install-EdFiSecurityDatabase @installArguments
 
     $installArguments.DatabaseName = "EdFi_Admin_Test"

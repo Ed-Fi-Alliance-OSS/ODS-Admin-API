@@ -48,7 +48,7 @@ public class OverrideDefaultAuthorizationStrategyCommand
             var resourceClaimActionDefaultAuthorizationStrategy = _context.ResourceClaimActionAuthorizationStrategies.AsEnumerable().FirstOrDefault(p => p.ResourceClaimAction.ResourceClaimId == model.ResourceClaimId
                 && p.ResourceClaimAction.Action.ActionName.Equals(model.ActionName, StringComparison.CurrentCultureIgnoreCase));
 
-            if(resourceClaimActionDefaultAuthorizationStrategy == null && claimSetResourceClaimAction.ResourceClaim.ParentResourceClaim != null)
+            if (resourceClaimActionDefaultAuthorizationStrategy == null && claimSetResourceClaimAction.ResourceClaim.ParentResourceClaim != null)
             {
                 var parentResourceClaimId = claimSetResourceClaimAction.ResourceClaim.ParentResourceClaim.ResourceClaimId;
                 var parentResourceClaimDefaultAuthStrategy = _context.ResourceClaimActionAuthorizationStrategies.FirstOrDefault(p =>
@@ -112,7 +112,7 @@ public class OverrideDefaultAuthorizationStrategyCommand
     {
         var claimSetResourceClaimActionsToEdit = GetClaimSetResourceClaimsToEdit(model.ClaimSetId, model.ResourceClaimId);
 
-        foreach(var resourceClaimAction in claimSetResourceClaimActionsToEdit)
+        foreach (var resourceClaimAction in claimSetResourceClaimActionsToEdit)
         {
             RemoveClaimSetResourceClaimActionAuthorizationStrategyOverrides(resourceClaimAction);
         }

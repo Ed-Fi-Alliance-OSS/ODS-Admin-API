@@ -79,7 +79,7 @@ public class EditOdsInstanceCommandTests : PlatformUsersContextTestBase
         {
             var changedOdsInstance = usersContext.OdsInstances.Single(v => v.OdsInstanceId == _odsInstanceId);
             changedOdsInstance.Name.ShouldBe(name);
-            changedOdsInstance.InstanceType.ShouldBeEmpty();
+            changedOdsInstance.InstanceType.ShouldBeNullOrEmpty();
             changedOdsInstance.ConnectionString.ShouldBe(connectionString);
         });
     }

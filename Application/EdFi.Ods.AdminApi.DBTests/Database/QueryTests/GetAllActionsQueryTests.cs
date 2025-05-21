@@ -30,7 +30,7 @@ public class GetAllActionsQueryTests : SecurityDataTestBase
     }
 
     [Test]
-    public void ShouldGetAllActions_With_Offset_and_Limit()
+    public void ShouldGetAllActions_With_Offset_and_Limit_and_order_by_id_Asc()
     {
         LoadSeedData();
         var offset = 1;
@@ -39,13 +39,51 @@ public class GetAllActionsQueryTests : SecurityDataTestBase
         using var securityContext = TestContext;
         var query = new GetAllActionsQuery(securityContext, Testing.GetAppSettings());
         var resultNames = query.Execute(
-            new CommonQueryParams(offset, limit, null, null),
+            new CommonQueryParams(offset, limit, "id", "Ascending"),
             null, null).Select(x => x.ActionName).ToList();
 
         resultNames.Count.ShouldBe(2);
 
         resultNames.ShouldContain("Create");
         resultNames.ShouldContain("Update");
+    }
+
+    [Test]
+    public void ShouldGetAllActions_With_Offset_and_Limit_and_order_by_Name_Asc()
+    {
+        LoadSeedData();
+        var offset = 1;
+        var limit = 2;
+
+        using var securityContext = TestContext;
+        var query = new GetAllActionsQuery(securityContext, Testing.GetAppSettings());
+        var resultNames = query.Execute(
+            new CommonQueryParams(offset, limit, "Name", "Ascending"),
+            null, null).Select(x => x.ActionName).ToList();
+
+        resultNames.Count.ShouldBe(2);
+
+        resultNames.ShouldContain("Delete");
+        resultNames.ShouldContain("Read");
+    }
+
+    [Test]
+    public void ShouldGetAllActions_With_Offset_and_Limit_and_order_by_Name_Desc()
+    {
+        LoadSeedData();
+        var offset = 1;
+        var limit = 2;
+
+        using var securityContext = TestContext;
+        var query = new GetAllActionsQuery(securityContext, Testing.GetAppSettings());
+        var resultNames = query.Execute(
+            new CommonQueryParams(offset, limit, "Name", "Descending"),
+            null, null).Select(x => x.ActionName).ToList();
+
+        resultNames.Count.ShouldBe(2);
+
+        resultNames.ShouldContain("Read");
+        resultNames.ShouldContain("Delete");
     }
 
     [Test]

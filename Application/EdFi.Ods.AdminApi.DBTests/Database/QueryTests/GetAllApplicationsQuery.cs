@@ -4,6 +4,8 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -22,7 +24,7 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
 {
     private IOptions<AppSettings> _options { get; set; }
 
-    [OneTimeSetUp]
+    [SetUp]
     public virtual async Task FixtureSetup()
     {
         _options = Testing.GetAppSettings();
@@ -34,14 +36,16 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
     [Test]
     public void ShouldGetAllApplications()
     {
+        var result = new List<Application>();
+
         Transaction(usersContext =>
         {
             var query = new GetAllApplicationsQuery(usersContext, _options);
-            var result = query.Execute(
-                new CommonQueryParams(null, null, null, null), null, null, null);
-
-            result.Count.ShouldBeGreaterThan(0);
+            result = query.Execute(
+                new CommonQueryParams(), null, null, null).ToList();
         });
+
+        result.Count.ShouldBeGreaterThan(0);
     }
 
     [Test]
@@ -53,7 +57,7 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
         {
             var query = new GetAllApplicationsQuery(usersContext, _options);
             var result = query.Execute(
-                new CommonQueryParams(offset, limit, null, null), null, null, null);
+                new CommonQueryParams(offset, limit), null, null, null);
 
             result.Count.ShouldBeGreaterThan(0);
             result.Count.ShouldBe(2);
@@ -74,7 +78,7 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
 
             var application = new Application
             {
-                ApplicationName = $"test application {Guid.NewGuid().ToString()}",
+                ApplicationName = $"test app {Guid.NewGuid().ToString()}",
                 ClaimSetName = "test claim set",
                 Vendor = vendor,
                 OperationalContextUri = OperationalContext.DefaultOperationalContextUri,
@@ -89,7 +93,7 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
             var apiClient = new ApiClient
             {
                 Application = application,
-                Key = "key",
+                Key = $"key {Guid.NewGuid().ToString()}",
                 Secret = "secret",
                 Name = application.ApplicationName,
                 IsApproved = true,

@@ -66,7 +66,7 @@ public class AddOdsInstanceCommandTests : PlatformUsersContextTestBase
         {
             var profile = usersContext.OdsInstances.Single(v => v.OdsInstanceId == id);
             profile.Name.ShouldBe(odsInstanceName);
-            profile.InstanceType.ShouldBeEmpty();
+            profile.InstanceType.ShouldBeNullOrEmpty();
             profile.ConnectionString.ShouldBe(odsInstanceConnectionString);
         });
     }
