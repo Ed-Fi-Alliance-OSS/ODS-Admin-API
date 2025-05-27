@@ -30,35 +30,53 @@ public static class DatabaseBuilderExtension
             case DbProviders.SqlServer:
                 /// Admin
                 webApplicationBuilder.Services.AddDbContext<IDbContext, AdminConsoleMsSqlContext>(
-                (sp, options) =>
-                {
-                    options.UseSqlServer(AdminConnection(sp).AdminConnectionString);
-                });
+                    (sp, options) =>
+                    {
+                        options.UseSqlServer(
+                            AdminConnection(sp).AdminConnectionString,
+                            o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                        );
+                    }
+                );
 
                 /// Security
                 webApplicationBuilder.Services.AddDbContext<AdminConsoleSecurityMsSqlContext>(
-                (sp, options) =>
-                {
-                    options.UseSqlServer(AdminConnection(sp).SecurityConnectionString);
-                });
+                    (sp, options) =>
+                    {
+                        options.UseSqlServer(
+                            AdminConnection(sp).SecurityConnectionString,
+                            o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                        );
+                    }
+                );
                 break;
             case DbProviders.PostgreSql:
                 /// Admin
                 webApplicationBuilder.Services.AddDbContext<IDbContext, AdminConsolePgSqlContext>(
-                (sp, options) =>
-                {
-                    options.UseNpgsql(AdminConnection(sp).AdminConnectionString);
-                });
+                    (sp, options) =>
+                    {
+                        options.UseNpgsql(
+                            AdminConnection(sp).AdminConnectionString,
+                            o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                        );
+                    }
+                );
 
                 /// Security
                 webApplicationBuilder.Services.AddDbContext<AdminConsoleSecurityPgSqlContext>(
-                (sp, options) =>
-                {
-                    options.UseNpgsql(AdminConnection(sp).SecurityConnectionString);
-                });
+                    (sp, options) =>
+                    {
+                        options.UseNpgsql(
+                            AdminConnection(sp).SecurityConnectionString,
+                            o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                        );
+                    }
+                );
                 break;
             default:
-                throw new ArgumentException($"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup.");
+                throw new ArgumentException(
+                    $"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup."
+                );
         }
 
         TenantConfiguration AdminConnection(IServiceProvider serviceProvider)
@@ -66,15 +84,23 @@ public static class DatabaseBuilderExtension
             var connection = new TenantConfiguration();
             if (multiTenancyEnabled)
             {
-                var tenant = serviceProvider.GetRequiredService<IContextProvider<TenantConfiguration>>().Get();
-                if (tenant != null && !string.IsNullOrEmpty(tenant.AdminConnectionString) && !string.IsNullOrEmpty(tenant.SecurityConnectionString))
+                var tenant = serviceProvider
+                    .GetRequiredService<IContextProvider<TenantConfiguration>>()
+                    .Get();
+                if (
+                    tenant != null
+                    && !string.IsNullOrEmpty(tenant.AdminConnectionString)
+                    && !string.IsNullOrEmpty(tenant.SecurityConnectionString)
+                )
                 {
                     connection.AdminConnectionString = tenant.AdminConnectionString;
                     connection.SecurityConnectionString = tenant.SecurityConnectionString;
                 }
                 else
                 {
-                    throw new ArgumentException($"Admin database connection setup error. Tenant not configured correctly.");
+                    throw new ArgumentException(
+                        $"Admin database connection setup error. Tenant not configured correctly."
+                    );
                 }
             }
             else

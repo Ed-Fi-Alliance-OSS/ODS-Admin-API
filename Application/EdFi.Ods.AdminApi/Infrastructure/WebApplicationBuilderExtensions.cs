@@ -37,7 +37,10 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         EnableMultiTenancySupport(webApplicationBuilder);
         var executingAssembly = Assembly.GetExecutingAssembly();
-        webApplicationBuilder.Services.AddAutoMapper(executingAssembly, typeof(AdminApiMappingProfile).Assembly);
+        webApplicationBuilder.Services.AddAutoMapper(
+            executingAssembly,
+            typeof(AdminApiMappingProfile).Assembly
+        );
         webApplicationBuilder.Services.AddScoped<InstanceContext>();
 
         foreach (var type in typeof(IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes())
@@ -50,9 +53,11 @@ public static class WebApplicationBuilderExtensions
 
                 if (concreteClass.Namespace != null)
                 {
-                    if (!concreteClass.Namespace.EndsWith("Database.Commands") &&
-                        !concreteClass.Namespace.EndsWith("Database.Queries")
-                        && !concreteClass.Namespace.EndsWith("ClaimSetEditor"))
+                    if (
+                        !concreteClass.Namespace.EndsWith("Database.Commands")
+                        && !concreteClass.Namespace.EndsWith("Database.Queries")
+                        && !concreteClass.Namespace.EndsWith("ClaimSetEditor")
+                    )
                     {
                         continue;
                     }
@@ -65,9 +70,11 @@ public static class WebApplicationBuilderExtensions
                     }
                     else if (interfaces.Length == 0)
                     {
-                        if (!concreteClass.Name.EndsWith("Command")
+                        if (
+                            !concreteClass.Name.EndsWith("Command")
                             && !concreteClass.Name.EndsWith("Query")
-                            && !concreteClass.Name.EndsWith("Service"))
+                            && !concreteClass.Name.EndsWith("Service")
+                        )
                         {
                             continue;
                         }
@@ -110,7 +117,8 @@ public static class WebApplicationBuilderExtensions
                             TokenUrl = new Uri($"{issuer}/{SecurityConstants.TokenEndpoint}"),
                             Scopes = SecurityConstants.Scopes.AllScopes.ToDictionary(
                                 x => x.Scope,
-                                x => x.ScopeDescription),
+                                x => x.ScopeDescription
+                            ),
                         },
                     },
                     In = ParameterLocation.Header,
@@ -125,20 +133,28 @@ public static class WebApplicationBuilderExtensions
                         new OpenApiSecurityScheme
                         {
                             Reference = new OpenApiReference
-                                { Type = ReferenceType.SecurityScheme, Id = "oauth" },
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "oauth"
+                            },
                         },
-_value }
+                        _value
+                    }
                 }
             );
 
             foreach (var version in AdminApiVersions.GetAllVersionStrings())
             {
-                opt.SwaggerDoc(version, new OpenApiInfo
-                {
-                    Title = "Admin API Documentation",
-                    Description = "The Ed-Fi Admin API is a REST API-based administrative interface for managing vendors, applications, client credentials, and authorization rules for accessing an Ed-Fi API.",
-                    Version = version
-                });
+                opt.SwaggerDoc(
+                    version,
+                    new OpenApiInfo
+                    {
+                        Title = "Admin API Documentation",
+                        Description =
+                            "The Ed-Fi Admin API is a REST API-based administrative interface for managing vendors, applications, client credentials, and authorization rules for accessing an Ed-Fi API.",
+                        Version = version
+                    }
+                );
             }
             opt.DocumentFilter<ListExplicitSchemaDocumentFilter>();
             opt.SchemaFilter<SwaggerOptionalSchemaFilter>();
@@ -160,12 +176,13 @@ _value }
         webApplicationBuilder.Logging.AddLog4Net(loggingOptions);
 
         // Fluent validation
-        webApplicationBuilder.Services
-            .AddValidatorsFromAssembly(executingAssembly)
+        webApplicationBuilder
+            .Services.AddValidatorsFromAssembly(executingAssembly)
             .AddFluentValidationAutoValidation();
-        ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, expression)
-                    => memberInfo?
-                        .GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>()?.GetName();
+        ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, expression) =>
+            memberInfo
+                ?.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>()
+                ?.GetName();
 
         //Databases
         var databaseEngine = config.Get("AppSettings:DatabaseEngine", "SqlServer");
@@ -180,7 +197,10 @@ _value }
             o.SerializerOptions.WriteIndented = true;
         });
 
-        webApplicationBuilder.Services.AddSecurityUsingOpenIddict(webApplicationBuilder.Configuration, webApplicationBuilder.Environment);
+        webApplicationBuilder.Services.AddSecurityUsingOpenIddict(
+            webApplicationBuilder.Configuration,
+            webApplicationBuilder.Environment
+        );
 
         webApplicationBuilder.Services.AddHttpClient();
         webApplicationBuilder.Services.AddTransient<ISimpleGetRequest, SimpleGetRequest>();
@@ -189,8 +209,14 @@ _value }
 
     private static void EnableMultiTenancySupport(this WebApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.Services.AddTransient<ITenantConfigurationProvider, TenantConfigurationProvider>();
-        webApplicationBuilder.Services.AddTransient<IContextProvider<TenantConfiguration>, ContextProvider<TenantConfiguration>>();
+        webApplicationBuilder.Services.AddTransient<
+            ITenantConfigurationProvider,
+            TenantConfigurationProvider
+        >();
+        webApplicationBuilder.Services.AddTransient<
+            IContextProvider<TenantConfiguration>,
+            ContextProvider<TenantConfiguration>
+        >();
         webApplicationBuilder.Services.AddSingleton<IContextStorage, HashtableContextStorage>();
         webApplicationBuilder.Services.AddScoped<TenantResolverMiddleware>();
         webApplicationBuilder.Services.Configure<TenantsSection>(webApplicationBuilder.Configuration);
@@ -205,37 +231,57 @@ _value }
         if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
         {
             webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
-            (sp, options) =>
-            {
-                options.UseNpgsql(AdminConnectionString(sp));
-                options.UseLowerCaseNamingConvention();
-                options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
-            });
+                (sp, options) =>
+                {
+                    options.UseNpgsql(
+                        AdminConnectionString(sp),
+                        o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                    );
+                    options.UseLowerCaseNamingConvention();
+                    options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+                }
+            );
 
-            webApplicationBuilder.Services.AddScoped<ISecurityContext>(
-                sp => new PostgresSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
+            webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new PostgresSecurityContext(
+                SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+            ));
 
             webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                sp => new AdminConsolePostgresUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
+                sp => new AdminConsolePostgresUsersContext(
+                    AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                )
+            );
         }
         else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
         {
             webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
                 (sp, options) =>
                 {
-                    options.UseSqlServer(AdminConnectionString(sp));
+                    options.UseSqlServer(
+                        AdminConnectionString(sp),
+                        o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                    );
                     options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
-                });
+                }
+            );
 
             webApplicationBuilder.Services.AddScoped<ISecurityContext>(
-                (sp) => new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
+                (sp) =>
+                    new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
+            );
 
             webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                (sp) => new AdminConsoleSqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
+                (sp) =>
+                    new AdminConsoleSqlServerUsersContext(
+                        AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
+                    )
+            );
         }
         else
         {
-            throw new ArgumentException($"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup.");
+            throw new ArgumentException(
+                $"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup."
+            );
         }
 
         string AdminConnectionString(IServiceProvider serviceProvider)
@@ -244,14 +290,18 @@ _value }
 
             if (multiTenancyEnabled)
             {
-                var tenant = serviceProvider.GetRequiredService<IContextProvider<TenantConfiguration>>().Get();
+                var tenant = serviceProvider
+                    .GetRequiredService<IContextProvider<TenantConfiguration>>()
+                    .Get();
                 if (tenant != null && !string.IsNullOrEmpty(tenant.AdminConnectionString))
                 {
                     adminConnectionString = tenant.AdminConnectionString;
                 }
                 else
                 {
-                    throw new ArgumentException($"Admin database connection setup error. Tenant not configured correctly.");
+                    throw new ArgumentException(
+                        $"Admin database connection setup error. Tenant not configured correctly."
+                    );
                 }
             }
             else
@@ -284,14 +334,18 @@ _value }
 
             if (multiTenancyEnabled)
             {
-                var tenant = serviceProvider.GetRequiredService<IContextProvider<TenantConfiguration>>().Get();
+                var tenant = serviceProvider
+                    .GetRequiredService<IContextProvider<TenantConfiguration>>()
+                    .Get();
                 if (tenant != null && !string.IsNullOrEmpty(tenant.SecurityConnectionString))
                 {
                     securityConnectionString = tenant.SecurityConnectionString;
                 }
                 else
                 {
-                    throw new ArgumentException($"Security database connection setup error. Tenant not configured correctly.");
+                    throw new ArgumentException(
+                        $"Security database connection setup error. Tenant not configured correctly."
+                    );
                 }
             }
             else
