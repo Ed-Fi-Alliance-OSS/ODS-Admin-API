@@ -3,15 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Security.MsSql;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Security.PgSql;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Configurations;
@@ -74,51 +70,6 @@ public static class AdminConsoleExtension
                         applicationId = await adminConsoleInitializationService.InitializeApplications(app);
                     await adminConsoleInstancesService.InitializeInstancesAsync(tenantId, applicationId);
                 }
-            }
-        }
-    }
-
-    public static void MigrateSecurityDbContext(this WebApplication app)
-    {
-        DbContext dbContext;
-        var databaseEngine = DbProviders.Parse(app.Configuration.GetValue<string>("AppSettings:DatabaseEngine")!);
-        using var scope = app.Services.CreateScope();
-        var options = scope.ServiceProvider.GetService<IOptionsSnapshot<AppSettingsFile>>();
-        if (options!.Value.AppSettings.MultiTenancy)
-        {
-            foreach (var item in options!.Value.Tenants)
-            {
-                var tenantConfigurationProvider = scope.ServiceProvider.GetService<ITenantConfigurationProvider>();
-                if (tenantConfigurationProvider!.Get().TryGetValue(item.Key, out var tenantConfiguration))
-                {
-                    switch (databaseEngine)
-                    {
-                        case DbProviders.SqlServer:
-                            dbContext = scope.ServiceProvider.GetRequiredService<AdminConsoleSecurityMsSqlContext>();
-                            dbContext.Database.SetConnectionString(tenantConfiguration.SecurityConnectionString);
-                            dbContext.Database.Migrate();
-                            break;
-                        case DbProviders.PostgreSql:
-                            dbContext = scope.ServiceProvider.GetRequiredService<AdminConsoleSecurityPgSqlContext>();
-                            dbContext.Database.SetConnectionString(tenantConfiguration.SecurityConnectionString);
-                            dbContext.Database.Migrate();
-                            break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            switch (databaseEngine)
-            {
-                case DbProviders.SqlServer:
-                    dbContext = scope.ServiceProvider.GetRequiredService<AdminConsoleSecurityMsSqlContext>();
-                    dbContext.Database.Migrate();
-                    break;
-                case DbProviders.PostgreSql:
-                    dbContext = scope.ServiceProvider.GetRequiredService<AdminConsoleSecurityPgSqlContext>();
-                    dbContext.Database.Migrate();
-                    break;
             }
         }
     }

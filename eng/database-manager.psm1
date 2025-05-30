@@ -174,7 +174,7 @@ function Install-EdFiDatabase {
         [string]
         [ValidateSet("Admin", "ODS", "Security")]
         [Parameter(Mandatory=$true)]
-        $DatabaseType,
+        $DatabaseType = "Admin",
 
         # True if connection string is for a PostgreSQL database. Otherwise for SQL Server.
         [switch]
@@ -463,7 +463,6 @@ function Install-EdFiSecurityDatabase {
         $FilePaths
     )
 
-
     $arguments = @{
         ToolsPath = $ToolsPath
         DbDeployVersion = $DbDeployVersion
@@ -495,6 +494,11 @@ function Install-AdminApiTables {
         # Ed-Fi NuGet feed for tool download.
         [string]
         $NuGetFeed,
+
+        [string]
+        [ValidateSet("Admin", "ODS", "Security")]
+        [Parameter(Mandatory=$true)]
+        $DatabaseType = "Admin",
 
         # True if connection string is for a PostgreSQL database. Otherwise for SQL Server.
         [switch]
@@ -533,7 +537,7 @@ function Install-AdminApiTables {
         ToolsPath = $ToolsPath
         DbDeployVersion = $DbDeployVersion
         NuGetFeed = $NuGetFeed
-        DatabaseType = "Admin"
+        DatabaseType = $DatabaseType
         ForPostgreSQL = $ForPostgreSQL
         Server = $Server
         DatabaseName = $DatabaseName
@@ -630,6 +634,7 @@ function Invoke-PrepareDatabasesForTesting {
     }
 
     $installArguments.DatabaseName = "EdFi_Security_Test"
+    $installArguments.DatabaseType = "Security"
     $removeArguments.DatabaseName = "EdFi_Security_Test"
     Write-Host "Installing the Security database to $($installArguments.DatabaseName)" -ForegroundColor Cyan
     Remove-SqlServerDatabase @removeArguments
@@ -637,6 +642,7 @@ function Invoke-PrepareDatabasesForTesting {
     Install-EdFiSecurityDatabase @installArguments
 
     $installArguments.DatabaseName = "EdFi_Admin_Test"
+    $installArguments.DatabaseType = "Admin"
     $removeArguments.DatabaseName = "EdFi_Admin_Test"
     Write-Host "Installing the Admin database to $($installArguments.DatabaseName)" -ForegroundColor Cyan
     Remove-SqlServerDatabase @removeArguments

@@ -59,7 +59,7 @@ jobs:
             -f '../../Docker/Compose/mssql/SingleTenant/compose-build-ods.yml' \
             --env-file './E2E Tests/gh-action-setup/.automation_mssql.env' \
             up -d
-
+            
       - name: Verify containers are running
         run: |
           chmod +x './E2E Tests/gh-action-setup/admin_inspect.sh'

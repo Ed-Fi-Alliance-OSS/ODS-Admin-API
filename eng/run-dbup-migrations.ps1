@@ -8,6 +8,7 @@
 Param(
     $config =
     @{
+        "databaseType" = "Admin"
         "engine" = "SqlServer"
         "databaseServer" = "(local)"
         "databasePort" = ""
@@ -15,6 +16,7 @@ Param(
         "databasePassword" = ""
         "useIntegratedSecurity" = $true
         "adminDatabaseName" = "EdFi_Admin"
+        "securityDatabaseName" = "EdFi_Security"
     }
 )
 
@@ -22,8 +24,10 @@ $ErrorActionPreference = "Stop"
 
 Import-Module -Name "$PSScriptRoot/database-manager.psm1" -Force
 
+# Admin database
 $arguments = @{
     ToolsPath = ".tools"
+    DatabaseType = $config.databaseType
     ForPostgreSQL = "postgresql" -eq $config.engine.ToLower()
     Server = $config.databaseServer
     DatabaseName = $config.adminDatabaseName
@@ -38,5 +42,26 @@ Write-Output "Installing the Admin API tables to $($arguments.DatabaseName)"
 Install-AdminApiTables @arguments
 
 $arguments.DatabaseName = "EdFi_Admin_Test"
+Write-Output "Installing the Admin API tables to $($arguments.DatabaseName)"
+Install-AdminApiTables @arguments
+
+# Security database
+$arguments = @{
+    ToolsPath = ".tools"
+    DatabaseType = "Security"
+    ForPostgreSQL = "postgresql" -eq $config.engine.ToLower()
+    Server = $config.databaseServer
+    DatabaseName = $config.securityDatabaseName
+    Port = $config.databasePort
+    UseIntegratedSecurity = $config.useIntegratedSecurity
+    Username = $config.databaseUser
+    Password = $config.databasePassword
+    NuGetFeed = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+}
+
+Write-Output "Installing the Admin API tables to $($arguments.DatabaseName)"
+Install-AdminApiTables @arguments
+
+$arguments.DatabaseName = "EdFi_Security_Test"
 Write-Output "Installing the Admin API tables to $($arguments.DatabaseName)"
 Install-AdminApiTables @arguments

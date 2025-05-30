@@ -33,11 +33,19 @@ if ! does_edfi_admin_db_exist; then
     # Force sorting by name following C language sort ordering, so that the sql scripts are run
     # sequentially in the correct alphanumeric order
     echo "Running Admin Api database migration scripts..."
-    for FILE in `LANG=C ls /tmp/AdminApiScripts/MsSql/*.sql | sort -V`
+    
+    for FILE in `LANG=C ls /tmp/AdminApiScripts/Admin/MsSql/*.sql | sort -V`
     do
         echo "Running script: ${FILE}..."
         /opt/mssql-tools18/bin/sqlcmd -S "localhost" -U "sa" -P "$MSSQL_SA_PASSWORD" -d "EdFi_Admin" -i $FILE -C
     done
+    
+    for FILE in `LANG=C ls /tmp/AdminApiScripts/Security/MsSql/*.sql | sort -V`
+    do
+        echo "Running script: ${FILE}..."
+        /opt/mssql-tools18/bin/sqlcmd -S "localhost" -U "sa" -P "$MSSQL_SA_PASSWORD" -d "EdFi_Security" -i $FILE -C
+    done
+    
     echo "Finish Admin Api database migration scripts..."
 
     echo "Creating database users..."

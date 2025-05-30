@@ -17,6 +17,12 @@
   <ItemGroup>
     <Content Include="EdFi.Ods.AdminApi.nuspec" CopyToPublishDirectory="Always" CopyToOutputDirectory="Never" />
     <Content Include="Artifacts\**" CopyToPublishDirectory="Always" CopyToOutputDirectory="Never" />
+    <Content Remove="Artifacts\MsSql\Structure\Admin\00003-CreateAdminConsoleSchema.sql" />
+    <Content Remove="Artifacts\MsSql\Structure\Admin\00004-CreateAdminConsoleInitialTables.sql" />
+    <Content Remove="Artifacts\MsSql\Structure\Security\00001-AdminConsoleClaimsetUp.sql" />
+    <Content Remove="Artifacts\PgSql\Structure\Admin\00003-CreateAdminConsoleSchema.sql" />
+    <Content Remove="Artifacts\PgSql\Structure\Admin\00004-CreateAdminConsoleInitialTables.sql" />
+    <Content Remove="Artifacts\PgSql\Structure\Security\00001-AdminConsoleClaimsetUp.sql" />
     <Content Include="Schema\Ed-Fi-ODS-API-Profile.xsd" CopyToPublishDirectory="Always" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
@@ -55,5 +61,10 @@
   <ItemGroup>
     <ProjectReference Include="..\EdFi.Ods.AdminApi.AdminConsole\EdFi.Ods.AdminApi.AdminConsole.csproj" />
     <ProjectReference Include="..\EdFi.Ods.AdminApi.Common\EdFi.Ods.AdminApi.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Artifacts\PgSql\Structure\Security\00001-AdminConsoleClaimsetUp.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

@@ -24,13 +24,24 @@ FROM base AS setup
 
 USER root
 RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApi/versions/${VERSION}/content" && \
-    unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Admin/* -d /tmp/AdminApiScripts/ && \
-    cp -r /tmp/AdminApiScripts/AdminApi/Artifacts/PgSql/Structure/Admin/. /tmp/AdminApiScripts/PgSql/ && \
-    rm -f /tmp/EdFi_AdminApi_Scripts.zip && \
-    rm -r /tmp/AdminApiScripts/AdminApi && \
+    # Admin
+    mkdir -p /tmp/AdminApiScripts/Admin/ && \
+    unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Admin/* -d /tmp/AdminApiScripts/Admin/ && \
+    cp -r /tmp/AdminApiScripts/Admin/AdminApi/Artifacts/PgSql/Structure/Admin/. /tmp/AdminApiScripts/Admin/PgSql/ && \
+    rm -r /tmp/AdminApiScripts/Admin/AdminApi && \
     dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
-    dos2unix /tmp/AdminApiScripts/PgSql/* && \
-    chmod -R 777 /tmp/AdminApiScripts/PgSql && \
+    dos2unix /tmp/AdminApiScripts/Admin/PgSql/* && \
+    chmod -R 777 /tmp/AdminApiScripts/Admin/PgSql && \
+    # Security - Uncomment the lines below as part of ADMINAPI-1210
+    # mkdir -p /tmp/AdminApiScripts/Security/ && \
+    # unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Security/* -d /tmp/AdminApiScripts/Security/ && \
+    # cp -r /tmp/AdminApiScripts/Security/AdminApi/Artifacts/PgSql/Structure/Security/. /tmp/AdminApiScripts/Security/PgSql/ && \
+    # rm -r /tmp/AdminApiScripts/Security/AdminApi && \
+    # dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
+    # dos2unix /tmp/AdminApiScripts/Security/PgSql/* && \
+    # chmod -R 777 /tmp/AdminApiScripts/Security/PgSql && \
+    # Clean up
+    rm -f /tmp/EdFi_AdminApi_Scripts.zip && \
     apk del dos2unix unzip
 
 USER postgres

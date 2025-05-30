@@ -52,13 +52,4 @@
     <ProjectReference Include="..\EdFi.Ods.AdminApi.Common\EdFi.Ods.AdminApi.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Infrastructure\DataAccess\Artifacts\Security\MsSql\SQL\AdminConsoleClaimsetUp.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Infrastructure\DataAccess\Artifacts\Security\PgSql\SQL\AdminConsoleClaimsetUp.sql">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

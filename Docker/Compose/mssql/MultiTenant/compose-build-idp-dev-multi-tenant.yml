@@ -82,8 +82,10 @@ services:
 
   db-admin-tenant1:
     build:
-      context: ../../../Settings/DB-Admin/mssql/
-      dockerfile: Dockerfile
+      context: ../../../
+      additional_contexts:
+        assets: ../../../../
+      dockerfile: db.mssql.admin.Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
@@ -103,14 +105,16 @@ services:
       retries: 10
     volumes:
       - vol-db-admin-adminapi-tenant1:/var/lib/mssql/data
-      - ../../../Settings/dev/mssql/adminapi-test-seeddata.sql:/tmp/AdminApiScripts/MsSql/adminapi-test-seeddata.sql
+      - ../../../Settings/dev/mssql/adminapi-test-seeddata.sql:/tmp/AdminApiScripts/Admin/MsSql/adminapi-test-seeddata.sql
     restart: always
     container_name: ed-fi-db-admin-adminapi-tenant1
 
   db-admin-tenant2:
     build:
-      context: ../../../Settings/DB-Admin/mssql/
-      dockerfile: Dockerfile
+      context: ../../../
+      additional_contexts:
+        assets: ../../../../
+      dockerfile: db.mssql.admin.Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
@@ -130,7 +134,7 @@ services:
       retries: 10
     volumes:
       - vol-db-admin-adminapi-tenant2:/var/lib/mssql/data
-      - ../../../Settings/dev/mssql/adminapi-test-seeddata.sql:/tmp/AdminApiScripts/MsSql/adminapi-test-seeddata.sql
+      - ../../../Settings/dev/mssql/adminapi-test-seeddata.sql:/tmp/AdminApiScripts/Admin/MsSql/adminapi-test-seeddata.sql
     restart: always
     container_name: ed-fi-db-admin-adminapi-tenant2
 

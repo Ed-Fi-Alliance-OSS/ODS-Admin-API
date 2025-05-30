@@ -78,7 +78,7 @@ services:
       context: ../../../
       additional_contexts:
         assets: ../../../../
-      dockerfile: dbadmin.Dockerfile
+      dockerfile: db.pgsql.admin.Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:
@@ -97,7 +97,7 @@ services:
       context: ../../../
       additional_contexts:
         assets: ../../../../
-      dockerfile: dbadmin.Dockerfile
+      dockerfile: db.pgsql.admin.Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
     environment:

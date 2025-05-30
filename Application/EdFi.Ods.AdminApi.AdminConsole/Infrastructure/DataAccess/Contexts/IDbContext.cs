@@ -20,12 +20,6 @@ public interface IDbContext
 
     DbSet<OdsInstanceDerivative> OdsInstanceDerivatives { get; set; }
 
-    DbSet<Permission> Permissions { get; set; }
-
-    DbSet<UserProfile> UserProfiles { get; set; }
-
-    DbSet<Step> Steps { get; set; }
-
     DatabaseFacade DB { get; }
     DbSet<T> Set<T>() where T : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

@@ -15,8 +15,13 @@ fi
 # sequentially in the correct alphanumeric order
 echo "Running Admin Api database migration scripts..."
 
-for FILE in `LANG=C ls /tmp/AdminApiScripts/MsSql/*.sql | sort -V`
+for FILE in `LANG=C ls /tmp/AdminApiScripts/Admin/MsSql/*.sql | sort -V`
 do
     /opt/mssql-tools18/bin/sqlcmd -S localhost,$MSSQL_PORT -U "$MSSQL_USER" -P "$MSSQL_PASSWORD"  -d "EdFi_Admin" -i  --file $FILE 1> /dev/null
+done
+
+for FILE in `LANG=C ls /tmp/AdminApiScripts/Security/MsSql/*.sql | sort -V`
+do
+    /opt/mssql-tools18/bin/sqlcmd -S localhost,$MSSQL_PORT -U "$MSSQL_USER" -P "$MSSQL_PASSWORD"  -d "EdFi_Security" -i  --file $FILE 1> /dev/null
 done
 

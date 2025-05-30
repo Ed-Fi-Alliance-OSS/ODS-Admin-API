@@ -44,12 +44,6 @@ public class AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext>
 
     public DbSet<OdsInstanceDerivative> OdsInstanceDerivatives { get; set; }
 
-    public DbSet<Permission> Permissions { get; set; }
-
-    public DbSet<UserProfile> UserProfiles { get; set; }
-
-    public DbSet<Step> Steps { get; set; }
-
     public DatabaseFacade DB => Database;
 
 
@@ -60,9 +54,5 @@ public class AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext>
         modelBuilder.ApplyConfiguration(new InstanceConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new OdsInstanceContextConfiguration());
         modelBuilder.ApplyConfiguration(new OdsInstanceDerivativeConfiguration());
-        modelBuilder.ApplyConfiguration(new PermissionConfiguration(DbProvider));
-        modelBuilder.ApplyConfiguration(new UserProfileConfiguration(DbProvider));
-        modelBuilder.ApplyConfiguration(new StepConfiguration(DbProvider));
-
     }
 }

@@ -69,7 +69,6 @@ if (adminConsoleIsEnabled)
     app.MapAdminConsoleFeatureEndpoints();
     //Initialize data
     await app.InitAdminConsoleData();
-    app.MigrateSecurityDbContext();
 }
 
 app.MapControllers();
