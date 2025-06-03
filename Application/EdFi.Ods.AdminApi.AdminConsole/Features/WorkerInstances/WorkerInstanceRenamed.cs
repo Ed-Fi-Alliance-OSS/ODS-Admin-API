@@ -6,6 +6,7 @@
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -21,7 +22,7 @@ public class WorkerInstanceRenamed : IFeature
             .WithRouteOptions(b => b.WithResponseCode(204))
             .WithRouteOptions(b => b.WithResponseCode(400))
             .WithRouteOptions(b => b.WithResponseCode(404))
-            .BuildForVersions(AdminApiVersions.AdminConsole);
+            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
     }
 
     public static async Task<IResult> Handle(Validator validator, IRenameInstanceCommand renameInstanceCommand, int instanceid, [FromBody] CompleteInstanceRequest request)

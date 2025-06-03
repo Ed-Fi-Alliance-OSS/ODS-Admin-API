@@ -15,6 +15,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 
 namespace EdFi.Ods.AdminApi.AdminConsole.Features.WorkerInstances;
 
@@ -26,7 +27,7 @@ public class WorkerInstanceRenameFailed : IFeature
             .WithRouteOptions(b => b.WithResponseCode(204))
             .WithRouteOptions(b => b.WithResponseCode(400))
             .WithRouteOptions(b => b.WithResponseCode(404))
-            .BuildForVersions(AdminApiVersions.AdminConsole);
+            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
     }
 
     internal static async Task<IResult> Handle([FromServices] IRenameFailedInstanceCommand renameFailedInstanceCommand, [FromRoute] int id)

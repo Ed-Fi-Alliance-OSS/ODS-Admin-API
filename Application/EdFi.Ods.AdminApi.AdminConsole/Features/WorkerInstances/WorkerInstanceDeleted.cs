@@ -15,6 +15,7 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queries;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -29,13 +30,13 @@ public class WorkerInstanceDeleted : IFeature
             .WithRouteOptions(b => b.WithResponseCode(204))
             .WithRouteOptions(b => b.WithResponseCode(400))
             .WithRouteOptions(b => b.WithResponseCode(404))
-            .BuildForVersions(AdminApiVersions.AdminConsole);
+            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
         AdminApiEndpointBuilder.MapPost(endpoints, "/instances/{id}/deletefailed", HandleDeleteFailed)
             .WithRouteOptions(b => b.WithResponseCode(204))
             .WithRouteOptions(b => b.WithResponseCode(400))
             .WithRouteOptions(b => b.WithResponseCode(404))
-            .WithRouteOptions(b => b.WithResponseCode(409 ))
-            .BuildForVersions(AdminApiVersions.AdminConsole);
+            .WithRouteOptions(b => b.WithResponseCode(409))
+            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
     }
 
     internal static async Task<IResult> Handle([FromServices] IDeletedInstanceCommand deletedInstanceCommand, [FromRoute] int id)

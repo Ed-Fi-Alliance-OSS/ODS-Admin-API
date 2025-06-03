@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.HealthChecks.Commands;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ public class AddHealthCheck : IFeature
     {
         AdminApiEndpointBuilder.MapPost(endpoints, "/healthcheck", Execute)
           .WithRouteOptions(b => b.WithResponseCode(201))
-          .BuildForVersions(AdminApiVersions.AdminConsole);
+          .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
     }
 
     public static async Task<IResult> Execute(Validator validator, IAddHealthCheckCommand addHealthCheckCommand, [FromBody] AddHealthCheckRequest request)
