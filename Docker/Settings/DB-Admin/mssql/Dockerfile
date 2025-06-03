@@ -16,7 +16,7 @@ ARG STANDARD_VERSION="5.0.0"
 ARG ADMIN_VERSION="7.2.49"
 ARG SECURITY_VERSION="7.2.48"
 ARG ADMIN_API_VERSION
-ENV ADMIN_API_VERSION="${ADMIN_API_VERSION:-2.2.0}"
+ENV ADMIN_API_VERSION="${ADMIN_API_VERSION:-2.2.2}"
 
 USER root
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
@@ -48,12 +48,12 @@ RUN wget -q -O /tmp/EdFi_Admin.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed
     cp -r /tmp/AdminApiScripts/Admin/AdminApi/Artifacts/MsSql/Structure/Admin/. /tmp/AdminApiScripts/Admin/MsSql/ && \
     dos2unix /tmp/AdminApiScripts/Admin/MsSql/* && \
     chmod -R 777 /tmp/AdminApiScripts/Admin/MsSql && \
-    # Security - Uncomment the lines below as part of ADMINAPI-1210
-    # mkdir -p /tmp/AdminApiScripts/Security/ && \
-    # unzip -o /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/MsSql/Structure/Security/* -d  /tmp/AdminApiScripts/Security/ && \
-    # cp -r /tmp/AdminApiScripts/Security/AdminApi/Artifacts/MsSql/Structure/Security/. /tmp/AdminApiScripts/Security/MsSql/ && \
-    # dos2unix /tmp/AdminApiScripts/Security/MsSql/* && \
-    # chmod -R 777 /tmp/AdminApiScripts/Security/MsSql && \
+    # Security
+    mkdir -p /tmp/AdminApiScripts/Security/ && \
+    unzip -o /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/MsSql/Structure/Security/* -d  /tmp/AdminApiScripts/Security/ && \
+    cp -r /tmp/AdminApiScripts/Security/AdminApi/Artifacts/MsSql/Structure/Security/. /tmp/AdminApiScripts/Security/MsSql/ && \
+    dos2unix /tmp/AdminApiScripts/Security/MsSql/* && \
+    chmod -R 777 /tmp/AdminApiScripts/Security/MsSql && \
     # Clean up
     rm -f /tmp/EdFi_Admin.zip  && \
     rm -f /tmp/EdFi_Security.zip && \

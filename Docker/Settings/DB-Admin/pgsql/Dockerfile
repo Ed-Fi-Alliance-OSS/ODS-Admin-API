@@ -32,14 +32,14 @@ RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi
     dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
     dos2unix /tmp/AdminApiScripts/Admin/PgSql/* && \
     chmod -R 777 /tmp/AdminApiScripts/Admin/PgSql && \
-    # Security - Uncomment the lines below as part of ADMINAPI-1210
-    # mkdir -p /tmp/AdminApiScripts/Security/ && \
-    # unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Security/* -d /tmp/AdminApiScripts/Security/ && \
-    # cp -r /tmp/AdminApiScripts/Security/AdminApi/Artifacts/PgSql/Structure/Security/. /tmp/AdminApiScripts/Security/PgSql/ && \
-    # rm -r /tmp/AdminApiScripts/Security/AdminApi && \
-    # dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
-    # dos2unix /tmp/AdminApiScripts/Security/PgSql/* && \
-    # chmod -R 777 /tmp/AdminApiScripts/Security/PgSql && \
+    # Security
+    mkdir -p /tmp/AdminApiScripts/Security/ && \
+    unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Security/* -d /tmp/AdminApiScripts/Security/ && \
+    cp -r /tmp/AdminApiScripts/Security/AdminApi/Artifacts/PgSql/Structure/Security/. /tmp/AdminApiScripts/Security/PgSql/ && \
+    rm -r /tmp/AdminApiScripts/Security/AdminApi && \
+    dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
+    dos2unix /tmp/AdminApiScripts/Security/PgSql/* && \
+    chmod -R 777 /tmp/AdminApiScripts/Security/PgSql && \
     # Clean up
     rm -f /tmp/EdFi_AdminApi_Scripts.zip && \
     apk del dos2unix unzip

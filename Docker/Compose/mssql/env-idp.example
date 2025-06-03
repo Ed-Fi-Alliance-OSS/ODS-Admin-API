@@ -5,7 +5,7 @@
 
 
 ADMIN_API_VIRTUAL_NAME=adminapi
-ADMIN_API_VERSION= 2.2.0
+ADMIN_API_VERSION= 2.2.2-alpha.0.78
 
 # For Authentication
 AUTHORITY=http://localhost/${ADMIN_API_VIRTUAL_NAME}
