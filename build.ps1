@@ -316,10 +316,10 @@ function ResetTestDatabases {
 
         [switch]
         $UseIntegratedSecurity,
-        
+
         [string]
         $DbUsername,
-        
+
         [string]
         $DbPassword
     )
@@ -457,10 +457,10 @@ function Invoke-IntegrationTestSuite {
     param (
         [Switch]
         $UseIntegratedSecurity,
-        
+
         [string]
         $DbUsername,
-        
+
         [string]
         $DbPassword
     )
@@ -501,6 +501,7 @@ function UpdateAppSettingsForAdminApiDocker {
     $json.AppSettings.PathBase = $DockerEnvValues["PathBase"]
 
     $json.Authentication.IssuerUrl = $DockerEnvValues["IssuerUrl"]
+    $json.Authentication.Authority = $DockerEnvValues["Authority"]
     $json.Authentication.SigningKey = $DockerEnvValues["SigningKey"]
 
     $json.ConnectionStrings.EdFi_Admin = $DockerEnvValues["AdminDB"]
@@ -516,6 +517,7 @@ function UpdateAppSettingsForAdminApi {
     $json.AppSettings.PathBase = $DockerEnvValues["PathBase"]
 
     $json.Authentication.IssuerUrl = $DockerEnvValues["IssuerUrl"]
+    $json.Authentication.Authority = $DockerEnvValues["Authority"]
     $json.Authentication.SigningKey = $DockerEnvValues["SigningKey"]
 
     $json.ConnectionStrings.EdFi_Admin = $DockerEnvValues["AdminDB"]
