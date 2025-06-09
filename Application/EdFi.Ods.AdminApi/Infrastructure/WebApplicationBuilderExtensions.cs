@@ -3,7 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Net;
 using System.Reflection;
+using System.Threading.RateLimiting;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -11,6 +13,8 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Api;
@@ -21,6 +25,7 @@ using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
@@ -33,6 +38,8 @@ public static class WebApplicationBuilderExtensions
 
     public static void AddServices(this WebApplicationBuilder webApplicationBuilder)
     {
+        webApplicationBuilder.Services.AddSingleton<ISymmetricStringEncryptionProvider, Aes256SymmetricStringEncryptionProvider>();
+        ConfigureRateLimiting(webApplicationBuilder);
         ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         EnableMultiTenancySupport(webApplicationBuilder);
@@ -372,6 +379,67 @@ public static class WebApplicationBuilderExtensions
 
             return builder.Options;
         }
+    }
+
+    public static void ConfigureRateLimiting(WebApplicationBuilder builder)
+    {
+        // Bind IpRateLimiting section
+        builder.Services.Configure<IpRateLimitingOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+
+        // Add new rate limiting policy using config
+        builder.Services.AddRateLimiter(options =>
+        {
+            var config = builder.Configuration.GetSection("IpRateLimiting").Get<IpRateLimitingOptions>();
+
+            if (config == null || !config.EnableEndpointRateLimiting)
+            {
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(_ => RateLimitPartition.GetNoLimiter("none"));
+                return;
+            }
+            // Set global options
+            options.RejectionStatusCode = config?.HttpStatusCode ?? (int)HttpStatusCode.TooManyRequests;
+
+            if (config?.GeneralRules != null)
+            {
+                foreach (var rule in config.GeneralRules)
+                {
+                    // Only support fixed window for now, parse period (e.g., "1m")
+                    var window = rule.Period.EndsWith('m') ? TimeSpan.FromMinutes(int.Parse(rule.Period.TrimEnd('m'))) : TimeSpan.FromMinutes(1);
+                    // Register a named limiter for each endpoint
+                    options.AddFixedWindowLimiter(rule.Endpoint, _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = rule.Limit,
+                        Window = window,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    });
+                }
+                // Use a global policy selector to apply endpoint-specific limiters
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                {
+                    var path = context.Request.Path.Value;
+                    var method = context.Request.Method;
+                    foreach (var rule in config.GeneralRules)
+                    {
+                        var parts = rule.Endpoint.Split(':');
+                        // Only support fixed window for now, parse period (e.g., "1m")
+                        var window = rule.Period.EndsWith('m') ? TimeSpan.FromMinutes(int.Parse(rule.Period.TrimEnd('m'))) : TimeSpan.FromMinutes(1);
+                        if (path != null && parts.Length == 2 && method.Equals(parts[0], StringComparison.OrdinalIgnoreCase) && path.Equals(parts[1], StringComparison.OrdinalIgnoreCase))
+                        {
+                            return RateLimitPartition.GetFixedWindowLimiter(rule.Endpoint, _ => new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = rule.Limit,
+                                Window = window,
+                                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                                QueueLimit = 0
+                            });
+                        }
+                    }
+                    // No limiter for this endpoint
+                    return RateLimitPartition.GetNoLimiter("none");
+                });
+            }
+        });
     }
 
     private enum HttpVerbOrder
