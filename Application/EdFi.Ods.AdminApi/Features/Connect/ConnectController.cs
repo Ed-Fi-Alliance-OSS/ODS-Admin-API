@@ -28,7 +28,6 @@ public class ConnectController(ITokenService tokenService, IRegisterService regi
     [Consumes("application/x-www-form-urlencoded"), Produces("application/json")]
     [SwaggerOperation("Registers new client", "Registers new client")]
     [SwaggerResponse(200, "Application registered successfully.")]
-    [TypeFilter(typeof(FeatureToggleAttribute), Arguments = ["AppSettings:UseSelfcontainedAuthorization"])]
     public async Task<IActionResult> Register([FromForm] RegisterService.RegisterClientRequest request)
     {
         if (await _registerService.Handle(request))
@@ -42,7 +41,6 @@ public class ConnectController(ITokenService tokenService, IRegisterService regi
     [Consumes("application/x-www-form-urlencoded"), Produces("application/json")]
     [SwaggerOperation("Retrieves bearer token", "\nTo authenticate Swagger requests, execute using \"Authorize\" above, not \"Try It Out\" here.")]
     [SwaggerResponse(200, "Sign-in successful.")]
-    [TypeFilter(typeof(FeatureToggleAttribute), Arguments = ["AppSettings:UseSelfcontainedAuthorization"])]
     public async Task<ActionResult> Token()
     {
         var request = HttpContext.GetOpenIddictServerRequest() ?? throw new ValidationException("Failed to parse token request");

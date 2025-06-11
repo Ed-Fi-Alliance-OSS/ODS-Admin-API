@@ -96,6 +96,7 @@ public partial class TenantResolverMiddleware(
         bool NonFeatureEndpoints() => context.Request.Path.Value != null &&
             (context.Request.Path.Value.Contains("health", StringComparison.InvariantCultureIgnoreCase)
             || context.Request.Path.Value.Equals("/")
+            || context.Request.Path.Value.Contains("connect", StringComparison.InvariantCultureIgnoreCase)
             || (context.Request.PathBase.HasValue && !context.Request.Path.HasValue)
             || (context.Request.Path.StartsWithSegments(new PathString("/.well-known"))));
 
