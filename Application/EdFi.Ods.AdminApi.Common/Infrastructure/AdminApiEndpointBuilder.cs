@@ -145,6 +145,10 @@ public class AdminApiEndpointBuilder
             {
                 builder.WithResponseCode(400, FeatureCommonConstants.BadRequestResponseDescription);
             }
+            if (!_allowAnonymous && (_authorizationPolicies.Any() || !string.IsNullOrWhiteSpace(authorizationPolicy)))
+            {
+                builder.WithResponseCode(400, "Bad Request. The request does not meet the authorization policy requirements");
+            }
 
             foreach (var action in _routeOptions)
             {
