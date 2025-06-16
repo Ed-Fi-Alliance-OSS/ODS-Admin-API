@@ -4,20 +4,12 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts.Admin.MsSql;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Polly;
-using Respawn;
 using static EdFi.Ods.AdminConsole.DBTests.Testing;
 
 namespace EdFi.Ods.AdminConsole.DBTests;
@@ -27,19 +19,6 @@ public abstract class PlatformUsersContextTestBase
 {
 
     protected static string ConnectionString => AdminConnectionString;
-
-    [OneTimeSetUp]
-    public void OneTimeSetup()
-    {
-        using var dbContext = new AdminConsoleMsSqlContext(GetDbContextOptions());
-        var migrator = dbContext.GetInfrastructure().GetService<IMigrator>();
-        var migrations = dbContext.Database.GetPendingMigrations();
-
-        foreach (var migration in migrations)
-        {
-            migrator.Migrate(migration);
-        }
-    }
 
     protected static void Save(params object[] entities)
     {

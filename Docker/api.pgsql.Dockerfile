@@ -22,7 +22,6 @@ ENV ASPNETCORE_HTTP_PORTS=80
 
 WORKDIR /app
 
-COPY --chmod=600 Settings/pgsql/appsettings.template.json /app/appsettings.template.json
 COPY --chmod=500 Settings/pgsql/run.sh /app/run.sh
 COPY Settings/pgsql/log4net.config /app/log4net.txt
 

@@ -18,11 +18,11 @@ public abstract class PlatformUsersContextTestBase
 {
     private readonly Checkpoint _checkpoint = new()
     {
-        TablesToIgnore = new[]
-        {
+        TablesToIgnore =
+        [
             "__MigrationHistory", "DeployJournal", "AdminApiDeployJournal"
-        },
-        SchemasToExclude = Array.Empty<string>()
+        ],
+        SchemasToExclude = []
     };
 
     protected static string ConnectionString => AdminConnectionString;

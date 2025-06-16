@@ -35,31 +35,30 @@ services:
     environment:
       ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       ADMIN_MSSQL_HOST: db-admin
-      SQLSERVER_ADMIN_DATASOURCE: db-admin
-      SQLSERVER_SECURITY_DATASOURCE: db-admin
-      SQLSERVER_ODS_DATASOURCE: db-admin
-      SQLSERVER_PORT: 1433
-      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
-      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
-      DATABASEENGINE: SqlServer
-      AUTHORITY: ${AUTHORITY}
-      ISSUER_URL: ${ISSUER_URL}
-      SIGNING_KEY: ${SIGNING_KEY}
-      ADMIN_API_VIRTUAL_NAME: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       API_INTERNAL_URL: ${API_INTERNAL_URL}
-      AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
+      AppSettings__DatabaseEngine: SqlServer
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
-      AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-true}"
-      MULTITENANCY_ENABLED: "${MULTITENANCY_ENABLED:-false}"
-      ENABLE_ADMIN_CONSOLE: ${ENABLE_ADMIN_CONSOLE:-true}
-      USE_SELF_CONTAINED_AUTH: ${USE_SELF_CONTAINED_AUTH:-true}
-      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-idp-keycloak:8080/auth/realms/edfi-admin-console}"
-      OIDC_REQUIRE_METADATA: "${OIDC_REQUIRE_METADATA:-false}"
-      OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
-      ENABLE_CORS: "${ENABLE_CORS:-false}"
-      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-https://localhost}"
-      EDFI_API_DISCOVERY_URL: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
+      AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
+      AppSettings__EnableAdminConsoleAPI: ${ENABLE_ADMIN_CONSOLE:-true}
       AppSettings__IgnoresCertificateErrors: ${IGNORES_CERTIFICATE_ERRORS:-false}
+      AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-false}"
+      AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-true}"
+      AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
+      AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
+      AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
+      Authentication__IssuerUrl: ${ISSUER_URL}
+      Authentication__SigningKey: ${SIGNING_KEY}
+      ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
+      Log4NetCore__Log4NetConfigFileName: "./log4net.config"
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_ODS_DATASOURCE: db-admin
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+      SQLSERVER_PORT: 1433
+      SQLSERVER_SECURITY_DATASOURCE: db-admin
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}  
     depends_on:
       - db-admin
       - idp-keycloak

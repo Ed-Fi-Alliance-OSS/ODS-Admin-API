@@ -31,37 +31,37 @@ services:
     environment:
       ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       ADMIN_WAIT_MSSQL_HOSTS: "db-admin-tenant1 db-admin-tenant2"
-      SQLSERVER_ADMIN_DATASOURCE: db-admin
-      SQLSERVER_SECURITY_DATASOURCE: db-admin
-      SQLSERVER_ODS_DATASOURCE: db-admin
-      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
-      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
-      SQLSERVER_TENANT1_PORT: 1433
-      SQLSERVER_TENANT2_PORT: 1433
-      DATABASEENGINE: "SqlServer"
-      AUTHORITY: ${AUTHORITY}
-      ISSUER_URL: ${ISSUER_URL}
-      SIGNING_KEY: ${SIGNING_KEY}
-      ADMIN_API_VIRTUAL_NAME: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
-      AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
+      AppSettings__DatabaseEngine: "SqlServer"
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
-      MULTITENANCY_ENABLED: "${MULTITENANCY_ENABLED:-true}"
+      AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
+      AppSettings__EnableAdminConsoleAPI: ${ENABLE_ADMIN_CONSOLE:-true}
+      AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
+      AppSettings__IgnoresCertificateErrors: ${IGNORES_CERTIFICATE_ERRORS:-false}
+      AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-true}"
+      AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       AppSettings__PreventDuplicateApplications: ${PREVENT_DUPLICATE_APPLICATIONS:-false}
       ASPNETCORE_ENVIRONMENT: "multitenantdocker"
-      DEFAULT_TENANT: ${DEFAULT_TENANT:-tenant1}
-      ENABLE_ADMIN_CONSOLE: ${ENABLE_ADMIN_CONSOLE:-true}
-      USE_SELF_CONTAINED_AUTH: ${USE_SELF_CONTAINED_AUTH:-true}
-      OIDC_AUTHORITY: "${OIDC_AUTHORITY:-http://ed-fi-idp-keycloak:8080/auth/realms/edfi-admin-console}"
-      OIDC_REQUIRE_METADATA: "${OIDC_REQUIRE_METADATA:-false}"
-      OIDC_ENABLE_SERVER_CERTIFICATE: "${OIDC_ENABLE_SERVER_CERTIFICATE:-true}"
-      ENABLE_CORS: "${ENABLE_CORS:-false}"
-      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-https://localhost}"
-      EDFI_API_DISCOVERY_URL: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
-      AppSettings__IgnoresCertificateErrors: ${IGNORES_CERTIFICATE_ERRORS:-false}
-    volumes:
-      - ./appsettings.dockertemplate.json:/app/appsettings.dockertemplate.json
+      AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
+      AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
+      Authentication__IssuerUrl: ${ISSUER_URL}
+      Authentication__SigningKey: ${SIGNING_KEY}
+      Log4NetCore__Log4NetConfigFileName: "./log4net.config"
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_ODS_DATASOURCE: db-admin
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+      SQLSERVER_SECURITY_DATASOURCE: db-admin
+      SQLSERVER_TENANT1_PORT: 1433
+      SQLSERVER_TENANT2_PORT: 1433
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
+      SwaggerSettings__DefaultTenant: ${DEFAULT_TENANT:-tenant1}
+      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
+      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
     entrypoint: ["/bin/sh"]
-    command: ["-c","envsubst < /app/appsettings.dockertemplate.json > /app/appsettings.multitenantdocker.json && /app/run.sh"]
+    command: ["-c","/app/run.sh"]
     depends_on:
       - db-admin-tenant1
       - db-admin-tenant2

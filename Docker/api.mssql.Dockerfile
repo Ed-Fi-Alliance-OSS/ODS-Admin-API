@@ -20,7 +20,6 @@ ENV ASPNETCORE_HTTP_PORTS=80
 
 WORKDIR /app
 
-COPY --chmod=600 Settings/mssql/appsettings.template.json /app/appsettings.template.json
 COPY --chmod=500 Settings/mssql/run.sh /app/run.sh
 COPY Settings/mssql/log4net.config /app/log4net.txt
 

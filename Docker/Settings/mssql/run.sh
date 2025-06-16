@@ -7,8 +7,6 @@
 set -e
 set +x
 
-envsubst < /app/appsettings.template.json > /app/appsettings.json
-
 if [[ -z "$ADMIN_WAIT_MSSQL_HOSTS" ]]; then
   # if there are no hosts to wait then fallback to $ADMIN_MSSQL_HOST
   export ADMIN_WAIT_MSSQL_HOSTS=$ADMIN_MSSQL_HOST
