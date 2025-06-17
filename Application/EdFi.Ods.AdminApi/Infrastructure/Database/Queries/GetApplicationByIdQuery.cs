@@ -25,6 +25,7 @@ public class GetApplicationByIdQuery
             .Include(a => a.ApplicationEducationOrganizations)
             .Include(a => a.Profiles)
             .Include(a => a.Vendor)
+            .Include(a => a.ApiClients)
             .SingleOrDefault(app => app.ApplicationId == applicationId);
         if (application == null)
         {

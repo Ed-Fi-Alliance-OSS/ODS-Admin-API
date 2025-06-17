@@ -50,6 +50,7 @@ public class EditApplicationCommand : IEditApplicationCommand
         var apiClient = application.ApiClients.Single();
         var currentApiClientId = apiClient.ApiClientId;
         apiClient.Name = model.ApplicationName;
+        apiClient.IsApproved = model.Enabled ?? true;
 
         _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => o.ApiClient.ApiClientId == currentApiClientId));
         _context.ApplicationEducationOrganizations.RemoveRange(_context.ApplicationEducationOrganizations.Where(aeo => aeo.Application.ApplicationId == application.ApplicationId));
@@ -113,4 +114,5 @@ public interface IEditApplicationModel
     IEnumerable<int>? ProfileIds { get; }
     IEnumerable<long>? EducationOrganizationIds { get; }
     IEnumerable<int>? OdsInstanceIds { get; }
+    bool? Enabled { get; }
 }

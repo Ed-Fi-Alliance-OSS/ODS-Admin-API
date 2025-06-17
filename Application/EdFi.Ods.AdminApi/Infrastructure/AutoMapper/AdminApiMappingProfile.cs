@@ -51,6 +51,7 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.EducationOrganizationIds, opt => opt.MapFrom(src => src.EducationOrganizationIds()))
             .ForMember(dst => dst.VendorId, opt => opt.MapFrom(src => src.VendorId()))
             .ForMember(dst => dst.ProfileIds, opt => opt.MapFrom(src => src.Profiles()))
+            .ForMember(dst => dst.Enabled, opt => opt.MapFrom(src => src.ApiClients.All(a => a.IsApproved)))
             .ForMember(dst => dst.OdsInstanceIds, opt =>
             {
                 opt.ConvertUsing<OdsInstanceIdsForApplicationConverter, int>("ApplicationId");

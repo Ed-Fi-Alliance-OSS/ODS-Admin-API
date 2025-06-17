@@ -27,19 +27,14 @@ public class GetApplicationsByOdsInstanceIdQuery : IGetApplicationsByOdsInstance
     public List<Application> Execute(int odsInstanceId)
     {
         var applications = _context.ApiClientOdsInstances
-            .Include(aco => aco.OdsInstance)
-            .Include(aco => aco.ApiClient)
-                .ThenInclude(api => api.Application)
-                .ThenInclude(app => app.ApplicationEducationOrganizations)
-            .Include(api => api.ApiClient)
-                .ThenInclude(api => api.Application)
-                .ThenInclude(api => api.Profiles)
-            .Include(api => api.ApiClient)
-                .ThenInclude(api => api.Application)
-                .ThenInclude(api => api.Vendor)
-            .Where(a => a.OdsInstance.OdsInstanceId == odsInstanceId)
-            .Select(app => app.ApiClient.Application)
-            .ToList();
+        .Where(aco => aco.OdsInstance.OdsInstanceId == odsInstanceId)
+        .Select(aco => aco.ApiClient.Application)
+        .Distinct()
+        .Include(app => app.ApplicationEducationOrganizations)
+        .Include(app => app.Profiles)
+        .Include(app => app.Vendor)
+        .Include(app => app.ApiClients)
+        .ToList();
 
         if (!applications.Any() && _context.OdsInstances.Find(odsInstanceId) == null)
         {

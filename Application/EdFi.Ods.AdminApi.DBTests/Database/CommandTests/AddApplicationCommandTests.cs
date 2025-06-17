@@ -377,5 +377,6 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
         public IEnumerable<int> ProfileIds { get; set; }
         public IEnumerable<long> EducationOrganizationIds { get; set; }
         public IEnumerable<int> OdsInstanceIds { get; set; }
+        public bool? Enabled { get; set; }
     }
 }

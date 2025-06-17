@@ -1,8 +1,10 @@
 {
 	"info": {
-		"_postman_id": "0d84361c-6af5-4694-9dcf-2fda6c7de28c",
+		"_postman_id": "2d1ed547-d825-4b3e-8272-1035d2965100",
 		"name": "Admin API E2E 2.0 - Application",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "42411115",
+		"_collection_link": "https://dewfdaf.postman.co/workspace/ADMINAPI-1214~5cebf2b8-1c75-4f33-bdf5-c61ddb6ada6d/collection/42411115-2d1ed547-d825-4b3e-8272-1035d2965100?action=share&source=collection_link&creator=42411115"
 	},
 	"item": [
 		{
@@ -66,7 +68,8 @@
 											"\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -121,7 +124,8 @@
 											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -130,23 +134,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"applicationName\": \"Test Application\",\r\n  \"vendorId\": {{ApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi Sandbox\",\r\n  \"profileIds\": [],\r\n  \"educationOrganizationIds\": [ 255901 ],\r\n  \"odsInstanceIds\": [ {{ODSInstanceId}} ]\r\n}\r\n",
+									"raw": "{\r\n  \"applicationName\": \"Test Application\",\r\n  \"vendorId\": {{ApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi Sandbox\",\r\n  \"profileIds\": [],\r\n  \"educationOrganizationIds\": [ 255901 ],\r\n  \"odsInstanceIds\": [ {{ODSInstanceId}} ],\r\n  \"enabled\": true\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications"
 							},
 							"response": []
 						},
@@ -204,17 +199,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/"
 							},
 							"response": []
 						},
@@ -271,17 +256,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/"
 							},
 							"response": []
 						},
@@ -339,17 +314,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/"
 							},
 							"response": []
 						},
@@ -407,17 +372,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										""
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/"
 							},
 							"response": []
 						},
@@ -448,6 +403,7 @@
 											"    pm.expect(result.educationOrganizationIds.length).to.equal(1);\r",
 											"    pm.expect(result.profileIds.length).to.equal(0);\r",
 											"    pm.expect(result.odsInstanceIds.length).to.equal(1);\r",
+											"    pm.expect(result.enabled).to.equal(true);\r",
 											"});\r",
 											"\r",
 											"pm.test(\"GET Applications: Response results do not include key or secret\", function () {\r",
@@ -486,6 +442,9 @@
 											"        \"odsInstanceIds\": {\r",
 											"          \"type\": \"array\",\r",
 											"          \"items\": {}\r",
+											"        },\r",
+											"        \"enabled\": {\r",
+											"          \"type\": \"boolean\"\r",
 											"        }\r",
 											"      },\r",
 											"      \"required\": [\r",
@@ -495,7 +454,8 @@
 											"        \"educationOrganizationIds\",\r",
 											"        \"vendorId\",\r",
 											"        \"profileIds\",\r",
-											"        \"odsInstanceIds\"\r",
+											"        \"odsInstanceIds\",\r",
+											"        \"enabled\"\r",
 											"      ]\r",
 											"    }\r",
 											"  ]\r",
@@ -506,7 +466,8 @@
 											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -629,16 +590,7 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications"
 							},
 							"response": []
 						},
@@ -946,17 +898,7 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1054,7 +996,8 @@
 											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -1104,7 +1047,8 @@
 											"        \"claimSetName\": \"Ed-Fi Sandbox\",\r",
 											"        \"profileIds\": [],\r",
 											"        \"educationOrganizationIds\": [ 255901 ],\r",
-											"        \"odsInstanceIds\": [pm.collectionVariables.get(\"ODSInstanceId\")]\r",
+											"        \"odsInstanceIds\": [pm.collectionVariables.get(\"ODSInstanceId\")],\r",
+											"        \"enabled\" : true\r",
 											"      }),\r",
 											"    }\r",
 											"  },  \r",
@@ -1119,25 +1063,15 @@
 											"});\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/vendors/{{ApplicationVendorId}}/applications",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"vendors",
-										"{{ApplicationVendorId}}",
-										"applications"
-									]
-								}
+								"url": "{{API_URL}}/v2/vendors/{{ApplicationVendorId}}/applications"
 							},
 							"response": []
 						},
@@ -1150,7 +1084,8 @@
 										"exec": [
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								},
 								{
@@ -1187,6 +1122,7 @@
 											"    pm.expect(updated.educationOrganizationIds.length).to.equal(1);\r",
 											"    pm.expect(updated.profileIds.length).to.equal(0);\r",
 											"    pm.expect(updated.odsInstanceIds.length).to.equal(1);\r",
+											"    pm.expect(updated.enabled).to.equal(false);\r",
 											"   });\r",
 											"\r",
 											"   pm.test(\"PUT Application: Response result does not include application key and secret\", function () {\r",
@@ -1222,7 +1158,8 @@
 											"\r",
 											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1231,24 +1168,14 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"id\": {{CreatedApplicationId}},\r\n  \"applicationName\": \"Updated Application Name\",\r\n  \"vendorId\": {{OtherApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi ODS Admin App\",\r\n  \"profileIds\": [],\r\n  \"educationOrganizationIds\": [1234],\r\n  \"odsInstanceIds\": [ {{ODSInstanceId}} ]\r\n}\r\n",
+									"raw": "{\r\n  \"id\": {{CreatedApplicationId}},\r\n  \"applicationName\": \"Updated Application Name\",\r\n  \"vendorId\": {{OtherApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi ODS Admin App\",\r\n  \"profileIds\": [],\r\n  \"educationOrganizationIds\": [1234],\r\n  \"odsInstanceIds\": [ {{ODSInstanceId}} ],\r\n  \"enabled\": false\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1306,17 +1233,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1373,17 +1290,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1441,17 +1348,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1509,17 +1406,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1575,18 +1462,7 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}",
-										"reset-credential"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential"
 							},
 							"response": []
 						},
@@ -1635,17 +1511,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1681,17 +1547,7 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1727,18 +1583,7 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}",
-										"reset-credential"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential"
 							},
 							"response": []
 						},
@@ -1783,17 +1628,7 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1833,17 +1668,7 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"applications",
-										"{{CreatedApplicationId}}"
-									]
-								}
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						}
@@ -1854,13 +1679,9 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{TOKEN}}",
-				"type": "string"
-			}
-		]
+		"bearer": {
+			"token": "{{TOKEN}}"
+		}
 	},
 	"event": [
 		{
@@ -1983,6 +1804,14 @@
 		},
 		{
 			"key": "OtherApplicationId",
+			"value": ""
+		},
+		{
+			"key": "ApplicationVendorId",
+			"value": ""
+		},
+		{
+			"key": "CreatedApplicationId",
 			"value": ""
 		}
 	]

@@ -25,6 +25,7 @@ public class GetApplicationsByVendorIdQuery
             .Include(a => a.ApplicationEducationOrganizations)
             .Include(a => a.Profiles)
             .Include(a => a.Vendor)
+            .Include(a => a.ApiClients)
             .Where(a => a.Vendor != null && a.Vendor.VendorId == vendorid)
             .ToList();
 

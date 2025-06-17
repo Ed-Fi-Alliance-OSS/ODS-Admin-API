@@ -17,6 +17,7 @@ public class ApplicationModel
     public int? VendorId { get; set; }
     public IList<int>? ProfileIds { get; set; }
     public IList<int>? OdsInstanceIds { get; set; }
+    public bool Enabled { get; set; } = true;
 }
 
 [SwaggerSchema(Title = "Application")]

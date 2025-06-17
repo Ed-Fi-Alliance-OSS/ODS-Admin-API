@@ -99,6 +99,10 @@ public class AddApplication : IFeature
 
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceIdsDescription, Nullable = false)]
         public IEnumerable<int>? OdsInstanceIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.Enable)]
+        public bool? Enabled { get; set; }
     }
 
     public class Validator : AbstractValidator<AddApplicationRequest>

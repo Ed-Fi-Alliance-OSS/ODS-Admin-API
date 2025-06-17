@@ -18,6 +18,7 @@ public static class FeatureConstants
     public const string ClaimSetNameDescription = "Claim set name";
     public const string ProfileIdDescription = "Profile id";
     public const string EducationOrganizationIdsDescription = "Education organization ids";
+    public const string Enable = "Indicates whether the ApiClient's credetials is enabled. Defaults to true if not provided.";
     public const string ResourceClaimIdDescription = "Resource Claim Id";
     public const string ResourceClaimNameDescription = "Resource Claim Name";
     public const string ResourceClaimsDescription = "Resource Claims";

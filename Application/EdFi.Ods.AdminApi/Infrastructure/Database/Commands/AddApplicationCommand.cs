@@ -59,7 +59,7 @@ public class AddApplicationCommand : IAddApplicationCommand
         var apiClient = new ApiClient(true)
         {
             Name = applicationModel.ApplicationName,
-            IsApproved = true,
+            IsApproved = applicationModel.Enabled ?? true,
             UseSandbox = false,
             KeyStatus = "Active",
             User = user,
@@ -125,6 +125,7 @@ public interface IAddApplicationModel
     IEnumerable<int>? ProfileIds { get; }
     IEnumerable<long>? EducationOrganizationIds { get; }
     IEnumerable<int>? OdsInstanceIds { get; }
+    bool? Enabled { get; }
 }
 
 public class AddApplicationResult
