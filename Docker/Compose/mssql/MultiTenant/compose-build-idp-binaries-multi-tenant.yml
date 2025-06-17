@@ -47,6 +47,13 @@ services:
       ASPNETCORE_ENVIRONMENT: "multitenantdocker"
       Authentication__IssuerUrl: ${ISSUER_URL}
       Authentication__SigningKey: ${SIGNING_KEY}
+      IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
+      IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
+      IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}
+      IpRateLimiting__ClientIdHeader: ${IPRATELIMITING__CLIENTIDHEADER:-X-ClientId}
+      IpRateLimiting__HttpStatusCode: ${IPRATELIMITING__HTTPSTATUSCODE:-429}
+      IpRateLimiting__IpWhitelist: ${IPRATELIMITING__IPWHITELIST:-[]}
+      IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
       Log4NetCore__Log4NetConfigFileName: "./log4net.config"
       SQLSERVER_ADMIN_DATASOURCE: db-admin
       SQLSERVER_ODS_DATASOURCE: db-admin

@@ -57,7 +57,13 @@ services:
       ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
       EnableDockerEnvironment: true
-      IpRateLimiting__EnableEndpointRateLimiting: false
+      IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
+      IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
+      IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}
+      IpRateLimiting__ClientIdHeader: ${IPRATELIMITING__CLIENTIDHEADER:-X-ClientId}
+      IpRateLimiting__HttpStatusCode: ${IPRATELIMITING__HTTPSTATUSCODE:-429}
+      IpRateLimiting__IpWhitelist: ${IPRATELIMITING__IPWHITELIST:-[]}
+      IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
       Log4NetCore__Log4NetConfigFileName: "./log4net.config"
       SQLSERVER_ADMIN_DATASOURCE: ed-fi-db-admin-adminapi
       SQLSERVER_ODS_DATASOURCE: ed-fi-db-admin-adminapi
