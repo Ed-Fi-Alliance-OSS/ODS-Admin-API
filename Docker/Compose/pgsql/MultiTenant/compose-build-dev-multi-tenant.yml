@@ -63,10 +63,7 @@ services:
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
       Tenants__tenant2__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
-    # volumes:
-    #   - ./appsettings.dockertemplate.json:/app/appsettings.dockertemplate.json
     entrypoint: ["/bin/sh"]
-    # command: ["-c","envsubst < /app/appsettings.dockertemplate.json > /app/appsettings.docker.pgsql.json && /app/run.sh"]
     command: ["-c","/app/run.sh"]
     depends_on:
       - db-admin-tenant1

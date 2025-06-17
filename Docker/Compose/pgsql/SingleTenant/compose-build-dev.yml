@@ -47,8 +47,8 @@ services:
       Authentication__AllowRegistration: true
       Authentication__IssuerUrl: ${ISSUER_URL}
       Authentication__SigningKey: ${SIGNING_KEY}
-      ConnectionStrings__EdFi_Admin: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      ConnectionStrings__EdFi_Security: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      ConnectionStrings__EdFi_Admin: "host=pb-admin;port=${PGBOUNCER_LISTEN_PORT:-6432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
+      ConnectionStrings__EdFi_Security: "host=pb-admin;port=${PGBOUNCER_LISTEN_PORT:-6432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
       EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
       EnableDockerEnvironment: true
       IpRateLimiting__EnableEndpointRateLimiting: false
