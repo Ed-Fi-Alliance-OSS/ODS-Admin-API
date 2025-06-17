@@ -9,7 +9,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Features.Connect;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
@@ -25,7 +24,6 @@ public static class SecurityExtensions
         IWebHostEnvironment webHostEnvironment
     )
     {
-
         var issuer = configuration.Get<string>("Authentication:IssuerUrl");
 
         var isDockerEnvironment = configuration.Get<bool>("EnableDockerEnvironment");
@@ -184,27 +182,35 @@ public static class SecurityExtensions
                                 || scopes.Contains(scope.Scope, StringComparer.OrdinalIgnoreCase));
                         }
                         return false;
-                    });                });
+                    });
+                });
             }
         });
-
-        // Register custom authorization middleware result handler to return 400 instead of 403 for scope assertion failures
-        services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthorizationMiddlewareResultHandler>();
 
         services.AddControllers();
         //Security Endpoints
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<IRegisterService, RegisterService>();
     }
-
     public class DefaultTokenResponseHandler : IOpenIddictServerHandler<ApplyTokenResponseContext>
     {
         private const string DENIED_AUTHENTICATION_MESSAGE =
             "Access Denied. Please review your information and try again.";
-
         public ValueTask HandleAsync(ApplyTokenResponseContext context)
         {
             var response = context.Response;
+
+            // For invalid_scope errors, set content type to application/problem+json
+            if (string.Equals(response.Error, OpenIddictConstants.Errors.InvalidScope, StringComparison.Ordinal))
+            {
+                response.ErrorUri = "";
+                response.ErrorDescription = "The request is missing required scope claims or has invalid scope values";
+
+                // Mark this response to be processed as problem+json
+                context.Transaction.SetProperty("CustomContentType", "application/problem+json");
+
+                return default;
+            }
 
             if (
                 string.Equals(
@@ -220,11 +226,6 @@ public static class SecurityExtensions
                 || string.Equals(
                     response.Error,
                     OpenIddictConstants.Errors.InvalidClient,
-                    StringComparison.Ordinal
-                )
-                || string.Equals(
-                    response.Error,
-                    OpenIddictConstants.Errors.InvalidScope,
                     StringComparison.Ordinal
                 )
             )

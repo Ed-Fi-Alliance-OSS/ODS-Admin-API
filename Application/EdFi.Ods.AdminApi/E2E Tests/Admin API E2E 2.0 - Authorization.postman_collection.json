@@ -119,6 +119,105 @@
 					"response": []
 				},
 				{
+					"name": "Token - Full - Invalid Scope",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST Token: Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"POST Token Invalid scope: Response with content type error\", function () {\r",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/problem+json\");\r",
+									"});\r",
+									"\r",
+									"const response = pm.response != null ? pm.response.json() : null;\r",
+									"\r",
+									"pm.test(\"POST Token: Response includes token\", function () {\r",
+									"    pm.expect(response).to.have.property(\"error\");\r",
+									"    pm.expect(response).to.have.property(\"error_description\");\r",
+									"    \r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Validate error response\", function () {\r",
+									"    let jsonData = pm.response.json();\r",
+									"    \r",
+									"    // Check status code\r",
+									"    pm.expect(pm.response.code).to.equal(400);\r",
+									"    \r",
+									"    // Validate response structure\r",
+									"    pm.expect(jsonData).to.have.property(\"error\", \"invalid_scope\");\r",
+									"    pm.expect(jsonData).to.have.property(\"error_description\", \"The request is missing required scope claims or has invalid scope values\");\r",
+									"    \r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let header = {\r",
+									"    'Content-Type': 'application/x-www-form-urlencoded'\r",
+									"};\r",
+									"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+									"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+									"    pm.request.headers.upsert({key: 'Tenant', value: `${pm.variables.get(\"tenant1\")}` });\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "{{RegisteredClientId}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{RegisteredClientSecret}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "invalid_scope",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{API_URL}}/connect/token",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Token - Full - Access",
 					"event": [
 						{
@@ -453,22 +552,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"GET ClaimSets: Status code is 400 for Tenant Access\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
+									"pm.test(\"GET ClaimSets: Status code is 403 for Tenant Access\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
 									"});\r",
-									"\r",
-									"pm.test(\"Validate error response\", function () {\r",
-									"    let jsonData = pm.response.json();\r",
-									"    \r",
-									"    // Check status code\r",
-									"    pm.expect(pm.response.code).to.equal(400);\r",
-									"    \r",
-									"    // Validate response structure\r",
-									"    pm.expect(jsonData).to.have.property(\"title\", \"Bad Request\");\r",
-									"    pm.expect(jsonData).to.have.property(\"status\", 400);\r",
-									"    pm.expect(jsonData).to.have.property(\"detail\");\r",
-									"    pm.expect(jsonData.detail).to.include(\"missing required scope claims\");\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -643,23 +730,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"GET ClaimSets: Status code is 400 for Worker Scope\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
+									"pm.test(\"GET ClaimSets: Status code is 403 for Worker Scope\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
 									"});\r",
-									"\r",
-									"\r",
-									"pm.test(\"Validate error response\", function () {\r",
-									"    let jsonData = pm.response.json();\r",
-									"    \r",
-									"    // Check status code\r",
-									"    pm.expect(pm.response.code).to.equal(400);\r",
-									"    \r",
-									"    // Validate response structure\r",
-									"    pm.expect(jsonData).to.have.property(\"title\", \"Bad Request\");\r",
-									"    pm.expect(jsonData).to.have.property(\"status\", 400);\r",
-									"    pm.expect(jsonData).to.have.property(\"detail\");\r",
-									"    pm.expect(jsonData.detail).to.include(\"The request is missing required scope claims or has invalid scope values\");\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}

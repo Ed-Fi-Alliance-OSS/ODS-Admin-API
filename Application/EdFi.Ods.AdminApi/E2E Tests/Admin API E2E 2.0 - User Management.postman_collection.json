@@ -1,8 +1,10 @@
 {
 	"info": {
-		"_postman_id": "aedf7726-945b-4f40-8f34-2e346e214b6d",
+		"_postman_id": "28ac83c0-a342-484e-9941-922fc7205e3d",
 		"name": "Admin API E2E 2.0 - User Management",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42536960",
+		"_collection_link": "https://test33-6887.postman.co/workspace/AdminApi1182~87697d41-7b5a-4e20-baad-4161b31b430e/collection/42536960-28ac83c0-a342-484e-9941-922fc7205e3d?action=share&source=collection_link&creator=42536960"
 	},
 	"item": [
 		{
@@ -666,7 +668,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"POST Token Invalid Scope: Status code is Bad Request\", function () {\r",
-									"    pm.response.to.have.status(401);\r",
+									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"\r",
 									"const response = pm.response.json();\r",
@@ -674,12 +676,14 @@
 									"pm.test(\"POST Token Invalid Scope: Response includes error message\", function () {\r",
 									"    pm.expect(response).to.have.property(\"error\");\r",
 									"    pm.expect(response).to.have.property(\"error_description\");    \r",
-									"    pm.expect(response[\"error_description\"]).to.contain(\"Access Denied. Please review your information and try again.\");\r",
+									"    pm.expect(response).to.have.property(\"error\", \"invalid_scope\");\r",
+									"    pm.expect(response).to.have.property(\"error_description\", \"The request is missing required scope claims or has invalid scope values\");\r",
 									"\r",
 									"});\r",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						},
 						{
@@ -688,7 +692,8 @@
 								"exec": [
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],

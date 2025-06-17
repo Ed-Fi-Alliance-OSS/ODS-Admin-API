@@ -33,7 +33,46 @@ public class RequestLoggingMiddleware
             {
                 logger.LogInformation(JsonSerializer.Serialize(new { path = context.Request.Path.Value, traceId = context.TraceIdentifier }));
             }
-            await _next(context);
+
+            // Check if this is a token endpoint request and intercept the response
+            if (context.Request.Path.StartsWithSegments("/connect/token"))
+            {
+                // Capture the original response body stream
+                var originalBodyStream = context.Response.Body;
+
+                using var responseBody = new MemoryStream();
+                context.Response.Body = responseBody;
+
+                // Execute the next middleware
+                await _next(context);
+
+                // Check if response is 400 and contains invalid_scope error
+                if (context.Response.StatusCode == 400)
+                {
+                    responseBody.Seek(0, SeekOrigin.Begin);
+                    var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
+
+                    // Check if the response contains invalid_scope error
+                    if (responseContent.Contains("\"error\": \"invalid_scope\""))
+                    {
+                        context.Response.ContentType = "application/problem+json";
+                    }
+
+                    // Write the response back to the original stream
+                    responseBody.Seek(0, SeekOrigin.Begin);
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
+                else
+                {
+                    // For non-400 responses, just copy the response back
+                    responseBody.Seek(0, SeekOrigin.Begin);
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
+            }
+            else
+            {
+                await _next(context);
+            }
         }
         catch (Exception ex)
         {

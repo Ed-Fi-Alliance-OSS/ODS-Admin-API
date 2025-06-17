@@ -5,6 +5,7 @@
 
 using System.Security.Authentication;
 using System.Security.Claims;
+using System.Net;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,16 +38,20 @@ public class TokenService(IOpenIddictApplicationManager applicationManager, ICon
         {
             throw new AuthenticationException(DENIED_AUTHENTICATION_MESSAGE);
         }
-
         var requestedScopes = request.GetScopes();
-        var appScopes = (await _applicationManager.GetPermissionsAsync(application))
-            .Where(p => p.StartsWith(OpenIddictConstants.Permissions.Prefixes.Scope))
-            .Select(p => p[OpenIddictConstants.Permissions.Prefixes.Scope.Length..])
-            .ToList();
 
-        var missingScopes = requestedScopes.Where(s => !appScopes.Contains(s)).ToList();
-        if (missingScopes.Count != 0)
-            throw new AuthenticationException(DENIED_AUTHENTICATION_MESSAGE);
+        // Get all valid scopes from system definition
+        var allValidScopes = SecurityConstants.Scopes.AllScopes.Select(s => s.Scope).ToList();
+
+        // Check if any of the requested scopes are not in the list of valid scopes
+        var validScopes = requestedScopes.Where(s => allValidScopes.Contains(s)).ToList();
+        if (validScopes.Count == 0)
+        {
+            throw new AdminApiException("The request is missing required scope claims or has invalid scope values")
+            {
+                StatusCode = HttpStatusCode.BadRequest
+            };
+        }
 
         var displayName = await _applicationManager.GetDisplayNameAsync(application);
         var identity = new ClaimsIdentity(JwtBearerDefaults.AuthenticationScheme);
