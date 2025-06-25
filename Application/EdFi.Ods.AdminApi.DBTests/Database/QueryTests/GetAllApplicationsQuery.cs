@@ -42,7 +42,7 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
         {
             var query = new GetAllApplicationsQuery(usersContext, _options);
             result = query.Execute(
-                new CommonQueryParams(), null, null, null).ToList();
+                new CommonQueryParams(), null, null, null, null).ToList();
         });
 
         result.Count.ShouldBeGreaterThan(0);
@@ -57,7 +57,7 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
         {
             var query = new GetAllApplicationsQuery(usersContext, _options);
             var result = query.Execute(
-                new CommonQueryParams(offset, limit), null, null, null);
+                new CommonQueryParams(offset, limit), null, null, null, null);
 
             result.Count.ShouldBeGreaterThan(0);
             result.Count.ShouldBe(2);

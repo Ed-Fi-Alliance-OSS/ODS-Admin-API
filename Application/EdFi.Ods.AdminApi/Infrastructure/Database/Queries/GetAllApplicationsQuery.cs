@@ -18,7 +18,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 public interface IGetAllApplicationsQuery
 {
-    IReadOnlyList<Application> Execute(CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName);
+    IReadOnlyList<Application> Execute(CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName, string? ids);
 }
 
 public class GetAllApplicationsQuery : IGetAllApplicationsQuery
@@ -41,7 +41,7 @@ public class GetAllApplicationsQuery : IGetAllApplicationsQuery
         };
     }
 
-    public IReadOnlyList<Application> Execute(CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName)
+    public IReadOnlyList<Application> Execute(CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName, string? ids)
     {
         Expression<Func<Application, object>> columnToOrderBy = _orderByColumnApplications.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
@@ -53,6 +53,7 @@ public class GetAllApplicationsQuery : IGetAllApplicationsQuery
             .Where(a => id == null || a.ApplicationId == id)
             .Where(a => applicationName == null || a.ApplicationName == applicationName)
             .Where(a => claimsetName == null || a.ClaimSetName == claimsetName)
+            .Where(a => ids == null || ids.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).Contains(a.ApplicationId))
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToList();

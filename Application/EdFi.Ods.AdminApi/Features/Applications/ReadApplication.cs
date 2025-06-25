@@ -7,8 +7,12 @@ using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.Features.Applications;
@@ -28,14 +32,19 @@ public class ReadApplication : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetApplications(
+    internal async Task<IResult> GetApplications(
         IGetAllApplicationsQuery getAllApplicationsQuery,
         IMapper mapper,
         IOptions<AppSettings> settings,
-        [AsParameters] CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName)
+        Validator validator,
+        [AsParameters] CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName, string? ids)
     {
-        var applications = mapper.Map<List<ApplicationModel>>(getAllApplicationsQuery.Execute(commonQueryParams, id, applicationName, claimsetName));
-        return Task.FromResult(Results.Ok(applications));
+        if (!string.IsNullOrEmpty(ids))
+        {
+            await validator.GuardAsync(ids);
+        }
+        var applications = mapper.Map<List<ApplicationModel>>(getAllApplicationsQuery.Execute(commonQueryParams, id, applicationName, claimsetName, ids));
+        return Results.Ok(applications);
     }
 
     internal Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, IMapper mapper, int id)
@@ -47,5 +56,15 @@ public class ReadApplication : IFeature
         }
         var model = mapper.Map<ApplicationModel>(application);
         return Task.FromResult(Results.Ok(model));
+    }
+
+    public class Validator : AbstractValidator<string>
+    {
+        public Validator()
+        {
+            RuleFor(ids => ids)
+            .Must(ids => Array.TrueForAll(ids.Split(','), id => int.TryParse(id.Trim(), out _)))
+                .WithMessage("The 'ids' query parameter must be a comma-separated list of integers.");
+        }
     }
 }

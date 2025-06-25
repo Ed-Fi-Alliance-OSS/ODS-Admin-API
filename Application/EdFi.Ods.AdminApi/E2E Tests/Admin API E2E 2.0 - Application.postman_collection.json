@@ -390,6 +390,14 @@
 											"const response = pm.response.json();\r",
 											"const results = pm.response.json();\r",
 											"\r",
+											"if (Array.isArray(results) && results.length >= 2) {\r",
+											"    const id1 = results[0].id;\r",
+											"    const id2 = results[1].id;\r",
+											"\r",
+											"    const csv = `${id1},${id2}`;\r",
+											"    pm.collectionVariables.set(\"FirstTwoApplicationIdsCSV\", csv);\r",
+											"}\r",
+											"\r",
 											"pm.test(\"GET Applications: Response result includes applications\", function () {\r",
 											"    pm.expect(results.length).to.be.greaterThan(0);\r",
 											"\r",
@@ -1072,6 +1080,64 @@
 								"method": "GET",
 								"header": [],
 								"url": "{{API_URL}}/v2/vendors/{{ApplicationVendorId}}/applications"
+							},
+							"response": []
+						},
+						{
+							"name": "Applications by IDs",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET ApplicationID: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const result = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET ApplicationID: Ensures the number of returned applications matches the number of requested IDs\", function () {\r",
+											"    pm.expect(result.length).to.equal(2);\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/applications?ids={{FirstTwoApplicationIdsCSV}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications"
+									],
+									"query": [
+										{
+											"key": "ids",
+											"value": "{{FirstTwoApplicationIdsCSV}}"
+										}
+									]
+								}
 							},
 							"response": []
 						},
@@ -1812,6 +1878,10 @@
 		},
 		{
 			"key": "CreatedApplicationId",
+			"value": ""
+		},
+		{
+			"key": "FirstTwoApplicationIdsCSV",
 			"value": ""
 		}
 	]
