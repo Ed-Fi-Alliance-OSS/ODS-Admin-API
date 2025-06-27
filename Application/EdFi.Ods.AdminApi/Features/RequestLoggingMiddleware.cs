@@ -43,30 +43,38 @@ public class RequestLoggingMiddleware
                 using var responseBody = new MemoryStream();
                 context.Response.Body = responseBody;
 
-                // Execute the next middleware
-                await _next(context);
-
-                // Check if response is 400 and contains invalid_scope error
-                if (context.Response.StatusCode == 400)
+                try
                 {
-                    responseBody.Seek(0, SeekOrigin.Begin);
-                    var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
+                    // Execute the next middleware
+                    await _next(context);
 
-                    // Check if the response contains invalid_scope error
-                    if (responseContent.Contains("\"error\": \"invalid_scope\""))
+                    // Check if response is 400 and contains invalid_scope error
+                    if (context.Response.StatusCode == 400)
                     {
-                        context.Response.ContentType = "application/problem+json";
-                    }
+                        responseBody.Seek(0, SeekOrigin.Begin);
+                        var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
 
-                    // Write the response back to the original stream
-                    responseBody.Seek(0, SeekOrigin.Begin);
-                    await responseBody.CopyToAsync(originalBodyStream);
+                        // Check if the response contains invalid_scope error
+                        if (responseContent.Contains("\"error\": \"invalid_scope\""))
+                        {
+                            context.Response.ContentType = "application/problem+json";
+                        }
+
+                        // Write the response back to the original stream
+                        responseBody.Seek(0, SeekOrigin.Begin);
+                        await responseBody.CopyToAsync(originalBodyStream);
+                    }
+                    else
+                    {
+                        // For non-400 responses, just copy the response back
+                        responseBody.Seek(0, SeekOrigin.Begin);
+                        await responseBody.CopyToAsync(originalBodyStream);
+                    }
                 }
-                else
+                finally
                 {
-                    // For non-400 responses, just copy the response back
-                    responseBody.Seek(0, SeekOrigin.Begin);
-                    await responseBody.CopyToAsync(originalBodyStream);
+                    // Restore the original response body stream
+                    context.Response.Body = originalBodyStream;
                 }
             }
             else
@@ -77,6 +85,14 @@ public class RequestLoggingMiddleware
         catch (Exception ex)
         {
             var response = context.Response;
+
+            // Check if response has already started or stream is closed
+            if (response.HasStarted)
+            {
+                logger.LogError(ex, JsonSerializer.Serialize(new { message = "Cannot write to response, response has already started", error = new { ex.Message, ex.StackTrace }, traceId = context.TraceIdentifier }));
+                return;
+            }
+
             response.ContentType = "application/problem+json";
 
             switch (ex)
