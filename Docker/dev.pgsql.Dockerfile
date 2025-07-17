@@ -29,7 +29,7 @@ RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-bu
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.10-alpine3.20-amd64@sha256:1659f678b93c82db5b42fb1fb12d98035ce482b85747c2c54e514756fa241095 AS runtimebase
 RUN apk upgrade --no-cache && \
-    apk add --no-cache bash=~5 dos2unix=~7 gettext=~0 icu=~74 musl=~1.2.5-r1 openssl=3.3.3-r0 postgresql14-client=~14 && \
+    apk add --no-cache bash=~5 dos2unix=~7 gettext=~0 icu=~74 musl=~1.2.5-r1 openssl=3.3.4-r0 postgresql14-client=~14 && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
 FROM runtimebase AS setup
