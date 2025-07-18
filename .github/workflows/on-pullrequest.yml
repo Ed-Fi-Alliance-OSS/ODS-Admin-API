@@ -47,12 +47,25 @@ jobs:
       - name: Build
         run: ./build.ps1 -Command Build -Configuration Debug
 
+      - name: Install Coverlet Tools
+        if: success()
+        run: |
+          dotnet tool install --global coverlet.console
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+
       - name: Run Unit Tests
         if: success()
-        run: ./build.ps1 -Command UnitTest -Configuration Debug
+        run: ./build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis
+
+      - name: Upload Coverage Report
+        if: always()
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+        with:
+          name: Coverage Report
+          path: coveragereport
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
         with:
           name: csharp-tests
           path: "**/*.trx"
@@ -98,7 +111,7 @@ jobs:
     steps:
       - name: Checkout the Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      
+
       - name: Setup Nuget.exe
         uses: nuget/setup-nuget@323ab0502cd38fdc493335025a96c8fdb0edc71f #v2.0.1
 
@@ -110,7 +123,7 @@ jobs:
         run: ./build.ps1 -Command IntegrationTest -Configuration Debug -UseIntegratedSecurity:$false -DbUsername "sa" -DbPassword ${{ env.DB_Password }}
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
         with:
           name: csharp-integration-tests
           path: "**/*.trx"
@@ -121,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Upload
-      uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
       with:
         name: Event File
         path: ${{ github.event_path }}

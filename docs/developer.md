@@ -2,19 +2,19 @@
 
 ## Contents
 
-- [Admin API Developer Instructions](#admin-api-developer-instructions)
-  - [Contents](#contents)
-  - [Development Pre-Requisites](#development-pre-requisites)
-  - [Build Script](#build-script)
-  - [Running on Localhost](#running-on-localhost)
-    - [Configuring Admin API to Run with the ODS/API](#configuring-admin-api-to-run-with-the-odsapi)
-    - [Resetting the Database State](#resetting-the-database-state)
-    - [Running Locally in Docker](#running-locally-in-docker)
-    - [Using Keycloak (IDP)](#using-keycloak-idp)
-  - [Testing Admin API](#testing-admin-api)
-  - [Application Architecture](#application-architecture)
-    - [Database Layer](#database-layer)
-    - [Validation](#validation)
+* [Admin API Developer Instructions](#admin-api-developer-instructions)
+  * [Contents](#contents)
+  * [Development Pre-Requisites](#development-pre-requisites)
+  * [Build Script](#build-script)
+  * [Running on Localhost](#running-on-localhost)
+    * [Configuring Admin API to Run with the ODS/API](#configuring-admin-api-to-run-with-the-odsapi)
+    * [Resetting the Database State](#resetting-the-database-state)
+    * [Running Locally in Docker](#running-locally-in-docker)
+    * [Using Keycloak (IDP)](#using-keycloak-idp)
+    * [Running Unit Tests, Integration Tests, and Generating Code Coverage Reports](#running-unit-tests-integration-tests-and-generating-code-coverage-reports)
+  * [Application Architecture](#application-architecture)
+    * [Database Layer](#database-layer)
+    * [Validation](#validation)
 
 ## Development Pre-Requisites
 
@@ -180,35 +180,32 @@ Furthermore, when using Keycloak, the Register and Token endpoints will not be a
 }
 ```
 
-## Testing Admin API
+### Running Unit Tests, Integration Tests, and Generating Code Coverage Reports
 
-In source code there are two types of test projects:
+The source code includes two main types of test projects:
 
-* Unit tests that are completely isolated (`*.UnitTests`).
-  * Execute with `build.ps1 -Command UnitTests`
-  * Collect code coverage analysis with `build.ps1 -Command UnitTests
-    -RunCoverageAnalysis`. This generates an HTML report in the `coveragereport`
-    directory.
-* The DB Tests project is a set of _integration_ tests that exercise the
-  repository layer (`*.DBTests`).
-  * Execute with `build.ps1 -Command IntegrationTest`
-  * Collect code coverage analysis with `build.ps1 -Command IntegrationTest
-    -RunCoverageAnalysis`. This generates an HTML report in the `coveragereport`
-    directory.
+* **Unit tests** (`*.UnitTests`):
+  * Run with: `build.ps1 -Command UnitTest`
+  * To collect code coverage, use: `build.ps1 -Command UnitTest -RunCoverageAnalysis`  
+    This will generate an HTML report in the `coveragereport` directory.
 
-Alternatively, run `build.ps1 -Command BuildAndTest [-RunCoverageAnalysis]` to
-get both Unit _and_ DBTests in the same execution.
+* **Integration tests** (`*.DBTests`):  
+  These tests exercise the repository layer and require a database connection.
+  * Run with: `build.ps1 -Command IntegrationTest`
+  * To collect code coverage, use: `build.ps1 -Command IntegrationTest -RunCoverageAnalysis`  
+    This will also generate an HTML report in the `coveragereport` directory.
+
+Alternatively, you can run both unit and integration tests together with:  
+`build.ps1 -Command BuildAndTest [-RunCoverageAnalysis]`
 
 > [!NOTE]
-> Coverage analysis requires installation of the `reportgenerator` tool:
-> `dotnet tool install -g dotnet-reportgenerator-globaltool`
+> Code coverage analysis requires the `reportgenerator` tool.  
+> Install it with: `dotnet tool install -g dotnet-reportgenerator-globaltool`
 
-Additionally there is a set of end-to-end (E2E) tests in Postman. See the [E2E
-Tests/README.md](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for
-more information on these tests.
+Additionally, there is a set of end-to-end (E2E) tests in Postman.  
+See [E2E Tests/README.md](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for more information.
 
-All three of these test suites should be 100% green before merging new code into
-the `main` branch.
+All three test suites should pass successfully before merging new code into the `main` branch.
 
 ## Application Architecture
 
