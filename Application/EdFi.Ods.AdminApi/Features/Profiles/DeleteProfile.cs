@@ -20,7 +20,7 @@ public class DeleteProfile : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> Handle(IDeleteProfileCommand deleteProfileCommand, int id)
+    public static Task<IResult> Handle(IDeleteProfileCommand deleteProfileCommand, int id)
     {
         deleteProfileCommand.Execute(id);
         return Task.FromResult(Results.Ok());

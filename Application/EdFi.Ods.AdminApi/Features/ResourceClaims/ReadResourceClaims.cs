@@ -30,7 +30,7 @@ public class ReadResourceClaims : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetResourceClaims(IGetResourceClaimsQuery getResourceClaimsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
+    internal static Task<IResult> GetResourceClaims(IGetResourceClaimsQuery getResourceClaimsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
         var resourceClaims = mapper.Map<List<ResourceClaimModel>>(getResourceClaimsQuery.Execute(
             commonQueryParams,
@@ -39,7 +39,7 @@ public class ReadResourceClaims : IFeature
         return Task.FromResult(Results.Ok(resourceClaims));
     }
 
-    internal Task<IResult> GetResourceClaim(IGetResourceClaimByResourceClaimIdQuery getResourceClaimByResourceClaimIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetResourceClaim(IGetResourceClaimByResourceClaimIdQuery getResourceClaimByResourceClaimIdQuery, IMapper mapper, int id)
     {
         var resourceClaim = getResourceClaimByResourceClaimIdQuery.Execute(id);
         if (resourceClaim == null)

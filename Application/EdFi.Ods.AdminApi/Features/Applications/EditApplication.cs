@@ -27,7 +27,7 @@ public class EditApplication : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(IEditApplicationCommand editApplicationCommand, IMapper mapper,
+    public static async Task<IResult> Handle(IEditApplicationCommand editApplicationCommand, IMapper mapper,
         Validator validator, IUsersContext db, EditApplicationRequest request, int id)
     {
         request.Id = id;

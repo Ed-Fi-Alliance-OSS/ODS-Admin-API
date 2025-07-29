@@ -27,10 +27,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var mappedResult = new ApiClientResult { Id = id, Key = "key", Secret = "secret" };
             A.CallTo(() => fakeCommand.Execute(id)).Returns(commandResult);
             A.CallTo(() => fakeMapper.Map<ApiClientResult>(commandResult)).Returns(mappedResult);
-            var feature = new ResetApiClientCredentials();
 
             // Act  
-            var result = await feature.HandleResetCredentials(fakeCommand, fakeMapper, id);
+            var result = await ResetApiClientCredentials.HandleResetCredentials(fakeCommand, fakeMapper, id);
 
             // Assert  
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientResult>>();
@@ -46,10 +45,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var fakeMapper = A.Fake<IMapper>();
             int id = 999;
             A.CallTo(() => fakeCommand.Execute(id)).Throws(new System.Exception("Reset failed"));
-            var feature = new ResetApiClientCredentials();
 
             // Act & Assert
-            Should.Throw<System.Exception>(async () => await feature.HandleResetCredentials(fakeCommand, fakeMapper, id));
+            Should.Throw<System.Exception>(async () => await ResetApiClientCredentials.HandleResetCredentials(fakeCommand, fakeMapper, id));
         }
     }
 }

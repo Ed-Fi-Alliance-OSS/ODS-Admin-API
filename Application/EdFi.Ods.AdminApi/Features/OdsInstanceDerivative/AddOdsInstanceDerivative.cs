@@ -27,7 +27,7 @@ public class AddOdsInstanceDerivative : IFeature
            .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, IAddOdsInstanceDerivativeCommand addOdsInstanceDerivativeCommand, IMapper mapper, AddOdsInstanceDerivativeRequest request)
+    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceDerivativeCommand addOdsInstanceDerivativeCommand, IMapper mapper, AddOdsInstanceDerivativeRequest request)
     {
         await validator.GuardAsync(request);
         var addedOdsInstanceDerivative = addOdsInstanceDerivativeCommand.Execute(request);

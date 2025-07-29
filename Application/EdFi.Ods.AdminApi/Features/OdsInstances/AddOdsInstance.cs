@@ -29,7 +29,7 @@ public class AddOdsInstance : IFeature
            .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(
+    public static async Task<IResult> Handle(
         Validator validator,
         IAddOdsInstanceCommand addOdsInstanceCommand,
         IMapper mapper,

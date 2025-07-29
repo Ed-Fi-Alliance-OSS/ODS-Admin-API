@@ -27,7 +27,7 @@ public class AddApiClient : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IMapper mapper, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options)
+    public static async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IMapper mapper, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
@@ -36,7 +36,7 @@ public class AddApiClient : IFeature
         return Results.Created($"/apiclients/{model.Id}", model);
     }
 
-    private void GuardAgainstInvalidEntityReferences(AddApiClientRequest request, IUsersContext db)
+    private static void GuardAgainstInvalidEntityReferences(AddApiClientRequest request, IUsersContext db)
     {
         if (null == db.Applications.Find(request.ApplicationId))
             throw new ValidationException([new ValidationFailure(nameof(request.ApplicationId), $"Application with ID {request.ApplicationId} not found.")]);

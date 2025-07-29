@@ -26,7 +26,7 @@ public class EditApiClient : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(IEditApiClientCommand editApiClientCommand, IMapper mapper,
+    public static async Task<IResult> Handle(IEditApiClientCommand editApiClientCommand, IMapper mapper,
         Validator validator, IUsersContext db, EditApiClientRequest request, int id)
     {
         request.Id = id;

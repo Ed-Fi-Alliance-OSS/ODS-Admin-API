@@ -31,7 +31,7 @@ public class ReadClaimSets : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetClaimSets(
+    internal static Task<IResult> GetClaimSets(
         IGetAllClaimSetsQuery getClaimSetsQuery, IGetApplicationsByClaimSetIdQuery getApplications, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
         var claimSets = mapper.Map<List<ClaimSetModel>>(getClaimSetsQuery.Execute(
@@ -45,7 +45,7 @@ public class ReadClaimSets : IFeature
         return Task.FromResult(Results.Ok(claimSets));
     }
 
-    internal Task<IResult> GetClaimSet(IGetClaimSetByIdQuery getClaimSetByIdQuery,
+    internal static Task<IResult> GetClaimSet(IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications, IMapper mapper, int id)
     {

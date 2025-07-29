@@ -26,13 +26,13 @@ public class ReadOdsInstanceDerivative : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetOdsInstanceDerivatives(IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal static Task<IResult> GetOdsInstanceDerivatives(IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
     {
         var odsInstanceDerivativeList = mapper.Map<List<OdsInstanceDerivativeModel>>(getOdsInstanceDerivativesQuery.Execute(commonQueryParams));
         return Task.FromResult(Results.Ok(odsInstanceDerivativeList));
     }
 
-    internal Task<IResult> GetOdsInstanceDerivative(IGetOdsInstanceDerivativeByIdQuery getOdsInstanceDerivativeByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstanceDerivative(IGetOdsInstanceDerivativeByIdQuery getOdsInstanceDerivativeByIdQuery, IMapper mapper, int id)
     {
         var odsInstanceDerivative = getOdsInstanceDerivativeByIdQuery.Execute(id);
         var model = mapper.Map<OdsInstanceDerivativeModel>(odsInstanceDerivative);

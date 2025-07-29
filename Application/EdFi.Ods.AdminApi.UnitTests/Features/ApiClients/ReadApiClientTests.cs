@@ -30,10 +30,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var mappedResult = new List<ApiClientModel> { new ApiClientModel { Id = 1 } };
             A.CallTo(() => fakeQuery.Execute(appId)).Returns(queryResult);
             A.CallTo(() => fakeMapper.Map<List<ApiClientModel>>(queryResult)).Returns(mappedResult);
-            var feature = new ReadApiClient();
 
             // Act
-            var result = await feature.GetApiClients(fakeQuery, fakeMapper, appId);
+            var result = await ReadApiClient.GetApiClients(fakeQuery, fakeMapper, appId);
 
             // Assert
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<ApiClientModel>>>();
@@ -52,10 +51,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var mappedModel = new ApiClientModel { Id = id };
             A.CallTo(() => fakeQuery.Execute(id)).Returns(queryResult);
             A.CallTo(() => fakeMapper.Map<ApiClientModel>(queryResult)).Returns(mappedModel);
-            var feature = new ReadApiClient();
 
             // Act
-            var result = await feature.GetApiClient(fakeQuery, fakeMapper, id);
+            var result = await ReadApiClient.GetApiClient(fakeQuery, fakeMapper, id);
 
             // Assert
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientModel>>();
@@ -71,10 +69,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var fakeMapper = A.Fake<IMapper>();
             int id = 99;
             A.CallTo(() => fakeQuery.Execute(id)).Returns(null);
-            var feature = new ReadApiClient();
 
             // Act & Assert
-            Should.Throw<NotFoundException<int>>(() => feature.GetApiClient(fakeQuery, fakeMapper, id).GetAwaiter().GetResult());
+            Should.Throw<NotFoundException<int>>(() => ReadApiClient.GetApiClient(fakeQuery, fakeMapper, id).GetAwaiter().GetResult());
         }
 
         [Test]
@@ -85,10 +82,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var fakeMapper = A.Fake<IMapper>();
             int appId = 42;
             A.CallTo(() => fakeQuery.Execute(appId)).Throws(new System.Exception("Query failed"));
-            var feature = new ReadApiClient();
 
             // Act & Assert
-            Should.Throw<System.Exception>(async () => await feature.GetApiClients(fakeQuery, fakeMapper, appId));
+            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClients(fakeQuery, fakeMapper, appId));
         }
 
         [Test]
@@ -101,10 +97,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             var queryResult = new ApiClient();
             A.CallTo(() => fakeQuery.Execute(id)).Returns((ApiClient)queryResult);
             A.CallTo(() => fakeMapper.Map<ApiClientModel>(queryResult)).Throws(new System.Exception("Mapping failed"));
-            var feature = new ReadApiClient();
 
             // Act & Assert
-            Should.Throw<System.Exception>(async () => await feature.GetApiClient(fakeQuery, fakeMapper, id));
+            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClient(fakeQuery, fakeMapper, id));
         }
     }
 }

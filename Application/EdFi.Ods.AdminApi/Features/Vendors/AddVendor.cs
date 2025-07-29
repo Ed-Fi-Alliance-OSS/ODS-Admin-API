@@ -28,7 +28,7 @@ public class AddVendor : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, IMapper mapper, AddVendorRequest request)
+    public async static Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, IMapper mapper, AddVendorRequest request)
     {
         await validator.GuardAsync(request);
         var addedVendor = addVendorCommand.Execute(request);

@@ -29,7 +29,7 @@ public class ReadProfile : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetProfiles(IGetProfilesQuery getProfilesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
+    internal static Task<IResult> GetProfiles(IGetProfilesQuery getProfilesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
         var profileList = mapper.Map<List<ProfileModel>>(getProfilesQuery.Execute(
             commonQueryParams,
@@ -37,7 +37,7 @@ public class ReadProfile : IFeature
         return Task.FromResult(Results.Ok(profileList));
     }
 
-    internal Task<IResult> GetProfile(IGetProfileByIdQuery getProfileByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetProfile(IGetProfileByIdQuery getProfileByIdQuery, IMapper mapper, int id)
     {
         var profile = getProfileByIdQuery.Execute(id);
         if (profile == null)

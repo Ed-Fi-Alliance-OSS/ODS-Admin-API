@@ -30,7 +30,7 @@ public class EditOdsInstance : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(
+    public static async Task<IResult> Handle(
         Validator validator,
         IEditOdsInstanceCommand editOdsInstanceCommand,
         IMapper mapper,

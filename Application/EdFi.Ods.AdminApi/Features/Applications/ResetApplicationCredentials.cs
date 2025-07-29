@@ -26,7 +26,7 @@ public class ResetApplicationCredentials : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> HandleResetCredentials(RegenerateApplicationApiClientSecretCommand resetSecretCommand, IOptions<AppSettings> settings, IMapper mapper, int id)
+    public static async Task<IResult> HandleResetCredentials(RegenerateApplicationApiClientSecretCommand resetSecretCommand, IOptions<AppSettings> settings, IMapper mapper, int id)
     {
         if (!settings.Value.EnableApplicationResetEndpoint)
             throw new FluentValidation.ValidationException(new[] { new ValidationFailure(nameof(Application), $"This endpoint has been disabled on application settings.") });

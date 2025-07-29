@@ -29,7 +29,7 @@ public class EditOdsInstanceDerivative : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, IEditOdsInstanceDerivativeCommand editOdsInstanceDerivativeCommand, IMapper mapper, IUsersContext db, EditOdsInstanceDerivativeRequest request, int id)
+    public static async Task<IResult> Handle(Validator validator, IEditOdsInstanceDerivativeCommand editOdsInstanceDerivativeCommand, IMapper mapper, IUsersContext db, EditOdsInstanceDerivativeRequest request, int id)
     {
         request.Id = id;
         SetCurrentConnectionString(db, request, id);
@@ -38,7 +38,7 @@ public class EditOdsInstanceDerivative : IFeature
         return Results.Ok();
     }
 
-    private void SetCurrentConnectionString(IUsersContext db, EditOdsInstanceDerivativeRequest request, int id)
+    private static void SetCurrentConnectionString(IUsersContext db, EditOdsInstanceDerivativeRequest request, int id)
     {
         if (string.IsNullOrEmpty(request.ConnectionString))
             request.ConnectionString = db.OdsInstanceDerivatives.Find(id)?.ConnectionString;

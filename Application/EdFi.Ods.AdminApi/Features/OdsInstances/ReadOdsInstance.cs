@@ -25,7 +25,7 @@ public class ReadOdsInstance : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetOdsInstances(IGetOdsInstancesQuery getOdsInstancesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name, string? instanceType)
+    internal static Task<IResult> GetOdsInstances(IGetOdsInstancesQuery getOdsInstancesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name, string? instanceType)
     {
         var odsInstances = mapper.Map<List<OdsInstanceModel>>(getOdsInstancesQuery.Execute(
             commonQueryParams,
@@ -35,7 +35,7 @@ public class ReadOdsInstance : IFeature
         return Task.FromResult(Results.Ok(odsInstances));
     }
 
-    internal Task<IResult> GetOdsInstance(IGetOdsInstanceQuery getOdsInstanceQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstance(IGetOdsInstanceQuery getOdsInstanceQuery, IMapper mapper, int id)
     {
         var odsInstance = getOdsInstanceQuery.Execute(id);
         var model = mapper.Map<OdsInstanceDetailModel>(odsInstance);

@@ -45,10 +45,9 @@ public class EditClaimSet : IFeature
             ClaimSetId = id
         };
 
-        int updatedClaimSetId;
         try
         {
-            updatedClaimSetId = editClaimSetCommand.Execute(editClaimSetModel);
+            editClaimSetCommand.Execute(editClaimSetModel);
         }
         catch (AdminApiException exception)
         {

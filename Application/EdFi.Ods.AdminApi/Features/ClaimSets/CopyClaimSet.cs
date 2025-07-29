@@ -26,7 +26,7 @@ public class CopyClaimSet : IFeature
         .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, ICopyClaimSetCommand copyClaimSetCommand,
+    public static async Task<IResult> Handle(Validator validator, ICopyClaimSetCommand copyClaimSetCommand,
         IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications,

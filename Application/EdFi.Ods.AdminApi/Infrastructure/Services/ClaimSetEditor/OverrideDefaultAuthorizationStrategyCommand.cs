@@ -233,11 +233,8 @@ public class OverrideDefaultAuthorizationStrategyCommand
                     && x.AuthorizationStrategyOverrides != null &&
                         x.AuthorizationStrategyOverrides.Exists(a =>
                             authStrategyOverrides.Select(c => c.AuthorizationStrategyId).
-                                                                Contains(a.AuthorizationStrategyId))) == null)
-                {
-                    claimSetResourceClaim.AuthorizationStrategyOverrides = authStrategyOverrides;
-                }
-                else if (parentResourceClaims.Count == 0)
+                                                                Contains(a.AuthorizationStrategyId))) == null
+                    || parentResourceClaims.Count == 0)
                 {
                     claimSetResourceClaim.AuthorizationStrategyOverrides = authStrategyOverrides;
                 }

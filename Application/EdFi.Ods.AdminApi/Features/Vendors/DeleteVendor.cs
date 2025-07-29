@@ -22,7 +22,7 @@ public class DeleteVendor : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> Handle(DeleteVendorCommand deleteVendorCommand, int id)
+    public static Task<IResult> Handle(DeleteVendorCommand deleteVendorCommand, int id)
     {
         deleteVendorCommand.Execute(id);
         return Task.FromResult(Results.Ok("Vendor".ToJsonObjectResponseDeleted()));

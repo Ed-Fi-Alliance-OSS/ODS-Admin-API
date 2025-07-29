@@ -20,7 +20,7 @@ public class DeleteOdsInstanceContext : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> Handle(IDeleteOdsInstanceContextCommand deleteOdsInstanceContextCommand, int id)
+    public static Task<IResult> Handle(IDeleteOdsInstanceContextCommand deleteOdsInstanceContextCommand, int id)
     {
         deleteOdsInstanceContextCommand.Execute(id);
         return Task.FromResult(Results.Ok());

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EdFi.Ods.AdminApi.Features
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class FeatureToggleAttribute : ActionFilterAttribute, IFeatureToggleAttribute
     {
         private readonly string _featureName;

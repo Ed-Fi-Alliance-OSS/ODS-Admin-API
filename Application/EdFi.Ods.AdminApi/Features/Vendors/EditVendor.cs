@@ -25,7 +25,7 @@ public class EditVendor : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(EditVendorCommand editVendorCommand, IMapper mapper,
+    public static async Task<IResult> Handle(EditVendorCommand editVendorCommand, IMapper mapper,
                        Validator validator, EditVendorRequest request, int id)
     {
         request.Id = id;

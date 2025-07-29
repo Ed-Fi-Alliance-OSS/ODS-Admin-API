@@ -31,7 +31,7 @@ public class ResourceClaimValidator
         ValidateChildren(dbResourceClaims, dbActions, dbAuthStrategies, resourceClaim, context, claimSetName, propertyName, resources);
     }
 
-    public void Validate<T>(Lookup<int, ResourceClaim> dbResourceClaims, List<string> dbActions, IResourceClaimOnClaimSetRequest editResourceClaimOnClaimSetRequest,
+    public static void Validate<T>(Lookup<int, ResourceClaim> dbResourceClaims, List<string> dbActions, IResourceClaimOnClaimSetRequest editResourceClaimOnClaimSetRequest,
         ValidationContext<T> context, string? claimSetName)
     {
         context.MessageFormatter.AppendArgument("ClaimSetName", claimSetName);

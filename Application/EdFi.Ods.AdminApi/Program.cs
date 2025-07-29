@@ -68,6 +68,6 @@ if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
     app.DefineSwaggerUIWithApiVersions(AdminApiVersions.GetAllVersionStrings());
 }
 
-app.Run();
+await app.RunAsync();
 
 

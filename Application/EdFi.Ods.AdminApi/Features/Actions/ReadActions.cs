@@ -23,7 +23,7 @@ public class ReadActions : IFeature
            .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, IMapper mapper, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)
+    internal static Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, IMapper mapper, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)
     {
         var actions = mapper.Map<List<ActionModel>>(
             getAllActionsQuery.Execute(

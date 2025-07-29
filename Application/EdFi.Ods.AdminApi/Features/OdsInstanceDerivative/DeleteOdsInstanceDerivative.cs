@@ -20,7 +20,7 @@ public class DeleteOdsInstanceDerivative : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> Handle(IDeleteOdsInstanceDerivativeCommand deleteOdsInstanceDerivativeCommand, int id)
+    public static Task<IResult> Handle(IDeleteOdsInstanceDerivativeCommand deleteOdsInstanceDerivativeCommand, int id)
     {
         deleteOdsInstanceDerivativeCommand.Execute(id);
         return Task.FromResult(Results.Ok());

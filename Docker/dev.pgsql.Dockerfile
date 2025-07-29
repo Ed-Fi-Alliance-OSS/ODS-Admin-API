@@ -12,6 +12,8 @@ RUN apk upgrade --no-cache && apk add --no-cache musl=~1.2.5-r1
 ARG ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-"Production"}
 
 WORKDIR /source
+COPY --from=assets ./Application/NuGet.Config ./
+COPY --from=assets ./Application/Directory.Packages.props ./
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
 COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
 RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json

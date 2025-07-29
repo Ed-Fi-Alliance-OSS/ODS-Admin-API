@@ -23,7 +23,7 @@ public class ReadApplicationsByOdsInstance : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetOdsInstanceApplications(IGetApplicationsByOdsInstanceIdQuery getApplicationByOdsInstanceIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstanceApplications(IGetApplicationsByOdsInstanceIdQuery getApplicationByOdsInstanceIdQuery, IMapper mapper, int id)
     {
         var odsInstanceApplications = mapper.Map<List<ApplicationModel>>(getApplicationByOdsInstanceIdQuery.Execute(id));
         return Task.FromResult(Results.Ok(odsInstanceApplications));

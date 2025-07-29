@@ -28,7 +28,7 @@ public class AddApplication : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IMapper mapper, IUsersContext db, AddApplicationRequest request, IOptions<AppSettings> options)
+    public static async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IMapper mapper, IUsersContext db, AddApplicationRequest request, IOptions<AppSettings> options)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
@@ -37,7 +37,7 @@ public class AddApplication : IFeature
         return Results.Created($"/applications/{model.Id}", model);
     }
 
-    private void GuardAgainstInvalidEntityReferences(AddApplicationRequest request, IUsersContext db)
+    private static void GuardAgainstInvalidEntityReferences(AddApplicationRequest request, IUsersContext db)
     {
         if (null == db.Vendors.Find(request.VendorId))
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
@@ -132,7 +132,7 @@ public class AddApplication : IFeature
             RuleFor(m => m.VendorId).Must(id => id > 0).WithMessage(FeatureConstants.VendorIdValidationMessage);
         }
 
-        private bool BeWithinApplicationNameMaxLength<T>(IAddApplicationModel model, string? applicationName, ValidationContext<T> context)
+        private static bool BeWithinApplicationNameMaxLength<T>(IAddApplicationModel model, string? applicationName, ValidationContext<T> context)
         {
             var extraCharactersInName = applicationName!.Length - ValidationConstants.MaximumApplicationNameLength;
             if (extraCharactersInName <= 0)

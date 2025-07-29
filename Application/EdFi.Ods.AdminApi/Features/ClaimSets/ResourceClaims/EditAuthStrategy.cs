@@ -31,7 +31,7 @@ public class EditAuthStrategy : IFeature
         .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal async Task<IResult> HandleOverrideAuthStrategies(OverrideAuthStategyOnClaimSetValidator validator,
+    internal static async Task<IResult> HandleOverrideAuthStrategies(OverrideAuthStategyOnClaimSetValidator validator,
       OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand, IMapper mapper,
       OverrideAuthStategyOnClaimSetRequest request, int claimSetId, int resourceClaimId)
     {

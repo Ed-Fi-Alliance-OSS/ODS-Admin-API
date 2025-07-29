@@ -22,7 +22,7 @@ public class DeleteApplication : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> Handle(IDeleteApplicationCommand deleteApplicationCommand, int id)
+    public static Task<IResult> Handle(IDeleteApplicationCommand deleteApplicationCommand, int id)
     {
         deleteApplicationCommand.Execute(id);
         return Task.FromResult(Results.Ok("Application".ToJsonObjectResponseDeleted()));

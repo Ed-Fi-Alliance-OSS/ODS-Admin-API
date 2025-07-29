@@ -27,7 +27,7 @@ public class ReadApiClient : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> GetApiClients(
+    public static Task<IResult> GetApiClients(
         [FromServices] IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery,
         [FromServices] IMapper mapper,
         [FromQuery(Name = "applicationid")] int applicationid)
@@ -36,7 +36,7 @@ public class ReadApiClient : IFeature
         return Task.FromResult(Results.Ok(apiClients));
     }
 
-    public Task<IResult> GetApiClient([
+    public static Task<IResult> GetApiClient([
         FromServices] IGetApiClientByIdQuery getApiClientByIdQuery,
         [FromServices] IMapper mapper,
         int id)

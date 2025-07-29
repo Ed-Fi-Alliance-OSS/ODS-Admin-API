@@ -20,7 +20,7 @@ public class DeleteApiClient : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public Task<IResult> Handle(IDeleteApiClientCommand deleteApiClientCommand, int id)
+    public static Task<IResult> Handle(IDeleteApiClientCommand deleteApiClientCommand, int id)
     {
         deleteApiClientCommand.Execute(id);
         return Task.FromResult(Results.Ok("ApiClient".ToJsonObjectResponseDeleted()));

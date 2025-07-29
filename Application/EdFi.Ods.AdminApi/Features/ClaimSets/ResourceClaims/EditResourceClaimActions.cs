@@ -30,7 +30,7 @@ public class EditResourceClaimActions : IFeature
        .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal async Task<IResult> HandleAddResourceClaims(ResourceClaimClaimSetValidator validator,
+    internal static async Task<IResult> HandleAddResourceClaims(ResourceClaimClaimSetValidator validator,
         EditResourceOnClaimSetCommand editResourcesOnClaimSetCommand,
         UpdateResourcesOnClaimSetCommand updateResourcesOnClaimSetCommand,
         IGetClaimSetByIdQuery getClaimSetByIdQuery,
@@ -44,7 +44,7 @@ public class EditResourceClaimActions : IFeature
         return Results.Ok();
     }
 
-    internal async Task<IResult> HandleEditResourceClaims(ResourceClaimClaimSetValidator validator,
+    internal static async Task<IResult> HandleEditResourceClaims(ResourceClaimClaimSetValidator validator,
         EditResourceOnClaimSetCommand editResourcesOnClaimSetCommand,
         UpdateResourcesOnClaimSetCommand updateResourcesOnClaimSetCommand,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
@@ -108,7 +108,6 @@ public class EditResourceClaimActions : IFeature
 
             RuleFor(m => m).Custom((resourceClaimOnClaimSetRequest, context) =>
             {
-                var resourceClaimValidator = new ResourceClaimValidator();
                 ClaimSet claimSet;
                 claimSet = getClaimSetByIdQuery.Execute(resourceClaimOnClaimSetRequest.ClaimSetId);
                 var actions = getAllActionsQuery.Execute().Select(x => x.ActionName).ToList();
@@ -119,7 +118,7 @@ public class EditResourceClaimActions : IFeature
 
                 if (resourceClaimOnClaimSetRequest.ResourceClaimActions != null)
                 {
-                    resourceClaimValidator.Validate(resourceClaimsById, actions, resourceClaimOnClaimSetRequest, context, claimSet!.Name);
+                    ResourceClaimValidator.Validate(resourceClaimsById, actions, resourceClaimOnClaimSetRequest, context, claimSet!.Name);
                 }
                 else
                 {

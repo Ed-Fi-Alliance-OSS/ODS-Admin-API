@@ -20,7 +20,7 @@ public class ResetApiClientCredentials : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> HandleResetCredentials(IRegenerateApiClientSecretCommand resetSecretCommand, IMapper mapper, int id)
+    public static async Task<IResult> HandleResetCredentials(IRegenerateApiClientSecretCommand resetSecretCommand, IMapper mapper, int id)
     {
         var resetCredentials = await Task.Run(() => resetSecretCommand.Execute(id));
         var model = mapper.Map<ApiClientResult>(resetCredentials);

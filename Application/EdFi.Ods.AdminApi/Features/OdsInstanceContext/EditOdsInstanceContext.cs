@@ -27,7 +27,7 @@ public class EditOdsInstanceContext : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, IEditOdsInstanceContextCommand editOdsInstanceContextCommand, IMapper mapper, IUsersContext db, EditOdsInstanceContextRequest request, int id)
+    public static async Task<IResult> Handle(Validator validator, IEditOdsInstanceContextCommand editOdsInstanceContextCommand, IMapper mapper, IUsersContext db, EditOdsInstanceContextRequest request, int id)
     {
         request.Id = id;
         await validator.GuardAsync(request);

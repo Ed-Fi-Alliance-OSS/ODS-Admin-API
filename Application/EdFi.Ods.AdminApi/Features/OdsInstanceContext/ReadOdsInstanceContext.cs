@@ -26,13 +26,13 @@ public class ReadOdsInstanceContext : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetOdsInstanceContexts(IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal static Task<IResult> GetOdsInstanceContexts(IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
     {
         var odsInstanceContextList = mapper.Map<List<OdsInstanceContextModel>>(getOdsInstanceContextsQuery.Execute(commonQueryParams));
         return Task.FromResult(Results.Ok(odsInstanceContextList));
     }
 
-    internal Task<IResult> GetOdsInstanceContext(IGetOdsInstanceContextByIdQuery getOdsInstanceContextByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstanceContext(IGetOdsInstanceContextByIdQuery getOdsInstanceContextByIdQuery, IMapper mapper, int id)
     {
         var odsInstanceContext = getOdsInstanceContextByIdQuery.Execute(id);
         var model = mapper.Map<OdsInstanceContextModel>(odsInstanceContext);

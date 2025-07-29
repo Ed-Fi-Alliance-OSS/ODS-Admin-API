@@ -24,7 +24,7 @@ public class AddOdsInstanceContext : IFeature
            .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, IMapper mapper, AddOdsInstanceContextRequest request)
+    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, IMapper mapper, AddOdsInstanceContextRequest request)
     {
         await validator.GuardAsync(request);
         var addedOdsInstanceContext = addOdsInstanceContextCommand.Execute(request);
@@ -52,7 +52,6 @@ public class AddOdsInstanceContext : IFeature
         {
             _getOdsInstanceQuery = getOdsInstanceQuery;
             _getOdsInstanceContextsQuery = getOdsInstanceContextsQuery;
-            
             RuleFor(m => m.ContextKey).NotEmpty();
 
             RuleFor(m => m.ContextValue).NotEmpty();

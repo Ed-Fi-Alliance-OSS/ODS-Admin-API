@@ -23,7 +23,7 @@ public class ReadAuthorizationStrategy : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetAuthStrategies(IGetAuthStrategiesQuery getAuthStrategiesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal static Task<IResult> GetAuthStrategies(IGetAuthStrategiesQuery getAuthStrategiesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
     {
         var authStrategyList = mapper.Map<List<AuthorizationStrategyModel>>(getAuthStrategiesQuery.Execute(commonQueryParams));
         return Task.FromResult(Results.Ok(authStrategyList));

@@ -32,7 +32,7 @@ public class ReadApplication : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal async Task<IResult> GetApplications(
+    internal static async Task<IResult> GetApplications(
         IGetAllApplicationsQuery getAllApplicationsQuery,
         IMapper mapper,
         IOptions<AppSettings> settings,
@@ -47,7 +47,7 @@ public class ReadApplication : IFeature
         return Results.Ok(applications);
     }
 
-    internal Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, IMapper mapper, int id)
     {
         var application = getApplicationByIdQuery.Execute(id);
         if (application == null)

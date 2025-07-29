@@ -23,7 +23,7 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    internal InformationResult GetInformation()
+    internal static InformationResult GetInformation()
     {
         return new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build);
     }

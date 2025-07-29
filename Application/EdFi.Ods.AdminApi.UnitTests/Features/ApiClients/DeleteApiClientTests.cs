@@ -21,10 +21,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             // Arrange    
             var fakeCommand = A.Fake<IDeleteApiClientCommand>();
             int testId = 123;
-            var feature = new DeleteApiClient();
 
             // Act    
-            var result = await feature.Handle(fakeCommand, testId);
+            var result = await DeleteApiClient.Handle(fakeCommand, testId);
 
             // Assert    
             A.CallTo(() => fakeCommand.Execute(testId)).MustHaveHappenedOnceExactly();
@@ -38,11 +37,10 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
             // Arrange
             var fakeCommand = A.Fake<IDeleteApiClientCommand>();
             int testId = 999;
-            var feature = new DeleteApiClient();
             A.CallTo(() => fakeCommand.Execute(testId)).Throws(new System.Exception("Delete failed"));
 
             // Act & Assert
-            Should.Throw<System.Exception>(async () => await feature.Handle(fakeCommand, testId));
+            Should.Throw<System.Exception>(async () => await DeleteApiClient.Handle(fakeCommand, testId));
         }
     }
 }

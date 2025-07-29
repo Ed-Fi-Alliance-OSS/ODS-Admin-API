@@ -29,7 +29,7 @@ public class ReadVendor : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal Task<IResult> GetVendors(
+    internal static Task<IResult> GetVendors(
         IGetVendorsQuery getVendorsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? company, string? namespacePrefixes, string? contactName, string? contactEmailAddress)
     {
         var vendorList = mapper.Map<List<VendorModel>>(getVendorsQuery.Execute(
@@ -38,7 +38,7 @@ public class ReadVendor : IFeature
         return Task.FromResult(Results.Ok(vendorList));
     }
 
-    internal Task<IResult> GetVendor(IGetVendorByIdQuery getVendorByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetVendor(IGetVendorByIdQuery getVendorByIdQuery, IMapper mapper, int id)
     {
         var vendor = getVendorByIdQuery.Execute(id);
         if (vendor == null)
