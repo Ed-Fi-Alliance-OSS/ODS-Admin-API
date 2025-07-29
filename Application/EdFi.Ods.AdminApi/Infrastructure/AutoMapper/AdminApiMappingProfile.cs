@@ -9,6 +9,7 @@ using EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
 using EdFi.Ods.AdminApi.AdminConsole.Features.WorkerInstances;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.Features.Actions;
+using EdFi.Ods.AdminApi.Features.ApiClients;
 using EdFi.Ods.AdminApi.Features.Applications;
 using EdFi.Ods.AdminApi.Features.AuthorizationStrategies;
 using EdFi.Ods.AdminApi.Features.ClaimSets;
@@ -65,8 +66,14 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.Key, opt => opt.MapFrom(src => src.Key))
             .ForMember(dst => dst.Secret, opt => opt.MapFrom(src => src.Secret));
 
-        CreateMap<RegenerateApiClientSecretResult, ApplicationResult>()
+        CreateMap<RegenerateApplicationApiClientSecretResult, ApplicationResult>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Application.ApplicationId))
+            .ForMember(dst => dst.Key, opt => opt.MapFrom(src => src.Key))
+            .ForMember(dst => dst.Secret, opt => opt.MapFrom(src => src.Secret));
+
+        CreateMap<RegenerateApiClientSecretResult, ApiClientResult>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dst => dst.ApplicationId, opt => opt.MapFrom(src => src.Application.ApplicationId))
             .ForMember(dst => dst.Key, opt => opt.MapFrom(src => src.Key))
             .ForMember(dst => dst.Secret, opt => opt.MapFrom(src => src.Secret));
 
@@ -215,5 +222,27 @@ public class AdminApiMappingProfile : Profile
 
         CreateMap<Admin.DataAccess.Models.OdsInstanceDerivative, AdminConsole.Infrastructure.Services.Instances.Models.OdsInstanceDerivativeModel>()
             .ForMember(dst => dst.DerivativeType, opt => opt.MapFrom(src => src.DerivativeType));
+
+        CreateMap<AddApiClientResult, ApiClientResult>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dst => dst.Key, opt => opt.MapFrom(src => src.Key))
+            .ForMember(dst => dst.ApplicationId, opt => opt.MapFrom(src => src.ApplicationId))
+            .ForMember(dst => dst.Secret, opt => opt.MapFrom(src => src.Secret));
+
+        CreateMap<ApiClient, ApiClientModel>()
+            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.ApiClientId))
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dst => dst.Key, opt => opt.MapFrom(src => src.Key))
+            .ForMember(dst => dst.ApplicationId, opt => opt.MapFrom(src => src.Application.ApplicationId))
+            .ForMember(dst => dst.KeyStatus, opt => opt.MapFrom(src => src.KeyStatus))
+            .ForMember(dst => dst.IsApproved, opt => opt.MapFrom(src => src.IsApproved))
+            .ForMember(dst => dst.UseSandbox, opt => opt.MapFrom(src => src.UseSandbox))
+            .ForMember(dst => dst.SandboxType, opt => opt.MapFrom(src => src.SandboxType))
+            .ForMember(dst => dst.EducationOrganizationIds, opt => opt.MapFrom(src => src.ApplicationEducationOrganizations.Select(eu => eu.EducationOrganizationId)))
+            .ForMember(dst => dst.OdsInstanceIds, opt =>
+            {
+                opt.ConvertUsing<OdsInstanceIdsForApiClientConverter, int>(src => src.ApiClientId);
+            });
     }
 }

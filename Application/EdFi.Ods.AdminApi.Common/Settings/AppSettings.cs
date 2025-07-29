@@ -26,6 +26,7 @@ public class AppSettings
     public bool PreventDuplicateApplications { get; set; }
     public bool EnableAdminConsoleAPI { get; set; }
     public bool IgnoresCertificateErrors { get; set; }
+    public bool EnableApplicationResetEndpoint { get; set; }
 }
 
 public class SwaggerSettings

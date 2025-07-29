@@ -122,7 +122,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
     [Test]
     public void ShouldExecute()
     {
-        const string odsInstanceName = "Test Instance";
+        const string OdsInstanceName = "Test Instance";
         var vendor = new Vendor
         {
             VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
@@ -136,7 +136,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
 
         var odsInstance = new OdsInstance
         {
-            Name = odsInstanceName,
+            Name = OdsInstanceName,
             InstanceType = "Ods",
             ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False"
         };
@@ -210,7 +210,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
         AppSettings appSettings = new AppSettings();
         appSettings.PreventDuplicateApplications = true;
         IOptions<AppSettings> options = Options.Create(appSettings);
-        const string odsInstanceName = "Test Instance";
+        const string OdsInstanceName = "Test Instance";
         var vendor = new Vendor
         {
             VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
@@ -223,7 +223,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
 
         var odsInstance = new OdsInstance
         {
-            Name = odsInstanceName,
+            Name = OdsInstanceName,
             InstanceType = "Ods",
             ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False"
         };

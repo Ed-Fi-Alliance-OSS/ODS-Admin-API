@@ -27,7 +27,7 @@ public class GetApiClientIdByApplicationIdQuery : IGetApiClientIdByApplicationId
     public ApiClient Execute(int applicationId)
     {
         var apiClientId = _context.ApiClients
-            .SingleOrDefault(app => app.Application.ApplicationId == applicationId);
+            .FirstOrDefault(app => app.Application.ApplicationId == applicationId);
         if (apiClientId == null)
         {
             throw new NotFoundException<int>("apiClientId", applicationId);

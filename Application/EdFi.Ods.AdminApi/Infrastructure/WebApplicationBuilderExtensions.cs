@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -49,6 +50,8 @@ public static class WebApplicationBuilderExtensions
             typeof(AdminApiMappingProfile).Assembly
         );
         webApplicationBuilder.Services.AddScoped<InstanceContext>();
+        webApplicationBuilder.Services.AddTransient<IGetApiClientsByApplicationIdQuery, GetApiClientsByApplicationIdQuery>();
+        webApplicationBuilder.Services.AddTransient<IGetApiClientByIdQuery, GetApiClientByIdQuery>();
 
         foreach (var type in typeof(IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes())
         {

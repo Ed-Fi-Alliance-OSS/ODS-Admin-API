@@ -56,8 +56,21 @@ public class OdsInstanceIdsForApplicationConverter : IValueConverter<int, List<i
     }
     public List<int> Convert(int applicationId, ResolutionContext context)
     {
-        var ids = _context.ApiClientOdsInstances.Where(p => p.ApiClient.Application.ApplicationId == applicationId).Select(p => p.OdsInstance.OdsInstanceId).ToList();
+        var ids = _context.ApiClientOdsInstances.Where(p => p.ApiClient.Application.ApplicationId == applicationId).Select(p => p.OdsInstance.OdsInstanceId).Distinct().ToList();
 
         return ids;
+    }
+}
+
+public class OdsInstanceIdsForApiClientConverter : IValueConverter<int, List<int>>
+{
+    private readonly IUsersContext _context;
+    public OdsInstanceIdsForApiClientConverter(IUsersContext context)
+    {
+        _context = context;
+    }
+    public List<int> Convert(int apiClientId, ResolutionContext context)
+    {
+        return _context.ApiClientOdsInstances.Where(p => p.ApiClient.ApiClientId == apiClientId).Select(p => p.OdsInstance.OdsInstanceId).ToList();
     }
 }
