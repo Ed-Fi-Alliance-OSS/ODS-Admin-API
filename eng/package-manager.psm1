@@ -1,4 +1,4 @@
-﻿# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Apache-2.0
 # Licensed to the Ed-Fi Alliance under one or more agreements.
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
@@ -92,6 +92,82 @@ function Push-Package {
     dotnet nuget push $PackageFile --api-key $NuGetApiKey --source $NuGetFeed
 }
 
+function Test-PackageCache {
+    param (
+        [string]
+        [Parameter(Mandatory=$true)]
+        $PackageName,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $PackageVersion,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $PackagesPath
+    )
+
+    $cacheManifestPath = "$PackagesPath/.package-cache-manifest.json"
+    $packageKey = "$PackageName-$PackageVersion"
+    $wildcardPath = "$PackagesPath/$PackageName.$($PackageVersion.Split('-')[0])*"
+
+    # Check if package is already cached
+    if (Test-Path $cacheManifestPath) {
+        try {
+            $cacheManifest = Get-Content $cacheManifestPath | ConvertFrom-Json -AsHashtable
+            if ($cacheManifest[$packageKey]) {
+                $existing = Resolve-Path $wildcardPath -ErrorAction SilentlyContinue
+                if ($existing) {
+                    Write-Host "Package $PackageName version $PackageVersion already cached, skipping download" -ForegroundColor Green
+                    return $true
+                }
+            }
+        }
+        catch {
+            # If manifest is corrupted, we'll redownload
+            Write-Host "Cache manifest corrupted, will redownload packages" -ForegroundColor Yellow
+        }
+    }
+
+    return $false
+}
+
+function Update-PackageCache {
+    param (
+        [string]
+        [Parameter(Mandatory=$true)]
+        $PackageName,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $PackageVersion,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $PackagesPath
+    )
+
+    $cacheManifestPath = "$PackagesPath/.package-cache-manifest.json"
+    $packageKey = "$PackageName-$PackageVersion"
+
+    # Update cache manifest
+    $cacheManifest = @{}
+    if (Test-Path $cacheManifestPath) {
+        try {
+            $cacheManifest = Get-Content $cacheManifestPath | ConvertFrom-Json -AsHashtable
+        }
+        catch {
+            $cacheManifest = @{}
+        }
+    }
+    $cacheManifest[$packageKey] = @{
+        timestamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+        version = $PackageVersion
+    }
+    $cacheManifest | ConvertTo-Json | Set-Content $cacheManifestPath
+    Write-Host "Package $PackageName version $PackageVersion downloaded and cached" -ForegroundColor Cyan
+}
+
 function Move-AppCommon {
     param (
         [string]
@@ -145,39 +221,50 @@ function Get-RestApiPackage {
         $ToolsPath = "$PSScriptRoot/.tools"
     )
 
+    # Determine the full package version string including prerelease
+    $fullPackageVersion = if ($RestApiPackagePrerelease) { "$RestApiPackageVersion-prerelease" } else { $RestApiPackageVersion }
+
+    # Check if package is already cached
+    $needsDownload = -not (Test-PackageCache -PackageName $RestApiPackageName -PackageVersion $fullPackageVersion -PackagesPath $PackagesPath)
+
+    if ($needsDownload) {
+        $wildcardPath = "$PackagesPath/$RestApiPackageName.$RestApiPackageVersion*"
+
+        # Remove anything that already exists, so that it is always easy to
+        # use Resolve-Path with a wildcard to find the installed path without
+        # having to parse pre-release number of the package.
+        $existing = Resolve-Path $wildcardPath -ErrorAction SilentlyContinue
+        if ($existing) {
+            Remove-Item -Path $existing -Force -ErrorAction SilentlyContinue -Recurse | Out-Null
+        }
+
+        New-Item -Path $PackagesPath -ItemType Directory -Force | Out-Null
+
+        $arguments = @(
+            "install", "$RestApiPackageName",
+            "-OutputDirectory", "$PackagesPath",
+            "-Source", "$NuGetFeed"
+        )
+
+        if ($RestApiPackagePrerelease) {
+            $arguments += "-Prerelease"
+        }
+        else {
+            $arguments += "-Version"
+            $arguments += "$RestApiPackageVersion"
+        }
+
+        Write-Host "Executing: nuget $arguments" -ForegroundColor Magenta
+        nuget @arguments | Out-Null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "NuGet package install failed for RestApi.Databases"
+        }
+
+        Update-PackageCache -PackageName $RestApiPackageName -PackageVersion $fullPackageVersion -PackagesPath $PackagesPath
+    }
+
     $wildcardPath = "$PackagesPath/$RestApiPackageName.$RestApiPackageVersion*"
-
-    # Remove anything that already exists, so that it is always easy to
-    # use Resolve-Path with a wildcard to find the installed path without
-    # having to parse pre-release number of the package.
-    $existing = Resolve-Path $wildcardPath -ErrorAction SilentlyContinue
-    if ($existing) {
-        Remove-Item -Path $existing -Force -ErrorAction SilentlyContinue -Recurse | Out-Null
-    }
-
-    New-Item -Path $PackagesPath -ItemType Directory -Force | Out-Null
-
-    $arguments = @(
-        "install", "$RestApiPackageName",
-        "-OutputDirectory", "$PackagesPath",
-        "-Source", "$NuGetFeed"
-    )
-
-    if ($RestApiPackagePrerelease) {
-        $arguments += "-Prerelease"
-    }
-    else {
-        $arguments += "-Version"
-        $arguments += "$RestApiPackageVersion"
-    }
-
-    Write-Host "Executing: nuget $arguments" -ForegroundColor Magenta
-    nuget @arguments | Out-Null
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "NuGet package install failed for RestApi.Databases"
-    }
-
     return (Resolve-Path $wildcardPath)
 }
 
@@ -206,33 +293,41 @@ function Add-AppCommon {
         $ToolsPath = "$PSScriptRoot/.tools"
     )
 
+    # Check if package is already cached
+    $needsDownload = -not (Test-PackageCache -PackageName $AppCommonPackageName -PackageVersion $AppCommonPackageVersion -PackagesPath $PackagesPath)
+
+    if ($needsDownload) {
+        $wildcardPath = "$PackagesPath/$AppCommonPackageName.$AppCommonPackageVersion*"
+
+        # Remove anything that already exists, so that it is always easy to
+        # use Resolve-Path with a wildcard to find the installed path without
+        # having to parse pre-release number of the package.
+        $existing = Resolve-Path $wildcardPath -ErrorAction SilentlyContinue
+        if ($existing) {
+            Remove-Item -Path $existing -Force -ErrorAction SilentlyContinue -Recurse | Out-Null
+        }
+
+        New-Item -Path $PackagesPath -ItemType Directory -Force | Out-Null
+
+        $parameters = @(
+            "install", $AppCommonPackageName,
+            "-source", $NuGetFeed,
+            "-outputDirectory", $PackagesPath
+            "-version", $AppCommonPackageVersion
+        )
+
+        Write-Host "Downloading AppCommon"
+        Write-Host -ForegroundColor Magenta "Executing nuget: $parameters"
+        nuget $parameters | Out-Null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "NuGet package install failed for AppCommon"
+        }
+
+        Update-PackageCache -PackageName $AppCommonPackageName -PackageVersion $AppCommonPackageVersion -PackagesPath $PackagesPath
+    }
+
     $wildcardPath = "$PackagesPath/$AppCommonPackageName.$AppCommonPackageVersion*"
-
-    # Remove anything that already exists, so that it is always easy to
-    # use Resolve-Path with a wildcard to find the installed path without
-    # having to parse pre-release number of the package.
-    $existing = Resolve-Path $wildcardPath -ErrorAction SilentlyContinue
-    if ($existing) {
-        Remove-Item -Path $existing -Force -ErrorAction SilentlyContinue -Recurse | Out-Null
-    }
-
-    New-Item -Path $PackagesPath -ItemType Directory -Force | Out-Null
-
-    $parameters = @(
-        "install", $AppCommonPackageName,
-        "-source", $NuGetFeed,
-        "-outputDirectory", $PackagesPath
-        "-version", $AppCommonPackageVersion
-    )
-
-    Write-Host "Downloading AppCommon"
-    Write-Host -ForegroundColor Magenta "Executing nuget: $parameters"
-    nuget $parameters | Out-Null
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "NuGet package install failed for AppCommon"
-    }
-
     $appCommonDirectory = Resolve-Path $wildcardPath | Select-Object -Last 1
 
     Move-AppCommon $appCommonDirectory $DestinationPath
@@ -242,7 +337,9 @@ $functions = @(
     "Install-NugetCli",
     "Get-RestApiPackage",
     "Push-Package",
-    "Add-AppCommon"
+    "Add-AppCommon",
+    "Test-PackageCache",
+    "Update-PackageCache"
 )
 
 Export-ModuleMember -Function $functions
