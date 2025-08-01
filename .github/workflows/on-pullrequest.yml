@@ -79,7 +79,7 @@ jobs:
         if: success()
         uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # codeql-bundle-v3.28.0
         with:
-          languages: csharp
+          languages: csharp, actions
 
       # Must build the software after initialization of CodeQL; something about
       # CodeQL initialization causes the resulting build to fail unit tests.

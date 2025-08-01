@@ -75,18 +75,15 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install Tools
-        run: npm install -g newman newman-reporter-htmlextra postman-combine-collections
-
       - name: Combine Collections
         run: |
-          postman-combine-collections -f './E2E Tests/Admin API E2E 2.0 -*.postman_collection.json' \
+          npx postman-combine-collections@1.1.2 -f './E2E Tests/Admin API E2E 2.0 -*.postman_collection.json' \
              -n 'Admin API E2E 2.0' \
              -o './E2E Tests/Admin-API-Full-Collection.json'
 
       - name: Run tests
         run: |
-          newman run './E2E Tests/Admin-API-Full-Collection.json' \
+          npx --package=newman@6.1.3 --package=newman-reporter-htmlextra@1.23.1 newman run './E2E Tests/Admin-API-Full-Collection.json' \
             -e './E2E Tests/Admin API Docker-multitenant-mssql.postman_environment.json' \
             -r cli,junit,htmlextra \
             --reporter-htmlextra-title 'AdminAPI - 2.0' \
