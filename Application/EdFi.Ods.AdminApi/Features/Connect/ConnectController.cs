@@ -56,8 +56,9 @@ public class ConnectController(ITokenService tokenService, IRegisterService regi
         {
             // Return a 400 Bad Request response for invalid scopes with proper content type
             Response.ContentType = "application/problem+json";
-            return BadRequest(new { 
-                error = "invalid_scope", 
+            return BadRequest(new
+            {
+                error = "invalid_scope",
                 error_description = ex.Message,
                 status = 400,
                 title = "Invalid Scope"
