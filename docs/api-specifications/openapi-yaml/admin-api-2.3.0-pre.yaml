@@ -99,6 +99,122 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resourceClaimModel'
+  /v2/resourceClaimActions:
+    get:
+      tags:
+        - ResourceClaimActions
+      summary: Retrieves all resourceClaimActions.
+      description: This GET operation provides access to resources using the "Get" search pattern. The values of any properties of the resource that are specified will be used to return all matching results (if it exists).
+      parameters:
+        - name: offset
+          in: query
+          description: Indicates how many items should be skipped before returning results.
+          schema:
+            type: integer
+            format: int32
+            default: '0'
+        - name: limit
+          in: query
+          description: Indicates the maximum number of items that should be returned in the results.
+          schema:
+            type: integer
+            format: int32
+            default: '25'
+        - name: orderBy
+          in: query
+          description: Indicates the property name by which the results will be sorted.
+          schema:
+            type: string
+            default: ''
+        - name: direction
+          in: query
+          description: Indicates whether the result should be sorted in descending order (DESC) or ascending order (ASC).
+          schema:
+            title: Indicates whether the result should be sorted in descending order (DESC) or ascending order (ASC).
+            enum:
+              - Ascending
+              - Descending
+            type: string
+            default: Descending
+        - name: resourceName
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/resourceClaimActionModel'
+  /v2/resourceClaimActionAuthStrategies:
+    get:
+      tags:
+        - ResourceClaimActionAuthStrategies
+      summary: Retrieves all resourceClaimActionAuthStrategies.
+      description: This GET operation provides access to resources using the "Get" search pattern. The values of any properties of the resource that are specified will be used to return all matching results (if it exists).
+      parameters:
+        - name: offset
+          in: query
+          description: Indicates how many items should be skipped before returning results.
+          schema:
+            type: integer
+            format: int32
+            default: '0'
+        - name: limit
+          in: query
+          description: Indicates the maximum number of items that should be returned in the results.
+          schema:
+            type: integer
+            format: int32
+            default: '25'
+        - name: orderBy
+          in: query
+          description: Indicates the property name by which the results will be sorted.
+          schema:
+            type: string
+            default: ''
+        - name: direction
+          in: query
+          description: Indicates whether the result should be sorted in descending order (DESC) or ascending order (ASC).
+          schema:
+            title: Indicates whether the result should be sorted in descending order (DESC) or ascending order (ASC).
+            enum:
+              - Ascending
+              - Descending
+            type: string
+            default: Descending
+        - name: resourceName
+          in: query
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/resourceClaimActionAuthStrategyModel'
   /v2/vendors:
     get:
       tags:
@@ -1294,6 +1410,10 @@ paths:
           description: Claim set name
           schema:
             type: string
+        - name: ids
+          in: query
+          schema:
+            type: string
       responses:
         '401':
           description: Unauthorized. The request requires authentication
@@ -1489,6 +1609,152 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/applicationModel'
+  /v2/apiclients:
+    get:
+      tags:
+        - Apiclients
+      summary: Retrieves all apiclients.
+      description: This GET operation provides access to resources using the "Get" search pattern. The values of any properties of the resource that are specified will be used to return all matching results (if it exists).
+      parameters:
+        - name: applicationid
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/apiClientModel'
+    post:
+      tags:
+        - Apiclients
+      summary: Creates apiclient based on the supplied values.
+      description: 'The POST operation can be used to create or update resources. In database terms, this is often referred to as an "upsert" operation (insert + update). Clients should NOT include the resource "id" in the JSON body because it will result in an error. The web service will identify whether the resource already exists based on the natural key values provided, and update or create the resource appropriately. It is recommended to use POST for both create and update except while updating natural key of a resource in which case PUT operation must be used.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addApiClientRequest'
+        required: true
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '400':
+          description: Bad Request. The request was invalid and cannot be completed. See the response body for details.
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiClientResult'
+  '/v2/apiclients/{id}':
+    get:
+      tags:
+        - Apiclients
+      summary: Retrieves a specific apiclient based on the identifier.
+      description: This GET operation provides access to resources using the "Get" search pattern. The values of any properties of the resource that are specified will be used to return all matching results (if it exists).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '404':
+          description: Not found. A resource with given identifier could not be found.
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiClientModel'
+    put:
+      tags:
+        - Apiclients
+      summary: Updates apiclient based on the resource identifier.
+      description: 'The PUT operation is used to update a resource by identifier. If the resource identifier ("id") is provided in the JSON body, it will be ignored. Additionally, this API resource is not configured for cascading natural key updates. Natural key values for this resource cannot be changed using PUT operation, so the recommendation is to use POST as that supports upsert behavior.'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/editApiClientRequest'
+        required: true
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '404':
+          description: Not found. A resource with given identifier could not be found.
+        '400':
+          description: Bad Request. The request was invalid and cannot be completed. See the response body for details.
+        '200':
+          description: OK
+    delete:
+      tags:
+        - Apiclients
+      summary: Deletes an existing apiclient using the resource identifier.
+      description: 'The DELETE operation is used to delete an existing resource by identifier. If the resource doesn''t exist, an error will result (the resource will not be found).'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '404':
+          description: Not found. A resource with given identifier could not be found.
+        '200':
+          description: Resource was successfully deleted.
   /v2/actions:
     get:
       tags:
@@ -1784,7 +2050,7 @@ paths:
                   type: string
       responses:
         '400':
-          description: Bad Request. The request was invalid and cannot be completed. See the response body for details.
+          description: 'Bad request, such as invalid scope.'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1890,8 +2156,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/applicationResult'
+  '/v2/apiclients/{id}/reset-credential':
+    put:
+      tags:
+        - Apiclients
+      summary: Reset apiclient credentials. Returns new key and secret.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '401':
+          description: Unauthorized. The request requires authentication
+        '403':
+          description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
+        '409':
+          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
+        '500':
+          description: Internal server error. An unhandled error occurred on the server. See the response body for details.
+        '404':
+          description: Not found. A resource with given identifier could not be found.
+        '400':
+          description: Bad Request. The request was invalid and cannot be completed. See the response body for details.
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiClientResult'
 components:
   schemas:
+    actionForResourceClaimModel:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+      additionalProperties: false
     actionModel:
       title: Action
       type: object
@@ -1905,6 +2209,42 @@ components:
         uri:
           type: string
           nullable: true
+      additionalProperties: false
+    actionWithAuthorizationStrategy:
+      type: object
+      properties:
+        actionId:
+          type: integer
+          format: int32
+        actionName:
+          type: string
+          nullable: true
+        authorizationStrategies:
+          type: array
+          items:
+            $ref: '#/components/schemas/authorizationStrategyModelForAction'
+          nullable: true
+      additionalProperties: false
+    addApiClientRequest:
+      title: AddApiClientRequest
+      type: object
+      properties:
+        name:
+          type: string
+          description: Api client name
+        isApproved:
+          type: boolean
+          description: Is approved
+        applicationId:
+          type: integer
+          description: Application id
+          format: int32
+        odsInstanceIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: List of ODS instance id
       additionalProperties: false
     addApplicationRequest:
       title: AddApplicationRequest
@@ -1939,6 +2279,10 @@ components:
             type: integer
             format: int32
           description: List of ODS instance id
+        enabled:
+          type: boolean
+          description: Indicates whether the ApiClient's credetials is enabled. Defaults to true if not provided.
+          nullable: true
       additionalProperties: false
     addClaimSetRequest:
       title: AddClaimSetRequest
@@ -2004,7 +2348,7 @@ components:
           type: string
           description: Profile definition
       additionalProperties: false
-      example: "{\r\n  \"name\": \"Test-Profile\",\r\n  \"definition\": \"<Profile name=\\\"Test-Profile\\\"><Resource name=\\\"Resource1\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection1\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection2\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></WriteContentType></Resource></Profile>\"\r\n}"
+      example: "{\n  \"name\": \"Test-Profile\",\n  \"definition\": \"<Profile name=\\\"Test-Profile\\\"><Resource name=\\\"Resource1\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection1\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection2\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></WriteContentType></Resource></Profile>\"\n}"
     addResourceClaimOnClaimSetRequest:
       title: AddResourceClaimActionsOnClaimSetRequest
       type: object
@@ -2038,19 +2382,67 @@ components:
     adminApiError:
       title: AdminApiError
       type: object
-      properties:
-        title:
-          type: string
-          nullable: true
-          readOnly: true
-        errors:
-          type: array
-          items:
-            type: string
-          nullable: true
-          readOnly: true
       additionalProperties: false
       description: Wrapper schema for all error responses
+    apiClientModel:
+      title: ApiClient
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        key:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        isApproved:
+          type: boolean
+        useSandbox:
+          type: boolean
+        sandboxType:
+          type: integer
+          format: int32
+        applicationId:
+          type: integer
+          format: int32
+        keyStatus:
+          type: string
+          nullable: true
+        educationOrganizationIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          nullable: true
+        odsInstanceIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          nullable: true
+      additionalProperties: false
+    apiClientResult:
+      title: ApiClient
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+          nullable: true
+        key:
+          type: string
+          nullable: true
+        secret:
+          type: string
+          nullable: true
+        applicationId:
+          type: integer
+          format: int32
+      additionalProperties: false
     applicationModel:
       title: Application
       type: object
@@ -2086,6 +2478,8 @@ components:
             type: integer
             format: int32
           nullable: true
+        enabled:
+          type: boolean
       additionalProperties: false
     applicationResult:
       title: ApplicationKeySecret
@@ -2125,6 +2519,16 @@ components:
           type: string
           nullable: true
         displayName:
+          type: string
+          nullable: true
+      additionalProperties: false
+    authorizationStrategyModelForAction:
+      type: object
+      properties:
+        authStrategyId:
+          type: integer
+          format: int32
+        authStrategyName:
           type: string
           nullable: true
       additionalProperties: false
@@ -2236,6 +2640,27 @@ components:
           type: string
           description: New claimset name
       additionalProperties: false
+    editApiClientRequest:
+      title: EditApiClientRequest
+      type: object
+      properties:
+        name:
+          type: string
+          description: Api client name
+        isApproved:
+          type: boolean
+          description: Is approved
+        applicationId:
+          type: integer
+          description: Application id
+          format: int32
+        odsInstanceIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: List of ODS instance id
+      additionalProperties: false
     editApplicationRequest:
       title: EditApplicationRequest
       type: object
@@ -2269,6 +2694,10 @@ components:
             type: integer
             format: int32
           description: List of ODS instance id
+        enabled:
+          type: boolean
+          description: Indicates whether the ApiClient's credetials is enabled. Defaults to true if not provided.
+          nullable: true
       additionalProperties: false
     editClaimSetRequest:
       title: EditClaimSetRequest
@@ -2335,7 +2764,7 @@ components:
           type: string
           description: Profile definition
       additionalProperties: false
-      example: "{\r\n  \"name\": \"Test-Profile\",\r\n  \"definition\": \"<Profile name=\\\"Test-Profile\\\"><Resource name=\\\"Resource1\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection1\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection2\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></WriteContentType></Resource></Profile>\"\r\n}"
+      example: "{\n  \"name\": \"Test-Profile\",\n  \"definition\": \"<Profile name=\\\"Test-Profile\\\"><Resource name=\\\"Resource1\\\"><ReadContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection1\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></ReadContentType><WriteContentType memberSelection=\\\"IncludeOnly\\\"><Collection name=\\\"Collection2\\\" memberSelection=\\\"IncludeOnly\\\"><Property name=\\\"Property1\\\" /><Property name=\\\"Property2\\\" /></Collection></WriteContentType></Resource></Profile>\"\n}"
     editResourceClaimOnClaimSetRequest:
       title: EditResourceClaimActionsOnClaimSetRequest
       type: object
@@ -2520,6 +2949,42 @@ components:
         enabled:
           type: boolean
       additionalProperties: false
+    resourceClaimActionAuthStrategyModel:
+      type: object
+      properties:
+        resourceClaimId:
+          type: integer
+          format: int32
+        resourceName:
+          type: string
+          nullable: true
+        claimName:
+          type: string
+          nullable: true
+        authorizationStrategiesForActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/actionWithAuthorizationStrategy'
+          nullable: true
+      additionalProperties: false
+    resourceClaimActionModel:
+      type: object
+      properties:
+        resourceClaimId:
+          type: integer
+          format: int32
+        resourceName:
+          type: string
+          nullable: true
+        claimName:
+          type: string
+          nullable: true
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/actionForResourceClaimModel'
+          nullable: true
+      additionalProperties: false
     resourceClaimModel:
       title: ResourceClaimModel
       type: object
@@ -2580,7 +3045,9 @@ components:
         clientCredentials:
           tokenUrl: https://localhost/connect/token
           scopes:
-            edfi_admin_api/full_access: Unrestricted access to all Admin API endpoints
+            edfi_admin_api/full_access: Full access to the Admin API
+            edfi_admin_api/tenant_access: Access to a specific tenant
+            edfi_admin_api/worker: Worker access to the Admin API
 security:
   - oauth:
       - api

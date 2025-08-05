@@ -501,7 +501,6 @@ function UpdateAppSettingsForAdminApiDocker {
     $json.AppSettings.PathBase = $DockerEnvValues["PathBase"]
 
     $json.Authentication.IssuerUrl = $DockerEnvValues["IssuerUrl"]
-    $json.Authentication.Authority = $DockerEnvValues["Authority"]
     $json.Authentication.SigningKey = $DockerEnvValues["SigningKey"]
 
     $json.ConnectionStrings.EdFi_Admin = $DockerEnvValues["AdminDB"]
@@ -517,7 +516,6 @@ function UpdateAppSettingsForAdminApi {
     $json.AppSettings.PathBase = $DockerEnvValues["PathBase"]
 
     $json.Authentication.IssuerUrl = $DockerEnvValues["IssuerUrl"]
-    $json.Authentication.Authority = $DockerEnvValues["Authority"]
     $json.Authentication.SigningKey = $DockerEnvValues["SigningKey"]
 
     $json.ConnectionStrings.EdFi_Admin = $DockerEnvValues["AdminDB"]

@@ -24,34 +24,24 @@ grant_type=client_credentials&scope=edfi_admin_api/full_access
 ###
 @token={{tokenRequest.response.body.access_token}}
 
-### Use the token
-GET {{adminapi_url}}/v2/vendors
-Authorization: bearer {{token}}
-
-### Create application
-POST {{adminapi_url}}/v2/applications
-Content-Type: application/json
-Authorization: bearer {{token}}
-
-{
-  "applicationName": "myapp1",
-  "vendorId": 1,
-  "claimSetName": "Ed-Fi API Publisher - Reader",
-  "educationOrganizationIds": [
-    0
-  ]
-}
-# No ods instances on the body of the post.
 
 ### Get ods instances
 GET {{adminapi_url}}/v2/odsinstances
 Content-Type: application/json
 Authorization: bearer {{token}}
 
+
 ### Get application
-GET {{adminapi_url}}/v2/applications/2
+GET {{adminapi_url}}/v2/applications/1
 Content-Type: application/json
 Authorization: bearer {{token}}
+
+
+### Get all apiclients by application
+GET {{adminapi_url}}/v2/apiclients?applicationid=1
+Content-Type: application/json
+Authorization: bearer {{token}}
+
 
 ### Create ApiClient
 POST {{adminapi_url}}/v2/apiclients
@@ -59,26 +49,50 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 
 {
-  "name": "appc1",
+  "name": "ApiClient1",
   "isApproved": true,
-  "applicationId": 2,
-  "vendorId": 1,
+  "applicationId": 1,
+  "odsInstanceIds": [
+    1
+  ]
+}
+
+### Update ApiClient
+PUT {{adminapi_url}}/v2/apiclients/2
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "ApiClient1 updated",
+  "isApproved": true,
+  "applicationId": 1,
   "odsInstanceIds": [
     1
   ]
 }
 
 ### get apiclient
-GET {{adminapi_url}}/v2/apiclients/1
+GET {{adminapi_url}}/v2/apiclients/2
 Content-Type: application/json
 Authorization: bearer {{token}}
 
-### Get all apiclients by application
-GET {{adminapi_url}}/v2/apiclients/1
-Content-Type: application/json
-Authorization: bearer {{token}}
 
 ### Reset apiclient secret
-PUT {{adminapi_url}}/v2/apiclients/1/reset-credential
+PUT {{adminapi_url}}/v2/apiclients/2/reset-credential
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+
+
+
+### Reset application secret
+PUT {{adminapi_url}}/v2/applications/2/reset-credential
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### delete apiclient
+DELETE {{adminapi_url}}/v2/apiclients/2
 Content-Type: application/json
 Authorization: bearer {{token}}
