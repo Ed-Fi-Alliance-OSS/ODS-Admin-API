@@ -92,6 +92,7 @@ public class RegenerateApiClientSecretCommandTests : PlatformUsersContextTestBas
         var updatedApiClient = Transaction(usersContext => usersContext.ApiClients.Single(c => c.ApiClientId == apiClient.ApiClientId));
 
         result.Key.ShouldBe(orignalKey);
+        result.Name.ShouldBe("Integration Test");
         result.Secret.ShouldNotBe(originalSecret);
         result.Secret.ShouldNotBe("SIMULATED HASH OF " + originalSecret);
         result.Secret.ShouldNotBeEmpty();

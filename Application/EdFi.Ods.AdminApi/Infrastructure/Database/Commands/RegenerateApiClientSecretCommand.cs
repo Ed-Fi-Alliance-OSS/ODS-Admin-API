@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -36,6 +37,7 @@ public class RegenerateApiClientSecretCommand : IRegenerateApiClientSecretComman
         return new RegenerateApiClientSecretResult
         {
             Id = apiClient.ApiClientId,
+            Name = apiClient.Name,
             Key = apiClient.Key,
             Secret = apiClient.Secret,
             Application = apiClient.Application
@@ -46,6 +48,7 @@ public class RegenerateApiClientSecretCommand : IRegenerateApiClientSecretComman
 public class RegenerateApiClientSecretResult
 {
     public int Id { get; set; }
+    public string? Name { get; set; }
     public string? Key { get; set; }
     public string? Secret { get; set; }
     public Application Application { get; set; } = new();
