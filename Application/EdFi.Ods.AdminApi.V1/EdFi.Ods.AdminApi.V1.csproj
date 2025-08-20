@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+    <NoWarn>NU5100, NU5124</NoWarn>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>../..</DockerfileContext>
+    <DockerfileFile>dev.pgsql.Dockerfile</DockerfileFile>
+    <DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
+    <DockerfileRunEnvironmentFiles>.env</DockerfileRunEnvironmentFiles>
+    <DockerfileTag>adminapi-dev</DockerfileTag>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="EdFi.Ods.AdminApi.V1.nuspec" CopyToPublishDirectory="Always" CopyToOutputDirectory="Never" />
+    <Content Include="Artifacts\**" CopyToPublishDirectory="Always" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
+    <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="AutoMapper" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" />
+    <PackageReference Include="EdFi.Suite3.Admin.DataAccess" />
+    <PackageReference Include="EdFi.Suite3.Security.DataAccess" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.AspNetCore" />
+    <PackageReference Include="log4net" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" />
+    <PackageReference Include="NJsonSchema" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="OpenIddict.AspNetCore" />
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+</Project>
