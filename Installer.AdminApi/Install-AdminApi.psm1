@@ -112,9 +112,9 @@ function Install-EdFiOdsAdminApi {
         [string]
         $PackageName = "EdFi.Suite3.ODS.AdminApi",
 
-        # NuGet package version. If not set, will retrieve the latest full release package.
+        # NuGet package version. This value is replaced by the build process.
         [string]
-        $PackageVersion,
+        $PackageVersion = "__ADMINAPI_VERSION__",
 
         # NuGet package source. Please specify the path to the AdminApi sub-directory within the AdminApi nuget package.
         [Parameter(Mandatory=$true)]
@@ -216,16 +216,16 @@ function Install-EdFiOdsAdminApi {
         [switch]
         $NoDuration,
 
-        # Deploy Admin Api with MultiTenant support. 
+        # Deploy Admin Api with MultiTenant support.
         # Passing this flag, requires to pass Tenants configuration.
         # When true, this flag will enable the MultiTenancy flag in Appsettings.
         [switch]
         [Parameter(Mandatory=$true, ParameterSetName="MultiTenant")]
         $IsMultiTenant,
-        
+
         # List of Tenants with information required by the Tenants section in appsettings.json
         #
-        # Each tenant hashtable can include: 
+        # Each tenant hashtable can include:
         #   - AdminDatabaseName and SecurityDatabaseName when used with DbConnectionInfo.
         #   - AdminDbConnectionInfo and SecurityDbConnectionInfo when DbConnectionInfo is not used.
         [hashtable]
@@ -286,12 +286,12 @@ function Install-EdFiOdsAdminApi {
         $result += Get-DbDeploy -Config $Config
         $result += Invoke-TransformAppSettings -Config $Config
 
-        if ($IsMultiTenant.IsPresent) {            
+        if ($IsMultiTenant.IsPresent) {
             $result += Invoke-TransformMultiTenantConnectionStrings -Config $config
         } else {
             $result += Invoke-TransformConnectionStrings -Config $config
         }
-        
+
         $result += Install-Application -Config $Config
         $result += Set-SqlLogins -Config $Config
         $result += Invoke-DbUpScripts -Config $Config
@@ -320,7 +320,7 @@ function Update-EdFiOdsAdminApi {
         Invokes dbup migrations for updating the EdFi_Admin database accordingly.
     .EXAMPLE
         PS c:\> $parameters = @{
-            PackageVersion = '1.1.0'
+            PackageVersion = "__ADMINAPI_VERSION__"
         }
         PS c:\> Upgrade-AdminApi @parameters
 
@@ -332,9 +332,9 @@ function Update-EdFiOdsAdminApi {
         [string]
         $PackageName = "EdFi.Suite3.ODS.AdminApi",
 
-        # NuGet package version. If not set, will retrieve the latest full release package.
+        # NuGet package version. This value is replaced by the build process.
         [string]
-        $PackageVersion,
+        $PackageVersion = "__ADMINAPI_VERSION__",
 
         # NuGet package source. Please specify the path to the AdminApi sub-directory within the AdminApi nuget package.
         [Parameter(Mandatory=$true)]
@@ -1031,7 +1031,7 @@ function Invoke-TransformConnectionStrings {
             $adminconnString += ";Encrypt=false"
             $securityConnString += ";Encrypt=false"
         }
-        
+
         $connectionstrings = @{
             ConnectionStrings = @{
                 EdFi_Admin = $adminconnString
@@ -1066,7 +1066,7 @@ function Invoke-TransformMultiTenantConnectionStrings {
         }
 
         foreach ($tenantKey in $Config.Tenants.Keys) {
-            
+
             if ($Config.usingSharedCredentials) {
                 $Config.Tenants[$tenantKey].AdminDbConnectionInfo = $Config.DbConnectionInfo.Clone()
                 $Config.Tenants[$tenantKey].AdminDbConnectionInfo.DatabaseName = $Config.Tenants[$tenantKey].AdminDatabaseName
@@ -1074,7 +1074,7 @@ function Invoke-TransformMultiTenantConnectionStrings {
                 $Config.Tenants[$tenantKey].SecurityDbConnectionInfo = $Config.DbConnectionInfo.Clone()
                 $Config.Tenants[$tenantKey].SecurityDbConnectionInfo.DatabaseName = $Config.Tenants[$tenantKey].SecurityDatabaseName
             }
-            
+
             $adminconnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
             $securityConnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
@@ -1087,7 +1087,7 @@ function Invoke-TransformMultiTenantConnectionStrings {
                 $tenantKey = @{
                     ConnectionStrings = @{
                         EdFi_Admin = $adminconnString
-                        EdFi_Security = $securityConnString 
+                        EdFi_Security = $securityConnString
                     }
                 }
             }
@@ -1154,12 +1154,12 @@ function Invoke-DbUpScripts {
 
         if($Config.IsMultiTenant)
         {
-            foreach ($tenantKey in $Config.Tenants.Keys) {       
-                
+            foreach ($tenantKey in $Config.Tenants.Keys) {
+
                 $adminConnectionString = Get-AdminInstallConnectionString  $Config.Tenants[$tenantKey].AdminDbConnectionInfo
                 $params["ConnectionString"] = $adminConnectionString
                 Invoke-DbDeploy @params
-            }           
+            }
         }
         else
         {
@@ -1233,8 +1233,8 @@ function Set-SqlLogins {
             if ($Config.IsMultiTenant) {
                 foreach ($tenantKey in $Config.Tenants.Keys) {
                     if ($Config.UseAlternateUserName ) { Write-Host ""; Write-Host "Adding Sql Login for Admin Database:"; }
-                    Add-SqlLogins $Config.Tenants[$tenantKey].AdminDbConnectionInfo $Config.WebApplicationName -IsCustomLogin:$Config.UseAlternateUserName 
-                    
+                    Add-SqlLogins $Config.Tenants[$tenantKey].AdminDbConnectionInfo $Config.WebApplicationName -IsCustomLogin:$Config.UseAlternateUserName
+
                     if ($Config.UseAlternateUserName ) { Write-Host ""; Write-Host "Adding Sql Login for Security Database:"; }
                     Add-SqlLogins $Config.Tenants[$tenantKey].SecurityDbConnectionInfo $Config.WebApplicationName -IsCustomLogin:$Config.UseAlternateUserName
                 }

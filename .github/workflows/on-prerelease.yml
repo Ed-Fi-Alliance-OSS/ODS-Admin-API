@@ -66,6 +66,24 @@ jobs:
       - name: Setup Nuget.exe
         uses: nuget/setup-nuget@323ab0502cd38fdc493335025a96c8fdb0edc71f #v2.0.1
 
+      - name: Replace Installer Version Token
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          $versionWithoutPrefix = $version -replace '^v', ''
+
+          $installerPath = "Installer.AdminApi/Install-AdminApi.psm1"
+          $content = Get-Content $installerPath -Raw
+          $content = $content -replace '"__ADMINAPI_VERSION__"', "`"$versionWithoutPrefix`""
+          $content | Set-Content $installerPath -NoNewline
+
+          $installScriptPath = "Installer.AdminApi/install.ps1"
+          $content = Get-Content $installScriptPath -Raw
+          $content = $content -replace '"__ADMINAPI_VERSION__"', "`"$versionWithoutPrefix`""
+          $content | Set-Content $installScriptPath -NoNewline
+
+          Write-Output "Updated version to $version (or $versionWithoutPrefix) in installer files"
+
       - name: Create NuGet Packages
         if: success()
         run: |
