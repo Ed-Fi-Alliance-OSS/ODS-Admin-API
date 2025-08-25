@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V1.Features.Applications;
@@ -16,7 +16,7 @@ public class ReadApplicationsByVendor : IFeature
         var url = "vendors/{id}/applications";
 
         AdminApiEndpointBuilder.MapGet(endpoints, url, GetVendorApplications)
-            .WithDescription("Retrieves applications assigned to a specific vendor based on the resource identifier.")
+            .WithSummaryAndDescription("Retrieves applications assigned to a specific vendor based on the resource identifier.", "Retrieves applications assigned to a specific vendor based on the resource identifier.")
             .WithRouteOptions(b => b.WithResponse<ApplicationModel[]>(200))
             .BuildForVersions(AdminApiVersions.V1);
     }

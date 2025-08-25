@@ -145,7 +145,7 @@ public class AdminApiEndpointBuilder
             {
                 builder.WithResponseCode(400, FeatureCommonConstants.BadRequestResponseDescription);
             }
-            
+
             foreach (var action in _routeOptions)
             {
                 action(builder);

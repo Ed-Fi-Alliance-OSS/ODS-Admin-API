@@ -3,8 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Security.DataAccess.Contexts;
-using EdFi.Security.DataAccess.Models;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
@@ -73,7 +73,7 @@ public class EditResourceOnClaimSetCommandService
         }
     }
 
-    private void AddEnabledActionsToClaimSet(ResourceClaim modelResourceClaim, IReadOnlyCollection<ClaimSetResourceClaimAction> claimSetResourceClaimsToEdit, EdFi.Security.DataAccess.Models.ClaimSet claimSetToEdit)
+    private void AddEnabledActionsToClaimSet(ResourceClaim modelResourceClaim, IReadOnlyCollection<ClaimSetResourceClaimAction> claimSetResourceClaimsToEdit, Security.DataAccess.Models.ClaimSet claimSetToEdit)
     {
         var actionsFromDb = _context.Actions.ToList();
 

@@ -10,7 +10,6 @@ using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Commands;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Instances.Queries;
 using EdFi.Ods.AdminApi.Features.ODSInstances;
-using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using log4net;
 using Newtonsoft.Json;
@@ -39,10 +38,8 @@ public class InstanceService : IAdminConsoleInstancesService
         IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery,
         IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery,
         IAddInstanceCommand addInstanceCommand,
-        IAddApiClientOdsInstanceCommand addApiClientOdsInstanceCommand,
         IGetInstancesQuery getInstancesQuery,
         IGetApiClientIdByApplicationIdQuery getApiClientIdByApplicationIdQuery,
-        IGetApiClientOdsInstanceQuery getApiClientOdsInstanceQuery,
         IMapper mapper)
     {
         _getOdsInstancesQuery = getOdsInstancesQuery;

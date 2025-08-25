@@ -4,8 +4,9 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Net;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ErrorHandling;
-using EdFi.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 

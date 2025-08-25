@@ -4,14 +4,14 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Documentation;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
-using FluentValidation;
-using Swashbuckle.AspNetCore.Annotations;
-using FluentValidation.Results;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Commands;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Documentation;
+using FluentValidation;
+using FluentValidation.Results;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V1.Features.Applications;
 
@@ -20,7 +20,7 @@ public class AddApplication : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPost(endpoints, "/applications", Handle)
-            .WithDefaultDescription()
+            .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApplicationResult>(201))
             .BuildForVersions(AdminApiVersions.V1);
     }

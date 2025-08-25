@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V1.Features.Applications;
 using EdFi.Ods.AdminApi.V1.Features.ClaimSets;
 using EdFi.Ods.AdminApi.V1.Features.OdsInstances;
@@ -92,7 +92,7 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.DisplayName, opt => opt.MapFrom(src => src.DisplayName))
             .ForMember(dst => dst.IsInheritedFromParent, opt => opt.MapFrom(src => src.IsInheritedFromParent));
 
-        CreateMap<EdFi.Security.DataAccess.Models.AuthorizationStrategy, EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor.AuthorizationStrategy>()
+        CreateMap<EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.AuthorizationStrategy, EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor.AuthorizationStrategy>()
             .ForMember(dst => dst.AuthStrategyName, opt => opt.MapFrom(src => src.AuthorizationStrategyName))
             .ForMember(dst => dst.AuthStrategyId, opt => opt.MapFrom(src => src.AuthorizationStrategyId))
             .ForMember(dst => dst.IsInheritedFromParent, opt => opt.Ignore());

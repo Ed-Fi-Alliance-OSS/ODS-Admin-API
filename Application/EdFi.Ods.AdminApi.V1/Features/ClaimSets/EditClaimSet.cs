@@ -4,10 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V1.Infrastructure.JsonContractResolvers;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using FluentValidation;
@@ -22,7 +22,7 @@ public class EditClaimSet : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPut(endpoints, "/claimsets/{id}", Handle)
-        .WithDefaultDescription()
+        .WithDefaultSummaryAndDescription()
         .WithRouteOptions(b => b.WithResponse<ClaimSetDetailsModel>(200))
         .BuildForVersions(AdminApiVersions.V1);
     }

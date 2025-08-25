@@ -46,6 +46,9 @@ jobs:
       - name: Copy admin api common folder to docker context
         run: cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
 
+      - name: Copy adminApi V1 folder to docker context
+        run: cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
+
       - name: Copy nuget config to docker context
         run: cp ../NuGet.Config ../../Docker/Application
 

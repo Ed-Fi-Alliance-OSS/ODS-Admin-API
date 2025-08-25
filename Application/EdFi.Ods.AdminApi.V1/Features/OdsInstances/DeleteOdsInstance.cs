@@ -3,11 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Extensions;
 using FluentValidation;
 
 namespace EdFi.Ods.AdminApi.V1.Features.OdsInstances;
@@ -17,7 +16,7 @@ public class DeleteOdsInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstances/{id}", Handle)
-            .WithDefaultDescription()
+            .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(200, FeatureConstants.DeletedSuccessResponseDescription))
             .BuildForVersions(AdminApiVersions.V1);
     }
@@ -54,7 +53,7 @@ public class DeleteOdsInstance : IFeature
         private bool NotHaveApplicationsRelationships<T>(Request model, int odsIntanceId, ValidationContext<T> context)
         {
             context.MessageFormatter.AppendArgument("Table", "Applications");
-            List<Admin.DataAccess.Models.Application> appList = _getApplicationByOdsInstanceIdQuery.Execute(odsIntanceId) ?? new List<Admin.DataAccess.Models.Application>();
+            List<Application> appList = _getApplicationByOdsInstanceIdQuery.Execute(odsIntanceId) ?? new List<Application>();
             return appList.Count == 0;
         }
     }

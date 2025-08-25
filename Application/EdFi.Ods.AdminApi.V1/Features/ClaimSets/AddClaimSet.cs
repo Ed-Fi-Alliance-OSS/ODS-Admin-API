@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V1.Infrastructure.JsonContractResolvers;
@@ -20,7 +20,7 @@ public class AddClaimSet : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPost(endpoints, "/claimsets", Handle)
-        .WithDefaultDescription()
+        .WithDefaultSummaryAndDescription()
         .WithRouteOptions(b => b.WithResponse<ClaimSetDetailsModel>(201))
         .BuildForVersions(AdminApiVersions.V1);
     }
@@ -41,7 +41,7 @@ public class AddClaimSet : IFeature
         });
 
         var resourceClaims = mapper.Map<List<ResourceClaim>>(request.ResourceClaims);
-        
+
         var resolvedResourceClaims = strategyResolver.ResolveAuthStrategies(resourceClaims).ToList();
 
         addOrEditResourcesOnClaimSetCommand.Execute(addedClaimSetId, resolvedResourceClaims);

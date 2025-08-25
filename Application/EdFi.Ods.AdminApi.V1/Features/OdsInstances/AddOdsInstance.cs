@@ -4,11 +4,11 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V1.Features.OdsInstances;
 
@@ -17,7 +17,7 @@ public class AddOdsInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPost(endpoints, "/odsInstances", Handle)
-            .WithDefaultDescription()
+            .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(201))
             .BuildForVersions(AdminApiVersions.V1);
     }
@@ -48,7 +48,7 @@ public class AddOdsInstance : IFeature
     public class Validator : AbstractValidator<IAddOdsInstanceModel>
     {
         private readonly IGetOdsInstancesQuery _getOdsInstancesQuery;
-        private readonly string _databaseEngine;
+
         public Validator(IGetOdsInstancesQuery getOdsInstancesQuery)
         {
             _getOdsInstancesQuery = getOdsInstancesQuery;

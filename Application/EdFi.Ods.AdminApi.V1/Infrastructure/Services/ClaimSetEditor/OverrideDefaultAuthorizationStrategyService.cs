@@ -3,8 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Security.DataAccess.Contexts;
-using EdFi.Security.DataAccess.Models;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
@@ -49,7 +49,7 @@ public class OverrideDefaultAuthorizationStrategyService
         }
 
         var authorizationStrategiesDictionary =
-            new Dictionary<int, EdFi.Security.DataAccess.Models.AuthorizationStrategy>();
+            new Dictionary<int, Security.DataAccess.Models.AuthorizationStrategy>();
 
         foreach (var authStrategy in _context.AuthorizationStrategies.ToList())
         {
@@ -119,7 +119,7 @@ public class OverrideDefaultAuthorizationStrategyService
 
     private static void AddOverrides(IOverrideDefaultAuthorizationStrategyModel model,
         IEnumerable<ClaimSetResourceClaimAction> resourceClaimsToEdit,
-        Dictionary<int, EdFi.Security.DataAccess.Models.AuthorizationStrategy> authorizationStrategiesDictionary,
+        Dictionary<int, Security.DataAccess.Models.AuthorizationStrategy> authorizationStrategiesDictionary,
         List<ClaimSetResourceClaimAction> parentResourceClaims)
     {
         var claimSetResourceClaims = resourceClaimsToEdit.ToList();
@@ -168,7 +168,7 @@ public class OverrideDefaultAuthorizationStrategyService
     private static void SetAuthorizationStrategyOverrides(
         ClaimSetResourceClaimAction claimSetResourceClaimAction,
         List<ClaimSetResourceClaimAction> parentResourceClaims, int[] authorizationStrategyValues,
-        Dictionary<int, EdFi.Security.DataAccess.Models.AuthorizationStrategy>
+        Dictionary<int, Security.DataAccess.Models.AuthorizationStrategy>
             authorizationStrategiesDictionary, string actionName)
     {
         foreach (var authStrategyId in authorizationStrategyValues.Where(x => x != 0))

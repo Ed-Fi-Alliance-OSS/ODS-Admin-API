@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 
-using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
 

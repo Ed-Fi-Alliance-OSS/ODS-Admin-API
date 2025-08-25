@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 
@@ -18,7 +18,7 @@ public class AddClaimSetCommandService
 
     public int Execute(IAddClaimSetModel claimSet)
     {
-        var newClaimSet = new EdFi.Security.DataAccess.Models.ClaimSet
+        var newClaimSet = new Security.DataAccess.Models.ClaimSet
         {
             ClaimSetName = claimSet.ClaimSetName,
             Application = _context.Applications.Single(),

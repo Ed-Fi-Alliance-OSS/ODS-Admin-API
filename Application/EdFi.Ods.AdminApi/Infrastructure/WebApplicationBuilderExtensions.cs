@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Configuration;
 using System.Net;
 using System.Reflection;
 using System.Threading.RateLimiting;
@@ -10,14 +11,14 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Api;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Infrastructure.Services;
@@ -29,7 +30,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
-using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -41,7 +41,7 @@ public static class WebApplicationBuilderExtensions
     {
         webApplicationBuilder.Services.AddSingleton<ISymmetricStringEncryptionProvider, Aes256SymmetricStringEncryptionProvider>();
         ConfigureRateLimiting(webApplicationBuilder);
-        ConfigurationManager config = webApplicationBuilder.Configuration;
+        Microsoft.Extensions.Configuration.ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         EnableMultiTenancySupport(webApplicationBuilder);
         var executingAssembly = Assembly.GetExecutingAssembly();
@@ -236,62 +236,127 @@ public static class WebApplicationBuilderExtensions
     {
         IConfiguration config = webApplicationBuilder.Configuration;
 
+        var adminApiMode = config.GetValue<string>("AppSettings:adminApiMode")?.ToLower();
         var multiTenancyEnabled = config.Get("AppSettings:MultiTenancy", false);
 
-        if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
+        switch (adminApiMode)
         {
-            webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
-                (sp, options) =>
+            case "v1":
+                if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
-                    options.UseNpgsql(
-                        AdminConnectionString(sp),
-                        o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
+                        (sp, options) =>
+                        {
+                            options.UseNpgsql(
+                                config.GetConnectionStringByName("EdFi_Admin"),
+                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                            );
+                            options.UseLowerCaseNamingConvention();
+                            options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+                        }
                     );
-                    options.UseLowerCaseNamingConvention();
-                    options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new PostgresSecurityContext(
+                        SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                    ));
+
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
+                        sp => new AdminConsolePostgresUsersContext(
+                            AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                        )
+                    );
                 }
-            );
-
-            webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new PostgresSecurityContext(
-                SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
-            ));
-
-            webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                sp => new AdminConsolePostgresUsersContext(
-                    AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
-                )
-            );
-        }
-        else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
-        {
-            webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
-                (sp, options) =>
+                else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
-                    options.UseSqlServer(
-                        AdminConnectionString(sp),
-                        o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                    webApplicationBuilder.Services.AddDbContext<UsersContext>(
+                        (sp, options) =>
+                        {
+                            options.UseSqlServer(
+                                config.GetConnectionStringByName("EdFi_Admin"),
+                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                            );
+                            options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+                        }
                     );
-                    options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(
+                        (sp) =>
+                            new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
+                        (sp) =>
+                            new AdminConsoleSqlServerUsersContext(
+                                AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
+                            )
+                    );
                 }
-            );
+                else
+                {
+                    throw new ArgumentException(
+                        $"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup."
+                    );
+                }
+                break;
+            case "v2":
+                if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
+                {
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
+                        (sp, options) =>
+                        {
+                            options.UseNpgsql(
+                                AdminConnectionString(sp),
+                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                            );
+                            options.UseLowerCaseNamingConvention();
+                            options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+                        }
+                    );
 
-            webApplicationBuilder.Services.AddScoped<ISecurityContext>(
-                (sp) =>
-                    new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
-            );
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new EdFi.Security.DataAccess.Contexts.PostgresSecurityContext(
+                        SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                    ));
 
-            webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                (sp) =>
-                    new AdminConsoleSqlServerUsersContext(
-                        AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
-                    )
-            );
-        }
-        else
-        {
-            throw new ArgumentException(
-                $"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup."
-            );
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
+                        sp => new AdminConsolePostgresUsersContext(
+                            AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                        )
+                    );
+                }
+                else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
+                {
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
+                        (sp, options) =>
+                        {
+                            options.UseSqlServer(
+                                AdminConnectionString(sp),
+                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                            );
+                            options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+                        }
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(
+                        (sp) =>
+                            new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
+                        (sp) =>
+                            new AdminConsoleSqlServerUsersContext(
+                                AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
+                            )
+                    );
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        $"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup."
+                    );
+                }
+                break;
+            default:
+                throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}. Must be 'v1' or 'v2'");
         }
 
         string AdminConnectionString(IServiceProvider serviceProvider)

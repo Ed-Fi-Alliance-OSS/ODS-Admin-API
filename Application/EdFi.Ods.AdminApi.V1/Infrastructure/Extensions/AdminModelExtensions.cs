@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 using Profile = EdFi.Ods.AdminApi.V1.Features.Applications.Profile;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure;

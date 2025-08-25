@@ -6,18 +6,6 @@
     <NoWarn>$(NoWarn);NU1507;NU1604;NU1602;NU1603;NU1701;NU1902;NU1903</NoWarn>
   </PropertyGroup>
 
-  <!-- EdFi.Ods.AdminApi.V1 specific overrides -->
-  <ItemGroup>
-    <PackageVersion Include="EdFi.Suite3.Admin.DataAccess" Version="6.2.81"
-      Condition="'$(MSBuildProjectName)' == 'EdFi.Ods.AdminApi.V1'" />
-    <PackageVersion Include="EdFi.Suite3.Security.DataAccess" Version="6.2.61"
-      Condition="'$(MSBuildProjectName)' == 'EdFi.Ods.AdminApi.V1'" />
-    <PackageVersion Include="AutoMapper" Version="12.0.1"
-      Condition="'$(MSBuildProjectName)' == 'EdFi.Ods.AdminApi.V1'" />
-    <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"
-      Condition="'$(MSBuildProjectName)' == 'EdFi.Ods.AdminApi.V1'" />
-  </ItemGroup>
-
   <ItemGroup>
     <!-- ASP.NET Core and Versioning -->
     <PackageVersion Include="Asp.Versioning.Http" Version="8.1.0" />
@@ -95,5 +83,17 @@
     
     <!-- log4net -->
     <PackageVersion Include="log4net" Version="3.0.0" />
+
+    <!-- EdFi.Admin.DataAccess and EdFi.Security.DataAccess  -->
+    <PackageVersion Include="EdFi.Suite3.Common" Version="6.2.392" />
+    <PackageVersion Include="Autofac.Extras.DynamicProxy" Version="7.1.0" />
+    <PackageVersion Include="EFCore.NamingConventions" Version="8.0.3" />
+    <PackageVersion Include="System.Buffers" Version="4.5.1" />
+    <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+    <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
   </ItemGroup>
 </Project>

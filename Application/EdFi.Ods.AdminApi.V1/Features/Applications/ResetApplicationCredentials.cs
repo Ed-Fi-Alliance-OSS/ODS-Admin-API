@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
 
@@ -14,7 +15,7 @@ public class ResetApplicationCredentials : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapPut(endpoints, "/applications/{id}/reset-credential", HandleResetCredentials)
-            .WithDescription("Reset application credentials. Returns new key and secret.")
+            .WithSummaryAndDescription("Reset application credentials. Returns new key and secret.", "Reset application credentials. Returns new key and secret.")
             .WithRouteOptions(b => b.WithResponse<ApplicationResult>(200))
             .BuildForVersions(AdminApiVersions.V1);
     }

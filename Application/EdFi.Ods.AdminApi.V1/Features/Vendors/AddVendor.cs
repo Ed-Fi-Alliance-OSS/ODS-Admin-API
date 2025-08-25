@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 using FluentValidation;
@@ -18,7 +18,7 @@ public class AddVendor : IFeature
     {
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/vendors", Handle)
-            .WithDefaultDescription()
+            .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<VendorModel>(201))
             .BuildForVersions(AdminApiVersions.V1);
     }

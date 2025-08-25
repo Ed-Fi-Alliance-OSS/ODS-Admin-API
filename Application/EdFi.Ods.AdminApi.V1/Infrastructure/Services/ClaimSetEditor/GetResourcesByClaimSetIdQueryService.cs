@@ -4,13 +4,13 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Security.DataAccess.Contexts;
-using EdFi.Security.DataAccess.Models;
-using SecurityResourceClaim = EdFi.Security.DataAccess.Models.ResourceClaim;
-using SecurityAuthorizationStrategy = EdFi.Security.DataAccess.Models.AuthorizationStrategy;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor.Extensions;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
+using SecurityAuthorizationStrategy = EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.AuthorizationStrategy;
+using SecurityResourceClaim = EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.ResourceClaim;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor
 {

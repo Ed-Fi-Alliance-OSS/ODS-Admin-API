@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
-using EdFi.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 

@@ -4,9 +4,9 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V1.Features.Vendors;
 
@@ -15,12 +15,12 @@ public class ReadVendor : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapGet(endpoints, "/vendors", GetVendors)
-            .WithDefaultDescription()
+            .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<VendorModel[]>(200))
             .BuildForVersions(AdminApiVersions.V1);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/vendors/{id}", GetVendor)
-            .WithDefaultDescription()
+            .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<VendorModel>(200))
             .BuildForVersions(AdminApiVersions.V1);
     }

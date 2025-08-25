@@ -31,7 +31,6 @@ public class ResourceClaimModel
     public bool Read { get; set; }
     public bool Update { get; set; }
     public bool Delete { get; set; }
-    //[SwaggerExclude(EdFiOdsSecurityModelCompatibility.ThreeThroughFive)]
     public bool ReadChanges { get; set; }
     public AuthorizationStrategiesModel?[] DefaultAuthStrategiesForCRUD { get; set; }
     public AuthorizationStrategiesModel?[] AuthStrategyOverridesForCRUD { get; set; }
@@ -54,7 +53,6 @@ public class RequestResourceClaimModel
     public bool Read { get; set; }
     public bool Update { get; set; }
     public bool Delete { get; set; }
-    //[SwaggerExclude(EdFiOdsSecurityModelCompatibility.ThreeThroughFive)]
     public bool ReadChanges { get; set; }
     public AuthorizationStrategiesModel?[] AuthStrategyOverridesForCRUD { get; set; }
 

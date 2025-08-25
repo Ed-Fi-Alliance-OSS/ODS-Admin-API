@@ -20,7 +20,8 @@ public static class EntityFrameworkCoreDatabaseModelBuilderExtensions
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
-            if (entity is null) throw new InvalidOperationException("Entity should not be null");
+            if (entity is null)
+                throw new InvalidOperationException("Entity should not be null");
             var tableName = entity.GetTableName() ?? throw new InvalidOperationException($"Entity of type {entity.GetType()} has a null table name");
 
             entity.SetTableName(tableName.ToLowerInvariant());

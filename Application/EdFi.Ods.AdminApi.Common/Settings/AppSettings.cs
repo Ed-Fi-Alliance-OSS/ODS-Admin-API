@@ -27,6 +27,9 @@ public class AppSettings
     public bool EnableAdminConsoleAPI { get; set; }
     public bool IgnoresCertificateErrors { get; set; }
     public bool EnableApplicationResetEndpoint { get; set; }
+    public string? adminApiMode { get; set; }
+    public string? ProductionApiUrl { get; set; }
+    public string? ApiStartupType { get; set; }
 }
 
 public class SwaggerSettings

@@ -10,7 +10,6 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Http" />
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
-        <PackageReference Include="EdFi.Suite3.Admin.DataAccess" />
         <PackageReference Include="FluentValidation.AspNetCore" />
         <PackageReference Include="Microsoft.Data.SqlClient" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
