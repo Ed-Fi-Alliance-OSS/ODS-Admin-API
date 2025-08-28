@@ -26,9 +26,17 @@ public partial class TenantResolverMiddleware(
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
+        var apiMode = _options.Value.AdminApiMode?.ToLower() ?? "v2";
         var multiTenancyEnabled = _options.Value.MultiTenancy;
         var validationErrorMessage = "Please provide valid tenant id. Tenant id can only contain alphanumeric and -";
 
+        // Check if this is a V1 endpoint
+        if (IsV1Mode(apiMode))
+        {
+            // For V1 endpoints, skip multi-tenancy validation entirely
+            await next.Invoke(context);
+            return;
+        }
         if (multiTenancyEnabled)
         {
             if (context.Request.Headers.TryGetValue("tenant", out var tenantIdentifier) &&
@@ -104,6 +112,11 @@ public partial class TenantResolverMiddleware(
         {
             throw new ValidationException([new ValidationFailure("Tenant", errorMessage)]);
         }
+    }
+
+    private static bool IsV1Mode(string _adminApiMode)
+    {
+        return string.Equals(_adminApiMode, "v1", StringComparison.InvariantCultureIgnoreCase);
     }
 
     private static bool IsValidTenantId(string tenantId)
