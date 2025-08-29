@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Commands;
@@ -26,7 +27,7 @@ public class EditApplication : IFeature
     }
 
     public async Task<IResult> Handle(IEditApplicationCommand editApplicationCommand, IMapper mapper,
-        Validator validator, IUsersContext db, Request request, int id)
+        Validator validator, IUsersContext db, EditApplicationRequest request, int id)
     {
         request.ApplicationId = id;
         await validator.GuardAsync(request);
@@ -37,7 +38,7 @@ public class EditApplication : IFeature
         return AdminApiResponse<ApplicationModel>.Updated(model, "Application");
     }
 
-    private static void GuardAgainstInvalidEntityReferences(Request request, IUsersContext db)
+    private static void GuardAgainstInvalidEntityReferences(EditApplicationRequest request, IUsersContext db)
     {
         if (null == db.Vendors.Find(request.VendorId))
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
@@ -47,7 +48,7 @@ public class EditApplication : IFeature
     }
 
     [SwaggerSchema(Title = "EditApplicationRequest")]
-    public class Request : IEditApplicationModel
+    public class EditApplicationRequest : IEditApplicationModel
     {
         [SwaggerSchema(Description = "Application id", Nullable = false)]
         public int ApplicationId { get; set; }

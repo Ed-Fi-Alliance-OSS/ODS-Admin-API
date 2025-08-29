@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
@@ -34,7 +35,7 @@ public class EditClaimSet : IFeature
         IGetApplicationsByClaimSetIdQuery getApplications,
         IAuthStrategyResolver strategyResolver,
         IMapper mapper,
-        Request request, int id)
+        EditClaimSetRequest request, int id)
     {
         request.Id = id;
         await validator.GuardAsync(request);
@@ -79,7 +80,7 @@ public class EditClaimSet : IFeature
     }
 
     [SwaggerSchema(Title = "EditClaimSetRequest")]
-    public class Request
+    public class EditClaimSetRequest
     {
         [SwaggerSchema(Description = "ClaimSet id", Nullable = false)]
         public int Id { get; set; }
@@ -91,7 +92,7 @@ public class EditClaimSet : IFeature
         public List<RequestResourceClaimModel>? ResourceClaims { get; set; }
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<EditClaimSetRequest>
     {
         private readonly IGetClaimSetByIdQuery _getClaimSetByIdQuery;
         private readonly IGetAllClaimSetsQuery _getAllClaimSetsQuery;
@@ -155,7 +156,7 @@ public class EditClaimSet : IFeature
             }
         }
 
-        private bool NameIsChanged(Request model)
+        private bool NameIsChanged(EditClaimSetRequest model)
         {
             return _getClaimSetByIdQuery.Execute(model.Id).Name != model.Name;
         }

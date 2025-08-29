@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
@@ -23,7 +24,7 @@ public class EditVendor : IFeature
     }
 
     public async Task<IResult> Handle(EditVendorCommand editVendorCommand, IMapper mapper,
-                       Validator validator, Request request, int id)
+                       Validator validator, EditVendorRequest request, int id)
     {
         request.VendorId = id;
         await validator.GuardAsync(request);
@@ -33,7 +34,7 @@ public class EditVendor : IFeature
     }
 
     [SwaggerSchema(Title = "EditVendorRequest")]
-    public class Request : IEditVendor
+    public class EditVendorRequest : IEditVendor
     {
         [SwaggerSchema(Description = FeatureConstants.VendorIdDescription, Nullable = false)]
         public int VendorId { get; set; }
@@ -51,7 +52,7 @@ public class EditVendor : IFeature
         public string? ContactEmailAddress { get; set; }
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<EditVendorRequest>
     {
         public Validator()
         {

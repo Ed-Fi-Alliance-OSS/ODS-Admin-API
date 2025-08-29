@@ -3,9 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-namespace EdFi.Ods.AdminApi.V1.Features;
+namespace EdFi.Ods.AdminApi.Common.Constants;
 
-public interface IFeature
+public enum AdminApiMode
 {
-    void MapEndpoints(IEndpointRouteBuilder endpoints);
+    V2,
+    V1,
+    Unversioned
 }

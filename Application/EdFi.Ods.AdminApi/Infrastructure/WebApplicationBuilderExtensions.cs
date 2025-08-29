@@ -3,12 +3,12 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Configuration;
 using System.Net;
 using System.Reflection;
 using System.Threading.RateLimiting;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
@@ -16,18 +16,18 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Infrastructure.Api;
-using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.Features.Connect;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
-using EdFi.Ods.AdminApi.Infrastructure.Services;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 
@@ -41,57 +41,38 @@ public static class WebApplicationBuilderExtensions
     {
         webApplicationBuilder.Services.AddSingleton<ISymmetricStringEncryptionProvider, Aes256SymmetricStringEncryptionProvider>();
         ConfigureRateLimiting(webApplicationBuilder);
-        Microsoft.Extensions.Configuration.ConfigurationManager config = webApplicationBuilder.Configuration;
+        ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         EnableMultiTenancySupport(webApplicationBuilder);
-        var executingAssembly = Assembly.GetExecutingAssembly();
-        webApplicationBuilder.Services.AddAutoMapper(
-            executingAssembly,
-            typeof(AdminApiMappingProfile).Assembly
-        );
+
+        var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
+        Assembly assembly;
+
         webApplicationBuilder.Services.AddScoped<InstanceContext>();
-        webApplicationBuilder.Services.AddTransient<IGetApiClientsByApplicationIdQuery, GetApiClientsByApplicationIdQuery>();
-        webApplicationBuilder.Services.AddTransient<IGetApiClientByIdQuery, GetApiClientByIdQuery>();
 
-        foreach (var type in typeof(IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes())
+        if (adminApiMode == AdminApiMode.V2)
         {
-            if (type.IsClass && !type.IsAbstract && (type.IsPublic || type.IsNestedPublic))
-            {
-                var concreteClass = type;
+            assembly = Assembly.GetExecutingAssembly();
 
-                var interfaces = concreteClass.GetInterfaces().ToArray();
+            webApplicationBuilder.Services.AddAutoMapper(
+                assembly,
+                typeof(AdminApiMappingProfile).Assembly
+            );
 
-                if (concreteClass.Namespace != null)
-                {
-                    if (
-                        !concreteClass.Namespace.EndsWith("Database.Commands")
-                        && !concreteClass.Namespace.EndsWith("Database.Queries")
-                        && !concreteClass.Namespace.EndsWith("ClaimSetEditor")
-                    )
-                    {
-                        continue;
-                    }
+            var adminApiV2Types = typeof(IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
+            RegisterAdminApiServices(webApplicationBuilder, adminApiV2Types);
+        }
+        else
+        {
+            assembly = Assembly.Load("EdFi.Ods.AdminApi.V1");
 
-                    if (interfaces.Length == 1)
-                    {
-                        var serviceType = interfaces.Single();
-                        if (serviceType.FullName == $"{concreteClass.Namespace}.I{concreteClass.Name}")
-                            webApplicationBuilder.Services.AddTransient(serviceType, concreteClass);
-                    }
-                    else if (interfaces.Length == 0)
-                    {
-                        if (
-                            !concreteClass.Name.EndsWith("Command")
-                            && !concreteClass.Name.EndsWith("Query")
-                            && !concreteClass.Name.EndsWith("Service")
-                        )
-                        {
-                            continue;
-                        }
-                        webApplicationBuilder.Services.AddTransient(concreteClass);
-                    }
-                }
-            }
+            webApplicationBuilder.Services.AddAutoMapper(
+                assembly,
+                typeof(V1.Infrastructure.AdminApiMappingProfile).Assembly
+            );
+
+            var adminApiV1Types = typeof(V1.Infrastructure.IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
+            RegisterAdminApiServices(webApplicationBuilder, adminApiV1Types);
         }
 
         // Add services to the container.
@@ -166,13 +147,14 @@ public static class WebApplicationBuilderExtensions
                     }
                 );
             }
+
             opt.DocumentFilter<ListExplicitSchemaDocumentFilter>();
             opt.SchemaFilter<SwaggerOptionalSchemaFilter>();
             opt.SchemaFilter<SwaggerSchemaRemoveRequiredFilter>();
             opt.SchemaFilter<SwaggerExcludeSchemaFilter>();
             opt.OperationFilter<SwaggerDefaultParameterFilter>();
             opt.OperationFilter<ProfileRequestExampleFilter>();
-            opt.EnableAnnotations();
+
             opt.OrderActionsBy(x =>
             {
                 return x.HttpMethod != null && Enum.TryParse<HttpVerbOrder>(x.HttpMethod, out var verb)
@@ -187,8 +169,11 @@ public static class WebApplicationBuilderExtensions
 
         // Fluent validation
         webApplicationBuilder
-            .Services.AddValidatorsFromAssembly(executingAssembly)
+            .Services.AddValidatorsFromAssembly(assembly)
             .AddFluentValidationAutoValidation();
+
+        webApplicationBuilder.Services.AddTransient<RegisterService.Validator>();
+
         ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, expression) =>
             memberInfo
                 ?.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>()
@@ -213,6 +198,7 @@ public static class WebApplicationBuilderExtensions
         );
 
         webApplicationBuilder.Services.AddHttpClient();
+
         webApplicationBuilder.Services.AddTransient<ISimpleGetRequest, SimpleGetRequest>();
         webApplicationBuilder.Services.AddTransient<IOdsApiValidator, OdsApiValidator>();
     }
@@ -236,60 +222,54 @@ public static class WebApplicationBuilderExtensions
     {
         IConfiguration config = webApplicationBuilder.Configuration;
 
-        var adminApiMode = config.GetValue<string>("AppSettings:adminApiMode")?.ToLower();
+        var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
         var multiTenancyEnabled = config.Get("AppSettings:MultiTenancy", false);
 
         switch (adminApiMode)
         {
-            case "v1":
+            case AdminApiMode.V1:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
+                    var adminConnectionString = webApplicationBuilder.Configuration.GetConnectionString("EdFi_Admin");
+                    var securityConnectionString = webApplicationBuilder.Configuration.GetConnectionString("EdFi_Security");
+
                     webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
-                        (sp, options) =>
+                        options =>
                         {
-                            options.UseNpgsql(
-                                config.GetConnectionStringByName("EdFi_Admin"),
-                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                            );
-                            options.UseLowerCaseNamingConvention();
+                            options.UseNpgsql(adminConnectionString);
                             options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
-                        }
-                    );
+                        });
 
-                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new PostgresSecurityContext(
-                        SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
-                    ));
+                    var optionsBuilder = new DbContextOptionsBuilder();
+                    optionsBuilder.UseNpgsql(securityConnectionString);
+                    optionsBuilder.UseLowerCaseNamingConvention();
 
-                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                        sp => new AdminConsolePostgresUsersContext(
-                            AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
-                        )
-                    );
+                    webApplicationBuilder.Services.AddScoped<V1.Security.DataAccess.Contexts.ISecurityContext>(
+                        sp => new V1.Security.DataAccess.Contexts.PostgresSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
+
+                    webApplicationBuilder.Services.AddScoped<V1.Admin.DataAccess.Contexts.IUsersContext>(
+                        sp => new V1.Admin.DataAccess.Contexts.PostgresUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)));
                 }
                 else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
-                    webApplicationBuilder.Services.AddDbContext<UsersContext>(
-                        (sp, options) =>
-                        {
-                            options.UseSqlServer(
-                                config.GetConnectionStringByName("EdFi_Admin"),
-                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                            );
-                            options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
-                        }
-                    );
+                    var adminConnectionString = webApplicationBuilder.Configuration.GetConnectionString("EdFi_Admin");
+                    var securityConnectionString = webApplicationBuilder.Configuration.GetConnectionString("EdFi_Security");
 
-                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(
-                        (sp) =>
-                            new SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
-                    );
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
+                       options =>
+                       {
+                           options.UseSqlServer(adminConnectionString);
+                           options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
+                       });
 
-                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                        (sp) =>
-                            new AdminConsoleSqlServerUsersContext(
-                                AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
-                            )
-                    );
+                    var optionsBuilder = new DbContextOptionsBuilder();
+                    optionsBuilder.UseSqlServer(securityConnectionString);
+
+                    webApplicationBuilder.Services.AddScoped<V1.Security.DataAccess.Contexts.ISecurityContext>(
+                        sp => new V1.Security.DataAccess.Contexts.SqlServerSecurityContext(SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
+
+                    webApplicationBuilder.Services.AddScoped<V1.Admin.DataAccess.Contexts.IUsersContext>(
+                        sp => new V1.Admin.DataAccess.Contexts.SqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)));
                 }
                 else
                 {
@@ -298,7 +278,7 @@ public static class WebApplicationBuilderExtensions
                     );
                 }
                 break;
-            case "v2":
+            case AdminApiMode.V2:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
                     webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
@@ -313,7 +293,7 @@ public static class WebApplicationBuilderExtensions
                         }
                     );
 
-                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new EdFi.Security.DataAccess.Contexts.PostgresSecurityContext(
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(sp => new PostgresSecurityContext(
                         SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
                     ));
 
@@ -446,6 +426,52 @@ public static class WebApplicationBuilderExtensions
             }
 
             return builder.Options;
+        }
+    }
+
+    private static void RegisterAdminApiServices(WebApplicationBuilder webApplicationBuilder, Type[] types)
+    {
+        foreach (var type in types)
+        {
+            if (type.IsClass && !type.IsAbstract && (type.IsPublic || type.IsNestedPublic))
+            {
+                var concreteClass = type;
+
+                var interfaces = concreteClass.GetInterfaces().ToArray();
+
+                if (concreteClass.Namespace is not null)
+                {
+                    if (
+                        !concreteClass.Namespace.EndsWith("Database.Commands")
+                        && !concreteClass.Namespace.EndsWith("Database.Queries")
+                        && !concreteClass.Namespace.EndsWith("ClaimSetEditor")
+                    )
+                    {
+                        continue;
+                    }
+
+                    if (interfaces.Length == 1)
+                    {
+                        var serviceType = interfaces.Single();
+                        if (serviceType.FullName == $"{concreteClass.Namespace}.I{concreteClass.Name}")
+                        {
+                            webApplicationBuilder.Services.AddTransient(serviceType, concreteClass);
+                        }
+                    }
+                    else if (interfaces.Length == 0)
+                    {
+                        if (
+                            !concreteClass.Name.EndsWith("Command")
+                            && !concreteClass.Name.EndsWith("Query")
+                            && !concreteClass.Name.EndsWith("Service")
+                        )
+                        {
+                            continue;
+                        }
+                        webApplicationBuilder.Services.AddTransient(concreteClass);
+                    }
+                }
+            }
         }
     }
 

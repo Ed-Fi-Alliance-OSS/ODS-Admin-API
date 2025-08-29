@@ -5,6 +5,7 @@
 
 using EdFi.Ods.AdminApi.AdminConsole;
 using EdFi.Ods.AdminApi.AdminConsole.Configurations;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Features;
@@ -17,20 +18,21 @@ var builder = WebApplication.CreateBuilder(args);
 var _logger = LogManager.GetLogger("Program");
 _logger.Info("Starting Admin API");
 var adminConsoleIsEnabled = builder.Configuration.GetValue<bool>("AppSettings:EnableAdminConsoleAPI");
+var adminApiMode = builder.Configuration.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
 
 //Order is important to enable CORS
-if (adminConsoleIsEnabled)
+if (adminConsoleIsEnabled && adminApiMode == AdminApiMode.V2)
     builder.RegisterAdminConsoleCorsDependencies(_logger);
 
 builder.AddServices();
 
-if (adminConsoleIsEnabled)
+if (adminConsoleIsEnabled && adminApiMode == AdminApiMode.V2)
     builder.RegisterAdminConsoleDependencies();
 
 var app = builder.Build();
 
 //Order is important to enable CORS
-if (adminConsoleIsEnabled)
+if (adminConsoleIsEnabled && adminApiMode == AdminApiMode.V2)
     app.UseCorsForAdminConsole();
 
 var pathBase = app.Configuration.GetValue<string>("AppSettings:PathBase");
@@ -44,7 +46,11 @@ AdminApiVersions.Initialize(app);
 
 //The ordering here is meaningful: Logging -> Routing -> Auth -> Endpoints
 app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseMiddleware<TenantResolverMiddleware>();
+app.UseMiddleware<AdminApiModeValidationMiddleware>();
+
+if (adminApiMode == AdminApiMode.V2)
+    app.UseMiddleware<TenantResolverMiddleware>();
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseRateLimiter();
@@ -52,7 +58,7 @@ app.UseAuthorization();
 app.MapFeatureEndpoints();
 
 //Map AdminConsole endpoints if the flag is enable
-if (adminConsoleIsEnabled)
+if (adminConsoleIsEnabled && adminApiMode == AdminApiMode.V2)
 {
     app.MapAdminConsoleFeatureEndpoints();
     //Initialize data
@@ -69,5 +75,3 @@ if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
 }
 
 await app.RunAsync();
-
-

@@ -19,8 +19,7 @@ public class AdminApiMappingProfile : Profile
 {
     public AdminApiMappingProfile()
     {
-
-        CreateMap<Vendor, EditVendor.Request>()
+        CreateMap<Vendor, EditVendor.EditVendorRequest>()
             .ForMember(dst => dst.Company, opt => opt.MapFrom(src => src.VendorName))
             .ForMember(dst => dst.ContactName, opt => opt.MapFrom(src => src.ContactName()))
             .ForMember(dst => dst.ContactEmailAddress, opt => opt.MapFrom(src => src.ContactEmail()))

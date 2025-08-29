@@ -4,8 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Threading.Tasks;
-using EdFi.Ods.AdminApi.Infrastructure.Api;
-using EdFi.Ods.AdminApi.Infrastructure.Services;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using NUnit.Framework;
 using Shouldly;
 

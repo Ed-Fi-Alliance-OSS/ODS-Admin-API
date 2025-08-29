@@ -5,7 +5,7 @@
 
 using System.Net;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Services;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 
 public interface ISimpleGetRequest
 {

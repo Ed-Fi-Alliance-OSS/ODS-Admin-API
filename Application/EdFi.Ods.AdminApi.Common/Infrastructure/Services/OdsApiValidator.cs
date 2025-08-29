@@ -5,12 +5,11 @@
 
 using System.Net;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.Infrastructure.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NJsonSchema;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Api;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 
 public interface IOdsApiValidator
 {

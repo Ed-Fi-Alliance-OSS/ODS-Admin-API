@@ -3,10 +3,13 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.Features.Information;
@@ -23,8 +26,17 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    internal static InformationResult GetInformation()
+    internal static InformationResult GetInformation(IOptions<AppSettings> options)
     {
-        return new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build);
+        if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
+        {
+            throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
+        }
+        return adminApiMode switch
+        {
+            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build),
+            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build),
+            _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
+        };
     }
 }

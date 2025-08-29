@@ -3,7 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Helper;
-using AdminApiFeatures = EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Constants;
+using static OpenIddict.Abstractions.OpenIddictConstants.Permissions;
+using AdminApiV2Features = EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using AdminApiV1Features = EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -11,13 +14,33 @@ public static class WebApplicationExtensions
 {
     public static void MapFeatureEndpoints(this WebApplication application)
     {
-        application.UseEndpoints(endpoints =>
+        var adminApiMode = application.Configuration.GetValue<AdminApiMode>("AppSettings:adminApiMode", AdminApiMode.V2);
+
+        switch (adminApiMode)
         {
-            foreach (var routeBuilder in AdminApiFeatures.AdminApiFeatureHelper.GetFeatures())
-            {
-                routeBuilder.MapEndpoints(endpoints);
-            }
-        });
+            case AdminApiMode.V1:
+                application.UseEndpoints(endpoints =>
+                {
+                    foreach (var routeBuilder in AdminApiV1Features.AdminApiV1FeatureHelper.GetFeatures())
+                    {
+                        routeBuilder.MapEndpoints(endpoints);
+                    }
+                });
+                break;
+
+            case AdminApiMode.V2:
+                application.UseEndpoints(endpoints =>
+                {
+                    foreach (var routeBuilder in AdminApiV2Features.AdminApiFeatureHelper.GetFeatures())
+                    {
+                        routeBuilder.MapEndpoints(endpoints);
+                    }
+                });
+                break;
+
+            default:
+                throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}");
+        }
     }
 
     public static void MapAdminConsoleFeatureEndpoints(this WebApplication application)

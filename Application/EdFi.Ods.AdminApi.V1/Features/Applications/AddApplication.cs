@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Commands;
@@ -25,7 +26,7 @@ public class AddApplication : IFeature
             .BuildForVersions(AdminApiVersions.V1);
     }
 
-    public async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IMapper mapper, IUsersContext db, Request request)
+    public async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IMapper mapper, IUsersContext db, AddApplicationRequest request)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
@@ -34,7 +35,7 @@ public class AddApplication : IFeature
         return AdminApiResponse<ApplicationResult>.Created(model, "Application", $"/applications/{model.ApplicationId}");
     }
 
-    private void GuardAgainstInvalidEntityReferences(Request request, IUsersContext db)
+    private void GuardAgainstInvalidEntityReferences(AddApplicationRequest request, IUsersContext db)
     {
         if (null == db.Vendors.Find(request.VendorId))
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
@@ -47,7 +48,7 @@ public class AddApplication : IFeature
     }
 
     [SwaggerSchema(Title = "AddApplicationRequest")]
-    public class Request : IAddApplicationModel
+    public class AddApplicationRequest : IAddApplicationModel
     {
         [SwaggerSchema(Description = FeatureConstants.ApplicationNameDescription, Nullable = false)]
         public string? ApplicationName { get; set; }
@@ -70,7 +71,7 @@ public class AddApplication : IFeature
         public IEnumerable<int>? EducationOrganizationIds { get; set; }
     }
 
-    public class Validator : AbstractValidator<Request>
+    public class Validator : AbstractValidator<AddApplicationRequest>
     {
         public Validator()
         {
