@@ -108,14 +108,6 @@ public class AdminApiEndpointBuilder
             }
             else
             {
-                var rolesPolicy = new List<PolicyDefinition> { VersionRoleMapping.DefaultRolePolicy };
-
-                if (VersionRoleMapping.RolesByVersion.TryGetValue(version, out var defaultPolicies))
-                {
-                    rolesPolicy.Add(defaultPolicies);
-                }
-                builder.RequireAuthorization(rolesPolicy.Select(policy => policy.PolicyName).ToArray());
-
                 if (_authorizationPolicies.Any())
                 {
                     builder.RequireAuthorization(_authorizationPolicies.ToArray());

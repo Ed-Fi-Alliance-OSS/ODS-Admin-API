@@ -157,16 +157,6 @@ public static class SecurityExtensions
                         )
                     )
                 .Build();
-            foreach (var policy in AuthorizationPolicies.RolePolicies)
-            {
-                opt.AddPolicy(policy.PolicyName, policyBuilder =>
-                policyBuilder.RequireAssertion(context =>
-                    context.User.Claims.Any(c =>
-                        c.Type == roleClaimType &&
-                        policy.Roles.Contains(c.Value, StringComparer.OrdinalIgnoreCase)
-                    )
-                ));
-            }
             foreach (var scope in AuthorizationPolicies.ScopePolicies)
             {
                 opt.AddPolicy(scope.PolicyName, policy =>
