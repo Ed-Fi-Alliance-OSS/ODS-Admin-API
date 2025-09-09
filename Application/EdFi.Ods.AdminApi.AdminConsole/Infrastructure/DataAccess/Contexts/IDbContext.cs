@@ -12,8 +12,6 @@ namespace EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Contexts;
 
 public interface IDbContext
 {
-    DbSet<HealthCheck> HealthChecks { get; set; }
-
     DbSet<Instance> Instances { get; set; }
 
     DbSet<OdsInstanceContext> OdsInstanceContexts { get; set; }

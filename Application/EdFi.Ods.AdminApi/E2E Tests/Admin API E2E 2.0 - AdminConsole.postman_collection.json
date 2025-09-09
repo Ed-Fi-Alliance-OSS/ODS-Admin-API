@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "c4623a80-e5fe-4777-ad06-edffc723d2bb",
+		"_postman_id": "bf0ae1a5-bb6e-4b20-9ae0-b4adc2e2df0b",
 		"name": "Admin API E2E 2.0 - AdminConsole",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "42411115",
-		"_collection_link": "https://dewfdaf.postman.co/workspace/ADMIN-API~dbb178b0-bfdd-4b89-9afe-869e92062591/collection/42411115-c4623a80-e5fe-4777-ad06-edffc723d2bb?action=share&source=collection_link&creator=42411115"
+		"_collection_link": "https://dewfdaf.postman.co/workspace/ADMINAPI-1295~b8166cce-f66f-4e17-acd8-c8f40ac88d5e/collection/42411115-bf0ae1a5-bb6e-4b20-9ae0-b4adc2e2df0b?action=share&source=collection_link&creator=42411115"
 	},
 	"item": [
 		{
@@ -71,7 +71,16 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/adminconsole/tenants"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/tenants",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"tenants"
+									]
+								}
 							},
 							"response": []
 						},
@@ -95,7 +104,16 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/adminconsole/tenant"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/tenant",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"tenant"
+									]
+								}
 							},
 							"response": []
 						},
@@ -151,7 +169,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/adminconsole/tenants/1"
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/tenants/1",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"tenants",
+										"1"
+									]
+								}
 							},
 							"response": []
 						},
@@ -175,403 +203,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/adminconsole/tenants/100"
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "HealthCheck",
-					"item": [
-						{
-							"name": "Health Check",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"POST HealthCheck: Status code is Created\", function () {",
-											"    pm.response.to.have.status(201);",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
+								"url": {
+									"raw": "{{API_URL}}/adminconsole/tenants/100",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"adminconsole",
+										"tenants",
+										"100"
+									]
 								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"instanceId\": 1,\n    \"edOrgId\": 1,\n    \"tenantId\": 1,\n    \"document\": \"{\\\"localEducationAgencyId\\\":1527,\\\"studentSpecialEducationProgramAssociations\\\":89,\\\"studentDisciplineIncidentBehaviorAssociations\\\":34,\\\"studentSchoolAssociations\\\":456,\\\"studentSchoolAttendanceEvents\\\":320,\\\"studentSectionAssociations\\\":289,\\\"staffEducationOrganizationAssignmentAssociations\\\":58,\\\"staffEducationOrganizationEmploymentAssociations\\\":72,\\\"staffSectionAssociations\\\":63,\\\"courseTranscripts\\\":105,\\\"basicReportingPeriodAttendances\\\":150,\\\"sections\\\":23,\\\"reportingPeriodExts\\\":12,\\\"healthy\\\":true}\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{API_URL}}/adminconsole/healthcheck"
-							},
-							"response": []
-						},
-						{
-							"name": "Health Check Invalid",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"POST HealthCheck Invalid: Status code is Invalid\", function () {",
-											"    pm.response.to.have.status(400);",
-											"});",
-											"",
-											"pm.test(\"POST HealthCheck Invalid: Response matches error format\", function () {",
-											"    const response = pm.response.json();",
-											"    pm.expect(response).to.have.property(\"title\");",
-											"    pm.expect(response).to.have.property(\"errors\");",
-											"    pm.expect(response.errors).to.have.property(\"Document\");",
-											"});",
-											"",
-											"const PostHealthCheckSchema = {",
-											"  \"type\": \"object\",",
-											"  \"properties\": {",
-											"    \"title\": {",
-											"      \"type\": \"string\"",
-											"    },",
-											"    \"errors\": {",
-											"      \"type\": \"object\",",
-											"      \"properties\": {",
-											"        \"Document\": {",
-											"          \"type\": \"array\",",
-											"          \"items\": [",
-											"            {",
-											"              \"type\": \"string\"",
-											"            }",
-											"          ]",
-											"        }",
-											"      },",
-											"      \"required\": [",
-											"        \"Document\"",
-											"      ]",
-											"    }",
-											"  },",
-											"  \"required\": [",
-											"    \"title\",",
-											"    \"errors\"",
-											"  ]",
-											"}",
-											"",
-											"pm.test(\"POST HealthCheck Invalid: Validation Schema Response\", () => {",
-											"    pm.response.to.have.jsonSchema(PostHealthCheckSchema);",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{API_URL}}/adminconsole/healthcheck"
-							},
-							"response": []
-						},
-						{
-							"name": "Health Check",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"GET HealthCheck: Status code is Found\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"const GetHealthCheckSchema = {",
-											"  \"type\": \"array\",",
-											"  \"items\": [",
-											"    {",
-											"      \"type\": \"object\",",
-											"      \"properties\": {",
-											"        \"docId\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"instanceId\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"edOrgId\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"tenantId\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"document\": {",
-											"          \"type\": \"object\",",
-											"          \"properties\": {",
-											"            \"healthy\": {",
-											"              \"type\": \"boolean\"",
-											"            },",
-											"            \"sections\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"courseTranscripts\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"reportingPeriodExts\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"localEducationAgencyId\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"staffSectionAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"studentSchoolAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"studentSectionAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"studentSchoolAttendanceEvents\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"basicReportingPeriodAttendances\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"studentSpecialEducationProgramAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"studentDisciplineIncidentBehaviorAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"staffEducationOrganizationAssignmentAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            },",
-											"            \"staffEducationOrganizationEmploymentAssociations\": {",
-											"              \"type\": \"integer\"",
-											"            }",
-											"          },",
-											"          \"required\": [",
-											"            \"healthy\",",
-											"            \"sections\",",
-											"            \"courseTranscripts\",",
-											"            \"reportingPeriodExts\",",
-											"            \"localEducationAgencyId\",",
-											"            \"staffSectionAssociations\",",
-											"            \"studentSchoolAssociations\",",
-											"            \"studentSectionAssociations\",",
-											"            \"studentSchoolAttendanceEvents\",",
-											"            \"basicReportingPeriodAttendances\",",
-											"            \"studentSpecialEducationProgramAssociations\",",
-											"            \"studentDisciplineIncidentBehaviorAssociations\",",
-											"            \"staffEducationOrganizationAssignmentAssociations\",",
-											"            \"staffEducationOrganizationEmploymentAssociations\"",
-											"          ]",
-											"        }",
-											"      },",
-											"      \"required\": [",
-											"        \"docId\",",
-											"        \"instanceId\",",
-											"        \"edOrgId\",",
-											"        \"tenantId\",",
-											"        \"document\"",
-											"      ]",
-											"    }",
-											"  ]",
-											"}",
-											"",
-											"pm.test(\"GET HealthCheck: Validation Schema Response\", () => {",
-											"    pm.response.to.have.jsonSchema(GetHealthCheckSchema);",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": "{{API_URL}}/adminconsole/healthcheck"
-							},
-							"response": []
-						},
-						{
-							"name": "Health Check Not Found",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"GET HealthCheck: Status code is Not Found\", function () {",
-											"    pm.response.to.have.status(404);",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": "{{API_URL}}/adminconsole/healthchec"
-							},
-							"response": []
-						},
-						{
-							"name": "Health Check by Tenant Id",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"GET HealthCheck by Tenant: Status code is Found\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});",
-											"",
-											"const GetHealthCheckSchema = {",
-											"  \"type\": \"object\",",
-											"  \"properties\": {",
-											"    \"docId\": {",
-											"      \"type\": \"integer\"",
-											"    },",
-											"    \"instanceId\": {",
-											"      \"type\": \"integer\"",
-											"    },",
-											"    \"edOrgId\": {",
-											"      \"type\": \"integer\"",
-											"    },",
-											"    \"tenantId\": {",
-											"      \"type\": \"integer\"",
-											"    },",
-											"    \"document\": {",
-											"      \"type\": \"object\",",
-											"      \"properties\": {",
-											"        \"healthy\": {",
-											"          \"type\": \"boolean\"",
-											"        },",
-											"        \"sections\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"courseTranscripts\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"reportingPeriodExts\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"localEducationAgencyId\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"staffSectionAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"studentSchoolAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"studentSectionAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"studentSchoolAttendanceEvents\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"basicReportingPeriodAttendances\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"studentSpecialEducationProgramAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"studentDisciplineIncidentBehaviorAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"staffEducationOrganizationAssignmentAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        },",
-											"        \"staffEducationOrganizationEmploymentAssociations\": {",
-											"          \"type\": \"integer\"",
-											"        }",
-											"      },",
-											"      \"required\": [",
-											"        \"healthy\",",
-											"        \"sections\",",
-											"        \"courseTranscripts\",",
-											"        \"reportingPeriodExts\",",
-											"        \"localEducationAgencyId\",",
-											"        \"staffSectionAssociations\",",
-											"        \"studentSchoolAssociations\",",
-											"        \"studentSectionAssociations\",",
-											"        \"studentSchoolAttendanceEvents\",",
-											"        \"basicReportingPeriodAttendances\",",
-											"        \"studentSpecialEducationProgramAssociations\",",
-											"        \"studentDisciplineIncidentBehaviorAssociations\",",
-											"        \"staffEducationOrganizationAssignmentAssociations\",",
-											"        \"staffEducationOrganizationEmploymentAssociations\"",
-											"      ]",
-											"    }",
-											"  },",
-											"  \"required\": [",
-											"    \"docId\",",
-											"    \"instanceId\",",
-											"    \"edOrgId\",",
-											"    \"tenantId\",",
-											"    \"document\"",
-											"  ]",
-											"}",
-											"",
-											"pm.test(\"GET HealthCheck by Tenant: Validation Schema Response\", () => {",
-											"    pm.response.to.have.jsonSchema(GetHealthCheckSchema);",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": "{{API_URL}}/adminconsole/healthcheck/1"
-							},
-							"response": []
-						},
-						{
-							"name": "Health Check by Tenant Id Not Found",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"GET HealthCheck Tenant by Id: Status code is Not Found\", function () {",
-											"    pm.response.to.have.status(404);",
-											"});",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"method": "GET",
-								"header": [],
-								"url": "{{API_URL}}/adminconsole/healthcheck/100"
 							},
 							"response": []
 						}
@@ -582,9 +224,13 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": {
-			"token": "{{TOKEN}}"
-		}
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{TOKEN}}",
+				"type": "string"
+			}
+		]
 	},
 	"event": [
 		{

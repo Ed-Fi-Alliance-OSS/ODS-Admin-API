@@ -36,8 +36,6 @@ public class AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext>
         _transaction?.Dispose();
     }
 
-    public DbSet<HealthCheck> HealthChecks { get; set; }
-
     public DbSet<Instance> Instances { get; set; }
 
     public DbSet<OdsInstanceContext> OdsInstanceContexts { get; set; }
@@ -50,7 +48,6 @@ public class AdminConsolePgSqlContext(DbContextOptions<AdminConsolePgSqlContext>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         const string DbProvider = DbProviders.PostgreSql;
-        modelBuilder.ApplyConfiguration(new HealthCheckConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new InstanceConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new OdsInstanceContextConfiguration());
         modelBuilder.ApplyConfiguration(new OdsInstanceDerivativeConfiguration());

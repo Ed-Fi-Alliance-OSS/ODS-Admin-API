@@ -11,14 +11,10 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Security
     {
         // Create policies by scope
         public static readonly PolicyDefinition AdminApiFullAccessScopePolicy = new PolicyDefinition("AdminApiFullAccessScopePolicy", SecurityConstants.Scopes.AdminApiFullAccess.Scope);
-        public static readonly PolicyDefinition AdminApiTenantAccessScopePolicy = new PolicyDefinition("AdminApiTenantAccessScopePolicy", SecurityConstants.Scopes.AdminApiTenantAccess.Scope);
-        public static readonly PolicyDefinition AdminApiWorkerScopePolicy = new PolicyDefinition("AdminApiWorkerScopePolicy", SecurityConstants.Scopes.AdminApiWorker.Scope);
         public static readonly PolicyDefinition DefaultScopePolicy = AdminApiFullAccessScopePolicy;
         public static readonly IEnumerable<PolicyDefinition> ScopePolicies = new List<PolicyDefinition>
         {
             AdminApiFullAccessScopePolicy,
-            AdminApiTenantAccessScopePolicy,
-            AdminApiWorkerScopePolicy
         };
     }
 

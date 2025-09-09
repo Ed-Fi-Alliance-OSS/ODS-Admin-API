@@ -36,8 +36,6 @@ public class AdminConsoleMsSqlContext(DbContextOptions<AdminConsoleMsSqlContext>
         _transaction?.Dispose();
     }
 
-    public DbSet<HealthCheck> HealthChecks { get; set; }
-
     public DbSet<Instance> Instances { get; set; }
 
     public DbSet<OdsInstanceContext> OdsInstanceContexts { get; set; }
@@ -49,7 +47,6 @@ public class AdminConsoleMsSqlContext(DbContextOptions<AdminConsoleMsSqlContext>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         const string DbProvider = DbProviders.SqlServer;
-        modelBuilder.ApplyConfiguration(new HealthCheckConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new InstanceConfiguration(DbProvider));
         modelBuilder.ApplyConfiguration(new OdsInstanceDerivativeConfiguration());
         modelBuilder.ApplyConfiguration(new OdsInstanceContextConfiguration());

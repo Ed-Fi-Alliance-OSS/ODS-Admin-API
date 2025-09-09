@@ -18,10 +18,10 @@ public class ReadTenants : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapGet(endpoints, "/tenants", GetTenantsAsync)
-            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
+            .BuildForVersions(AdminApiVersions.AdminConsole);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/tenants/{tenantId}", GetTenantsByTenantIdAsync)
-           .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
+            .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
     public static async Task<IResult> GetTenantsAsync(IAdminConsoleTenantsService adminConsoleTenantsService, IMemoryCache memoryCache)

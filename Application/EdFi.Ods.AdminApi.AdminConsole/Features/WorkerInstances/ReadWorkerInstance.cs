@@ -20,11 +20,12 @@ public class ReadWorkerInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder.MapGet(endpoints, "/instances", GetInstances)
-            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
+            .WithRouteOptions(b => b.WithResponse<InstanceModel>(200))
+            .BuildForVersions(AdminApiVersions.AdminConsole);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/instances/{id}", GetInstanceById)
             .WithRouteOptions(b => b.WithResponse<InstanceModel>(200))
-            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
+            .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
     internal static async Task<IResult> GetInstances(IMapper mapper, [FromServices] IGetInstancesQuery getInstancesQuery, string? tenantName, string? status)

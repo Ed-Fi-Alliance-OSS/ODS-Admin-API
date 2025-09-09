@@ -6,7 +6,6 @@
 using System.Reflection;
 using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Tenants;
@@ -14,10 +13,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.Filters;
 
 namespace EdFi.Ods.AdminApi.AdminConsole;
 
@@ -30,7 +26,6 @@ public static class ServicesBuilderExtension
         builder.Services.Configure<AppSettingsFile>(builder.Configuration);
 
         builder.Services.Configure<AdminConsoleSettings>(builder.Configuration.GetSection("AdminConsoleSettings"));
-        builder.Services.AddAutoMapper(typeof(AdminConsoleMappingProfile));
 
         builder.Services.AddTransient<IEncryptionKeySettings>(sp => sp.GetService<IOptions<AdminConsoleSettings>>()!.Value);
         builder.Services.AddTransient<IEncryptionKeyResolver, OptionsEncryptionKeyResolver>();

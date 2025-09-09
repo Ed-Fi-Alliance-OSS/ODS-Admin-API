@@ -22,7 +22,7 @@ public class WorkerInstanceRenamed : IFeature
             .WithRouteOptions(b => b.WithResponseCode(204))
             .WithRouteOptions(b => b.WithResponseCode(400))
             .WithRouteOptions(b => b.WithResponseCode(404))
-            .BuildForVersions(AuthorizationPolicies.AdminApiWorkerScopePolicy.PolicyName, AdminApiVersions.AdminConsole);
+            .BuildForVersions(AdminApiVersions.AdminConsole);
     }
 
     public static async Task<IResult> Handle(Validator validator, IRenameInstanceCommand renameInstanceCommand, int instanceid, [FromBody] CompleteInstanceRequest request)

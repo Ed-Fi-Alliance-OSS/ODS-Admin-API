@@ -16,14 +16,10 @@ public static class SecurityConstants
     public static class Scopes
     {
         public static readonly ScopeDefinition AdminApiFullAccess = new("edfi_admin_api/full_access", "Full access to the Admin API");
-        public static readonly ScopeDefinition AdminApiTenantAccess = new("edfi_admin_api/tenant_access", "Access to a specific tenant");
-        public static readonly ScopeDefinition AdminApiWorker = new("edfi_admin_api/worker", "Worker access to the Admin API");
 
         public static IEnumerable<ScopeDefinition> AllScopes =
         [
-            AdminApiFullAccess,
-            AdminApiTenantAccess,
-            AdminApiWorker
+            AdminApiFullAccess
         ];
     }
 
