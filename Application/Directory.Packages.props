@@ -52,7 +52,8 @@
     <!-- Microsoft Core -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.63.0" />
-
+    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.11.0" />
+    
     <!-- Code Analysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.7.0.110445" />
@@ -95,5 +96,6 @@
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 </Project>

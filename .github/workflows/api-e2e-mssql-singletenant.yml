@@ -58,20 +58,20 @@ jobs:
       - name: Run Admin API
         run: |
           docker compose \
-            -f '../../Docker/Compose/mssql/SingleTenant/compose-build-dev.yml' \
-            -f '../../Docker/Compose/mssql/SingleTenant/compose-build-ods.yml' \
-            --env-file './E2E Tests/gh-action-setup/.automation_mssql.env' \
+            -f '../../Docker/V2/Compose/mssql/SingleTenant/compose-build-dev.yml' \
+            -f '../../Docker/V2/Compose/mssql/SingleTenant/compose-build-ods.yml' \
+            --env-file './E2E Tests/V2/gh-action-setup/.automation_mssql.env' \
             up -d
 
       - name: Verify containers are running
         run: |
-          chmod +x './E2E Tests/gh-action-setup/admin_inspect.sh'
-          './E2E Tests/gh-action-setup/admin_inspect.sh' adminapi
+          chmod +x './E2E Tests/V2/gh-action-setup/admin_inspect.sh'
+          './E2E Tests/V2/gh-action-setup/admin_inspect.sh' adminapi
 
       - name: Verify Ods containers are running
         run: |
-          chmod +x './E2E Tests/gh-action-setup/ods_inspect.sh'
-          './E2E Tests/gh-action-setup/ods_inspect.sh' ed-fi-ods-api
+          chmod +x './E2E Tests/V2/gh-action-setup/ods_inspect.sh'
+          './E2E Tests/V2/gh-action-setup/ods_inspect.sh' ed-fi-ods-api
 
       - name: Setup node
         uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
@@ -80,14 +80,14 @@ jobs:
 
       - name: Combine Collections
         run: |
-          npx postman-combine-collections@1.1.2 -f './E2E Tests/Admin API E2E 2.0 -*.postman_collection.json' \
+          npx postman-combine-collections@1.1.2 -f './E2E Tests/V2/Admin API E2E 2.0 -*.postman_collection.json' \
              -n 'Admin API E2E 2.0' \
-             -o './E2E Tests/Admin-API-Full-Collection.json'
+             -o './E2E Tests/V2/Admin-API-Full-Collection.json'
 
       - name: Run tests
         run: |
-          npx --package=newman@6.1.3 --package=newman-reporter-htmlextra@1.23.1 newman run './E2E Tests/Admin-API-Full-Collection.json' \
-            -e './E2E Tests/Admin API Docker-single-mssql.postman_environment.json' \
+          npx --package=newman@6.1.3 --package=newman-reporter-htmlextra@1.23.1 newman run './E2E Tests/V2/Admin-API-Full-Collection.json' \
+            -e './E2E Tests/V2/Admin API Docker-single-mssql.postman_environment.json' \
             -r cli,junit,htmlextra \
             --reporter-htmlextra-title 'AdminAPI - 2.0' \
             --reporter-htmlextra-export './report-html/results.html' \

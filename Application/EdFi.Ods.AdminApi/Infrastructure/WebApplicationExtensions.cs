@@ -19,23 +19,18 @@ public static class WebApplicationExtensions
         switch (adminApiMode)
         {
             case AdminApiMode.V1:
-                application.UseEndpoints(endpoints =>
+                foreach (var routeBuilder in AdminApiV1Features.AdminApiV1FeatureHelper.GetFeatures())
                 {
-                    foreach (var routeBuilder in AdminApiV1Features.AdminApiV1FeatureHelper.GetFeatures())
-                    {
-                        routeBuilder.MapEndpoints(endpoints);
-                    }
-                });
+                    routeBuilder.MapEndpoints(application);
+                }
+                new Features.Information.ReadInformation().MapEndpoints(application);
                 break;
 
             case AdminApiMode.V2:
-                application.UseEndpoints(endpoints =>
+                foreach (var routeBuilder in AdminApiV2Features.AdminApiFeatureHelper.GetFeatures())
                 {
-                    foreach (var routeBuilder in AdminApiV2Features.AdminApiFeatureHelper.GetFeatures())
-                    {
-                        routeBuilder.MapEndpoints(endpoints);
-                    }
-                });
+                    routeBuilder.MapEndpoints(application);
+                }
                 break;
 
             default:

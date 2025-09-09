@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+version: "3.8"
+
+services:
+  nginx:
+    build:
+      context: ../../../Settings/V1/gateway/
+      dockerfile: Dockerfile
+    environment:
+      ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
+    ports:
+      - "443:443"
+    container_name: ed-fi-gateway-adminapi
+    restart: always
+    hostname: nginx
+    volumes:
+      - ../../../Settings/ssl:/ssl/
+      - ../../../Settings/V1/gateway/adminapi-packaged.conf:/etc/nginx/templates/default.conf.template
+    depends_on:
+      - adminapi
+
+  adminapi:
+    build:
+      context: ../../../
+      dockerfile: api.mssql.Dockerfile
+    environment:
+      ADMIN_MSSQL_HOST: db-admin
+      PATH_BASE: "${ODS_VIRTUAL_NAME:-api}"
+      TPDM_ENABLED: "${TPDM_ENABLED:-true}"
+      SQLSERVER_ODS_DATASOURCE: db-admin
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_SECURITY_DATASOURCE: db-admin
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+      DATABASEENGINE: "SqlServer"
+      API_MODE: ${API_MODE}
+      AUTHORITY: ${AUTHORITY}
+      ISSUER_URL: ${ISSUER_URL}
+      SIGNING_KEY: ${SIGNING_KEY}
+      ADMIN_API_VIRTUAL_NAME: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      ODS_API_VERSION: ${ODS_API_VERSION}
+      ENCRYPT_CONNECTION: "${ENCRYPT_CONNECTION:-false}"
+      AppSettings__AdminApiMode: ${ADMINAPI_MODE:-V1}
+# ---
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
+      API_INTERNAL_URL: ${API_INTERNAL_URL}
+      AppSettings__DatabaseEngine: SqlServer
+      AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
+      AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
+      AppSettings__EnableAdminConsoleAPI: false
+      AppSettings__EnableApplicationResetEndpoint: false
+      AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
+      AppSettings__IgnoresCertificateErrors: ${IGNORES_CERTIFICATE_ERRORS:-false}
+      AppSettings__MultiTenancy: false
+      AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      AppSettings__PreventDuplicateApplications: false
+      Authentication__IssuerUrl: ${ISSUER_URL}
+      Authentication__SigningKey: ${SIGNING_KEY}
+      AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
+      AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
+      ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      EdFiApiDiscoveryUrl: ""
+      IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
+      IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
+      IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}
+      IpRateLimiting__ClientIdHeader: ${IPRATELIMITING__CLIENTIDHEADER:-X-ClientId}
+      IpRateLimiting__HttpStatusCode: ${IPRATELIMITING__HTTPSTATUSCODE:-429}
+      IpRateLimiting__IpWhitelist: ${IPRATELIMITING__IPWHITELIST:-[]}
+      IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
+      Log4NetCore__Log4NetConfigFileName: "./log4net.config"
+      SQLSERVER_PORT: 1433
+
+    depends_on:
+      - db-admin
+    restart: always
+    hostname: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+    container_name: adminapi
+    healthcheck:
+      test: ${ADMIN_API_HEALTHCHECK_TEST}
+      start_period: "60s"
+      retries: 3
+
+  db-admin:
+    build:
+      context: ../../../Settings/V1/DB-Admin/mssql/
+      dockerfile: Dockerfile
+    environment:
+      SA_PASSWORD: "${SA_PASSWORD:-P@55w0rd}"
+      ACCEPT_EULA: "Y"
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_SECURITY_DATASOURCE: db-admin
+      SQLSERVER_PORT: 1433
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+    ports:
+      - 1433:1433
+    volumes:
+      - vol-db-admin-adminapi:/var/lib/mssql/data
+    restart: always
+    container_name: ed-fi-db-admin-adminapi
+
+volumes:
+  vol-db-admin-adminapi:
+    driver: local
+    name: vol-db-admin-adminapi

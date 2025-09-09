@@ -1,0 +1,141 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+name: Admin API E2E Tests + ODS 6 + MSSQL
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - "*-hotfix"
+
+env:
+  JIRA_ACCESS_TOKEN: ${{ secrets.JIRA_ACCESS_TOKEN }}
+  ADMIN_API_VERSION: "1.2"
+  PROJECT_ID: "13401"
+  CYCLE_NAME: "Automation Cycle"
+  TASK_NAME: "API Automation Task"
+  FOLDER_NAME: "API Automation Run"
+  RESULTS_FILE: "test-results"
+
+permissions: read-all
+
+jobs:
+  run-e2e-tests:
+    defaults:
+      run:
+        working-directory: ./Application/EdFi.Ods.AdminApi/
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Copy application folder to docker context
+        run: |
+          mkdir ../../Docker/Application
+          cp -r ../EdFi.Ods.AdminApi ../../Docker/Application
+
+      - name: Copy nuget config to docker context
+        run: cp ../NuGet.Config ../../Docker/Application
+
+      - name: Update certificates
+        run: cp -r ../../eng/test-certs/ssl ../../Docker/Settings
+
+      - name: Run Admin API
+        run: |
+          docker compose \
+            -f '../../Docker/V1/Compose/mssql/compose-build-dev.yml' \
+            --env-file './E2E Tests/V1/gh-action-setup/.automation.env' \
+            up -d
+
+      - name: Verify containers are running
+        run: |
+          chmod +x './E2E Tests/V1/gh-action-setup/inspect.sh'
+          './E2E Tests/V1/gh-action-setup/inspect.sh'
+
+      - name: Setup node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "16"
+
+      - name: Combine Collections
+        run: |
+          npx postman-combine-collections@1.1.2 -f './E2E Tests/V1/Admin API E2E.postman_collection*.json' \
+             -n 'Admin API E2E 1.0' \
+             -o './E2E Tests/V1/Admin-API-Full-Collection.json'
+
+      - name: Run tests
+        run: |
+          npx --package=newman@6.1.2 --package=newman-reporter-htmlextra@1.23.1 -- newman run './E2E Tests/V1/Admin-API-Full-Collection.json' \
+            -e './E2E Tests/V1/Admin API Docker.postman_environment.json' \
+            -r cli,junit,htmlextra \
+            --reporter-htmlextra-title 'AdminAPI - 1.0' \
+            --reporter-htmlextra-export './report-html/results.html' \
+            --reporter-junit-export ./reports/report.xml \
+            -k
+
+      - name: Get Docker logs
+        if: failure()
+        run: |
+          mkdir docker-logs
+          docker logs adminapi > docker-logs/adminapi.log
+          docker logs ed-fi-db-admin-adminapi > docker-logs/ed-fi-db-admin.log
+          docker logs ed-fi-gateway-adminapi > docker-logs/ed-fi-gateway.log
+
+      - name: Upload Docker logs
+        if: failure()
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        with:
+          name: docker-logs
+          path: Application/EdFi.Ods.AdminApi/docker-logs/
+          retention-days: 10
+
+      - name: Upload Html results
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        if: success() || failure()
+        with:
+          name: test-html-results
+          path: Application/EdFi.Ods.AdminApi/report-html/results.html
+          retention-days: 10
+
+      - name: Upload xml results
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
+        if: success() || failure()
+        with:
+          name: test-results
+          path: Application/EdFi.Ods.AdminApi/reports/report.xml
+          retention-days: 10
+
+  report:
+    defaults:
+      run:
+        shell: pwsh
+    needs:
+      - run-e2e-tests
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Download artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #v4.1.8
+
+# Commented code until Token is renewed
+#      - name: Send report to Zephyr
+#        run: |
+#          $parameters = @{
+#              cycleName = '${{ env.CYCLE_NAME }}'
+#              taskName = '${{ env.TASK_NAME }}'
+#              folderName = '${{ env.FOLDER_NAME }}'
+#          }
+#          .\eng\send-test-results.ps1 `
+#              -PersonalAccessToken ${{ env.JIRA_ACCESS_TOKEN }} `
+#              -ProjectId ${{ env.PROJECT_ID }} `
+#              -AdminApiVersion '${{ env.ADMIN_API_VERSION }}' `
+#              -ResultsFilePath '${{ env.RESULTS_FILE }}/report.xml' `
+#              -ConfigParams $parameters

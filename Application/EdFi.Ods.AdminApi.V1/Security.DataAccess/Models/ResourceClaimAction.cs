@@ -30,6 +30,6 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
         public ResourceClaim ResourceClaim { get; set; }
 
         [StringLength(255)]
-        public string ValidationRuleSetName { get; set; }
+        public string? ValidationRuleSetName { get; set; }
     }
 }

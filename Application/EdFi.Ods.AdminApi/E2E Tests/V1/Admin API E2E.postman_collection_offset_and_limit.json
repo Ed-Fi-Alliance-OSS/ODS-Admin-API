@@ -1,0 +1,1265 @@
+{
+	"info": {
+		"_postman_id": "034b80cf-a2d4-478b-9b91-bcb12ec5cb38",
+		"name": "Admin API E2E refactor Offset and Limit",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "22794466"
+	},
+	"item": [
+		{
+			"name": "v1",
+			"item": [
+				{
+					"name": "Vendors",
+					"item": [
+						{
+							"name": "Vendors with offset",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes vendors\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors?offset=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Vendors with limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes vendors\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors?limit=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Vendors with offset and limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes correct number of vendors\", function () {\r",
+											"    pm.expect(results.length).to.eql(2);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes vendors\", function () {\r",
+											"    pm.expect(results[0].company).to.eql('My application company 5');\r",
+											"    pm.expect(results[1].company).to.eql('My application company 6');\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors?offset=5&limit=2",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"let totalToCreate = parseInt(pm.collectionVariables.get(\"VENDORSCOUNT\"), 10);\r",
+									"var vendorsToDelete = [];\r",
+									"let vendorNamePrefix = 'My application company'\r",
+									"for (let i = 0; i < totalToCreate; i++) {\r",
+									"    let company = `${vendorNamePrefix} ${i}`;\r",
+									"    let namespacePrefixes = 'uri://edfi.org';\r",
+									"    let contactName = 'Joe Doe';\r",
+									"    let contactEmailAddress = 'joedoe@test-ed-fi.org';\r",
+									"\r",
+									"    pm.sendRequest({\r",
+									"        url: `${pm.variables.get(\"API_URL\")}/v1/vendors`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({ \"company\": `${company}`, \"namespacePrefixes\": `${namespacePrefixes}`, \"contactName\": `${contactName}`, \"contactEmailAddress\":  `${contactEmailAddress}` })\r",
+									"        }\r",
+									"        }, (err, res) => {\r",
+									"            let location = res.headers.get('Location');\r",
+									"            let matches = location.match(/(\\d+)/);\r",
+									"            let vendorId = parseInt(matches[0], 10);\r",
+									"            vendorsToDelete.push(vendorId);\r",
+									"    });\r",
+									"}\r",
+									"\r",
+									"pm.collectionVariables.set(\"VENDORSTODELETE\", vendorsToDelete);"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"let vendorsToDelete = pm.collectionVariables.get(\"VENDORSTODELETE\");\r",
+									"for (let i = 0; i < vendorsToDelete.length; i++) {\r",
+									"    let id = vendorsToDelete[i];\r",
+									"    pm.sendRequest({        \r",
+									"        url: `${pm.variables.get(\"API_URL\")}/v1/vendors/${id}`,\r",
+									"        method: 'DELETE',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Accept': '*/*',\r",
+									"            'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"        }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.log(err);\r",
+									"        }\r",
+									"    });\r",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Application",
+					"item": [
+						{
+							"name": "Applications with offset",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes applications\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/applications?offset=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Applications with limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes applications\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/applications?limit=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Applications with offset and limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes correct number of applications\", function () {\r",
+											"    pm.expect(results.length).to.eql(2);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes applications\", function () {\r",
+											"    pm.expect(results[0].applicationName).to.eql('My application 5');\r",
+											"    pm.expect(results[1].applicationName).to.eql('My application 6');\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/applications?offset=5&limit=2",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"var header = {\r",
+									"        'Content-Type': 'application/json',\r",
+									"        'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"    };\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"  url: `${pm.variables.get(\"API_URL\")}/v1/vendors`,\r",
+									"  method: 'POST',\r",
+									"  header: header,\r",
+									"  body: {\r",
+									"    mode: 'raw',\r",
+									"    raw:JSON.stringify({\r",
+									"      \"company\": \"My Application Company\",\r",
+									"      \"namespacePrefixes\": \"uri://ed-fi.org\",\r",
+									"      \"contactName\": \"Application User\",\r",
+									"      \"contactEmailAddress\": \"application@example.com\"\r",
+									"    }), \r",
+									"  }\r",
+									"},  \r",
+									"function (err, response) {\r",
+									"  if (err) { console.log(\"Error in Pre-request:\", err); }\r",
+									"  const json = response.json();\r",
+									"  if (!json.result.vendorId) { console.log('Error in Pre-request: vendorID missing from response. Response is:', json); }\r",
+									"  else {\r",
+									"    pm.collectionVariables.set(\"MyApplicationVendorId\", json.result.vendorId);\r",
+									"    let totalToCreate = parseInt(pm.collectionVariables.get(\"APPLICATIONCOUNT\"), 10);\r",
+									"    var applicationsToDelete = [];\r",
+									"    let applicationNamePrefix = 'My application'\r",
+									"    for (let i = 0; i < totalToCreate; i++) {\r",
+									"        let applicationName = `${applicationNamePrefix} ${i}`;\r",
+									"        let vendorId = json.result.vendorId;\r",
+									"\r",
+									"        pm.sendRequest({\r",
+									"            url: `${pm.variables.get(\"API_URL\")}/v1/applications`,\r",
+									"            method: 'POST',\r",
+									"            header: header,\r",
+									"            body: {\r",
+									"                mode: 'raw',\r",
+									"                raw: JSON.stringify({ \"applicationName\": `${applicationName}`, \"vendorId\" : `${vendorId}`, \"claimSetName\": 'Ed-Fi Sandbox', \"profileId\": null, \"educationOrganizationIds\":  [ 255901 ] })\r",
+									"            }\r",
+									"            }, (err, res) => {\r",
+									"                let location = res.headers.get('Location');\r",
+									"                let matches = location.match(/(\\d+)/);\r",
+									"                let applicationId = parseInt(matches[0], 10);\r",
+									"                applicationsToDelete.push(applicationId);\r",
+									"        });\r",
+									"    }\r",
+									"        pm.collectionVariables.set(\"APPLICATIONSTODELETE\", applicationsToDelete);\r",
+									"    }\r",
+									"});\r",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"header = {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Accept': '*/*',\r",
+									"    'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest({        \r",
+									"    url: `${pm.variables.get(\"API_URL\")}/v1/vendors/${pm.collectionVariables.get(\"MyApplicationVendorId\")}`,\r",
+									"    method: 'DELETE',\r",
+									"    header: header\r",
+									"}, function (err, res) {\r",
+									"    if (err) {\r",
+									"        console.log(err);\r",
+									"    }\r",
+									"});\r",
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "ClaimSets",
+					"item": [
+						{
+							"name": "ClaimSets with offset",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes claimsets\", function () {\r",
+											"    const resultsSystemReserved = results.filter((claimset) => claimset.isSystemReserved == true);\r",
+											"    pm.expect(resultsSystemReserved.length).to.eql(8);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets?offset=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets with limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes claimsets\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets?limit=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets with offset and limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes correct number of claimsets\", function () {\r",
+											"    pm.expect(results.length).to.eql(2);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes claimsets\", function () {\r",
+											"    const resultsSystemReserved = results.filter((claimset) => claimset.isSystemReserved == true);\r",
+											"    pm.expect(resultsSystemReserved[0].name).to.eql('Ed-Fi API Publisher - Reader');\r",
+											"    pm.expect(resultsSystemReserved[1].name).to.eql('Ed-Fi API Publisher - Writer');\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets?offset=5&limit=2",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"\r",
+									"\r",
+									"header = {\r",
+									"    'Content-Type': 'application/json',\r",
+									"    'Accept': '*/*',\r",
+									"    'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest({        \r",
+									"    url: `${pm.variables.get(\"API_URL\")}/v1/claimsets}`,\r",
+									"    method: 'DELETE',\r",
+									"    header: header\r",
+									"}, function (err, res) {\r",
+									"\r",
+									"    error = res.json().error\r",
+									"    if(error) {\r",
+									"        throw res.json().error_description\r",
+									"    }\r",
+									"    const response =  res.json();\r",
+									"\r",
+									"    console.log(response);\r",
+									"});\r",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Ods Instances",
+					"item": [
+						{
+							"name": "Ods instances with offset",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes vendors\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances?offset=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Ods instances with limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes vendors\", function () {\r",
+											"    pm.expect(results.length).to.eql(5);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances?limit=5",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Ods instances with offset and limit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"const results = pm.response.json().result;\r",
+											"\r",
+											"pm.test(\"Response matches success format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"title\");\r",
+											"    pm.expect(response).to.have.property(\"result\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes correct number of ods instances\", function () {\r",
+											"    pm.expect(results.length).to.eql(2);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response result includes ods instances\", function () {\r",
+											"    pm.expect(results[0].name).to.eql('ods Instance test 5');\r",
+											"    pm.expect(results[1].name).to.eql('ods Instance test 6');\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances?offset=5&limit=2",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "5"
+										},
+										{
+											"key": "limit",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"let totalToCreate = parseInt(pm.collectionVariables.get(\"ODSINSTANCESCOUNT\"), 10);\r",
+									"var odsInstancesToDelete = [];\r",
+									"let odsInstanceNamePrefix = 'ods Instance test'\r",
+									"for (let i = 0; i < totalToCreate; i++) {\r",
+									"    let name = `${odsInstanceNamePrefix} ${i}`;\r",
+									"    let instanceType = 'test type';\r",
+									"    let version = 'test type';\r",
+									"    let status = 'test status';\r",
+									"\r",
+									"    pm.sendRequest({\r",
+									"        url: `${pm.variables.get(\"API_URL\")}/v1/odsInstances`,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify({ \"name\": `${name}`, \"instanceType\": `${instanceType}`, \"version\": `${version}`, \"status\":  `${status}` })\r",
+									"        }\r",
+									"        }, (err, res) => {\r",
+									"            let location = res.headers.get('Location');\r",
+									"            let matches = location.match(/(\\d+)/);\r",
+									"            let odsInstanceId = parseInt(matches[0], 10);\r",
+									"            odsInstancesToDelete.push(odsInstanceId);\r",
+									"    });\r",
+									"}\r",
+									"pm.collectionVariables.set(\"ODSINSTANCESTODELETE\", odsInstancesToDelete.join(','));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"let odsInstancesToDelete = pm.collectionVariables.get(\"ODSINSTANCESTODELETE\").split(\",\");\r",
+									"for (let i = 0; i < odsInstancesToDelete.length; i++) {\r",
+									"    let id = odsInstancesToDelete[i];\r",
+									"    pm.sendRequest({        \r",
+									"        url: `${pm.variables.get(\"API_URL\")}/v1/odsInstances/${id}`,\r",
+									"        method: 'DELETE',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json',\r",
+									"            'Accept': '*/*',\r",
+									"            'Authorization': `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+									"        }\r",
+									"    }, function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.log(err);\r",
+									"        }\r",
+									"    });\r",
+									"}"
+								]
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": {
+			"token": "{{TOKEN}}"
+		}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"function generateClientSecret() {",
+					"    const minLength = 32;",
+					"    const maxLength = 128;",
+					"    let result = '';",
+					"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+					"    const specialCharacters = '!@#$%^&*()_+{}:\"<>?|[];\\',./`~';",
+					"    const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;",
+					"",
+					"    result += randomChar('abcdefghijklmnopqrstuvwxyz');",
+					"    result += randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ');",
+					"    result += randomChar('0123456789');",
+					"    result += randomChar(specialCharacters);",
+					"",
+					"    for (let i = result.length; i < length; i++) {",
+					"        const charactersPlusSpecial = characters + specialCharacters;",
+					"        result += charactersPlusSpecial.charAt(Math.floor(Math.random() * charactersPlusSpecial.length));",
+					"    }",
+					"",
+					"    return shuffleString(result);",
+					"}",
+					"",
+					"function randomChar(str) {",
+					"    return str.charAt(Math.floor(Math.random() * str.length));",
+					"}",
+					"",
+					"function shuffleString(str) {",
+					"    const array = str.split('');",
+					"    for (let i = array.length - 1; i > 0; i--) {",
+					"        const j = Math.floor(Math.random() * (i + 1));",
+					"        [array[i], array[j]] = [array[j], array[i]];",
+					"    }",
+					"    return array.join('');",
+					"}",
+					"",
+					"let currentToken = pm.collectionVariables.get(\"TOKEN\");",
+					"if(currentToken) {",
+					"    return;",
+					"}",
+					"",
+					"var guid = pm.variables.replaceIn('{{$guid}}');",
+					"let client_secret =  generateClientSecret();",
+					"var header = {",
+					"    'Content-Type': 'application/x-www-form-urlencoded'",
+					"};",
+					"",
+					"const registerRequest = {",
+					"    url: `${pm.variables.get(\"API_URL\")}/connect/register`,",
+					"    method: 'POST',",
+					"    header: header,",
+					"    body: {",
+					"        mode: 'urlencoded',",
+					"        urlencoded: [",
+					"            {key: 'ClientId', value: guid },",
+					"            {key: 'ClientSecret', value: client_secret },",
+					"            {key: 'DisplayName', value: guid }",
+					"            ]",
+					"    }",
+					"}",
+					"",
+					"const tokenRequest = {",
+					"    url: `${pm.variables.get(\"API_URL\")}/connect/token`,",
+					"    method: 'POST',",
+					"    header: header,",
+					"    body: {",
+					"        mode: 'urlencoded',",
+					"        urlencoded: [",
+					"            {key: 'client_id', value: guid },",
+					"            {key: 'client_secret', value: client_secret },",
+					"            {key: 'grant_type', value: \"client_credentials\"},",
+					"            {key: 'scope', value: \"edfi_admin_api/full_access\"}",
+					"        ]",
+					"    }",
+					"}",
+					"",
+					"",
+					"pm.sendRequest(registerRequest,",
+					"    (err, res) => {",
+					"        ",
+					"        pm.sendRequest(tokenRequest,",
+					"            (err, res) => {",
+					"                error = res.json().error",
+					"                if(error) {",
+					"                    throw res.json().error_description",
+					"                }",
+					"                pm.collectionVariables.set(\"TOKEN\", res.json().access_token);",
+					"                console.log(\"Token success\");",
+					"        });",
+					"",
+					"        error = res.json().error",
+					"        if(error) {",
+					"            throw res.json().error_description",
+					"        }",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "TOKEN",
+			"value": ""
+		},
+		{
+			"key": "VENDORSTODELETE",
+			"value": ""
+		},
+		{
+			"key": "VENDORSCOUNT",
+			"value": "10"
+		},
+		{
+			"key": "APPLICATIONSTODELETE",
+			"value": ""
+		},
+		{
+			"key": "APPLICATIONCOUNT",
+			"value": "10"
+		},
+		{
+			"key": "CLAIMSETSTODELETE",
+			"value": ""
+		},
+		{
+			"key": "CLAIMSETCOUNT",
+			"value": "10"
+		},
+		{
+			"key": "ODSINSTANCESTODELETE",
+			"value": ""
+		},
+		{
+			"key": "ODSINSTANCESCOUNT",
+			"value": "10"
+		}
+	]
+}

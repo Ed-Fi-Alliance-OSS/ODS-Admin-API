@@ -334,7 +334,7 @@ jobs:
       - name: Build and push admin api database image
         uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
         with:
-          context: "{{defaultContext}}:Docker/Settings/DB-Admin/pgsql"
+          context: "{{defaultContext}}:Docker/Settings/V2/DB-Admin/pgsql"
           cache-from: type=registry,ref=${{ env.DATABASE_IMAGE_NAME }}:pre
           cache-to: type=inline
           build-args: ADMIN_API_VERSION=${{ steps.prepare-tags.outputs.VERSION }}

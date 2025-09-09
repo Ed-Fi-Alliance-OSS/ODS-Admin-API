@@ -30,7 +30,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
 
         public virtual Vendor Vendor { get; set; }
 
-        public virtual OdsInstance OdsInstance { get; set; }
+        public virtual OdsInstance? OdsInstance { get; set; }
 
         [StringLength(255)]
         [Required]

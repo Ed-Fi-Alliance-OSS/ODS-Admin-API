@@ -36,6 +36,6 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
         public List<ClaimSetResourceClaimActionAuthorizationStrategyOverrides> AuthorizationStrategyOverrides { get; set; }
 
         [StringLength(255)]
-        public string ValidationRuleSetNameOverride { get; set; }
+        public string? ValidationRuleSetNameOverride { get; set; }
     }
 }

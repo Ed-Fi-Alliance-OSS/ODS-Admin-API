@@ -1,0 +1,220 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+services:
+  nginx:
+    build:
+      context: ../../../../Settings/V2/gateway/
+      dockerfile: IDP.Dockerfile
+    environment:
+      ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
+      ODS_VIRTUAL_NAME: "${ODS_VIRTUAL_NAME:-api}"
+      KEYCLOAK_VIRTUAL_NAME: ${KEYCLOAK_VIRTUAL_NAME:-auth}
+    ports:
+      - "443:443"
+      - "80:80"
+    container_name: ed-fi-gateway-adminapi
+    restart: always
+    hostname: nginx
+    volumes:
+      - ../../../../Settings/ssl:/ssl/
+    depends_on:
+      - adminapi
+      - idp-keycloak
+
+  adminapi:
+    build:
+      # Important to set the context to the root, rather than setting it to the
+      # EdFi.Ods.AdminApi directory, so that the Dockerfile has access to other
+      # C# projects.
+      context: ../../../../
+      additional_contexts:
+        assets: ../../../../../
+      args:
+        ASPNETCORE_ENVIRONMENT: "multitenantdocker"
+      dockerfile: dev.mssql.Dockerfile
+    environment:
+      ADMIN_WAIT_MSSQL_HOSTS: "db-admin-tenant1 db-admin-tenant2"
+      AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
+      AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
+      AppSettings__AdminApiMode: ${ADMINAPI_MODE:-V2}
+      AppSettings__DatabaseEngine: "SqlServer"
+      AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
+      AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
+      AppSettings__EnableAdminConsoleAPI: ${ENABLE_ADMIN_CONSOLE:-true}
+      AppSettings__EnableApplicationResetEndpoint: ${ENABLE_APPLICATION_RESET_ENDPOINT:-true} 
+      AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
+      AppSettings__IgnoresCertificateErrors: ${IGNORES_CERTIFICATE_ERRORS:-false}
+      AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-true}"
+      AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      AppSettings__PreventDuplicateApplications: ${PREVENT_DUPLICATE_APPLICATIONS:-false}
+      ASPNETCORE_ENVIRONMENT: "multitenantdocker"
+      Authentication__AllowRegistration: true
+      Authentication__IssuerUrl: ${ISSUER_URL}
+      Authentication__SigningKey: ${SIGNING_KEY}
+      EnableDockerEnvironment: true
+      IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
+      IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
+      IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}
+      IpRateLimiting__ClientIdHeader: ${IPRATELIMITING__CLIENTIDHEADER:-X-ClientId}
+      IpRateLimiting__HttpStatusCode: ${IPRATELIMITING__HTTPSTATUSCODE:-429}
+      IpRateLimiting__IpWhitelist: ${IPRATELIMITING__IPWHITELIST:-[]}
+      IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
+      Log4NetCore__Log4NetConfigFileName: "./log4net.config"
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_ODS_DATASOURCE: db-admin
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+      SQLSERVER_SECURITY_DATASOURCE: db-admin
+      SQLSERVER_TENANT1_PORT: 1433
+      SQLSERVER_TENANT2_PORT: 1433
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
+      SwaggerSettings__DefaultTenant: ${DEFAULT_TENANT:-tenant2}
+      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
+      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
+    entrypoint: ["/bin/sh"]
+    command: ["-c","/app/run.sh"]
+    depends_on:
+      - db-admin-tenant1
+      - db-admin-tenant2
+      - idp-keycloak
+    restart: always
+    hostname: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+    container_name: adminapi
+    healthcheck:
+      test: ${ADMIN_API_HEALTHCHECK_TEST}
+      start_period: "60s"
+      retries: 3
+
+  db-admin-tenant1:
+    build:
+      context: ../../../../
+      additional_contexts:
+        assets: ../../../../../
+      dockerfile: V2/db.mssql.admin.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
+    environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
+      SA_PASSWORD: "${SA_PASSWORD:-P@55w0rd}"
+      ACCEPT_EULA: "Y"
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_ODS_DATASOURCE: db-admin
+      SQLSERVER_PORT: 1433
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+    ports:
+      - 1433:1433
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 10s
+      retries: 10
+    volumes:
+      - vol-db-admin-adminapi-tenant1:/var/lib/mssql/data
+      - ../../../../Settings/dev/mssql/adminapi-test-seeddata.sql:/tmp/AdminApiScripts/Admin/MsSql/adminapi-test-seeddata.sql
+    restart: always
+    container_name: ed-fi-db-admin-adminapi-tenant1
+
+  db-admin-tenant2:
+    build:
+      context: ../../../../
+      additional_contexts:
+        assets: ../../../../../
+      dockerfile: V2/db.mssql.admin.Dockerfile
+      args:
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
+    environment:
+      ADMIN_API_VERSION: ${ADMIN_API_VERSION}
+      SA_PASSWORD: "${SA_PASSWORD:-P@55w0rd}"
+      ACCEPT_EULA: "Y"
+      SQLSERVER_ADMIN_DATASOURCE: db-admin
+      SQLSERVER_ODS_DATASOURCE: db-admin
+      SQLSERVER_PORT: 1433
+      SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
+      SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
+    ports:
+      - 1434:1433
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 10s
+      retries: 10
+    volumes:
+      - vol-db-admin-adminapi-tenant2:/var/lib/mssql/data
+      - ../../../../Settings/dev/mssql/adminapi-test-seeddata.sql:/tmp/AdminApiScripts/Admin/MsSql/adminapi-test-seeddata.sql
+    restart: always
+    container_name: ed-fi-db-admin-adminapi-tenant2
+
+  idp-keycloak:
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_IMAGE_TAG:-26.0}
+    command: start-dev --import-realm
+    environment:
+      KC_HOSTNAME: "https://${KEYCLOAK_HOSTNAME:-localhost}/${KEYCLOAK_RELATIVE_PATH:-auth}/"
+      KC_HTTP_ENABLED: true
+      KC_HTTPS_ENABLED: true
+      KC_HOSTNAME_STRICT: true
+      KC_HEALTH_ENABLED: ${KEYCLOAK_HEALTH_ENABLED:-true}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db-idp-keycloak/${KEYCLOAK_POSTGRES_DB:-keycloak_db}
+      KC_PROXY_HEADERS: forwarded
+      PROXY_ADDRESS_FORWARDING: true
+      KC_DB_USERNAME: ${KEYCLOAK_POSTGRES_USER:-edfi}
+      KC_DB_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
+      KC_HTTP_RELATIVE_PATH: "/${KEYCLOAK_RELATIVE_PATH:-auth}/"
+      KC_SPI_LOGIN_PROTOCOL_OPENID_CONNECT_LEGACY_IFRAME_CHECK: false
+      KC_LOG_LEVEL: ${KEYCLOAK_LOG_LEVEL:-OFF}
+      KC_LOG: console
+      KC_HTTPS_CERTIFICATE_FILE: /ssl/server.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /ssl/server.key
+    ports:
+      - ${KEYCLOAK_PORT:-28080}:8080
+    restart: always
+    depends_on:
+      - pb-idp-keycloak
+    hostname: ${KEYCLOAK_VIRTUAL_NAME:-idp_keycloak}
+    volumes:
+      - ../../../../Settings/ssl:/ssl/
+      - ../../../../KeyCloak/realm-and-users.json:/opt/keycloak/data/import/realm-and-users.json
+    container_name: ed-fi-idp-keycloak
+
+  db-idp-keycloak:
+    image: postgres:${KEYCLOAK_DB_IMAGE_TAG:-16.2}
+    volumes:
+      - vol-db-idp-keycloak:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_POSTGRES_DB:-keycloak_db}
+      POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
+      POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
+    container_name: ed-fi-db-idp-keycloak
+
+  pb-idp-keycloak:
+    image: bitnami/pgbouncer:1.20.0
+    environment:
+      PGBOUNCER_DATABASE: '*'
+      PGBOUNCER_PORT: ${PGBOUNCER_LISTEN_PORT:-6432}
+      PGBOUNCER_EXTRA_FLAGS: ${PGBOUNCER_EXTRA_FLAGS}
+      POSTGRESQL_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
+      POSTGRESQL_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
+      POSTGRESQL_HOST: db-idp-keycloak
+      PGBOUNCER_SET_DATABASE_USER: 'yes'
+      PGBOUNCER_SET_DATABASE_PASSWORD: 'yes'
+      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
+    restart: always
+    container_name: ed-fi-pb-idp-keycloak
+    depends_on:
+      - db-idp-keycloak
+
+volumes:
+  vol-db-admin-adminapi-tenant1:
+    driver: local
+    name: vol-db-admin-adminapi-tenant1
+  vol-db-admin-adminapi-tenant2:
+    driver: local
+    name: vol-db-admin-adminapi-tenant2
+  vol-db-idp-keycloak:
+    driver: local
+    name: vol-db-idp-keycloak
