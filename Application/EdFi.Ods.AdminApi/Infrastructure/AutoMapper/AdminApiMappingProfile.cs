@@ -3,11 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Text;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.AdminConsole.Features.Instances;
-using EdFi.Ods.AdminApi.AdminConsole.Features.WorkerInstances;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.DataAccess.Models;
 using EdFi.Ods.AdminApi.Features.Actions;
 using EdFi.Ods.AdminApi.Features.ApiClients;
 using EdFi.Ods.AdminApi.Features.Applications;
@@ -17,14 +13,12 @@ using EdFi.Ods.AdminApi.Features.OdsInstanceContext;
 using EdFi.Ods.AdminApi.Features.OdsInstanceDerivative;
 using EdFi.Ods.AdminApi.Features.ODSInstances;
 using EdFi.Ods.AdminApi.Features.Profiles;
-using EdFi.Ods.AdminApi.Features.ResourceClaimActionAuthStrategies;
 using EdFi.Ods.AdminApi.Features.ResourceClaimActions;
 using EdFi.Ods.AdminApi.Features.Vendors;
 using EdFi.Ods.AdminApi.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
-using Newtonsoft.Json;
 using OverrideAuthStategyOnClaimSetRequest = EdFi.Ods.AdminApi.Features.ClaimSets.ResourceClaims.EditAuthStrategy.OverrideAuthStategyOnClaimSetRequest;
 using Profile = AutoMapper.Profile;
 
@@ -175,53 +169,6 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dest => dest.ResourceClaimId, opt => opt.MapFrom(src => src.ResourceClaim.ResourceClaimId))
             .ForMember(dest => dest.ResourceName, opt => opt.MapFrom(src => src.ResourceClaim.ResourceName))
             .ForMember(dest => dest.Actions, opt => opt.Ignore());//Action is ignore as we build it manually
-
-        CreateMap<Instance, InstanceModel>()
-            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dst => dst.TenantId, opt => opt.MapFrom(src => src.TenantId))
-            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.InstanceName))
-            .ForMember(dst => dst.InstanceType, opt => opt.MapFrom(src => src.InstanceType))
-            .ForMember(dst => dst.BaseUrl, opt => opt.MapFrom(src => src.BaseUrl))
-            .ForMember(dst => dst.OdsInstanceContexts, opt => opt.MapFrom(src => src.OdsInstanceContexts))
-            .ForMember(dst => dst.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-            .ForMember(dst => dst.OdsInstanceDerivatives, opt => opt.MapFrom(src => src.OdsInstanceDerivatives));
-
-        CreateMap<Instance, InstanceWorkerModel>()
-            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dst => dst.TenantId, opt => opt.MapFrom(src => src.TenantId))
-            .ForMember(dst => dst.TenantName, opt => opt.MapFrom(src => src.TenantName))
-            .ForMember(dst => dst.OdsInstanceId, opt => opt.MapFrom(src => src.OdsInstanceId))
-            .ForMember(dst => dst.InstanceName, opt => opt.MapFrom(src => src.InstanceName))
-            .ForMember(dst => dst.ResourceUrl, opt => opt.MapFrom(src => src.ResourceUrl ?? string.Empty))
-            .ForMember(dst => dst.oAuthUrl, opt => opt.MapFrom(src => src.OAuthUrl))
-            .ForMember(dst => dst.Status, opt => opt.MapFrom(src => Enum.GetName(src.Status)))
-            .AfterMap((src, dst) =>
-            {
-                if (src.Credentials != null)
-                {
-                    var credentials = JsonConvert.DeserializeObject<InstanceWorkerModelDto>(Encoding.UTF8.GetString(src.Credentials));
-                    dst.ClientId = credentials?.ClientId;
-                    dst.ClientSecret = credentials?.Secret;
-                }
-            });
-
-        CreateMap<AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceContext, OdsInstanceContextForInstanceModel>()
-            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
-            .ForMember(dst => dst.ContextKey, opt => opt.MapFrom(src => src.ContextKey))
-            .ForMember(dst => dst.ContextValue, opt => opt.MapFrom(src => src.ContextValue));
-
-        CreateMap<AdminConsole.Infrastructure.DataAccess.Models.OdsInstanceDerivative, OdsInstanceDerivativeForInstanceModel>()
-            .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
-            .ForMember(dst => dst.DerivativeType, opt => opt.MapFrom(src => src.DerivativeType));
-
-        CreateMap<Admin.DataAccess.Models.OdsInstanceContext, AdminConsole.Infrastructure.Services.Instances.Models.OdsInstanceContextModel>()
-            .ForMember(dst => dst.ContextKey, opt => opt.MapFrom(src => src.ContextKey))
-            .ForMember(dst => dst.ContextValue, opt => opt.MapFrom(src => src.ContextValue));
-
-        CreateMap<Admin.DataAccess.Models.OdsInstanceDerivative, AdminConsole.Infrastructure.Services.Instances.Models.OdsInstanceDerivativeModel>()
-            .ForMember(dst => dst.DerivativeType, opt => opt.MapFrom(src => src.DerivativeType));
 
         CreateMap<AddApiClientResult, ApiClientResult>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.Id))

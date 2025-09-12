@@ -33,4 +33,8 @@
     <ProjectReference Include="..\EdFi.Ods.AdminApi.AdminConsole\EdFi.Ods.AdminApi.AdminConsole.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Infrastructure\DataAccess\Models\" />
+  </ItemGroup>
+
 </Project>

@@ -47,5 +47,4 @@ If the Healthcheck Worker functionality needs to be restored in the future, foll
 ## References
 
 * Ticket: ADMINAPI-1295
-* Commit: [Include the commit hash once the changes are merged]
-* Related Documentation: [Any related documentation links]
+* Commit: 5e3d484d2672c77b3ca459befbc490b140b43b41

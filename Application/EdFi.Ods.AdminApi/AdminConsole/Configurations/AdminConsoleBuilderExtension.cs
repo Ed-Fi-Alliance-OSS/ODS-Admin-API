@@ -15,7 +15,6 @@ public static class AdminConsoleBuilderExtension
 {
     public static void RegisterAdminConsoleDependencies(this WebApplicationBuilder webApplicationBuilder)
     {
-        webApplicationBuilder.ConfigureAdminConsoleDatabase();
         webApplicationBuilder.AddAdminConsoleServices();
     }
 

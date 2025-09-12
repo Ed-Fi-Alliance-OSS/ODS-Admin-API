@@ -61,8 +61,6 @@ app.MapFeatureEndpoints();
 if (adminConsoleIsEnabled && adminApiMode == AdminApiMode.V2)
 {
     app.MapAdminConsoleFeatureEndpoints();
-    //Initialize data
-    await app.InitAdminConsoleData();
 }
 
 app.MapControllers();

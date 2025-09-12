@@ -3,16 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Reflection;
-using EdFi.Ods.AdminApi.AdminConsole.Helpers;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure;
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Repositories;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services;
 using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.AdminConsole;
@@ -27,27 +22,14 @@ public static class ServicesBuilderExtension
 
         builder.Services.Configure<AdminConsoleSettings>(builder.Configuration.GetSection("AdminConsoleSettings"));
 
-        builder.Services.AddTransient<IEncryptionKeySettings>(sp => sp.GetService<IOptions<AdminConsoleSettings>>()!.Value);
-        builder.Services.AddTransient<IEncryptionKeyResolver, OptionsEncryptionKeyResolver>();
-
         builder.Services.AddTransient<IAdminConsoleTenantsService, TenantService>();
-        builder.Services.AddTransient<IAdminConsoleInstancesService, InstanceService>();
-        builder.Services.AddTransient<IAdminConsoleInitializationService, InitializationService>();
-        builder.Services.AddTransient<IGetOdsInstancesQuery, GetOdsInstancesQuery>();
-        builder.Services.AddTransient<IGetOdsInstanceContextsQuery, GetOdsInstanceContextsQuery>();
-        builder.Services.AddTransient<IGetOdsInstanceDerivativesQuery, GetOdsInstanceDerivativesQuery>();
-        builder.Services.AddTransient<IGetApiClientIdByApplicationIdQuery, GetApiClientIdByApplicationIdQuery>();
-        builder.Services.AddTransient<IGetApplicationByNameAndClaimsetQuery, GetApplicationByNameAndClaimsetQuery>();
 
         builder.RegisterAdminConsoleServices();
-        builder.RegisterAdminConsoleValidators();
 
     }
 
     private static void RegisterAdminConsoleServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddScoped(typeof(ICommandRepository<>), typeof(CommandRepository<>));
-        builder.Services.AddScoped(typeof(IQueriesRepository<>), typeof(QueriesRepository<>));
         foreach (var type in typeof(IMarkerForEdFiAdminConsoleManagement).Assembly.GetTypes())
         {
             if (type.IsClass && !type.IsAbstract && (type.IsPublic || type.IsNestedPublic))
@@ -83,16 +65,5 @@ public static class ServicesBuilderExtension
                 }
             }
         }
-    }
-
-    private static void RegisterAdminConsoleValidators(this WebApplicationBuilder webApplicationBuilder)
-    {
-        // Fluent validation
-        webApplicationBuilder.Services
-            .AddValidatorsFromAssembly(typeof(IMarkerForEdFiAdminConsoleManagement).Assembly)
-            .AddFluentValidationAutoValidation();
-        ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, expression)
-                    => memberInfo?
-                        .GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>()?.GetName();
     }
 }
