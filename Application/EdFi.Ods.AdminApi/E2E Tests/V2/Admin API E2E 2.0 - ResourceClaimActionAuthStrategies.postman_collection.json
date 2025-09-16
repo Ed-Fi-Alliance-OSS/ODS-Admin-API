@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "171c155d-9801-45f4-a4ca-18bba1fd8fca",
+		"_postman_id": "1bb3ec3a-88b7-4987-a815-4a34806b3b65",
 		"name": "Admin API E2E 2.0 - ResourceClaimActionAuthStrategies",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "646458"
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -119,6 +119,48 @@
 											"key": "limit",
 											"value": "{{limit}}"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ResourceClaimActionAuthStrategies - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test(\"Response matches error format\", function () {",
+											"    pm.expect(response).to.have.property(\"message\");",
+											"});",
+											"",
+											"pm.test(\"Response title is helpful and accurate\", function () {",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/resourceClaimActionAuthStrategies",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"resourceClaimActionAuthStrategies"
 									]
 								}
 							},

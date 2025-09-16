@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "c2f46729-edb4-4105-8dff-e780d432f24f",
+		"_postman_id": "814b8a32-96d3-4a65-b400-fe962037bdd0",
 		"name": "Admin API E2E 2.0 - Vendors",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "22794466"
 	},
 	"item": [
@@ -12,6 +12,57 @@
 				{
 					"name": "Vendors",
 					"item": [
+						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"company\": \"Test Company\",\r\n    \"namespacePrefixes\": \"uri://ed-fi.org\",\r\n    \"contactName\": \"Test User\",\r\n    \"contactEmailAddress\": \"test@test-ed-fi.org\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									]
+								}
+							},
+							"response": []
+						},
 						{
 							"name": "Vendors",
 							"event": [
@@ -169,6 +220,7 @@
 										"v2",
 										"vendors"
 									]
+								}
 							},
 							"response": []
 						},
@@ -216,7 +268,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/vendors"
+								"url": {
+									"raw": "{{API_URL}}/v2/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"vendors"
+									]
+								}
 							},
 							"response": []
 						},
@@ -314,6 +375,60 @@
 											"key": "limit",
 											"value": "{{limit}}"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
 									]
 								}
 							},
@@ -942,6 +1057,68 @@
 							"response": []
 						},
 						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"company\": \"Updated Test Company\",\r\n    \"namespacePrefixes\": \"uri://academicbenchmarks.com\",\r\n    \"contactName\": \"Updated User\",\r\n    \"contactEmailAddress\": \"updated@example.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Vendors - Invalid",
 							"event": [
 								{
@@ -1002,6 +1179,49 @@
 									],
 									"path": [
 										"v2",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"vendors",
 										"{{CreatedVendorId}}"
 									]
@@ -1298,6 +1518,15 @@
 	"auth": {
 		"type": "bearer",
 		"bearer": [
+			{
+				"key": "0",
+				"value": {
+					"key": "token",
+					"value": "{{TOKEN}}",
+					"type": "string"
+				},
+				"type": "any"
+			},
 			{
 				"key": "token",
 				"value": "{{TOKEN}}",

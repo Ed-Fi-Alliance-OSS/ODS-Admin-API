@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "aa95140d-a83e-4e7f-a3f8-052341b2c007",
+		"_postman_id": "ad4409c1-977b-489d-a6b1-31f6db89ed43",
 		"name": "Admin API E2E 2.0 - ClaimSets",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -11,6 +12,68 @@
 				{
 					"name": "ClaimSets",
 					"item": [
+						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"ClaimSetGUID\", pm.variables.replaceIn('{{$guid}}'));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Test ClaimSet {{ClaimSetGUID}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimSets",
+										""
+									]
+								}
+							},
+							"response": []
+						},
 						{
 							"name": "ClaimSets",
 							"event": [
@@ -65,6 +128,68 @@
 										"v2",
 										"claimSets",
 										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets - Import - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"ImportClaimSetGUID\", pm.variables.replaceIn('{{$guid}}'));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"resourceClaims\": [\r\n    {     \r\n      \"name\": \"educationStandards\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],      \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {     \r\n      \"name\": \"academicSubjectDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }  \r\n   \r\n      ],\r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {\r\n      \"name\": \"gradeLevelDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],\r\n     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {      \r\n      \"name\": \"publicationStatusDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    }\r\n  ],\r\n  \"name\": \"Test ClaimSet import {{ImportClaimSetGUID}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/import",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimSets",
+										"import"
 									]
 								}
 							},
@@ -734,6 +859,48 @@
 							"response": []
 						},
 						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimSets"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "ClaimSets - Without Offset and Limit",
 							"event": [
 								{
@@ -1326,6 +1493,50 @@
 									],
 									"path": [
 										"v2",
+										"claimSets",
+										"{{CreatedClaimSetId}}",
+										"export"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets - Export - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/{{CreatedClaimSetId}}/export",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"claimSets",
 										"{{CreatedClaimSetId}}",
 										"export"
@@ -2769,6 +2980,70 @@
 							"response": []
 						},
 						{
+							"name": "ResourceClaimClaimSets - Delete - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimSets",
+										"{{CreatedClaimSetId}}",
+										"resourceClaimActions",
+										"4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "ResourceClaimClaimSets - Delete",
 							"event": [
 								{
@@ -3191,6 +3466,102 @@
 							"response": []
 						},
 						{
+							"name": "ClaimSets/Copy - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/claimSets/${pm.collectionVariables.get(\"CreatedClaimSetId\")}/resourceClaimActions`,\r",
+											"  method: 'POST',\r",
+											"  header: header,\r",
+											"  body: {\r",
+											"    mode: 'raw',\r",
+											"    raw:JSON.stringify({\r",
+											"       \"resourceClaimId\": 9,\r",
+											"           \"resourceClaimActions\": [\r",
+											"                {\r",
+											"                \"name\": \"read\",\r",
+											"                \"enabled\": true\r",
+											"                },\r",
+											"                {\r",
+											"                \"name\": \"create\",\r",
+											"                \"enabled\": true\r",
+											"                }            \r",
+											"        ]\r",
+											"    })\r",
+											" }\r",
+											"},\r",
+											"function (claimSetErr) {\r",
+											"  if(claimSetErr) { console.log(\"Error in Pre-request:\", claimSetErr); } \r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Copied ClaimSet from {{CreatedClaimSetId}}\",\r\n    \"originalid\": {{CreatedClaimSetId}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/copy",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimSets",
+										"copy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "ClaimSets/Copy- Invalid ClaimSet Id",
 							"event": [
 								{
@@ -3331,6 +3702,68 @@
 									],
 									"path": [
 										"v2",
+										"claimSets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Updated Test ClaimSet\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"claimSets",
 										"{{CreatedClaimSetId}}"
 									]
@@ -3625,6 +4058,49 @@
 										"v2",
 										"claimSets",
 										"{{SystemReservedClaimSetId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/claimSets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimSets",
+										"{{CreatedClaimSetId}}"
 									]
 								}
 							},

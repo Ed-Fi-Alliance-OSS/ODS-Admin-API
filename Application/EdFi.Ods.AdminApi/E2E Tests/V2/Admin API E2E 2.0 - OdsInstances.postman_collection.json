@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "44f88975-fd52-41b3-b16e-291f1dd218d1",
+		"_postman_id": "07006385-4935-4283-9bb0-5b58170294ae",
 		"name": "Admin API E2E 2.0 - OdsInstances",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -65,6 +66,69 @@
 									],
 									"path": [
 										"v2",
+										"odsInstances",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"OdsInstanceGUID\", pm.variables.replaceIn('{{$guid}}'));\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Test-OdsInstance-{{OdsInstanceGUID}}\",\r\n    \"instanceType\": \"OdsInstance\",\r\n    \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"odsInstances",
 										""
 									]
@@ -382,6 +446,48 @@
 											"key": "limit",
 											"value": "{{limit}}"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test(\"Response matches error format\", function () {",
+											"    pm.expect(response).to.have.property(\"message\");",
+											"});",
+											"",
+											"pm.test(\"Response title is helpful and accurate\", function () {",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
 									]
 								}
 							},
@@ -942,6 +1048,68 @@
 							"response": []
 						},
 						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Updated-Test-OdsInstance-{{OdsInstanceGUID}}\",\r\n    \"instanceType\": \"Updated-Test-OdsInstanceType\",\r\n    \"connectionString\": \"{{connectionString}}\"\r\n\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreatedOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "OdsInstances - Empty Connection String",
 							"event": [
 								{
@@ -1219,6 +1387,49 @@
 										"v2",
 										"odsInstances",
 										"{{NotExistOdsInstanceId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreatedOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreatedOdsInstanceId}}"
 									]
 								}
 							},

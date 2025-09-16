@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "17ffd6fd-b6a2-46f1-b232-30a0fc96e829",
+		"_postman_id": "0b4c98f7-741f-4169-9fef-c96b83f92f6d",
 		"name": "Admin API E2E 2.0 - Actions",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21286036"
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -86,6 +86,68 @@
 									],
 									"path": [
 										"v2",
+										"actions"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "{{offset}}"
+										},
+										{
+											"key": "limit",
+											"value": "{{limit}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Authstrategies - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/actions?offset={{offset}}&limit={{limit}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"actions"
 									],
 									"query": [

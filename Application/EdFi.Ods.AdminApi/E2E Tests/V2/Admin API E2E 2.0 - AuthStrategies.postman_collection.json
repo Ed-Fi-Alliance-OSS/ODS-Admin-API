@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "82e4f794-aac9-4fcf-b30b-748cdbe15f1f",
+		"_postman_id": "460891ae-747c-427e-9858-aba36d433eef",
 		"name": "Admin API E2E 2.0 - AuthStrategies",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21286036"
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -77,6 +77,48 @@
 									],
 									"path": [
 										"v2",
+										"authorizationStrategies"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "AuthorizationStrategies - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/authorizationStrategies",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"authorizationStrategies"
 									]
 								}

@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "2d1ed547-d825-4b3e-8272-1035d2965100",
+		"_postman_id": "f0a46a99-9881-40c6-b932-0827f614adc9",
 		"name": "Admin API E2E 2.0 - Application",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "42411115",
-		"_collection_link": "https://dewfdaf.postman.co/workspace/ADMINAPI-1214~5cebf2b8-1c75-4f33-bdf5-c61ddb6ada6d/collection/42411115-2d1ed547-d825-4b3e-8272-1035d2965100?action=share&source=collection_link&creator=42411115"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -13,6 +12,113 @@
 				{
 					"name": "Application",
 					"item": [
+						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/vendors`,\r",
+											"  method: 'POST',\r",
+											"  header: header,\r",
+											"  body: {\r",
+											"    mode: 'raw',\r",
+											"    raw:JSON.stringify({\r",
+											"      \"company\": \"Application Company\",\r",
+											"      \"namespacePrefixes\": \"uri://ed-fi.org\",\r",
+											"      \"contactName\": \"Application User\",\r",
+											"      \"contactEmailAddress\": \"application@example.com\"\r",
+											"    }), \r",
+											"  }\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const id = response.headers.get(\"Location\").split(\"/\")[2];\r",
+											"  if(id)\r",
+											"    {\r",
+											"        pm.collectionVariables.set(\"ApplicationVendorId\", id);\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/odsInstances?offset=${pm.variables.get(\"offset\")}&limit=${pm.variables.get(\"limit\")}`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const json = response.json();\r",
+											"  if(!json[0].id) { console.log('Error in Pre-request: odsInstancesID missing from response. Response is:', json); }\r",
+											"  else {\r",
+											"    pm.collectionVariables.set(\"ODSInstanceId\", json[0].id);\r",
+											"  }\r",
+											"});\r",
+											"\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"applicationName\": \"Test Application\",\r\n  \"vendorId\": {{ApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi Sandbox\",\r\n  \"profileIds\": [],\r\n  \"educationOrganizationIds\": [ 255901 ],\r\n  \"odsInstanceIds\": [ {{ODSInstanceId}} ],\r\n  \"enabled\": true\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/applications",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications"
+									]
+								}
+							},
+							"response": []
+						},
 						{
 							"name": "Applications",
 							"event": [
@@ -141,7 +247,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications"
+									]
+								}
 							},
 							"response": []
 						},
@@ -199,7 +314,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -256,7 +381,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -314,7 +449,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -372,7 +517,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -506,6 +661,58 @@
 							"response": []
 						},
 						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/applications?offset={{offset}}&limit={{limit}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "{{offset}}"
+										},
+										{
+											"key": "limit",
+											"value": "{{limit}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Applications - Without Offset and Limit",
 							"event": [
 								{
@@ -598,7 +805,16 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications"
+									]
+								}
 							},
 							"response": []
 						},
@@ -906,7 +1122,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1079,7 +1305,18 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/vendors/{{ApplicationVendorId}}/applications"
+								"url": {
+									"raw": "{{API_URL}}/v2/vendors/{{ApplicationVendorId}}/applications",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"vendors",
+										"{{ApplicationVendorId}}",
+										"applications"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1241,7 +1478,79 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id\": {{CreatedApplicationId}},\r\n  \"applicationName\": \"Updated Application Name\",\r\n  \"vendorId\": {{OtherApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi ODS Admin App\",\r\n  \"profileIds\": [],\r\n  \"educationOrganizationIds\": [1234],\r\n  \"odsInstanceIds\": [ {{ODSInstanceId}} ],\r\n  \"enabled\": false\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1299,7 +1608,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1356,7 +1675,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1414,7 +1743,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1472,7 +1811,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1528,7 +1877,105 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}",
+										"reset-credential"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reset Credential - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}/reset-credential",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}",
+										"reset-credential"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1577,7 +2024,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1613,7 +2070,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1649,7 +2116,18 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}",
+										"reset-credential"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1694,7 +2172,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1734,7 +2222,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						}
@@ -1745,9 +2243,13 @@
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": {
-			"token": "{{TOKEN}}"
-		}
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{TOKEN}}",
+				"type": "string"
+			}
+		]
 	},
 	"event": [
 		{

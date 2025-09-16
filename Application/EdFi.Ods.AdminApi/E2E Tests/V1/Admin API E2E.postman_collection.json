@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5f3ea79b-584b-4ca4-8347-63b49b15923c",
+		"_postman_id": "806b2570-328a-4f44-8095-746d06c2e024",
 		"name": "Admin API E2E refactor",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "22794466"
@@ -65,6 +65,48 @@
 				{
 					"name": "Vendors",
 					"item": [
+						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"company\": \"Test Company\",\r\n    \"namespacePrefixes\": \"uri://ed-fi.org\",\r\n    \"contactName\": \"Test User\",\r\n    \"contactEmailAddress\": \"test@test-ed-fi.org\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/vendors"
+							},
+							"response": []
+						},
 						{
 							"name": "Vendors",
 							"event": [
@@ -281,6 +323,51 @@
 							"response": []
 						},
 						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/vendors"
+							},
+							"response": []
+						},
+						{
 							"name": "Vendors by ID",
 							"event": [
 								{
@@ -385,6 +472,58 @@
 							"response": []
 						},
 						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"company\": \"Updated Test Company\",\r\n    \"namespacePrefixes\": \"uri://academicbenchmarks.com\",\r\n    \"contactName\": \"Updated User\",\r\n    \"contactEmailAddress\": \"updated@example.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/vendors/{{CreatedVendorId}}"
+							},
+							"response": []
+						},
+						{
 							"name": "Vendors - Invalid",
 							"event": [
 								{
@@ -441,6 +580,39 @@
 									}
 								},
 								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "Vendors - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/v2/vendors/{{CreatedVendorId}}"
 							},
 							"response": []
 						},
@@ -637,6 +809,110 @@
 				{
 					"name": "Application",
 					"item": [
+						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v1/vendors`,\r",
+											"  method: 'POST',\r",
+											"  header: {\r",
+											"      \"Content-Type\": \"application/json\",\r",
+											"      \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"  },\r",
+											"  body: {\r",
+											"    mode: 'raw',\r",
+											"    raw:JSON.stringify({\r",
+											"      \"company\": \"Application Company\",\r",
+											"      \"namespacePrefixes\": \"uri://ed-fi.org\",\r",
+											"      \"contactName\": \"Application User\",\r",
+											"      \"contactEmailAddress\": \"application@example.com\"\r",
+											"    }), \r",
+											"  }\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const json = response.json();\r",
+											"  if(!json.result.vendorId) { console.log('Error in Pre-request: vendorID missing from response. Response is:', json); }\r",
+											"  else {\r",
+											"    pm.collectionVariables.set(\"ApplicationVendorId\", json.result.vendorId);\r",
+											"  }\r",
+											"});\r",
+											"\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v1/odsInstances`,\r",
+											"  method: 'POST',\r",
+											"  header: {\r",
+											"      \"Content-Type\": \"application/json\",\r",
+											"      \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"  },\r",
+											"  body: {\r",
+											"    mode: 'raw',\r",
+											"    raw:JSON.stringify({\r",
+											"      \"name\": \"my osd instance test\",\r",
+											"      \"instanceType\": \"test type\",\r",
+											"      \"status\": \"test status\",\r",
+											"      \"version\": \"test version\"\r",
+											"    }), \r",
+											"  }\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const json = response.json();\r",
+											"  if(!json.result.id) { console.log('Error in Pre-request: id missing from response. Response is:', json); }\r",
+											"  else {\r",
+											"    pm.collectionVariables.set(\"OdsInstanceId\", json.result.id);\r",
+											"  }\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"applicationName\": \"Test Application\",\r\n  \"vendorId\": {{ApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi Sandbox\",\r\n  \"profileId\": null,\r\n  \"odsInstanceId\": {{OdsInstanceId}},\r\n  \"educationOrganizationIds\": [ 255901 ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/applications/"
+							},
+							"response": []
+						},
 						{
 							"name": "Applications",
 							"event": [
@@ -1001,6 +1277,39 @@
 							"response": []
 						},
 						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{API_URL}}/v2/applications/"
+							},
+							"response": []
+						},
+						{
 							"name": "Applications by ID",
 							"event": [
 								{
@@ -1278,6 +1587,58 @@
 							"response": []
 						},
 						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"applicationId\": {{CreatedApplicationId}},\r\n  \"applicationName\": \"Updated Application Name\",\r\n  \"vendorId\": {{OtherApplicationVendorId}},\r\n  \"claimSetName\": \"Ed-Fi ODS Admin App\",\r\n  \"profileId\": null,\r\n  \"educationOrganizationIds\": [1234]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+							},
+							"response": []
+						},
+						{
 							"name": "Applications - Invalid",
 							"event": [
 								{
@@ -1496,6 +1857,72 @@
 								"method": "PUT",
 								"header": [],
 								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}/reset-credential"
+							},
+							"response": []
+						},
+						{
+							"name": "Reset Credential - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential"
+							},
+							"response": []
+						},
+						{
+							"name": "Applications - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
 							},
 							"response": []
 						},
@@ -1759,6 +2186,58 @@
 				{
 					"name": "ClaimSets",
 					"item": [
+						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.collectionVariables.set(\"ClaimSetGUID\", pm.variables.replaceIn('{{$guid}}'));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Test ClaimSet {{ClaimSetGUID}}\",\r\n    \"resourceClaims\": [\r\n      {\r\n        \"name\": \"educationStandards\",\r\n        \"create\": true,\r\n        \"read\": true,\r\n        \"update\": true,\r\n        \"delete\": true,\r\n        \"readChanges\": true,\r\n        \"authStrategyOverridesForCRUD\": [\r\n          null,\r\n          null,\r\n          null,\r\n          null,\r\n          null\r\n        ],\r\n        \"children\": [\r\n          {\r\n            \"name\": \"learningObjective\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true,\r\n            \"readChanges\": true,\r\n            \"authStrategyOverridesForCRUD\": [\r\n              null,\r\n              null,\r\n              null,\r\n              null,\r\n              null\r\n            ],\r\n            \"children\": []\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"name\": \"academicSubjectDescriptor\",\r\n        \"create\": true,\r\n        \"read\": true,\r\n        \"update\": true,\r\n        \"delete\": true,\r\n        \"readChanges\": true,\r\n        \"authStrategyOverridesForCRUD\": [\r\n          null,\r\n          null,\r\n          null,\r\n          null,\r\n          null\r\n        ],\r\n        \"children\": []\r\n      }      \r\n    ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/claimsets/"
+							},
+							"response": []
+						},
 						{
 							"name": "ClaimSets",
 							"event": [
@@ -2423,6 +2902,39 @@
 							"response": []
 						},
 						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "{{API_URL}}/v2/claimsets/"
+							},
+							"response": []
+						},
+						{
 							"name": "ClaimSets by ID",
 							"event": [
 								{
@@ -2581,6 +3093,58 @@
 									}
 								},
 								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": {{CreatedClaimSetId}},\r\n    \"name\": \"Updated Test ClaimSet\",\r\n    \"resourceClaims\": [\r\n      {\r\n        \"name\": \"educationStandards\",\r\n        \"read\": true,\r\n        \"create\": true,\r\n        \"update\": true,\r\n        \"delete\": true,\r\n        \"readChanges\": true,\r\n        \"authStrategyOverridesForCRUD\": [\r\n          null,\r\n          null,\r\n          null,\r\n          null,\r\n          null\r\n        ],\r\n        \"children\": [\r\n          {\r\n            \"name\": \"learningObjective\",\r\n            \"read\": true,\r\n            \"create\": true,\r\n            \"update\": true,\r\n            \"delete\": true,\r\n            \"readChanges\": true,\r\n            \"authStrategyOverridesForCRUD\": [\r\n              null,\r\n              null,\r\n              null,\r\n              null,\r\n              null\r\n            ],\r\n            \"children\": []\r\n          }\r\n        ]\r\n      }      \r\n    ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}"
 							},
 							"response": []
 						},
@@ -3140,6 +3704,39 @@
 							"response": []
 						},
 						{
+							"name": "ClaimSets - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}"
+							},
+							"response": []
+						},
+						{
 							"name": "ClaimSets",
 							"event": [
 								{
@@ -3499,6 +4096,58 @@
 					"name": "OdsInstances",
 					"item": [
 						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Test Ods Instance\",\r\n    \"instanceType\": \"Test Type\",\r\n    \"status\": \"Test Status\",\r\n    \"isExtended\": true,\r\n    \"version\": \"Test Version\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/odsInstances"
+							},
+							"response": []
+						},
+						{
 							"name": "OdsInstances",
 							"event": [
 								{
@@ -3760,6 +4409,61 @@
 							"response": []
 						},
 						{
+							"name": "OdsInstance - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/odsInstances"
+							},
+							"response": []
+						},
+						{
 							"name": "OdsInstance by ID",
 							"event": [
 								{
@@ -3863,6 +4567,58 @@
 									}
 								},
 								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Updated Ods Instance\",\r\n    \"instanceType\": \"Updated Type\",\r\n    \"status\": \"Updated Status\",\r\n    \"isExtended\": false,\r\n    \"version\": \"Updated Version\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{API_URL}}/v2/odsInstances/{{CreateOdsInstanceId}}"
 							},
 							"response": []
 						},
@@ -3976,6 +4732,39 @@
 								"method": "DELETE",
 								"header": [],
 								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstances - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{API_URL}}/v2/odsInstances/{{CreateOdsInstanceId}}"
 							},
 							"response": []
 						},

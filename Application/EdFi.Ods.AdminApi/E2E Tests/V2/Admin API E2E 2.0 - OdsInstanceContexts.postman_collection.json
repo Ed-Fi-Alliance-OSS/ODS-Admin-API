@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "a413efdc-9dff-4c53-a375-41fae51d01a9",
+		"_postman_id": "46f6bde0-6565-4676-b8cc-655a4aec2d01",
 		"name": "Admin API E2E 2.0 - OdsInstancesContexts",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -11,6 +12,89 @@
 				{
 					"name": "OdsInstanceContexts",
 					"item": [
+						{
+							"name": "OdsInstanceContexts - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/odsInstances?offset=${pm.variables.get(\"offset\")}&limit=${pm.variables.get(\"limit\")}`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const json = response.json();\r",
+											"  if(!json[0].id) { console.log('Error in Pre-request: odsInstancesID missing from response. Response is:', json); }\r",
+											"  else {\r",
+											"    pm.collectionVariables.set(\"ODSInstanceId\", json[0].id);\r",
+											"  }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"odsInstanceId\": {{ODSInstanceId}},\r\n  \"contextKey\": \"ckey\",\r\n  \"contextValue\": \"cvalue\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceContexts/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"OdsInstanceContexts",
+										""
+									]
+								}
+							},
+							"response": []
+						},
 						{
 							"name": "OdsInstanceContexts",
 							"event": [
@@ -425,6 +509,48 @@
 											"key": "limit",
 											"value": "{{limit}}"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstanceContexts - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceContexts",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"OdsInstanceContexts"
 									]
 								}
 							},
@@ -860,6 +986,68 @@
 							"response": []
 						},
 						{
+							"name": "OdsInstanceContexts - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"odsInstanceId\": {{ODSInstanceId}},\r\n  \"contextKey\": \"ckey\",\r\n  \"contextValue\": \"cvalue\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"OdsInstanceContexts",
+										"{{CreatedOdsInstanceContextId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "OdsInstanceContexts - Not Found",
 							"event": [
 								{
@@ -1196,6 +1384,49 @@
 									],
 									"path": [
 										"v2",
+										"OdsInstanceContexts",
+										"{{CreatedOdsInstanceContextId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstanceContexts - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"OdsInstanceContexts",
 										"{{CreatedOdsInstanceContextId}}"
 									]

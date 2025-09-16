@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "fbfb5478-49f6-47e8-a4f4-16ee41a7c307",
+		"_postman_id": "3d6c8fa8-dabb-4412-afee-f65e6438bd26",
 		"name": "Admin API E2E 2.0 - OdsInstancesDerivatives",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22794466"
 	},
 	"item": [
 		{
@@ -85,6 +86,89 @@
 									],
 									"path": [
 										"v2",
+										"OdsInstanceDerivatives",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstanceDerivatives - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let header = {\r",
+											"    \"Content-Type\": \"application/json\",\r",
+											"    \"Authorization\": `Bearer ${pm.collectionVariables.get(\"TOKEN\")}`\r",
+											"};\r",
+											"\r",
+											"if (pm.variables.get(\"isMultitenant\") == \"true\") {\r",
+											"    header['Tenant'] = `${pm.variables.get(\"tenant1\")}`;\r",
+											"}\r",
+											"\r",
+											"pm.sendRequest({\r",
+											"  url: `${pm.variables.get(\"API_URL\")}/v2/odsInstances?offset=${pm.variables.get(\"offset\")}&limit=${pm.variables.get(\"limit\")}`,\r",
+											"  method: 'GET',\r",
+											"  header: header\r",
+											"},  \r",
+											"function (err, response) {\r",
+											"  if(err) { console.log(\"Error in Pre-request:\", err); }\r",
+											"  const json = response.json();\r",
+											"  if(!json[0].id) { console.log('Error in Pre-request: odsInstancesID missing from response. Response is:', json); }\r",
+											"  else {\r",
+											"    pm.collectionVariables.set(\"ODSInstanceId\", json[0].id);\r",
+											"  }\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"odsInstanceId\": {{ODSInstanceId}},\r\n  \"derivativeType\": \"ReadReplica\",\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceDerivatives/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"OdsInstanceDerivatives",
 										""
 									]
@@ -551,6 +635,48 @@
 							"response": []
 						},
 						{
+							"name": "OdsInstanceDerivatives - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceDerivatives",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"OdsInstanceDerivatives"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "OdsInstanceDerivatives - Without Offset and Limit",
 							"event": [
 								{
@@ -966,6 +1092,68 @@
 									],
 									"path": [
 										"v2",
+										"OdsInstanceDerivatives",
+										"{{CreatedOdsInstanceDerivativeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstanceDerivatives - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"odsInstanceId\": {{ODSInstanceId}},\r\n  \"derivativeType\": \"ReadReplica\",\r\n  \"connectionString\": \"{{connectionString}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"OdsInstanceDerivatives",
 										"{{CreatedOdsInstanceDerivativeId}}"
 									]
@@ -1431,6 +1619,49 @@
 									],
 									"path": [
 										"v2",
+										"OdsInstanceDerivatives",
+										"{{CreatedOdsInstanceDerivativeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "OdsInstanceDerivatives - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"const response = pm.response.json();\r",
+											"\r",
+											"pm.test(\"Response matches error format\", function () {\r",
+											"    pm.expect(response).to.have.property(\"message\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response title is helpful and accurate\", function () {\r",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
 										"OdsInstanceDerivatives",
 										"{{CreatedOdsInstanceDerivativeId}}"
 									]
