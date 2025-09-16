@@ -42,6 +42,30 @@ public class GetVendorsQueryTests : PlatformUsersContextTestBase
     }
 
     [Test]
+    public void Should_retrieve_vendors_with_no_namespaces()
+    {
+        var newVendor = new Vendor
+        {
+            VendorName = "test vendor without namespace",
+            VendorNamespacePrefixes = null,
+        };
+
+        Save(newVendor);
+
+        Transaction(usersContext =>
+        {
+            var command = new GetVendorsQuery(usersContext, Testing.GetAppSettings());
+            var allVendors = command.Execute();
+
+            allVendors.ShouldNotBeEmpty();
+
+            var vendor = allVendors.Single(v => v.VendorId == newVendor.VendorId);
+            vendor.VendorName.ShouldBe("test vendor without namespace");
+            vendor.VendorNamespacePrefixes.ShouldBeEmpty();
+        });
+    }
+
+    [Test]
     public void Should_retrieve_vendors_with_filters()
     {
         var vendors = new Vendor[5];

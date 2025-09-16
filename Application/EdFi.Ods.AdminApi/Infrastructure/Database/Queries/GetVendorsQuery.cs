@@ -76,7 +76,7 @@ public class GetVendorsQuery : IGetVendorsQuery
             .Where(v => !VendorExtensions.ReservedNames.Contains(v.VendorName.Trim()))
             .Where(c => id == null || id < 1 || c.VendorId == id)
             .Where(c => company == null || c.VendorName == company)
-            .Where(c => c.VendorNamespacePrefixes.Any(v => namespacePrefixes == null || v.NamespacePrefix == namespacePrefixes))
+            .Where(c => namespacePrefixes == null || c.VendorNamespacePrefixes.Any(v => v.NamespacePrefix == namespacePrefixes))
             .Where(c => c.Users.Any(u => contactName == null || u.FullName == contactName))
             .Where(c => c.Users.Any(u => contactEmailAddress == null || u.Email == contactEmailAddress))
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)

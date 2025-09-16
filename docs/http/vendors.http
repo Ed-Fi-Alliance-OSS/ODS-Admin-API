@@ -25,13 +25,46 @@ grant_type=client_credentials&scope=edfi_admin_api/full_access
 @token={{tokenRequest.response.body.access_token}}
 
 
-### Get vendors V1
-GET {{adminapi_url}}/v1/vendors
+### Create vendor without namespace
+POST {{adminapi_url}}/v2/vendors
 Content-Type: application/json
 Authorization: bearer {{token}}
 
+{
+  "company": "vendor3 - no namespace",
+  "contactName": "David Jiménez",
+  "contactEmailAddress": "david.jimenez@example.com"
+}
+
+### Create vendor with multiple namespaces
+POST {{adminapi_url}}/v2/vendors
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "company": "vendor3 - multiple namespaces",
+  "namespacePrefixes": "uri://ed-fi.org/2000, uri://ed-fi.org/2015, uri://ed-fi.org/2023",
+  "contactName": "David Jiménez",
+  "contactEmailAddress": "david.jimenez@example.com"
+}
+
+
+### Get vendors V1
+GET {{adminapi_url}}/v2/vendors
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get vendor V2 by id
+GET {{adminapi_url}}/v2/vendors/2
+Content-Type: application/json
+Authorization: bearer {{token}}
 
 ### Get vendors V2
 GET {{adminapi_url}}/v2/vendors
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get vendors V2 with namespace filter
+GET {{adminapi_url}}/v2/vendors?namespacePrefixes=uri://ed-fi.org/2015
 Content-Type: application/json
 Authorization: bearer {{token}}
