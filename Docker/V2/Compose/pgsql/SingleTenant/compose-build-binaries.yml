@@ -47,8 +47,8 @@ services:
       Authentication__SigningKey: ${SIGNING_KEY}
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
       AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
-      ConnectionStrings__EdFi_Admin: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      ConnectionStrings__EdFi_Security: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      ConnectionStrings__EdFi_Admin: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      ConnectionStrings__EdFi_Security: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}

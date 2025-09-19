@@ -48,21 +48,21 @@ services:
       NPG_API_MAX_POOL_SIZE_SECURITY: "${NPG_API_MAX_POOL_SIZE_SECURITY}"
       NPG_POOLING_ENABLED: "${NPG_POOLING_ENABLED:-false}"
       ODS_CONNECTION_STRING_ENCRYPTION_KEY: "${ODS_CONNECTION_STRING_ENCRYPTION_KEY}"
-      ODS_WAIT_POSTGRES_HOSTS: "pb-ods-tenant1 pb-ods-tenant2 "
+      ODS_WAIT_POSTGRES_HOSTS: "db-ods-tenant1 db-ods-tenant2 "
       PATH_BASE: "${ODS_VIRTUAL_NAME:-api}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       POSTGRES_USER: "${POSTGRES_USER}"
       TPDM_ENABLED: "${TPDM_ENABLED:-true}"
-      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
-      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
     volumes:
       - ${LOGS_FOLDER}:/app/logs
     depends_on:
-      - pb-ods-tenant1
-      - pb-ods-tenant2
+      - db-ods-tenant1
+      - db-ods-tenant2
       - db-admin-tenant1
       - db-admin-tenant2
     restart: always
@@ -72,38 +72,6 @@ services:
       test: $$API_HEALTHCHECK_TEST
       start_period: "60s"
       retries: 3
-
-  pb-ods-tenant1:
-    image: bitnami/pgbouncer:1.23.1
-    environment:
-      PGBOUNCER_DATABASE: "*"
-      PGBOUNCER_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
-      PGBOUNCER_EXTRA_FLAGS: ${PGBOUNCER_EXTRA_FLAGS}
-      POSTGRESQL_USER: "${POSTGRES_USER}"
-      POSTGRESQL_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRESQL_HOST: db-ods-tenant1
-      PGBOUNCER_SET_DATABASE_USER: "yes"
-      PGBOUNCER_SET_DATABASE_PASSWORD: "yes"
-    restart: always
-    container_name: ed-fi-pb-ods-tenant1
-    depends_on:
-      - db-ods-tenant1
-
-  pb-ods-tenant2:
-    image: bitnami/pgbouncer:1.23.1
-    environment:
-      PGBOUNCER_DATABASE: "*"
-      PGBOUNCER_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
-      PGBOUNCER_EXTRA_FLAGS: ${PGBOUNCER_EXTRA_FLAGS}
-      POSTGRESQL_USER: "${POSTGRES_USER}"
-      POSTGRESQL_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRESQL_HOST: db-ods-tenant2
-      PGBOUNCER_SET_DATABASE_USER: "yes"
-      PGBOUNCER_SET_DATABASE_PASSWORD: "yes"
-    restart: always
-    container_name: ed-fi-pb-ods-tenant2
-    depends_on:
-      - db-ods-tenant2
 
 volumes:
   vol-db-ods-tenant1:

@@ -67,11 +67,11 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_PORT: 5432
       POSTGRES_USER: "${POSTGRES_USER}"
-      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       Tenants__tenant1__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
-      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       Tenants__tenant2__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
@@ -150,7 +150,7 @@ services:
       - ${KEYCLOAK_PORT:-28080}:8080
     restart: always
     depends_on:
-      - pb-idp-keycloak
+      - db-idp-keycloak
     hostname: ${KEYCLOAK_VIRTUAL_NAME:-idp_keycloak}
     volumes:
       - ../../../../Settings/ssl:/ssl/
@@ -166,23 +166,6 @@ services:
       POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
       POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
     container_name: ed-fi-db-idp-keycloak
-
-  pb-idp-keycloak:
-    image: bitnami/pgbouncer:1.20.0
-    environment:
-      PGBOUNCER_DATABASE: '*'
-      PGBOUNCER_PORT: ${PGBOUNCER_LISTEN_PORT:-6432}
-      PGBOUNCER_EXTRA_FLAGS: ${PGBOUNCER_EXTRA_FLAGS}
-      POSTGRESQL_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
-      POSTGRESQL_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
-      POSTGRESQL_HOST: db-idp-keycloak
-      PGBOUNCER_SET_DATABASE_USER: 'yes'
-      PGBOUNCER_SET_DATABASE_PASSWORD: 'yes'
-      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
-    restart: always
-    container_name: ed-fi-pb-idp-keycloak
-    depends_on:
-      - db-idp-keycloak
 
 volumes:
   vol-db-admin-adminapi-tenant1:

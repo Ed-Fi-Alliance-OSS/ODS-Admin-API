@@ -41,30 +41,18 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
-      ODS_POSTGRES_HOST: pb-ods
-      ADMIN_POSTGRES_HOST: pb-admin
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
+      ODS_POSTGRES_HOST: db-ods
+      ADMIN_POSTGRES_HOST: db-admin
       API_MODE: "SharedInstance"
       ApiSettings__PathBase: "${ODS_VIRTUAL_NAME:-api}"
       TPDM_ENABLED: "${TPDM_ENABLED:-true}"
     depends_on:
-      - pb-ods
-      - pb-admin
+      - db-ods
+      - db-admin
     restart: always
     hostname: api
     container_name: ed-fi-ods-api-adminapi
-
-  pb-ods:
-    image: pgbouncer/pgbouncer@sha256:aa8a38b7b33e5fe70c679053f97a8e55c74d52b00c195f0880845e52b50ce516 #pgbouncer:1.15.0
-    environment:
-      DATABASES: "* = host = db-ods port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
-      PGBOUNCER_LISTEN_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
-    ports:
-      - "5402:${PGBOUNCER_LISTEN_PORT:-6432}"
-    restart: always
-    container_name: ed-fi-pb-ods-adminapi
-    depends_on:
-      - db-ods
 
   adminapi:
     build:
@@ -76,8 +64,8 @@ services:
       additional_contexts:
         assets: ../../../../
     environment:
-      ADMIN_POSTGRES_HOST: pb-admin
-      POSTGRES_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
+      ADMIN_POSTGRES_HOST: db-admin
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       DATABASEENGINE: "PostgreSql"
@@ -88,8 +76,7 @@ services:
       ADMIN_API_VIRTUAL_NAME: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       ODS_API_VERSION: ${ODS_API_VERSION}
       AppSettings__AdminApiMode: ${ADMINAPI_MODE:-V1}
-# ---
-      ADMIN_WAIT_POSTGRES_HOSTS: "pb-admin "
+      ADMIN_WAIT_POSTGRES_HOSTS: "db-admin "
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
       AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
       AppSettings__DatabaseEngine: "PostgreSql"
@@ -104,8 +91,8 @@ services:
       Authentication__AllowRegistration: true
       Authentication__IssuerUrl: ${ISSUER_URL}
       Authentication__SigningKey: ${SIGNING_KEY}
-      ConnectionStrings__EdFi_Admin: "host=pb-admin;port=6432;username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      ConnectionStrings__EdFi_Security: "host=pb-admin;port=6432;username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      ConnectionStrings__EdFi_Admin: "host=db-admin;port=5432;username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      ConnectionStrings__EdFi_Security: "host=db-admin;port=5432;username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       EdFiApiDiscoveryUrl: ""
       EnableDockerEnvironment: true
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
@@ -118,7 +105,7 @@ services:
       Log4NetCore__Log4NetConfigFileName: "./log4net.config"
       
     depends_on:
-      - pb-admin
+      - db-admin
     restart: always
     hostname: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
     container_name: adminapi
@@ -143,18 +130,6 @@ services:
       - vol-db-admin-adminapi:/var/lib/postgresql/data
     restart: always
     container_name: ed-fi-db-admin-adminapi
-
-  pb-admin:
-    image: pgbouncer/pgbouncer@sha256:aa8a38b7b33e5fe70c679053f97a8e55c74d52b00c195f0880845e52b50ce516 #pgbouncer:1.15.0
-    environment:
-      DATABASES: "* = host = db-admin port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
-      PGBOUNCER_LISTEN_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
-    ports:
-      - "5401:${PGBOUNCER_LISTEN_PORT:-6432}"
-    restart: always
-    container_name: ed-fi-pb-admin-adminapi
-    depends_on:
-      - db-admin
 
 volumes:
   vol-db-admin-adminapi:

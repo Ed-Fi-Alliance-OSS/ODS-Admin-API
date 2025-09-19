@@ -34,8 +34,8 @@ services:
         assets: ../../../../../
       dockerfile: dev.pgsql.Dockerfile
     environment:
-      ADMIN_POSTGRES_HOST: pb-admin
-      ADMIN_WAIT_POSTGRES_HOSTS: "pb-admin "
+      ADMIN_POSTGRES_HOST: db-admin
+      ADMIN_WAIT_POSTGRES_HOSTS: "db-admin "
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
       AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
       AppSettings__AdminApiMode: ${ADMINAPI_MODE:-V2}
@@ -52,8 +52,8 @@ services:
       Authentication__AllowRegistration: true
       Authentication__IssuerUrl: ${ISSUER_URL}
       Authentication__SigningKey: ${SIGNING_KEY}
-      ConnectionStrings__EdFi_Admin: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      ConnectionStrings__EdFi_Security: "host=pb-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      ConnectionStrings__EdFi_Admin: "host=db-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      ConnectionStrings__EdFi_Security: "host=db-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
       EnableDockerEnvironment: true
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
@@ -65,12 +65,12 @@ services:
       IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
       Log4NetCore__Log4NetConfigFileName: "./log4net.config"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       POSTGRES_USER: "${POSTGRES_USER}"
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
     depends_on:
-      - pb-admin
+      - db-admin
       - idp-keycloak
     restart: always
     hostname: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
@@ -99,18 +99,6 @@ services:
     restart: always
     container_name: ed-fi-db-admin-adminapi
 
-  pb-admin:
-    image: pgbouncer/pgbouncer@sha256:aa8a38b7b33e5fe70c679053f97a8e55c74d52b00c195f0880845e52b50ce516 #pgbouncer:1.15.0
-    environment:
-      DATABASES: "* = host = db-admin port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}"
-      PGBOUNCER_LISTEN_PORT: "${PGBOUNCER_LISTEN_PORT:-6432}"
-    ports:
-      - "5401:${PGBOUNCER_LISTEN_PORT:-6432}"
-    restart: always
-    container_name: ed-fi-pb-admin-adminapi
-    depends_on:
-      - db-admin
-
   idp-keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_IMAGE_TAG:-26.0}
     command: start-dev --import-realm
@@ -136,7 +124,7 @@ services:
       - ${KEYCLOAK_PORT:-28080}:8080
     restart: always
     depends_on:
-      - pb-idp-keycloak
+      - db-idp-keycloak
     hostname: ${KEYCLOAK_VIRTUAL_NAME:-idp_keycloak}
     volumes:
       - ../../../../Settings/ssl:/ssl/
@@ -152,23 +140,6 @@ services:
       POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
       POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
     container_name: ed-fi-db-idp-keycloak
-
-  pb-idp-keycloak:
-    image: bitnami/pgbouncer:1.20.0
-    environment:
-      PGBOUNCER_DATABASE: '*'
-      PGBOUNCER_PORT: ${PGBOUNCER_LISTEN_PORT:-6432}
-      PGBOUNCER_EXTRA_FLAGS: ${PGBOUNCER_EXTRA_FLAGS}
-      POSTGRESQL_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
-      POSTGRESQL_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
-      POSTGRESQL_HOST: db-idp-keycloak
-      PGBOUNCER_SET_DATABASE_USER: 'yes'
-      PGBOUNCER_SET_DATABASE_PASSWORD: 'yes'
-      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
-    restart: always
-    container_name: ed-fi-pb-idp-keycloak
-    depends_on:
-      - db-idp-keycloak
 
 volumes:
   vol-db-admin-adminapi:

@@ -174,7 +174,7 @@ services:
       - ${KEYCLOAK_PORT:-28080}:8080
     restart: always
     depends_on:
-      - pb-idp-keycloak
+      - db-idp-keycloak
     hostname: ${KEYCLOAK_VIRTUAL_NAME:-idp_keycloak}
     volumes:
       - ../../../../Settings/ssl:/ssl/
@@ -190,23 +190,6 @@ services:
       POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
       POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
     container_name: ed-fi-db-idp-keycloak
-
-  pb-idp-keycloak:
-    image: bitnami/pgbouncer:1.20.0
-    environment:
-      PGBOUNCER_DATABASE: '*'
-      PGBOUNCER_PORT: ${PGBOUNCER_LISTEN_PORT:-6432}
-      PGBOUNCER_EXTRA_FLAGS: ${PGBOUNCER_EXTRA_FLAGS}
-      POSTGRESQL_USER: ${KEYCLOAK_POSTGRES_USER:-edfi}
-      POSTGRESQL_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD:-P@55w0rd}
-      POSTGRESQL_HOST: db-idp-keycloak
-      PGBOUNCER_SET_DATABASE_USER: 'yes'
-      PGBOUNCER_SET_DATABASE_PASSWORD: 'yes'
-      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: extra_float_digits
-    restart: always
-    container_name: ed-fi-pb-idp-keycloak
-    depends_on:
-      - db-idp-keycloak
 
 volumes:
   vol-db-admin-adminapi-tenant1:

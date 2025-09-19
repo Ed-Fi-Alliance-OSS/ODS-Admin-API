@@ -63,13 +63,13 @@ services:
       IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
       Log4NetCore__Log4NetConfigFileName: "./log4net.config"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       POSTGRES_USER: "${POSTGRES_USER}"
-      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       Tenants__tenant1__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
-      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=false"
-      Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=false"
+      Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       Tenants__tenant2__EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
