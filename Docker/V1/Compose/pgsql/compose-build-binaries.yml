@@ -50,7 +50,6 @@ services:
       AppSettings__EnableAdminConsoleAPI: false
       AppSettings__EnableApplicationResetEndpoint: false
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
-      AppSettings__IgnoresCertificateErrors: ${IGNORES_CERTIFICATE_ERRORS:-false}
       AppSettings__MultiTenancy: false
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-false}"

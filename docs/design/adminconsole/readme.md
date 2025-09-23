@@ -1,17 +1,17 @@
-# Admin API Design to Support the Admin Console
+# Admin API Design to Support the Admin App
 
 ## Overview
 
-The Ed-Fi Admin Console is a web-based user interface tool for managing Ed-Fi
+The Ed-Fi Admin App is a web-based user interface tool for managing Ed-Fi
 ODS/API Platform installations. User can perform actions that include:
 
 * Manage tenants and database instances
 * Manage Client credentials ("keys and secrets")
 * Review application and database health
 
-The Ed-Fi Admin Console application is a front-end only. The Ed-Fi Admin API 2
+The Ed-Fi Admin App application is a front-end only. The Ed-Fi Admin API 2
 application will act as the backend-for-frontend (BFF), serving all of the
-interaction needs for Admin Console. The Ed-Fi Admin API 2 will in turn rely on
+interaction needs for Admin App. The Ed-Fi Admin API 2 will in turn rely on
 other services and "worker" applications as needed to achieve some of its goals.
 
 The purpose of this document and related documents is to describe the
@@ -28,10 +28,10 @@ communication, and the storage layers requirements.
 
 ```mermaid
 C4Context
-    title System Context for Ed-Fi Admin Console
+    title System Context for Ed-Fi Admin App
 
     Enterprise_Boundary(edorg, "Education Organization") {
-        Person(User, "Admin Console User", "A system administrator")
+        Person(User, "Admin App User", "A system administrator")
     }
 
     Enterprise_Boundary(other, "Other Services") {
@@ -39,7 +39,7 @@ C4Context
     }
 
     Enterprise_Boundary(edfi, "Ed-Fi ODS/API Platform") {
-        System(AdminConsole, "Ed-Fi Admin Console", "A web application for managing ODS/API Deployments")
+        System(AdminConsole, "Ed-Fi Admin App", "A web application for managing ODS/API Deployments")
 
 
         System_Boundary(backend, "Backend Systems") {
@@ -66,7 +66,7 @@ C4Context
 ## Containers
 
 Two of the functions needed by Admin API 2 will benefit from background
-execution, so that the Admin Console end user can experience a quick response
+execution, so that the Admin App end user can experience a quick response
 time in the web browser. Two worker applications will provide the background
 processing:
 
@@ -78,7 +78,7 @@ processing:
 C4Container
     title "Admin API Containers"
 
-    System(AdminConsole, "Ed-Fi Admin Console", "A web application for managing ODS/API Deployments")
+    System(AdminConsole, "Ed-Fi Admin App", "A web application for managing ODS/API Deployments")
 
     System_Boundary(backend, "Backend Systems") {
 
@@ -129,7 +129,7 @@ C4Container
 The API interfaces and the interactions between specific containers are
 described in detail in the following documents:
 
-* [REST API Support for Admin Console](./APIS-FOR-ADMIN-CONSOLE.md)
+* [REST API Support for Admin App](./APIS-FOR-ADMIN-CONSOLE.md)
 * [Instance Management Worker](./INSTANCE-MANAGEMENT.md)
 * [Health Check Worker](./HEALTH-CHECK-WORKER.md)
 

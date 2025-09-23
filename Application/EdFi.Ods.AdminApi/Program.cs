@@ -19,6 +19,10 @@ var _logger = LogManager.GetLogger("Program");
 _logger.Info("Starting Admin API");
 var adminConsoleIsEnabled = builder.Configuration.GetValue<bool>("AppSettings:EnableAdminConsoleAPI");
 var adminApiMode = builder.Configuration.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
+var databaseEngine = builder.Configuration.GetValue<string>("AppSettings:DatabaseEngine");
+
+// Log configuration values as requested
+_logger.InfoFormat("Configuration - ApiMode: {0}, Engine: {1}", adminApiMode, databaseEngine);
 
 //Order is important to enable CORS
 if (adminConsoleIsEnabled && adminApiMode == AdminApiMode.V2)

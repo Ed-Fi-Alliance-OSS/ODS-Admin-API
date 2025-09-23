@@ -706,7 +706,7 @@
   }, {
     "id" : "36d7d2dd-1d86-4c0b-beb1-083a4f24afcc",
     "clientId" : "edfi-admin-console-realm",
-    "name" : "Ed-Fi Admin Console Realm",
+    "name" : "Ed-Fi Admin App Realm",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
@@ -2144,7 +2144,7 @@
     }, {
       "id" : "ac0f777c-8605-4bb7-99cc-6534cd44285f",
       "name" : "adminconsole-user",
-      "description" : "Admin Console User Role",
+      "description" : "Admin App User Role",
       "composite" : true,
       "composites" : {
         "realm" : [ "adminapi-client" ]
@@ -2509,7 +2509,7 @@
   }, {
     "id" : "77c5e18f-6987-41c3-ae9f-b6c9135d8479",
     "username" : "myuser",
-    "firstName" : "Admin Console",
+    "firstName" : "Admin App",
     "lastName" : "TestUser",
     "emailVerified" : false,
     "createdTimestamp" : 1728914120740,
@@ -2666,8 +2666,8 @@
   }, {
     "id" : "7ad9909d-cf22-49c2-a29c-e496687fcd84",
     "clientId" : "admin-console",
-    "name" : "Ed-Fi Admin Console Web Client",
-    "description" : "Ed-Fi Admin Console Client Web Site",
+    "name" : "Ed-Fi Admin App Web Client",
+    "description" : "Ed-Fi Admin App Client Web Site",
     "rootUrl" : "http://localhost:8598/",
     "adminUrl" : "http://localhost:8598/",
     "baseUrl" : "",
@@ -2722,8 +2722,8 @@
   }, {
     "id" : "cf9b401b-2908-43e6-a48d-0bc9e7ed3176",
     "clientId" : "adminconsole-worker-client",
-    "name" : "Admin Console Worker Processes",
-    "description" : "Client for Ed-Fi Admin Console Worker Processes",
+    "name" : "Admin App Worker Processes",
+    "description" : "Client for Ed-Fi Admin App Worker Processes",
     "rootUrl" : "",
     "adminUrl" : "",
     "baseUrl" : "",
