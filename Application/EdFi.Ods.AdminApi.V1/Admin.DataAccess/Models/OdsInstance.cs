@@ -3,8 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,7 +12,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
     {
         public OdsInstance()
         {
-            OdsInstanceComponents = new Collection<OdsInstanceComponent>();
+            OdsInstanceComponents = [];
         }
 
         [Key]
@@ -26,21 +24,21 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         /// Type of ODS instance this identifies (e.g. "Enterprise" or "Cloud")
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string InstanceType { get; set; }
+        public required string InstanceType { get; set; }
 
         /// <summary>
         /// Current status of this ODS instance, for display/use by management tooling
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Status { get; set; }
+        public required string Status { get; set; }
 
         /// <summary>
         /// If set to true, signifies that this ODS installation has been extended with custom code
@@ -52,7 +50,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         /// </summary>
         [Required]
         [StringLength(20)]
-        public string Version { get; set; }
+        public required string Version { get; set; }
 
         public virtual ICollection<OdsInstanceComponent> OdsInstanceComponents { get; set; }
     }

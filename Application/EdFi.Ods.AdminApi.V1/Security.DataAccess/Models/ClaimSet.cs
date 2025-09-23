@@ -16,16 +16,16 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
 
         [StringLength(255)]
         [Required]
-        public string ClaimSetName { get; set; }
+        public required string ClaimSetName { get; set; }
 
-        public bool IsEdfiPreset  { get; set; }
+        public bool IsEdfiPreset { get; set; }
 
-        public bool ForApplicationUseOnly   { get; set; }
+        public bool ForApplicationUseOnly { get; set; }
 
         [Column("Application_ApplicationId")]
         public int ApplicationId { get; set; }
 
         [Required]
-        public Application Application { get; set; }
+        public required Application Application { get; set; }
     }
 }

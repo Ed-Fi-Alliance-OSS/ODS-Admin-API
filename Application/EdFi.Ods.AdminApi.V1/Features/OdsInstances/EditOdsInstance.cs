@@ -45,19 +45,19 @@ public class EditOdsInstance : IFeature
         public int OdsInstanceId { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceName, Nullable = false)]
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceInstanceType, Nullable = true)]
-        public string? InstanceType { get; set; }
+        public string InstanceType { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceStatus, Nullable = true)]
-        public string? Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceIsExtended, Nullable = true)]
         public bool? IsExtended { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceVersion, Nullable = true)]
-        public string? Version { get; set; }
+        public string Version { get; set; } = string.Empty;
     }
 
     public class Validator : AbstractValidator<IEditOdsInstanceModel>

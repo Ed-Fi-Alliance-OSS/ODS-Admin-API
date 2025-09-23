@@ -21,7 +21,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ApplicationEducationOrganizationId { get; set; }
 
-        public virtual Application Application { get; set; }
+        public virtual Application? Application { get; set; }
 
         public int EducationOrganizationId { get; set; }
 

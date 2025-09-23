@@ -104,7 +104,7 @@ public class AddOrEditResourcesOnClaimSetCommand
 
 public class AddClaimSetModel : IAddClaimSetModel
 {
-    public string? ClaimSetName { get; set; }
+    public string ClaimSetName { get; set; } = string.Empty;
 }
 
 public class EditResourceOnClaimSetModel : IEditResourceOnClaimSetModel

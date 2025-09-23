@@ -3,8 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,22 +12,22 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
     {
         public Vendor()
         {
-            Applications = new Collection<Application>();
-            Users = new Collection<User>();
-            VendorNamespacePrefixes = new Collection<VendorNamespacePrefix>();
+            Applications = [];
+            Users = [];
+            VendorNamespacePrefixes = [];
         }
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int VendorId { get; set; }
 
-        public string VendorName { get; set; }
+        public string? VendorName { get; set; }
 
         public virtual ICollection<Application> Applications { get; set; }
 
         public virtual ICollection<User> Users { get; set; }
 
-        public virtual ICollection<VendorNamespacePrefix> VendorNamespacePrefixes { get; set; }
+        public virtual ICollection<VendorNamespacePrefix>? VendorNamespacePrefixes { get; set; }
 
         public Application CreateApplication(string applicationName, string claimSetName)
         {
@@ -37,7 +35,8 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
             {
                 ApplicationName = applicationName,
                 Vendor = this,
-                ClaimSetName = claimSetName
+                ClaimSetName = claimSetName,
+                OperationalContextUri = string.Empty
             };
 
             Applications.Add(application);
@@ -46,10 +45,12 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
 
         public static Vendor Create(string vendorName, IEnumerable<string> namespacePrefixes)
         {
-            var vendor = new Vendor {VendorName = vendorName};
+            var vendor = new Vendor { VendorName = vendorName };
 
             foreach (string namespacePrefix in namespacePrefixes)
             {
+                vendor.VendorNamespacePrefixes ??= [];
+
                 vendor.VendorNamespacePrefixes.Add(
                     new VendorNamespacePrefix
                     {

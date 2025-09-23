@@ -22,7 +22,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         public int ProfileId { get; set; }
 
         [Required]
-        public string ProfileName { get; set; }
+        public required string ProfileName { get; set; }
 
         public virtual ICollection<Application> Applications { get; set; }
     }

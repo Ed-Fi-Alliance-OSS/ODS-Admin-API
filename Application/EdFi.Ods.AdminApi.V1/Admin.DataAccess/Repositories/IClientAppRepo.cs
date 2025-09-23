@@ -22,11 +22,11 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Repositories
 
         void DeleteUser(User userProfile);
 
-        ApiClient GetClient(string key);
+        ApiClient? GetClient(string key);
 
-        Task<ApiClient> GetClientAsync(string key);
+        Task<ApiClient?> GetClientAsync(string key);
 
-        ApiClient GetClient(string key, string secret);
+        ApiClient? GetClient(string key, string secret);
 
         ApiClient UpdateClient(ApiClient client);
 
@@ -58,6 +58,6 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Repositories
 
         void AddApiClientOwnershipTokens(List<string> ownershipTokens, int apiClientId);
 
-        ApiClient GetClientByKey(string key);
+        ApiClient? GetClientByKey(string key);
     }
 }

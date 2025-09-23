@@ -67,7 +67,7 @@ public class RequestResourceClaimModel
 
 public class ChildrenRequestResourceClaimModel : RequestResourceClaimModel
 {
-    public List<RequestResourceClaimModel> Children { get; set; }
+    public new List<RequestResourceClaimModel> Children { get; set; } = new List<RequestResourceClaimModel>();
 }
 
 [SwaggerSchema(Title = "AuthorizationStrategies")]

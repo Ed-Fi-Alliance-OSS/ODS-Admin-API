@@ -68,7 +68,7 @@ public static class WebApplicationBuilderExtensions
 
             webApplicationBuilder.Services.AddAutoMapper(
                 assembly,
-                typeof(V1.Infrastructure.AdminApiMappingProfile).Assembly
+                typeof(V1.Infrastructure.AutoMapper.AdminApiMappingProfile).Assembly
             );
 
             var adminApiV1Types = typeof(V1.Infrastructure.IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();

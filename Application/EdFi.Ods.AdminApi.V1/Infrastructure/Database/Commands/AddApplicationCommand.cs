@@ -15,16 +15,10 @@ public interface IAddApplicationCommand
     AddApplicationResult Execute(IAddApplicationModel applicationModel);
 }
 
-public class AddApplicationCommand : IAddApplicationCommand
+public class AddApplicationCommand(IUsersContext usersContext, InstanceContext instanceContext) : IAddApplicationCommand
 {
-    private readonly IUsersContext _usersContext;
-    private readonly InstanceContext _instanceContext;
-
-    public AddApplicationCommand(IUsersContext usersContext, InstanceContext instanceContext)
-    {
-        _usersContext = usersContext;
-        _instanceContext = instanceContext;
-    }
+    private readonly IUsersContext _usersContext = usersContext;
+    private readonly InstanceContext _instanceContext = instanceContext;
 
     public AddApplicationResult Execute(IAddApplicationModel applicationModel)
     {
@@ -59,20 +53,20 @@ public class AddApplicationCommand : IAddApplicationCommand
         };
 
         var applicationEdOrgs = applicationModel.EducationOrganizationIds == null
-            ? Enumerable.Empty<ApplicationEducationOrganization>()
+            ? []
             : applicationModel.EducationOrganizationIds.Select(id => new ApplicationEducationOrganization
             {
-                Clients = new List<ApiClient> { apiClient },
+                Clients = [apiClient],
                 EducationOrganizationId = id
             });
 
         var application = new Application
         {
             ApplicationName = applicationModel.ApplicationName,
-            ApiClients = new List<ApiClient> { apiClient },
+            ApiClients = [apiClient],
             ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>(applicationEdOrgs),
             ClaimSetName = applicationModel.ClaimSetName,
-            Profiles = new List<Profile>(),
+            Profiles = [],
             Vendor = vendor,
             OperationalContextUri = OperationalContext.DefaultOperationalContextUri,
             OdsInstance = odsInstance
@@ -97,7 +91,7 @@ public class AddApplicationCommand : IAddApplicationCommand
 
 public interface IAddApplicationModel
 {
-    string? ApplicationName { get; }
+    string ApplicationName { get; }
     int VendorId { get; }
     string? ClaimSetName { get; }
     int? ProfileId { get; }

@@ -19,21 +19,21 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
 
         [Required]
         [ForeignKey("ActionId")]
-        public Action Action { get; set; }
+        public required Action Action { get; set; }
 
         public int ClaimSetId { get; set; }
 
         [Required]
         [ForeignKey("ClaimSetId")]
-        public ClaimSet ClaimSet { get; set; }
+        public required ClaimSet ClaimSet { get; set; }
 
         public int ResourceClaimId { get; set; }
 
         [Required]
         [ForeignKey("ResourceClaimId")]
-        public ResourceClaim ResourceClaim { get; set; }
+        public required ResourceClaim ResourceClaim { get; set; }
 
-        public List<ClaimSetResourceClaimActionAuthorizationStrategyOverrides> AuthorizationStrategyOverrides { get; set; }
+        public List<ClaimSetResourceClaimActionAuthorizationStrategyOverrides>? AuthorizationStrategyOverrides { get; set; }
 
         [StringLength(255)]
         public string? ValidationRuleSetNameOverride { get; set; }

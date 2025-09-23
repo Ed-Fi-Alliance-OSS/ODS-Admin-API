@@ -31,7 +31,7 @@ public class GetApplicationsByOdsInstanceIdQuery : IGetApplicationsByOdsInstance
             .Include(aco => aco.ApplicationEducationOrganizations)
             .Include(api => api.Profiles)
             .Include(api => api.Vendor)
-            .Where(a => a.OdsInstance.OdsInstanceId == odsInstanceId)
+            .Where(a => a.OdsInstance == null || a.OdsInstance.OdsInstanceId == odsInstanceId)
             .ToList();
 
         if (!applications.Any() && _context.OdsInstances.Find(odsInstanceId) == null)

@@ -33,7 +33,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Security
 
         private ApiClient GetClientByKey(string key)
         {
-            var client =  _clientAppRepo.GetClientByKey(key);
+            var client = _clientAppRepo.GetClientByKey(key);
 
             if (client == null)
             {

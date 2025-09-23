@@ -19,22 +19,22 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         /// Url at which this component is accessible, for use by management tooling
         /// </summary>
         [Required]
         [StringLength(200)]
-        public string Url { get; set; }
+        public required string Url { get; set; }
 
         /// <summary>
         /// Version number of this ODS component
         /// </summary>
         [Required]
         [StringLength(20)]
-        public string Version { get; set; }
+        public required string Version { get; set; }
 
-        public virtual OdsInstance OdsInstance { get; set; }
+        public required virtual OdsInstance OdsInstance { get; set; }
     }
 }

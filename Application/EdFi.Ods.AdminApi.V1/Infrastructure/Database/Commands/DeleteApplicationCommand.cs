@@ -31,7 +31,7 @@ public class DeleteApplicationCommand : IDeleteApplicationCommand
             .Include(a => a.ApplicationEducationOrganizations)
             .SingleOrDefault(a => a.ApplicationId == id) ?? throw new NotFoundException<int>("application", id);
 
-        if (application != null && application.Vendor.IsSystemReservedVendor())
+        if (application != null && application.Vendor != null && application.Vendor.IsSystemReservedVendor())
         {
             throw new Exception("This Application is required for proper system function and may not be modified");
         }

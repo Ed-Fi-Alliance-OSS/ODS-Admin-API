@@ -3,9 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using EdFi.Common;
 using EdFi.Common.Utils.Extensions;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
@@ -44,35 +41,33 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
         {
             using var context = _securityContextFactory.CreateContext();
 
-            return context.Actions.ToList();
+            return [.. context.Actions];
         }
 
         private List<ClaimSet> GetClaimSets()
         {
             using var context = _securityContextFactory.CreateContext();
 
-            return context.ClaimSets.Include(cs => cs.Application).ToList();
+            return [.. context.ClaimSets.Include(cs => cs.Application)];
         }
 
         private List<ResourceClaim> GetResourceClaims()
         {
             using var context = _securityContextFactory.CreateContext();
 
-            return context.ResourceClaims
+            return [.. context.ResourceClaims
                 .Include(rc => rc.Application)
                 .Include(rc => rc.ParentResourceClaim)
-                .Where(rc => rc.Application.ApplicationId.Equals(Application.Value.ApplicationId))
-                .ToList();
+                .Where(rc => rc.Application.ApplicationId.Equals(Application.Value.ApplicationId))];
         }
 
         private List<AuthorizationStrategy> GetAuthorizationStrategies()
         {
             using var context = _securityContextFactory.CreateContext();
 
-            return context.AuthorizationStrategies
+            return [.. context.AuthorizationStrategies
                 .Include(auth => auth.Application)
-                .Where(auth => auth.Application.ApplicationId.Equals(Application.Value.ApplicationId))
-                .ToList();
+                .Where(auth => auth.Application.ApplicationId.Equals(Application.Value.ApplicationId))];
         }
 
         private List<ClaimSetResourceClaimAction> GetClaimSetResourceClaimActions()
@@ -84,14 +79,14 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
                 .Include(csrc => csrc.ClaimSet)
                 .Include(csrc => csrc.ClaimSet.Application)
                 .Include(csrc => csrc.ResourceClaim)
-                .Include(csrc => csrc.AuthorizationStrategyOverrides)
+                .Include(csrc => csrc.AuthorizationStrategyOverrides!)
                     .ThenInclude(aso => aso.AuthorizationStrategy)
                 .Where(csrc => csrc.ResourceClaim.Application.ApplicationId.Equals(Application.Value.ApplicationId))
                 .ToList();
 
-            // Replace empty lists with null since some consumers expect it that way
+            // Replace empty lists with null since some consumers expect it that way  
             claimSetResourceClaimActions
-                .Where(csrc => csrc.AuthorizationStrategyOverrides.Count == 0)
+                .Where(csrc => csrc.AuthorizationStrategyOverrides != null && csrc.AuthorizationStrategyOverrides.Count == 0)
                 .ForEach(csrc => csrc.AuthorizationStrategyOverrides = null);
 
             return claimSetResourceClaimActions;
@@ -109,8 +104,8 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             var resourceClaimActionAuthorizations = context.ResourceClaimActions
                 .Include(rcas => rcas.Action)
                 .Include(rcas => rcas.ResourceClaim)
-                .Include(rcas => rcas.AuthorizationStrategies)
-                    .ThenInclude(ast => ast.AuthorizationStrategy.Application)
+                .Include(rcas => rcas.AuthorizationStrategies!)
+                    .ThenInclude(ast => ast.AuthorizationStrategy)
                 .Where(rcas => rcas.ResourceClaim.Application.ApplicationId.Equals(Application.Value.ApplicationId))
                 .ToList();
 

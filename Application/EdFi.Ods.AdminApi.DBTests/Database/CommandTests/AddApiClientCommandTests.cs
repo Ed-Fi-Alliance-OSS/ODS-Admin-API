@@ -5,8 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -23,17 +21,19 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
     private int applicationId { get; set; }
 
     [SetUp]
-    public virtual async Task SetUp()
+    public new virtual async Task SetUp()
     {
-        AppSettings appSettings = new AppSettings();
-        appSettings.PreventDuplicateApplications = false;
+        AppSettings appSettings = new()
+        {
+            PreventDuplicateApplications = false
+        };
         _options = Options.Create(appSettings);
         await Task.Yield();
 
         var vendor = new Vendor
         {
             VendorId = 0,
-            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
             VendorName = "Integration Tests"
         };
 
@@ -62,7 +62,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 Name = "Test ApiClient",
                 ApplicationId = 0,
                 IsApproved = true,
-                OdsInstanceIds = new List<int> { 1, 2 }
+                OdsInstanceIds = [1, 2]
             };
 
             Assert.Throws<InvalidOperationException>(() => command.Execute(newApiClient, _options));
@@ -75,7 +75,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
         var vendor = new Vendor
         {
             VendorId = 0,
-            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
             VendorName = "Integration Tests"
         };
 
@@ -98,7 +98,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 Name = "Test ApiClient",
                 ApplicationId = application.ApplicationId,
                 IsApproved = true,
-                OdsInstanceIds = new List<int> { 1, 2 }
+                OdsInstanceIds = [1, 2]
             };
 
             command.Execute(newApiClient, _options);
@@ -111,7 +111,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
         var vendor = new Vendor
         {
             VendorId = 0,
-            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
             VendorName = "Integration Tests"
         };
 

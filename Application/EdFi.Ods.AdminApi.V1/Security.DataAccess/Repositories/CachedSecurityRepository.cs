@@ -40,11 +40,11 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             get => _lastCacheUpdate.IsDefaultValue() || SystemClock.Now() >= _lastCacheUpdate.AddMinutes(_cacheTimeoutInMinutes);
         }
 
-        public override Action GetActionByHttpVerb(string httpVerb)
-            => VerifyCacheAndExecute(() => base.GetActionByHttpVerb(httpVerb));
+        public override Action? GetActionByHttpVerb(string httpVerb)
+           => VerifyCacheAndExecute(() => base.GetActionByHttpVerb(httpVerb));
 
-        public override Action GetActionByName(string actionName)
-            => VerifyCacheAndExecute(() => base.GetActionByName(actionName));
+        public override Action? GetActionByName(string actionName)
+           => VerifyCacheAndExecute(() => base.GetActionByName(actionName));
 
         public override AuthorizationStrategy GetAuthorizationStrategyByName(string authorizationStrategyName)
             => VerifyCacheAndExecute(() => base.GetAuthorizationStrategyByName(authorizationStrategyName));
@@ -59,7 +59,7 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             GetResourceClaimLineageMetadata(string resourceClaimUri, string action)
             => VerifyCacheAndExecute(() => base.GetResourceClaimLineageMetadata(resourceClaimUri, action));
 
-        public override ResourceClaim GetResourceByResourceName(string resourceName)
+        public override ResourceClaim? GetResourceByResourceName(string resourceName)
             => VerifyCacheAndExecute(() => base.GetResourceByResourceName(resourceName));
 
         private T VerifyCacheAndExecute<T>(Func<T> executionFunction)

@@ -42,10 +42,10 @@ public class EditOdsInstanceCommand : IEditOdsInstanceCommand
 public interface IEditOdsInstanceModel
 {
     public int OdsInstanceId { get; set; }
-    string? Name { get; }
-    string? InstanceType { get; }
-    string? Status { get; set; }
+    string Name { get; }
+    string InstanceType { get; }
+    string Status { get; set; }
     bool? IsExtended { get; }
-    string? Version { get; set; }
+    string Version { get; set; }
 }
 

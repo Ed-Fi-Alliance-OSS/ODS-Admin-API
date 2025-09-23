@@ -26,10 +26,6 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
             Domains = new Dictionary<string, string>();
         }
 
-        /// <summary>
-        /// Constructor, optionally generating a new key and secret
-        /// </summary>
-        /// <param name="generateKey">true to generate a new key and secret</param>
         public ApiClient(bool generateKey = false)
             : this()
         {
@@ -42,127 +38,62 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
             Secret = GenerateRandomString();
         }
 
-        /// <summary>
-        /// Numeric Identifier
-        /// </summary>
         public int ApiClientId { get; set; }
 
-        /// <summary>
-        /// Primary lookup for the application
-        /// Also known as the client_id
-        /// </summary>
         [Required]
         [StringLength(50)]
-        public string Key { get; set; }
+        public string Key { get; set; } = string.Empty;
 
-        /// <summary>
-        /// 128-bit crypto-strength string
-        /// </summary>
         [Required]
         [StringLength(100)]
-        public string Secret { get; set; }
+        public string Secret { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Indicates if the secret is hashed
-        /// </summary>
         public bool SecretIsHashed { get; set; }
 
-        /// <summary>
-        /// Something friendly to display to the users
-        /// </summary>
         [Required]
         [StringLength(50)]
-        public string Name { get; set; }
+        public required string Name { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Lock-out the application if not approved (Auto-approve in sandbox)
-        /// </summary>
         public bool IsApproved { get; set; }
 
-        /// <summary>
-        /// Does the client API access their own database (copy of empty EdFi Ods)
-        /// true - use a sandbox
-        /// false - use a shared instance
-        /// </summary>
         public bool UseSandbox { get; set; }
 
         public SandboxType SandboxType { get; set; }
 
-        public string SandboxTypeName
-        {
-            get { return SandboxType.ToString(); }
-        }
+        public string SandboxTypeName => SandboxType.ToString();
 
         [NotMapped]
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Indicates client access status to the key.
-        /// "Not Sent": credentials has not been sent to the client yet
-        /// "Sent": challenge has been sent to the client and waiting for activation
-        /// "Active": client has successfully retrieved the credentials
-        /// "Locked": client has retried more than what they are supposed to
-        /// </summary>
-        public string KeyStatus { get; set; }
+        public string KeyStatus { get; set; } = string.Empty;
 
-        /// <summary>
-        /// A random ID to be emailed to the client to enable them to challenge activationCode
-        /// </summary>
-        public string ChallengeId { get; set; }
+        public string ChallengeId { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Time-stamp of ChallengeId and ActivationCode generation
-        /// </summary>
         public DateTime? ChallengeExpiry { get; set; }
 
-        /// <summary>
-        /// Expecting challenge answer to activate the api and send credentials
-        /// </summary>
-        public string ActivationCode { get; set; }
+        public string ActivationCode { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Number of retries client has done to get the credentials.
-        /// </summary>
         public int? ActivationRetried { get; set; }
 
-        /// <summary>
-        /// Have a reference to OwnershipToken table ownershiptokenid for specific apiclient.
-        /// </summary>        
-        public virtual OwnershipToken CreatorOwnershipToken { get; set; }
+        public virtual OwnershipToken? CreatorOwnershipToken { get; set; }
 
         [Column("CreatorOwnershipTokenId_OwnershipTokenId")]
         public short? CreatorOwnershipTokenId { get; set; }
 
-        /// <summary>
-        /// Fully namespaced URI reference to the StudentIdentificationSystemDescriptor value to use for identification mapping
-        /// </summary>
         [StringLength(306)]
-        public string StudentIdentificationSystemDescriptor { get; set; }
+        public string StudentIdentificationSystemDescriptor { get; set; } = string.Empty;
 
-        public virtual Application Application { get; set; }
+        public virtual Application? Application { get; set; }
 
-        public virtual User User { get; set; }
+        public virtual User? User { get; set; }
 
         public virtual ICollection<ApplicationEducationOrganization> ApplicationEducationOrganizations { get; set; }
 
         public virtual List<ClientAccessToken> ClientAccessTokens { get; set; }
 
-        /// <summary>
-        /// Key-value store of EdOrg and Domain Connection information
-        /// </summary>
-        /// <remarks>
-        /// EdOrg is the key, Domain Connection information is the value.
-        /// The end-user should never see the Data Connection information
-        /// </remarks>
         [NotMapped]
         public Dictionary<string, string> Domains { get; set; }
 
-        /// <summary>
-        /// Method to generate a new secret 128-bit crypto-strength random number
-        /// and returns the new secret for display or other purposes.
-        /// </summary>
-        /// <param name="length">The length of the string to be generated</param>
-        /// <returns>Random string with only alphanumeric values (no '+' or '/')</returns>
         private static string GenerateRandomString(int length = 24)
         {
             string result;
@@ -182,10 +113,6 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
             return result.Substring(0, length);
         }
 
-        /// <summary>
-        /// Set a new secret for the Client
-        /// </summary>
-        /// <returns>New client secret value</returns>
         public string GenerateSecret()
         {
             return Secret = GenerateRandomString();

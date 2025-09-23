@@ -11,9 +11,9 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
 {
     public interface ISecurityRepository
     {
-        Action GetActionByHttpVerb(string httpVerb);
+        Action? GetActionByHttpVerb(string httpVerb);
 
-        Action GetActionByName(string actionName);
+        Action? GetActionByName(string actionName);
 
         AuthorizationStrategy GetAuthorizationStrategyByName(string authorizationStrategyName);
 
@@ -34,6 +34,6 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
         /// <returns>The resource claim authorization metadata.</returns>
         IEnumerable<ResourceClaimAction> GetResourceClaimLineageMetadata(string resourceClaimUri, string action);
 
-        ResourceClaim GetResourceByResourceName(string resourceName);
+        ResourceClaim? GetResourceByResourceName(string resourceName);
     }
 }

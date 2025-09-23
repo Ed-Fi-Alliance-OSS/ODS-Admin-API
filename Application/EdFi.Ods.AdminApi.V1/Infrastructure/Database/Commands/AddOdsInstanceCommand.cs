@@ -40,9 +40,9 @@ public class AddOdsInstanceCommand : IAddOdsInstanceCommand
 
 public interface IAddOdsInstanceModel
 {
-    string? Name { get; }
-    string? InstanceType { get; }
-    string? Status { get; set; }
+    string Name { get; }
+    string InstanceType { get; }
+    string Status { get; set; }
     bool? IsExtended { get; }
-    string? Version { get; set; }
+    string Version { get; set; }
 }

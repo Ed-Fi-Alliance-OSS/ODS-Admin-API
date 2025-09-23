@@ -48,5 +48,5 @@ public class RegenerateApiClientSecretResult
 {
     public string? Key { get; set; }
     public string? Secret { get; set; }
-    public Application Application { get; set; } = new();
+    public Application Application { get; set; } = new() { OperationalContextUri = string.Empty };
 }

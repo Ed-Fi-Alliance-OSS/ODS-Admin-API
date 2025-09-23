@@ -8,21 +8,23 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
 {
-    /// <summary>
-    /// Class representing the assignment of one or more ownership tokens to an API client.
-    /// A API Client has a list of Ownership tokens.
-    /// </summary>
+    /// <summary>  
+    /// Class representing the assignment of one or more ownership tokens to an API client.  
+    /// A API Client has a list of Ownership tokens.  
+    /// </summary>  
     public class ApiClientOwnershipToken
     {
-        /// <summary>
-        /// Numeric Identifier which is an Identity column which distinguish the uniques combination of ApiClient and Ownership Token 
-        /// </summary>
+        /// <summary>  
+        /// Numeric Identifier which is an Identity column which distinguish the uniques combination of ApiClient and Ownership Token   
+        /// </summary>  
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ApiClientOwnershipTokenId { get; set; }
 
-        public virtual ApiClient ApiClient { get; set; }
+        [Required]
+        public virtual ApiClient ApiClient { get; set; } = null!;
 
-        public virtual OwnershipToken OwnershipToken { get; set; }
+        [Required]
+        public virtual OwnershipToken OwnershipToken { get; set; } = null!;
     }
 }

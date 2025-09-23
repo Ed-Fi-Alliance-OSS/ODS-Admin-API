@@ -32,26 +32,26 @@ public class GetApplicationsQuery : IGetApplicationsQuery
     public List<Application> Execute()
     {
         return _context.Applications
-            .Include(ap => ap.Vendor).ThenInclude(ap => ap.VendorNamespacePrefixes)
-            .Include(ap => ap.Vendor).ThenInclude(ap => ap.Users)
+            .Include(ap => ap.Vendor!).ThenInclude(ap => ap.VendorNamespacePrefixes)
+            .Include(ap => ap.Vendor!).ThenInclude(ap => ap.Users)
             .Include(ap => ap.Profiles)
             .Include(ap => ap.OdsInstance)
             .Include(ap => ap.ApplicationEducationOrganizations)
-            .OrderBy(v => v.Vendor.VendorName)
-            .Where(v => !VendorExtensions.ReservedNames.Contains(v.Vendor.VendorName.Trim()))
+            .OrderBy(v => v.Vendor!.VendorName)
+            .Where(v => v.Vendor != null && v.Vendor.VendorName != null && !VendorExtensions.ReservedNames.Contains(v.Vendor.VendorName.Trim()))
             .ToList();
     }
 
     public List<Application> Execute(CommonQueryParams commonQueryParams)
     {
         return _context.Applications
-            .Include(ap => ap.Vendor).ThenInclude(ap => ap.VendorNamespacePrefixes)
-            .Include(ap => ap.Vendor).ThenInclude(ap => ap.Users)
+            .Include(ap => ap.Vendor!).ThenInclude(ap => ap.VendorNamespacePrefixes)
+            .Include(ap => ap.Vendor!).ThenInclude(ap => ap.Users)
             .Include(ap => ap.Profiles)
             .Include(ap => ap.OdsInstance)
             .Include(ap => ap.ApplicationEducationOrganizations)
             .OrderBy(v => v.ApplicationName)
-            .Where(v => !VendorExtensions.ReservedNames.Contains(v.Vendor.VendorName.Trim()))
+            .Where(v => v.Vendor != null && v.Vendor.VendorName != null && !VendorExtensions.ReservedNames.Contains(v.Vendor.VendorName.Trim()))
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToList();
     }

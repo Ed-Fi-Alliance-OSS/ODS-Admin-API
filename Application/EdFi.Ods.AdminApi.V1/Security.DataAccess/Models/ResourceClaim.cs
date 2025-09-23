@@ -17,30 +17,30 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
 
         [StringLength(255)]
         [Required]
-        public string DisplayName { get; set; }
+        public required string DisplayName { get; set; }
 
         /// <summary>
         /// ResourceName is actually an Uri so length needs to be around 2048
         /// </summary>
         [StringLength(2048)]
         [Required]
-        public string ResourceName { get; set; }
+        public required string ResourceName { get; set; }
 
         /// <summary>
         /// ClaimName is actually an Uri so length needs to be around 2048
         /// </summary>
         [StringLength(2048)]
         [Required]
-        public string ClaimName { get; set; }
+        public required string ClaimName { get; set; }
 
         [Column("Application_ApplicationId")]
         public int ApplicationId { get; set; }
 
         [Required]
-        public Application Application { get; set; }
+        public required Application Application { get; set; }
 
         public int? ParentResourceClaimId { get; set; }
 
-        public virtual ResourceClaim ParentResourceClaim { get; set; }
+        public virtual ResourceClaim? ParentResourceClaim { get; set; }
     }
 }

@@ -41,10 +41,10 @@ public class EditApplication : IFeature
     private static void GuardAgainstInvalidEntityReferences(EditApplicationRequest request, IUsersContext db)
     {
         if (null == db.Vendors.Find(request.VendorId))
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
+            throw new ValidationException([new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.")]);
 
         if (request.ProfileId.HasValue && db.Profiles.Find(request.ProfileId) == null)
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileId), $"Profile with ID {request.ProfileId} not found.") });
+            throw new ValidationException([new ValidationFailure(nameof(request.ProfileId), $"Profile with ID {request.ProfileId} not found.")]);
     }
 
     [SwaggerSchema(Title = "EditApplicationRequest")]
@@ -54,7 +54,7 @@ public class EditApplication : IFeature
         public int ApplicationId { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.ApplicationNameDescription, Nullable = false)]
-        public string? ApplicationName { get; set; }
+        public string ApplicationName { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.VendorIdDescription, Nullable = false)]
         public int VendorId { get; set; }

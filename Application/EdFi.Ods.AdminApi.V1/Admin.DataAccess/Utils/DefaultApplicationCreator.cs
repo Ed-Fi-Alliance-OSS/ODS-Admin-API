@@ -80,9 +80,22 @@ namespace EdFi.Admin.DataAccess.V1.Utils
             }
 
             var defaultClaimSetName = _configuration.GetSection("DefaultClaimSetName").Value;
+
+            if (string.IsNullOrWhiteSpace(defaultClaimSetName))
+            {
+                throw new InvalidOperationException("DefaultClaimSetName configuration value is missing or empty.");
+            }
+
+            var defaultOperationalContextUri = _configuration.GetSection("DefaultOperationalContextUri").Value;
+
+            if (string.IsNullOrWhiteSpace(defaultOperationalContextUri))
+            {
+                throw new InvalidOperationException("DefaultOperationalContextUri configuration value is missing or empty.");
+            }
+
             var newApplication = vendor.CreateApplication(applicationName, defaultClaimSetName);
 
-            newApplication.OperationalContextUri = _configuration.GetSection("DefaultOperationalContextUri").Value;
+            newApplication.OperationalContextUri = defaultOperationalContextUri;
             context.Applications.Add(newApplication);
             return newApplication;
         }

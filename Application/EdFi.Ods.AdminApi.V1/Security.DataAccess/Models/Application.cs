@@ -14,6 +14,6 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ApplicationId { get; set; }
 
-        public string ApplicationName { get; set; }
+        public required string ApplicationName { get; set; } = string.Empty;
     }
 }

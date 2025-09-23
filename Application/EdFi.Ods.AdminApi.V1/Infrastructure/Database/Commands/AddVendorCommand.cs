@@ -24,20 +24,22 @@ public class AddVendorCommand
             .Where(namespacePrefix => !string.IsNullOrWhiteSpace(namespacePrefix))
             .Select(namespacePrefix => new VendorNamespacePrefix
             {
-                NamespacePrefix = namespacePrefix.Trim()
+                NamespacePrefix = namespacePrefix.Trim(),
+                Vendor = new Vendor()
             })
             .ToList();
 
         var vendor = new Vendor
         {
-            VendorName = newVendor.Company?.Trim(),
+            VendorName = newVendor.Company.Trim(),
             VendorNamespacePrefixes = namespacePrefixes
         };
 
         var user = new VendorUser
         {
-            FullName = newVendor.ContactName?.Trim(),
-            Email = newVendor.ContactEmailAddress?.Trim()
+            FullName = newVendor.ContactName.Trim(),
+            Email = newVendor.ContactEmailAddress.Trim(),
+            Vendor = vendor
         };
 
         vendor.Users.Add(user);
@@ -50,8 +52,8 @@ public class AddVendorCommand
 
 public interface IAddVendorModel
 {
-    string? Company { get; }
+    string Company { get; }
     string? NamespacePrefixes { get; }
-    string? ContactName { get; }
-    string? ContactEmailAddress { get; }
+    string ContactName { get; }
+    string ContactEmailAddress { get; }
 }

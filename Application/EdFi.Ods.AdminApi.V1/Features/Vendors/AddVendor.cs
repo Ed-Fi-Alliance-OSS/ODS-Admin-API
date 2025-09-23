@@ -36,16 +36,16 @@ public class AddVendor : IFeature
     public class AddVendorRequest : IAddVendorModel
     {
         [SwaggerSchema(Description = FeatureConstants.VendorNameDescription, Nullable = false)]
-        public string? Company { get; set; }
+        public string Company { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.VendorNamespaceDescription, Nullable = false)]
-        public string? NamespacePrefixes { get; set; }
+        public string NamespacePrefixes { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.VendorContactDescription, Nullable = false)]
-        public string? ContactName { get; set; }
+        public string ContactName { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.VendorContactEmailDescription, Nullable = false)]
-        public string? ContactEmailAddress { get; set; }
+        public string ContactEmailAddress { get; set; } = string.Empty;
     }
 
     public class Validator : AbstractValidator<AddVendorRequest>

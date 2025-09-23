@@ -11,6 +11,7 @@
     <DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
     <DockerfileRunEnvironmentFiles>.env</DockerfileRunEnvironmentFiles>
     <DockerfileTag>adminapi-dev</DockerfileTag>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>

@@ -24,7 +24,7 @@ public class OverrideDefaultAuthorizationStrategyService
             .Include(x => x.ResourceClaim)
             .Include(x => x.Action)
             .Include(x => x.ClaimSet)
-            .Include(x => x.AuthorizationStrategyOverrides).ThenInclude(x => x.AuthorizationStrategy)
+            .Include(x => x.AuthorizationStrategyOverrides!).ThenInclude(x => x.AuthorizationStrategy)
             .Where(
                 x => x.ResourceClaim.ResourceClaimId == model.ResourceClaimId &&
                      x.ClaimSet.ClaimSetId == model.ClaimSetId)
@@ -41,7 +41,7 @@ public class OverrideDefaultAuthorizationStrategyService
                 .Include(x => x.ResourceClaim)
                 .Include(x => x.Action)
                 .Include(x => x.ClaimSet)
-                .Include(x => x.AuthorizationStrategyOverrides).ThenInclude(x => x.AuthorizationStrategy)
+                .Include(x => x.AuthorizationStrategyOverrides!).ThenInclude(x => x.AuthorizationStrategy)
                 .Where(
                     x => x.ResourceClaim.ResourceClaimId == parentResourceClaimId &&
                          x.ClaimSet.ClaimSetId == model.ClaimSetId)
@@ -166,15 +166,22 @@ public class OverrideDefaultAuthorizationStrategyService
     }
 
     private static void SetAuthorizationStrategyOverrides(
-        ClaimSetResourceClaimAction claimSetResourceClaimAction,
-        List<ClaimSetResourceClaimAction> parentResourceClaims, int[] authorizationStrategyValues,
-        Dictionary<int, Security.DataAccess.Models.AuthorizationStrategy>
-            authorizationStrategiesDictionary, string actionName)
+       ClaimSetResourceClaimAction claimSetResourceClaimAction,
+       List<ClaimSetResourceClaimAction> parentResourceClaims, int[] authorizationStrategyValues,
+       Dictionary<int, Security.DataAccess.Models.AuthorizationStrategy> authorizationStrategiesDictionary, string actionName)
     {
         foreach (var authStrategyId in authorizationStrategyValues.Where(x => x != 0))
         {
             var authStrategyOverride = new ClaimSetResourceClaimActionAuthorizationStrategyOverrides()
-            { AuthorizationStrategy = authorizationStrategiesDictionary[authStrategyId] };
+            {
+                AuthorizationStrategy = authorizationStrategiesDictionary[authStrategyId],
+                ClaimSetResourceClaimAction = claimSetResourceClaimAction
+            };
+
+            if (claimSetResourceClaimAction.AuthorizationStrategyOverrides == null)
+            {
+                claimSetResourceClaimAction.AuthorizationStrategyOverrides = new List<ClaimSetResourceClaimActionAuthorizationStrategyOverrides>();
+            }
 
             if (parentResourceClaims.Any() && parentResourceClaims.SingleOrDefault(
                     x =>

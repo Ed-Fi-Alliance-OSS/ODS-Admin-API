@@ -16,16 +16,16 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
 
         [StringLength(255)]
         [Required]
-        public string DisplayName { get; set; }
+        public required string DisplayName { get; set; }
 
         [StringLength(255)]
         [Required]
-        public string AuthorizationStrategyName { get; set; }
+        public required string AuthorizationStrategyName { get; set; }
 
         [Column("Application_ApplicationId")]
         public int ApplicationId { get; set; }
 
         [Required]
-        public Application Application { get; set; }
+        public required Application Application { get; set; }
     }
 }

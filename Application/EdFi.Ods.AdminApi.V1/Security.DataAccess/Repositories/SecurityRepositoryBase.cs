@@ -14,19 +14,19 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
 {
     public abstract class SecurityRepositoryBase
     {
-        protected ResettableLazy<Application> Application { get; private set; }
+        protected ResettableLazy<Application> Application { get; private set; } = default!;
 
-        protected ResettableLazy<List<Action>> Actions { get; private set; }
+        protected ResettableLazy<List<Action>> Actions { get; private set; } = default!;
 
-        protected ResettableLazy<List<ClaimSet>> ClaimSets { get; private set; }
+        protected ResettableLazy<List<ClaimSet>> ClaimSets { get; private set; } = default!;
 
-        protected ResettableLazy<List<ResourceClaim>> ResourceClaims { get; private set; }
+        protected ResettableLazy<List<ResourceClaim>> ResourceClaims { get; private set; } = default!;
 
-        protected ResettableLazy<List<AuthorizationStrategy>> AuthorizationStrategies { get; private set; }
+        protected ResettableLazy<List<AuthorizationStrategy>> AuthorizationStrategies { get; private set; } = default!;
 
-        protected ResettableLazy<List<ClaimSetResourceClaimAction>> ClaimSetResourceClaimActions { get; private set; }
+        protected ResettableLazy<List<ClaimSetResourceClaimAction>> ClaimSetResourceClaimActions { get; private set; } = default!;
 
-        protected ResettableLazy<List<ResourceClaimAction>> ResourceClaimActions { get; private set; }
+        protected ResettableLazy<List<ResourceClaimAction>> ResourceClaimActions { get; private set; } = default!;
 
         protected void Initialize(
             Func<Application> application,
@@ -60,7 +60,7 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             ResourceClaimActions.Reset();
         }
 
-        public virtual Action GetActionByHttpVerb(string httpVerb)
+        public virtual Action? GetActionByHttpVerb(string httpVerb)
         {
             string actionName = string.Empty;
 
@@ -83,7 +83,7 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             return GetActionByName(actionName);
         }
 
-        public virtual Action GetActionByName(string actionName)
+        public virtual Action? GetActionByName(string actionName)
         {
             return Actions.Value.FirstOrDefault(a => a.ActionName.Equals(actionName, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -115,7 +115,7 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
         {
             var resourceClaimLineage = new List<ResourceClaim>();
 
-            ResourceClaim resourceClaim;
+            ResourceClaim? resourceClaim = null;
 
             try
             {
@@ -124,8 +124,8 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             }
             catch (InvalidOperationException ex)
             {
-                // Use InvalidOperationException wrapper with custom message over InvalidOperationException
-                // thrown by Linq to communicate back to caller the problem with the configuration.
+                // Use InvalidOperationException wrapper with custom message over InvalidOperationException  
+                // thrown by Linq to communicate back to caller the problem with the configuration.  
                 throw new InvalidOperationException($"Multiple resource claims with a claim name of '{resourceClaimUri}' were found in the Ed-Fi API's security configuration. Authorization cannot be performed.", ex);
             }
 
@@ -183,7 +183,7 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Repositories
             }
         }
 
-        public virtual ResourceClaim GetResourceByResourceName(string resourceName)
+        public virtual ResourceClaim? GetResourceByResourceName(string resourceName)
         {
             return ResourceClaims
                 .Value

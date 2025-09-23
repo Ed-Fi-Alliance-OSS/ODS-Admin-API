@@ -41,7 +41,7 @@ public class GetApplicationsByClaimSetIdQuery : IGetApplicationsByClaimSetIdQuer
             .Select(x => new Application
             {
                 Name = x.ApplicationName,
-                VendorName = x.Vendor.VendorName
+                VendorName = x.Vendor != null ? x.Vendor.VendorName : null
             })
             .ToList();
     }

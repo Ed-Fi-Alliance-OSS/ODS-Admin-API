@@ -51,7 +51,7 @@ public class AddApplication : IFeature
     public class AddApplicationRequest : IAddApplicationModel
     {
         [SwaggerSchema(Description = FeatureConstants.ApplicationNameDescription, Nullable = false)]
-        public string? ApplicationName { get; set; }
+        public string ApplicationName { get; set; } = string.Empty;
 
         [SwaggerSchema(Description = FeatureConstants.VendorIdDescription, Nullable = false)]
         public int VendorId { get; set; }

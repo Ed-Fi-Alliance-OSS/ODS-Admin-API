@@ -26,11 +26,12 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts
         public UsersContextFactory(IAdminDatabaseConnectionStringProvider connectionStringsProvider, DatabaseEngine databaseEngine)
         {
             _connectionStringsProvider = Preconditions.ThrowIfNull(connectionStringsProvider, nameof(connectionStringsProvider));
-            _databaseEngine =  Preconditions.ThrowIfNull(databaseEngine, nameof(databaseEngine));
+            _databaseEngine = Preconditions.ThrowIfNull(databaseEngine, nameof(databaseEngine));
         }
+
         public Type GetUsersContextType()
         {
-            if (_usersContextTypeByDatabaseEngine.TryGetValue(_databaseEngine, out Type contextType))
+            if (_usersContextTypeByDatabaseEngine.TryGetValue(_databaseEngine, out Type? contextType) && contextType != null)
             {
                 return contextType;
             }
@@ -44,23 +45,23 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts
             if (_databaseEngine == DatabaseEngine.SqlServer)
             {
                 return Activator.CreateInstance(
-                        GetUsersContextType(),
-                        new DbContextOptionsBuilder<SqlServerUsersContext>()
-                            .UseLazyLoadingProxies()
-                            .UseSqlServer(_connectionStringsProvider.GetConnectionString())
-                            .Options) as
-                    IUsersContext;
+                           GetUsersContextType(),
+                           new DbContextOptionsBuilder<SqlServerUsersContext>()
+                               .UseLazyLoadingProxies()
+                               .UseSqlServer(_connectionStringsProvider.GetConnectionString())
+                               .Options) as
+                       IUsersContext ?? throw new InvalidOperationException("Failed to create SqlServerUsersContext instance.");
             }
 
             if (_databaseEngine == DatabaseEngine.Postgres)
             {
                 return Activator.CreateInstance(
-                        GetUsersContextType(),
-                        new DbContextOptionsBuilder<PostgresUsersContext>()
-                            .UseLazyLoadingProxies()
-                            .UseNpgsql(_connectionStringsProvider.GetConnectionString())
-                            .Options) as
-                    IUsersContext;
+                           GetUsersContextType(),
+                           new DbContextOptionsBuilder<PostgresUsersContext>()
+                               .UseLazyLoadingProxies()
+                               .UseNpgsql(_connectionStringsProvider.GetConnectionString())
+                               .Options) as
+                       IUsersContext ?? throw new InvalidOperationException("Failed to create PostgresUsersContext instance.");
             }
 
             throw new InvalidOperationException(

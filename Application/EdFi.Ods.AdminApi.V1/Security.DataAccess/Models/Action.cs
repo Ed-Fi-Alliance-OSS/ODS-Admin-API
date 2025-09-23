@@ -16,10 +16,10 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
 
         [StringLength(255)]
         [Required]
-        public string ActionName { get; set; }
+        public required string ActionName { get; set; }
 
         [StringLength(2048)]
         [Required]
-        public string ActionUri { get; set; }
+        public required string ActionUri { get; set; }
     }
 }

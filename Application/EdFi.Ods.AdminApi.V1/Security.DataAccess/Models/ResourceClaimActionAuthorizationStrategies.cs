@@ -21,12 +21,12 @@ namespace EdFi.Ods.AdminApi.V1.Security.DataAccess.Models
 
         [Required]
         [ForeignKey("ResourceClaimActionId")]
-        public ResourceClaimAction ResourceClaimAction { get; set; }
+        public required ResourceClaimAction ResourceClaimAction { get; set; }
 
         public int AuthorizationStrategyId { get; set; }
 
         [Required]
         [ForeignKey("AuthorizationStrategyId")]
-        public AuthorizationStrategy AuthorizationStrategy { get; set; }
+        public required AuthorizationStrategy AuthorizationStrategy { get; set; }
     }
 }

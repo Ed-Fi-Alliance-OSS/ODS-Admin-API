@@ -36,14 +36,14 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
             set { _id = value; }
         }
 
-        public virtual ApiClient ApiClient { get; set; }
+        public virtual ApiClient? ApiClient { get; set; }
 
         public DateTime Expiration { get; set; }
 
         [NotMapped]
         public TimeSpan Duration { get; }
 
-        public string Scope { get; set; }
+        public string? Scope { get; set; }
 
         public override string ToString()
         {

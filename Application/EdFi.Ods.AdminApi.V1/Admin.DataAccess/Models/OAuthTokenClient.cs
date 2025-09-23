@@ -9,24 +9,24 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
 {
     public class OAuthTokenClient
     {
-        public string Key { get; set; }
+        public string Key { get; set; } = string.Empty;
 
         public bool UseSandbox { get; set; }
 
-        public string StudentIdentificationSystemDescriptor { get; set; }
+        public string StudentIdentificationSystemDescriptor { get; set; } = string.Empty;
 
         public int? EducationOrganizationId { get; set; }
 
-        public string ClaimSetName { get; set; }
+        public string ClaimSetName { get; set; } = string.Empty;
 
-        public string NamespacePrefix { get; set; }
+        public string NamespacePrefix { get; set; } = string.Empty;
 
-        public string ProfileName { get; set; }
+        public string ProfileName { get; set; } = string.Empty;
 
         public short? CreatorOwnershipTokenId { get; set; }
 
         public short? OwnershipTokenId { get; set; }
-        
+
         public DateTime Expiration { get; set; }
 
         public int ApiClientId { get; set; }

@@ -25,12 +25,12 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         /// </summary>
         [Key]
         public short OwnershipTokenId { get; set; }
-        
+
         /// <summary>
         /// Descriptive name for the token string length is 50 char
         /// </summary>
         [StringLength(50)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
         public virtual ICollection<ApiClient> ApiClients { get; set; }
 
     }

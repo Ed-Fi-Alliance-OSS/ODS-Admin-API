@@ -11,11 +11,9 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
-using Profile = EdFi.Admin.DataAccess.Models.Profile;
 using VendorUser = EdFi.Admin.DataAccess.Models.User;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
@@ -33,10 +31,12 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
     private IOptions<AppSettings> _options { get; set; }
 
     [SetUp]
-    public virtual async Task SetUp()
+    public new virtual async Task SetUp()
     {
-        AppSettings appSettings = new AppSettings();
-        appSettings.PreventDuplicateApplications = false;
+        AppSettings appSettings = new()
+        {
+            PreventDuplicateApplications = false
+        };
         _options = Options.Create(appSettings);
         await Task.Yield();
     }
@@ -52,7 +52,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
 
         _vendor = new Vendor
         {
-            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
             VendorName = "Integration Tests"
         };
 
@@ -190,7 +190,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
             ApplicationId = _application.ApplicationId,
             Name = _apiClient.Name,
             IsApproved = true,
-            OdsInstanceIds = new List<int> { _odsInstance.OdsInstanceId, _newOdsInstance.OdsInstanceId }
+            OdsInstanceIds = [_odsInstance.OdsInstanceId, _newOdsInstance.OdsInstanceId]
         };
 
         Transaction(usersContext =>
