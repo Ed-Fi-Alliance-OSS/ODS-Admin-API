@@ -23,12 +23,12 @@ public class DeleteClaimSetCommandTests : SecurityDataTestBase
         var testClaimSetToDelete = new ClaimSet
         { ClaimSetName = "TestClaimSet_Delete" };
         Save(testClaimSetToDelete);
-        SetupParentResourceClaimsWithChildren(testClaimSetToDelete, UniqueNameList("ParentRc", 3), UniqueNameList("ChildRc", 1));
+        SetupClaimSetResourceClaimActions(testClaimSetToDelete, UniqueNameList("ParentRc", 3), UniqueNameList("ChildRc", 1));
 
         var testClaimSetToPreserve = new ClaimSet
         { ClaimSetName = "TestClaimSet_Preserve" };
         Save(testClaimSetToPreserve);
-        var resourceClaimsForPreservedClaimSet = SetupParentResourceClaimsWithChildren(testClaimSetToPreserve, UniqueNameList("ParentRc", 3),
+        var resourceClaimsForPreservedClaimSet = SetupClaimSetResourceClaimActions(testClaimSetToPreserve, UniqueNameList("ParentRc", 3),
             UniqueNameList("ChildRc", 1));
 
         var deleteModel = new Mock<IDeleteClaimSetModel>();

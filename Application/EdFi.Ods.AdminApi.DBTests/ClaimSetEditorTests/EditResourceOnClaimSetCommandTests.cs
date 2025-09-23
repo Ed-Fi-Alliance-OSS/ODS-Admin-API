@@ -3,12 +3,12 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Collections.Generic;
+using System.Linq;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 using Moq;
 using NUnit.Framework;
 using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
 using ClaimSet = EdFi.Security.DataAccess.Models.ClaimSet;
 using ResourceClaim = EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim;
 
@@ -24,7 +24,7 @@ public class EditResourceOnClaimSetCommandTests : SecurityDataTestBase
         Save(testClaimSet);
 
         var parentRcNames = UniqueNameList("ParentRc", 2);
-        var testResources = SetupParentResourceClaimsWithChildren(testClaimSet, parentRcNames, UniqueNameList("ChildRc", 1));
+        var testResources = SetupClaimSetResourceClaimActions(testClaimSet, parentRcNames, UniqueNameList("ChildRc", 1));
 
         var testResource1ToEdit = testResources.Select(x => x.ResourceClaim).Single(x => x.ResourceName == parentRcNames.First());
         var testResource2ToNotEdit = testResources.Select(x => x.ResourceClaim).Single(x => x.ResourceName == parentRcNames.Last());
@@ -39,7 +39,7 @@ public class EditResourceOnClaimSetCommandTests : SecurityDataTestBase
                 new ResourceClaimAction{ Name = "Read", Enabled = false },
                 new ResourceClaimAction{ Name = "Update", Enabled = true },
                 new ResourceClaimAction{ Name = "Delete", Enabled = true }
-            }     
+            }
         };
 
         var editResourceOnClaimSetModel = new Mock<IEditResourceOnClaimSetModel>();
@@ -73,7 +73,7 @@ public class EditResourceOnClaimSetCommandTests : SecurityDataTestBase
 
         var parentRcNames = UniqueNameList("ParentRc", 1);
         var childRcNames = UniqueNameList("ChildRc", 2);
-        var testResources = SetupParentResourceClaimsWithChildren(testClaimSet, parentRcNames, childRcNames);
+        var testResources = SetupClaimSetResourceClaimActions(testClaimSet, parentRcNames, childRcNames);
 
         var testParentResource = testResources.Single(x => x.ResourceClaim.ResourceName == parentRcNames.First());
 
@@ -126,6 +126,80 @@ public class EditResourceOnClaimSetCommandTests : SecurityDataTestBase
         resultParentResourceClaim.Actions.Any(x => x.Name.Equals("Create")).ShouldBe(true);
     }
 
+    [Test]
+    public void ShouldEditGrandChildResourcesOnClaimSet()
+    {
+        var testClaimSet = new ClaimSet { ClaimSetName = "TestClaimSet" };
+        Save(testClaimSet);
+
+        var grandChildRcNamePrefix = "GrandChildRc";
+
+        var parentRcNames = UniqueNameList("ParentRc", 1);
+        var childRcNames = UniqueNameList("ChildRc", 2);
+        var grandChildRcNames = UniqueNameList(grandChildRcNamePrefix, 1);
+        var testResources = SetupClaimSetResourceClaimActions(testClaimSet, parentRcNames, childRcNames, grandChildRcNames);
+
+        var testParentResource = testResources.Single(x => x.ResourceClaim.ResourceName == parentRcNames.First());
+
+        var test1ChildResourceClaim = $"{childRcNames.First()}-{parentRcNames.First()}";
+        var test2ChildResourceClaim = $"{childRcNames.Last()}-{parentRcNames.First()}";
+
+        using var securityContext = TestContext;
+
+        var grandChildResources = securityContext.ResourceClaims.Where(rc => rc.ClaimName.StartsWith(grandChildRcNamePrefix)).ToArray();
+
+        // there must be at least two grandchild ResourceClaims so that one can be edited while the other remains unchanged
+        grandChildResources.ShouldNotBeNull();
+        grandChildResources.Count().ShouldBeGreaterThanOrEqualTo(2);
+
+        var grandChildRCToEdit = grandChildResources[0];
+        var grandChildRCNotToEdit = grandChildResources[1];
+
+        var editedResource = new ResourceClaim
+        {
+            Id = grandChildRCToEdit.ResourceClaimId,
+            Name = grandChildRCToEdit.ResourceName,
+            Actions = new List<ResourceClaimAction>
+            {
+                new ResourceClaimAction{ Name = "Create", Enabled = false },
+                new ResourceClaimAction{ Name = "Read", Enabled = false },
+                new ResourceClaimAction{ Name = "Update", Enabled = true },
+                new ResourceClaimAction{ Name = "Delete", Enabled = true }
+            }
+        };
+
+        var editResourceOnClaimSetModel = new Mock<IEditResourceOnClaimSetModel>();
+        editResourceOnClaimSetModel.Setup(x => x.ClaimSetId).Returns(testClaimSet.ClaimSetId);
+        editResourceOnClaimSetModel.Setup(x => x.ResourceClaim).Returns(editedResource);
+
+        var command = new EditResourceOnClaimSetCommand(securityContext);
+        command.Execute(editResourceOnClaimSetModel.Object);
+
+
+        var resourceClaims = securityContext.ClaimSetResourceClaimActions.Where(rca => rca.ClaimSetId == testClaimSet.ClaimSetId);
+
+
+        var editedGrandChildResourceClaimAction = resourceClaims.Where(rca => rca.ResourceClaimId == grandChildRCToEdit.ResourceClaimId).ToList();
+
+        editedGrandChildResourceClaimAction.ShouldNotBeNull();
+        editedGrandChildResourceClaimAction.Count.ShouldBe(2);
+        editedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Update")).ShouldBe(true);
+        editedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Delete")).ShouldBe(true);
+        editedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Create")).ShouldBe(false);
+        editedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Read")).ShouldBe(false);
+
+
+        var notEditedGrandChildResourceClaimAction = resourceClaims.Where(rca => rca.ResourceClaimId == grandChildRCNotToEdit.ResourceClaimId).ToList();
+
+        notEditedGrandChildResourceClaimAction.ShouldNotBeNull();
+        notEditedGrandChildResourceClaimAction.Count.ShouldBe(1);
+        notEditedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Create")).ShouldBe(true);
+        notEditedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Read")).ShouldBe(false);
+        notEditedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Update")).ShouldBe(false);
+        notEditedGrandChildResourceClaimAction.Any(rca => rca.Action.ActionName.Equals("Delete")).ShouldBe(false);
+
+    }
+
 
     [Test]
     public void ShouldAddParentResourceToClaimSet()
@@ -146,7 +220,7 @@ public class EditResourceOnClaimSetCommandTests : SecurityDataTestBase
                 new ResourceClaimAction{ Name = "Read", Enabled = false },
                 new ResourceClaimAction{ Name = "Update", Enabled = true },
                 new ResourceClaimAction{ Name = "Delete", Enabled = false }
-            }         
+            }
         };
         var existingResources = ResourceClaimsForClaimSet(testClaimSet.ClaimSetId);
 

@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "ad4409c1-977b-489d-a6b1-31f6db89ed43",
+		"_postman_id": "e1980c65-4193-4699-82f5-73fdd9ad8d80",
 		"name": "Admin API E2E 2.0 - ClaimSets",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22794466"
+		"_exporter_id": "1979934"
 	},
 	"item": [
 		{
@@ -204,7 +204,9 @@
 										"exec": [
 											"pm.collectionVariables.set(\"ImportClaimSetGUID\", pm.variables.replaceIn('{{$guid}}'));"
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
 									}
 								},
 								{
@@ -217,9 +219,45 @@
 											"\r",
 											"pm.test(\"POST ClaimSets - Import: Response includes location in header\", function () {\r",
 											"    pm.response.to.have.header(\"Location\");   \r",
-											"});"
+											"    const locationHeader = pm.response.headers.get(\"Location\");\r",
+											"    const id = locationHeader ? locationHeader.split(\"/\")[2] : null; // Added null check for locationHeader\r",
+											"    if(id) {\r",
+											"        pm.collectionVariables.set(\"ImportedClaimSetId\", id);\r",
+											"    }\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST ClaimSets - Import: Verify all resourceClaims were imported send request\", function(done){ // Added done parameter\r",
+											"    let requestBody = pm.request.body ? pm.request.body.raw : null;\r",
+											"    let requestData = requestBody ? JSON.parse(requestBody) : null;\r",
+											"\r",
+											"    pm.sendRequest({\r",
+											"        url: pm.environment.get(\"API_URL\") + \"/v2/claimSets/\" + pm.collectionVariables.get(\"ImportedClaimSetId\"),\r",
+											"        method: \"GET\",\r",
+											"        header:{\r",
+											"            \"Content-Type\": \"application/json\",\r",
+											"            \"Authorization\": \"Bearer \" + pm.collectionVariables.get(\"TOKEN\")\r",
+											"        }\r",
+											"    }, function(err,res){\r",
+											"        pm.expect(res).to.have.status(200);\r",
+											"\r",
+											"        let importedClaimSetData = res.json();\r",
+											"\r",
+											"        pm.test(\"POST ClaimSets - Import: Verify all resourceClaims were imported\",function(){\r",
+											"            // Check that the number of resourceClaims matches the original request\r",
+											"            if (requestData && requestData.resourceClaims) {\r",
+											"                pm.expect(importedClaimSetData.resourceClaims.length).to.equal(requestData.resourceClaims.length);\r",
+											"            }\r",
+											"            // Check that the grandchild resourceClaim \"candidatePreparation\" was created\r",
+											"            const hasCandidatePreparation = importedClaimSetData.resourceClaims.some(rc => rc.name === \"candidatePreparation\");\r",
+											"            pm.expect(hasCandidatePreparation).to.be.true;\r",
+											"        });\r",
+											"    });\r",
+											"});\r",
+											""
 										],
-										"type": "text/javascript"
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
 									}
 								}
 							],
@@ -228,7 +266,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"resourceClaims\": [\r\n    {     \r\n      \"name\": \"educationStandards\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],      \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {     \r\n      \"name\": \"academicSubjectDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }  \r\n   \r\n      ],\r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {\r\n      \"name\": \"gradeLevelDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],\r\n     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {      \r\n      \"name\": \"publicationStatusDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    }\r\n  ],\r\n  \"name\": \"Test ClaimSet import {{ImportClaimSetGUID}}\"\r\n}",
+									"raw": "{\r\n  \"resourceClaims\": [\r\n    {     \r\n      \"name\": \"educationStandards\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],      \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {     \r\n      \"name\": \"academicSubjectDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }  \r\n   \r\n      ],\r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {\r\n      \"name\": \"gradeLevelDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],\r\n     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {      \r\n      \"name\": \"publicationStatusDescriptor\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    },\r\n    {      \r\n      \"name\": \"candidatePreparation\",\r\n      \"actions\": [\r\n        {\r\n          \"name\": \"Create\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Read\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Update\",\r\n          \"enabled\": true\r\n        },\r\n        {\r\n          \"name\": \"Delete\",\r\n          \"enabled\": true\r\n        }\r\n      ],     \r\n      \"authorizationStrategyOverridesForCRUD\": [],\r\n      \"children\": []\r\n    }\r\n  ],\r\n  \"name\": \"Test ClaimSet import {{ImportClaimSetGUID}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -4738,6 +4776,18 @@
 		},
 		{
 			"key": "ODSInstanceId",
+			"value": ""
+		},
+		{
+			"key": "ClaimSetGUID",
+			"value": ""
+		},
+		{
+			"key": "CreatedClaimSetId",
+			"value": ""
+		},
+		{
+			"key": "ImportedClaimSetId",
 			"value": ""
 		}
 	]

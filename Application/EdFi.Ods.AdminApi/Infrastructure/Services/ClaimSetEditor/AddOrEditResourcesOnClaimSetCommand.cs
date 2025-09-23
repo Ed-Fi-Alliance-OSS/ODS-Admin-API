@@ -71,13 +71,26 @@ public class AddOrEditResourcesOnClaimSetCommand
     {
         var allResources = new List<ResourceClaim>();
         var parentResources = _getResourceClaimsQuery.Execute().ToList();
-        allResources.AddRange(parentResources);
-        foreach (var children in parentResources.Select(x => x.Children))
+
+        foreach (var resource in parentResources)
         {
-            allResources.AddRange(children);
+            AddResourceWithChildren(resource, allResources);
         }
 
         return allResources;
+    }
+
+    private void AddResourceWithChildren(ResourceClaim resource, List<ResourceClaim> allResources)
+    {
+        allResources.Add(resource);
+
+        if (resource.Children != null && resource.Children.Any())
+        {
+            foreach (var child in resource.Children)
+            {
+                AddResourceWithChildren(child, allResources);
+            }
+        }
     }
 }
 

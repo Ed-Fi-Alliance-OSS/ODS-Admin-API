@@ -203,7 +203,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
         appAuthorizationStrategies = SetupApplicationAuthorizationStrategies().ToList();
         var parentRcNames = UniqueNameList("ParentRc", 2);
 
-        var testResourceClaims = SetupParentResourceClaimsWithChildren(
+        var testResourceClaims = SetupClaimSetResourceClaimActions(
             testClaimSet, parentRcNames, UniqueNameList("Child", 1));
 
         SetupResourcesWithDefaultAuthorizationStrategies(

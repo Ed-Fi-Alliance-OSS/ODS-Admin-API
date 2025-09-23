@@ -7,15 +7,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Security.DataAccess.Contexts;
 using EdFi.Security.DataAccess.Models;
 using NUnit.Framework;
 using Action = EdFi.Security.DataAccess.Models.Action;
 using ActionName = EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.Action;
-using ClaimSetEditorTypes = EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 using Application = EdFi.Admin.DataAccess.Models.Application;
-using EdFi.Admin.DataAccess.Contexts;
+using ClaimSetEditorTypes = EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 
 namespace EdFi.Ods.AdminApi.DBTests;
 
@@ -223,11 +223,61 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
         return parentResourceClaims;
     }
 
-    protected IReadOnlyCollection<ClaimSetResourceClaimAction> SetupParentResourceClaimsWithChildren(ClaimSet testClaimSet, IList<string> parentRcNames, IList<string> childRcNames)
+    protected IReadOnlyCollection<ClaimSetResourceClaimAction> SetupClaimSetResourceClaimActions(
+        ClaimSet testClaimSet,
+        IList<string> parentRcNames,
+        IList<string> childRcNames,
+        IList<string> grandChildRcNames = null
+        )
     {
         var actions = ActionName.GetAll().Select(action => new Action { ActionName = action.Value, ActionUri = action.Value }).ToList();
         Save(actions.Cast<object>().ToArray());
 
+        var resourceClaims = SetupResourceClaimsWithChildren(parentRcNames, childRcNames, grandChildRcNames);
+
+        var parentResourceClaims = resourceClaims.Where(rc => rc.ParentResourceClaim == null).ToList();
+        var childResourceClaims = resourceClaims.Where(rc => rc.ParentResourceClaim != null && rc.ParentResourceClaim.ParentResourceClaim == null).ToList();
+        var grandChildResourceClaims = resourceClaims.Where(rc => rc.ParentResourceClaim != null && rc.ParentResourceClaim.ParentResourceClaim != null).ToList();
+
+
+        var claimSetResourceClaims = Enumerable.Range(1, parentRcNames.Count)
+            .Select(index => parentResourceClaims[index - 1]).Select(parentResource => new ClaimSetResourceClaimAction
+            {
+                ResourceClaim = parentResource,
+                Action = actions.Single(x => x.ActionName == ActionName.Create.Value),
+                ClaimSet = testClaimSet
+            }).ToList();
+
+        var childResources = parentResourceClaims.SelectMany(x => childResourceClaims
+            .Where(child => child.ParentResourceClaimId == x.ResourceClaimId)
+            .Select(child => new ClaimSetResourceClaimAction
+            {
+                ResourceClaim = child,
+                Action = actions.Single(a => a.ActionName == ActionName.Create.Value),
+                ClaimSet = testClaimSet
+            }).ToList()).ToList();
+        claimSetResourceClaims.AddRange(childResources);
+
+        var grandChildResources = grandChildResourceClaims.Select(grandChild => new ClaimSetResourceClaimAction
+        {
+            ResourceClaim = grandChild,
+            Action = actions.Single(a => a.ActionName == ActionName.Create.Value),
+            ClaimSet = testClaimSet
+        }).ToList();
+        claimSetResourceClaims.AddRange(grandChildResources);
+
+        Save(claimSetResourceClaims.Cast<object>().ToArray());
+
+        return claimSetResourceClaims;
+    }
+
+
+    protected IReadOnlyCollection<ResourceClaim> SetupResourceClaimsWithChildren(
+    IList<string> parentRcNames,
+    IList<string> childRcNames,
+    IList<string> grandChildRcNames = null
+    )
+    {
         var parentResourceClaims = parentRcNames.Select(parentRcName =>
         {
             return new ResourceClaim
@@ -249,31 +299,27 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
                };
            })).ToList();
 
-        Save(childResourceClaims.Cast<object>().ToArray());
-
-        var claimSetResourceClaims = Enumerable.Range(1, parentRcNames.Count)
-            .Select(index => parentResourceClaims[index - 1]).Select(parentResource => new ClaimSetResourceClaimAction
+        var grandChildResourceClaims = grandChildRcNames == null || !grandChildRcNames.Any() ? new List<ResourceClaim>() : childResourceClaims.SelectMany(child => grandChildRcNames.Select(grandChildName =>
             {
-                ResourceClaim = parentResource,
-                Action = actions.Single(x => x.ActionName == ActionName.Create.Value),
-                ClaimSet = testClaimSet
-            }).ToList();
+                var fullName = $"{grandChildName}-{child.ClaimName}";
+                return new ResourceClaim
+                {
+                    ClaimName = fullName,
+                    ResourceName = fullName,
+                    ParentResourceClaim = child
+                };
+            })).ToList();
 
-        var childResources = parentResourceClaims.SelectMany(x => childResourceClaims
-            .Where(child => child.ParentResourceClaimId == x.ResourceClaimId)
-            .Select(child => new ClaimSetResourceClaimAction
-            {
-                ResourceClaim = child,
-                Action = actions.Single(a => a.ActionName == ActionName.Create.Value),
-                ClaimSet = testClaimSet
-            }).ToList()).ToList();
+        var allResourceClaims = parentResourceClaims
+        .Concat(childResourceClaims)
+        .Concat(grandChildResourceClaims)
+        .ToList();
 
-        claimSetResourceClaims.AddRange(childResources);
+        Save(allResourceClaims.Cast<object>().ToArray());
+        return allResourceClaims;
 
-        Save(claimSetResourceClaims.Cast<object>().ToArray());
-
-        return claimSetResourceClaims;
     }
+
 
     protected IReadOnlyCollection<AuthorizationStrategy> SetupApplicationAuthorizationStrategies(int authStrategyCount = 5)
     {

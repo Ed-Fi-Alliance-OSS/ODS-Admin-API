@@ -57,7 +57,9 @@ public class GetResourceClaimsQuery : IGetResourceClaimsQuery
 
     private IEnumerable<ResourceClaim> Query(CommonQueryParams? commonQueryParams = null)
     {
-        Expression<Func<EdFi.Security.DataAccess.Models.ResourceClaim, object>> columnToOrderBy = _orderByColumnResourceClaims.GetColumnToOrderBy(commonQueryParams != null ? commonQueryParams.Value.OrderBy : string.Empty);
+        Expression<Func<EdFi.Security.DataAccess.Models.ResourceClaim, object>> columnToOrderBy =
+            _orderByColumnResourceClaims.GetColumnToOrderBy(commonQueryParams != null ? commonQueryParams.Value.OrderBy : string.Empty);
+
         var resources = new List<ResourceClaim>();
 
         var parentResources = _securityContext.ResourceClaims
@@ -67,25 +69,27 @@ public class GetResourceClaimsQuery : IGetResourceClaimsQuery
         if (commonQueryParams != null)
             parentResources = parentResources.Paginate(commonQueryParams.Value.Offset, commonQueryParams.Value.Limit, _options);
 
-        var childResources = _securityContext.ResourceClaims.Where(x => x.ParentResourceClaim != null).ToList();
+        var allResources = _securityContext.ResourceClaims.ToList();
 
         foreach (var parentResource in parentResources.ToList())
         {
-            var children = childResources.Where(x => x.ParentResourceClaimId == parentResource.ResourceClaimId);
-            resources.Add(new ResourceClaim
-            {
-                Children = children.Select(child => new ResourceClaim()
-                {
-                    Id = child.ResourceClaimId,
-                    Name = child.ResourceName,
-                    ParentId = parentResource.ResourceClaimId,
-                    ParentName = parentResource.ResourceName,
-                }).ToList(),
-                Name = parentResource.ResourceName,
-                Id = parentResource.ResourceClaimId
-            });
+            resources.Add(BuildResourceClaimTree(parentResource, allResources));
         }
-        return resources
-            .Distinct();
+
+        return resources.Distinct();
+    }
+
+    private ResourceClaim BuildResourceClaimTree(EdFi.Security.DataAccess.Models.ResourceClaim resource, List<EdFi.Security.DataAccess.Models.ResourceClaim> allResources)
+    {
+        var children = allResources.Where(x => x.ParentResourceClaimId == resource.ResourceClaimId).ToList();
+
+        return new ResourceClaim
+        {
+            Id = resource.ResourceClaimId,
+            Name = resource.ResourceName,
+            ParentId = resource.ParentResourceClaimId ?? 0,
+            ParentName = resource.ParentResourceClaim?.ResourceName,
+            Children = children.Select(child => BuildResourceClaimTree(child, allResources)).ToList()
+        };
     }
 }

@@ -21,7 +21,7 @@ public class DeleteResourceClaimOnClaimSetCommandTests : SecurityDataTestBase
         Save(testClaimSet);
 
         var parentRcNames = UniqueNameList("ParentRc", 2);
-        var testResources = SetupParentResourceClaimsWithChildren(testClaimSet, parentRcNames, UniqueNameList("ChildRc", 1));
+        var testResources = SetupClaimSetResourceClaimActions(testClaimSet, parentRcNames, UniqueNameList("ChildRc", 1));
 
         using var securityContext = TestContext;
         var command = new DeleteResouceClaimOnClaimSetCommand(securityContext);
