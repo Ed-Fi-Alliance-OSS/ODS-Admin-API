@@ -11,8 +11,21 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
 using log4net;
+using log4net.Config;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Initialize log4net early so we can use it in Program.cs
+var log4netConfigFileName = builder.Configuration.GetValue<string>("Log4NetCore:Log4NetConfigFileName");
+if (!string.IsNullOrEmpty(log4netConfigFileName))
+{
+    var log4netConfigPath = Path.Combine(AppContext.BaseDirectory, log4netConfigFileName);
+    if (File.Exists(log4netConfigPath))
+    {
+        var log4netConfig = new FileInfo(log4netConfigPath);
+        XmlConfigurator.Configure(LogManager.GetRepository(), log4netConfig);
+    }
+}
 
 // logging
 var _logger = LogManager.GetLogger("Program");
