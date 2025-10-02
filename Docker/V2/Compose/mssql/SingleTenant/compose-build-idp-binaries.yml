@@ -40,7 +40,6 @@ services:
       AppSettings__DatabaseEngine: SqlServer
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
       AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
-      AppSettings__EnableAdminConsoleAPI: ${ENABLE_ADMIN_CONSOLE:-true}
       AppSettings__EnableApplicationResetEndpoint: ${ENABLE_APPLICATION_RESET_ENDPOINT:-true} 
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-false}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
@@ -52,7 +51,6 @@ services:
       Authentication__SigningKey: ${SIGNING_KEY}
       ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
-      EdFiApiDiscoveryUrl: "${EDFI_API_DISCOVERY_URL:-https://host.docker.internal/api/}"
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
       IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}

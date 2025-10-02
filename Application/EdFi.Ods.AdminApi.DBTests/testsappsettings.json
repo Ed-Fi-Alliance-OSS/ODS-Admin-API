@@ -1,0 +1,20 @@
+{
+    "ConnectionStrings": {
+        "EdFi_Admin": "Data Source=localhost;Initial Catalog=EdFi_Admin_Test;Integrated Security=False;User Id=sa;Password=P@55w0rd;Encrypt=true;Trusted_Connection=false;TrustServerCertificate=True",
+        "EdFi_Security": "Data Source=localhost;Initial Catalog=EdFi_Security_Test;Integrated Security=False;User Id=sa;Password=P@55w0rd;Encrypt=true;Trusted_Connection=false;TrustServerCertificate=True"
+    },
+    "Tenants": {
+        "tenant1": {
+            "ConnectionStrings": {
+                "EdFi_Admin": "Data Source=localhost;Initial Catalog=EdFi_Admin_Test;Integrated Security=False;User Id=sa;Password=P@55w0rd;Encrypt=true;Trusted_Connection=false;TrustServerCertificate=True",
+                "EdFi_Security": "Data Source=localhost;Initial Catalog=EdFi_Security_Test;Integrated Security=False;User Id=sa;Password=P@55w0rd;Encrypt=true;Trusted_Connection=false;TrustServerCertificate=True"
+            }
+        },
+        "tenant2": {
+            "ConnectionStrings": {
+                "EdFi_Admin": "Data Source=localhost;Initial Catalog=EdFi_Admin_Test;Integrated Security=False;User Id=sa;Password=P@55w0rd;Encrypt=true;Trusted_Connection=false;TrustServerCertificate=True",
+                "EdFi_Security": "Data Source=localhost;Initial Catalog=EdFi_Security_Test;Integrated Security=False;User Id=sa;Password=P@55w0rd;Encrypt=true;Trusted_Connection=false;TrustServerCertificate=True"
+            }
+        }
+    }
+}

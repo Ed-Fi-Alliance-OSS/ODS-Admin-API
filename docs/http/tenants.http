@@ -1,0 +1,62 @@
+# This file is intended for use with Admin API 2 running in multi-tenant mode,
+# along with ODS/API 7.x in multi-tenant mode. It assumes there are two
+# different tenants named "tenant1" and "tenant2". Each has only one ODS
+# instance.
+
+# @adminapi_url=https://localhost/adminapi
+@adminapi_url=https://localhost/adminapi
+
+@adminapi_client=adminapi_client22
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+
+### Register a new client
+POST {{adminapi_url}}/connect/register
+Content-Type: application/x-www-form-urlencoded
+Tenant: tenant1
+
+ClientId={{adminapi_client}}&ClientSecret={{adminapi_secret}}&DisplayName=Admin+API+{{adminapi_client}}
+
+### Get a token
+# @name tokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+Tenant: tenant1
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@token={{tokenRequest.response.body.access_token}}
+
+### Get tenants V2
+GET {{adminapi_url}}/v2/tenants
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get tenant V2 by id
+GET {{adminapi_url}}/v2/tenants/default
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: tenant1
+
+### Create tenant
+POST {{adminapi_url}}/v2/tenants
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: tenant1
+
+{
+  "TenantName": "tenant3",
+  "EdFiSecurityConnectionString": "123",
+  "EdFiAdminConnectionString": "Data Source=db-admin;Initial Catalog=EdFi_Admin;User Id=edfi;Password=P@55w0rd;Encrypt=false;TrustServerCertificate=true"
+}
+
+### Create tenant no connection strings
+POST {{adminapi_url}}/v2/tenants
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: tenant1
+
+{
+  "TenantName": "tenantNoConnStrings2"
+}

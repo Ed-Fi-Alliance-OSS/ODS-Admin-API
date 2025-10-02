@@ -40,9 +40,6 @@ jobs:
           mkdir ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi ../../Docker/Application
 
-      - name: Copy admin console folder to docker context
-        run: cp -r ../EdFi.Ods.AdminApi.AdminConsole ../../Docker/Application
-
       - name: Copy admin api common folder to docker context
         run: cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
 

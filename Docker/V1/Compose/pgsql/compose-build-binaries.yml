@@ -47,7 +47,6 @@ services:
       AppSettings__DatabaseEngine: "PostgreSql"
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
       AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
-      AppSettings__EnableAdminConsoleAPI: false
       AppSettings__EnableApplicationResetEndpoint: false
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: false
@@ -59,7 +58,6 @@ services:
       AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
       ConnectionStrings__EdFi_Admin: "host=admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
       ConnectionStrings__EdFi_Security: "host=admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
-      EdFiApiDiscoveryUrl: ""
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
       IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}

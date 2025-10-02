@@ -18,9 +18,6 @@ COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
 COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
 RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json
 
-COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.AdminConsole/
-COPY --from=assets ./Application/EdFi.Ods.AdminApi.AdminConsole EdFi.Ods.AdminApi.AdminConsole/
-
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
 
@@ -30,11 +27,6 @@ WORKDIR /source/EdFi.Ods.AdminApi
 RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 RUN dotnet restore && dotnet build -c Release
 RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-build -o /app/EdFi.Ods.AdminApi
-
-WORKDIR /source/EdFi.Ods.AdminApi.AdminConsole
-RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
-RUN dotnet restore && dotnet build -c Release
-RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-build -o /app/EdFi.Ods.AdminApi.AdminConsole
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.8-alpine3.20-amd64@sha256:98fa594b91cda6cac28d2aae25567730db6f8857367fab7646bdda91bc784b5f AS runtimebase
 RUN apk upgrade --no-cache && \

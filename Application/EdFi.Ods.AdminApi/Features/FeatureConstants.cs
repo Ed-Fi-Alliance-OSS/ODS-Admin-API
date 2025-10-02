@@ -28,6 +28,7 @@ public static class FeatureConstants
     public const string EdOrgIdsValidationMessage = "Please provide at least one education organization id.";
     public const string VendorIdValidationMessage = "Please provide valid vendor id.";
     public const string ClaimSetAlreadyExistsMessage = "A claim set with this name already exists in the database. Please enter a unique name.";
+    public const string TenantAlreadyExistsMessage = "A tenant with this name already exists. Please enter a unique name.";
     public const string ClaimSetNameMaxLengthMessage = "The claim set name must be less than 255 characters.";
     public const string ClaimSetNotFound = "No such claim set exists in the database.";
     public const string InvalidResourceClaimActions = "Please provide a valid resourceClaimActions object.";
@@ -48,6 +49,7 @@ public static class FeatureConstants
     public const string OdsInstanceDerivativeCombinedKeyMustBeUnique = "The combined key ODS instance id and derivative type must be unique.";
     public const string OdsInstanceContextCombinedKeyMustBeUnique = "The combined key ODS instance id and context key must be unique.";
     public const string OdsInstanceConnectionStringInvalid = "The connection string is not valid.";
+    public const string TenantConnectionStringInvalid = "The connection string is not valid.";
     public const string OdsInstanceDerivativeIdDescription = "ODS instance derivative id.";
     public const string OdsInstanceDerivativeOdsInstanceIdDescription = "ODS instance derivative ODS instance id.";
     public const string OdsInstanceDerivativeDerivativeTypeDescription = "derivative type.";

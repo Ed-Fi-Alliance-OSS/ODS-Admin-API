@@ -107,7 +107,6 @@ services:
       AppSettings__DatabaseEngine: "SqlServer"
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
       AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
-      AppSettings__EnableAdminConsoleAPI: false
       AppSettings__EnableApplicationResetEndpoint: false
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: false
@@ -118,7 +117,6 @@ services:
       Authentication__SigningKey: ${SIGNING_KEY}
       ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
-      EdFiApiDiscoveryUrl: ""
       EnableDockerEnvironment: true
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}

@@ -80,18 +80,11 @@ public partial class TenantResolverMiddleware(
             }
             else
             {
-                if (_options.Value.EnableAdminConsoleAPI)
+                if (!context.Request.Path.Value!.Contains("adminconsole/tenants") &&
+                context.Request.Method != "GET" &&
+                !context.Request.Path.Value.Contains("health", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (!context.Request.Path.Value!.Contains("adminconsole/tenants") &&
-                    context.Request.Method != "GET" &&
-                    !context.Request.Path.Value.Contains("health", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        ThrowTenantValidationError("Tenant header is missing (adminconsole)");
-                    }
-                }
-                else if (!NonFeatureEndpoints())
-                {
-                    ThrowTenantValidationError("Tenant header is missing");
+                    ThrowTenantValidationError("Tenant header is missing (adminconsole)");
                 }
             }
         }
@@ -100,13 +93,6 @@ public partial class TenantResolverMiddleware(
         bool RequestFromSwagger() => (context.Request.Path.Value != null &&
             context.Request.Path.Value.Contains("swagger", StringComparison.InvariantCultureIgnoreCase)) ||
             context.Request.Headers.Referer.FirstOrDefault(x => x != null && x.ToLower().Contains("swagger", StringComparison.InvariantCultureIgnoreCase)) != null;
-
-        bool NonFeatureEndpoints() => context.Request.Path.Value != null &&
-            (context.Request.Path.Value.Contains("health", StringComparison.InvariantCultureIgnoreCase)
-            || context.Request.Path.Value.Equals("/")
-            || context.Request.Path.Value.Contains("connect", StringComparison.InvariantCultureIgnoreCase)
-            || (context.Request.PathBase.HasValue && !context.Request.Path.HasValue)
-            || (context.Request.Path.StartsWithSegments(new PathString("/.well-known"))));
 
         void ThrowTenantValidationError(string errorMessage)
         {

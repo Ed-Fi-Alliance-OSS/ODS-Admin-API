@@ -13,6 +13,4 @@ public class TenantsSection
 public class TenantSettings
 {
     public Dictionary<string, string> ConnectionStrings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-
-    public string EdFiApiDiscoveryUrl { get; set; } = string.Empty;
 }

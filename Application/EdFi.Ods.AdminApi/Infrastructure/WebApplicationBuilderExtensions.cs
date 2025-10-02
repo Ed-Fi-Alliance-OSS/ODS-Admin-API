@@ -20,14 +20,15 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 
@@ -40,6 +41,11 @@ public static class WebApplicationBuilderExtensions
     public static void AddServices(this WebApplicationBuilder webApplicationBuilder)
     {
         webApplicationBuilder.Services.AddSingleton<ISymmetricStringEncryptionProvider, Aes256SymmetricStringEncryptionProvider>();
+
+        var env = webApplicationBuilder.Environment;
+        var appSettingsPath = Path.Combine(env.ContentRootPath, "appsettings.json");
+        webApplicationBuilder.Services.AddSingleton<IAppSettingsFileProvider>(new FileSystemAppSettingsFileProvider(appSettingsPath));
+
         ConfigureRateLimiting(webApplicationBuilder);
         ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
@@ -201,6 +207,10 @@ public static class WebApplicationBuilderExtensions
 
         webApplicationBuilder.Services.AddTransient<ISimpleGetRequest, SimpleGetRequest>();
         webApplicationBuilder.Services.AddTransient<IOdsApiValidator, OdsApiValidator>();
+
+        webApplicationBuilder.Services.Configure<AppSettingsFile>(webApplicationBuilder.Configuration);
+
+        webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
     }
 
     private static void EnableMultiTenancySupport(this WebApplicationBuilder webApplicationBuilder)

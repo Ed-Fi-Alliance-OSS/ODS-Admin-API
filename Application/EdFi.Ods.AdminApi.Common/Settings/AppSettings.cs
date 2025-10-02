@@ -9,9 +9,7 @@ public class AppSettingsFile
 {
     public required AppSettings AppSettings { get; set; }
     public required SwaggerSettings SwaggerSettings { get; set; }
-    public required AdminConsoleSettings AdminConsoleSettings { get; set; }
-    public string? EdFiApiDiscoveryUrl { get; set; }
-    public string[] ConnectionStrings { get; set; } = [];
+    public Dictionary<string, string> ConnectionStrings { get; set; } = [];
     public Dictionary<string, TenantSettings> Tenants { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public required TestingSettings Testing { get; set; }
 }
@@ -24,7 +22,6 @@ public class AppSettings
     public string? EncryptionKey { get; set; }
     public bool MultiTenancy { get; set; }
     public bool PreventDuplicateApplications { get; set; }
-    public bool EnableAdminConsoleAPI { get; set; }
     public bool EnableApplicationResetEndpoint { get; set; }
     public string? AdminApiMode { get; set; }
 }

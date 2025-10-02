@@ -2,11 +2,9 @@
 // Licensed to the Ed-Fi Alliance under one or more agreements.
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
-using EdFi.Ods.AdminApi.AdminConsole.Infrastructure.Helper;
 using EdFi.Ods.AdminApi.Common.Constants;
-using static OpenIddict.Abstractions.OpenIddictConstants.Permissions;
-using AdminApiV2Features = EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using AdminApiV1Features = EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
+using AdminApiV2Features = EdFi.Ods.AdminApi.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -36,17 +34,6 @@ public static class WebApplicationExtensions
             default:
                 throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}");
         }
-    }
-
-    public static void MapAdminConsoleFeatureEndpoints(this WebApplication application)
-    {
-        application.UseEndpoints(endpoints =>
-        {
-            foreach (var routeBuilder in AdminConsoleFeatureHelper.GetFeatures())
-            {
-                routeBuilder.MapEndpoints(endpoints);
-            }
-        });
     }
 
     public static void DefineSwaggerUIWithApiVersions(this WebApplication application, params string[] versions)

@@ -18,9 +18,6 @@ COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
 COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
 RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json
 
-COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.AdminConsole/
-COPY --from=assets ./Application/EdFi.Ods.AdminApi.AdminConsole EdFi.Ods.AdminApi.AdminConsole/
-
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
 

@@ -30,4 +30,7 @@ if [[ -f /ssl/server.crt ]]; then
  update-ca-certificates
 fi
 
+# Writing permissions for multitenant environment so the user can create tenants
+chmod 664 /app/appsettings.json
+
 dotnet EdFi.Ods.AdminApi.dll

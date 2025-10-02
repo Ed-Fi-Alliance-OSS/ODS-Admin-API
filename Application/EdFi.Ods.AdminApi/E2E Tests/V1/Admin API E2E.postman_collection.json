@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "806b2570-328a-4f44-8095-746d06c2e024",
+		"_postman_id": "47e794c4-64a5-47f8-99b9-49d8f0358bbe",
 		"name": "Admin API E2E refactor",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "22794466"
 	},
 	"item": [
@@ -50,7 +50,12 @@
 								}
 							}
 						},
-						"url": "{{API_URL}}"
+						"url": {
+							"raw": "{{API_URL}}",
+							"host": [
+								"{{API_URL}}"
+							]
+						}
 					},
 					"response": []
 				}
@@ -103,7 +108,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/vendors"
+								"url": {
+									"raw": "{{API_URL}}/v2/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"vendors"
+									]
+								}
 							},
 							"response": []
 						},
@@ -165,7 +179,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/vendors"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									]
+								}
 							},
 							"response": [
 								{
@@ -182,7 +205,15 @@
 												}
 											}
 										},
-										"url": "{{API_URL}}/vendors"
+										"url": {
+											"raw": "{{API_URL}}/vendors",
+											"host": [
+												"{{API_URL}}"
+											],
+											"path": [
+												"vendors"
+											]
+										}
 									},
 									"status": "Created",
 									"code": 201,
@@ -260,7 +291,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/vendors"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									]
+								}
 							},
 							"response": []
 						},
@@ -318,7 +358,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/vendors"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors"
+									]
+								}
 							},
 							"response": []
 						},
@@ -363,7 +412,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/vendors"
+								"url": {
+									"raw": "{{API_URL}}/v2/vendors",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"vendors"
+									]
+								}
 							},
 							"response": []
 						},
@@ -405,7 +463,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -467,7 +535,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -519,7 +597,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -579,7 +667,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -612,7 +710,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -647,7 +755,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -685,7 +803,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -732,7 +860,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -772,16 +910,30 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{CreatedVendorId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{CreatedVendorId}}"
+									]
+								}
 							},
 							"response": []
 						}
 					],
 					"auth": {
 						"type": "bearer",
-						"bearer": {
-							"token": "{{TOKEN}}"
-						}
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{TOKEN}}",
+								"type": "string"
+							}
+						]
 					},
 					"event": [
 						{
@@ -909,7 +1061,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1033,7 +1195,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1093,7 +1265,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1152,7 +1334,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1212,7 +1404,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1272,7 +1474,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1305,7 +1517,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -1359,7 +1581,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1487,7 +1719,18 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/vendors/{{ApplicationVendorId}}/applications"
+								"url": {
+									"raw": "{{API_URL}}/v1/vendors/{{ApplicationVendorId}}/applications",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"vendors",
+										"{{ApplicationVendorId}}",
+										"applications"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1582,7 +1825,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1634,7 +1887,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1694,7 +1957,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1753,7 +2026,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1813,7 +2096,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1856,7 +2149,18 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}/reset-credential"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}/reset-credential",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}",
+										"reset-credential"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1889,7 +2193,18 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}/reset-credential",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}",
+										"reset-credential"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1922,7 +2237,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1956,7 +2281,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1994,7 +2329,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -2032,7 +2377,18 @@
 							"request": {
 								"method": "PUT",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}/reset-credential"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}/reset-credential",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}",
+										"reset-credential"
+									]
+								}
 							},
 							"response": []
 						},
@@ -2079,7 +2435,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -2149,16 +2515,30 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/applications/{{CreatedApplicationId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"applications",
+										"{{CreatedApplicationId}}"
+									]
+								}
 							},
 							"response": []
 						}
 					],
 					"auth": {
 						"type": "bearer",
-						"bearer": {
-							"token": "{{TOKEN}}"
-						}
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{TOKEN}}",
+								"type": "string"
+							}
+						]
 					},
 					"event": [
 						{
@@ -2234,7 +2614,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v2/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2302,7 +2692,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2371,7 +2771,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2429,7 +2839,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2487,7 +2907,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2568,7 +2998,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2636,7 +3076,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2701,7 +3151,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2762,7 +3222,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2824,7 +3294,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2897,7 +3377,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2930,7 +3420,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v2/claimsets/"
+								"url": {
+									"raw": "{{API_URL}}/v2/claimsets/",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"claimsets",
+										""
+									]
+								}
 							},
 							"response": []
 						},
@@ -2976,7 +3476,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3025,7 +3535,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetIdOverride}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3092,7 +3612,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3144,7 +3674,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3217,7 +3757,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetIdOverride}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3274,7 +3824,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3331,7 +3891,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3389,7 +3959,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3453,7 +4033,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3517,7 +4107,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3578,7 +4178,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3639,7 +4249,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3699,7 +4319,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{SystemReservedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{SystemReservedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{SystemReservedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3732,7 +4362,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3767,7 +4407,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3802,7 +4452,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetIdOverride}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3856,7 +4516,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{SystemReservedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{SystemReservedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{SystemReservedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3925,7 +4595,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{OtherExistingClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{OtherExistingClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{OtherExistingClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -3963,7 +4643,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4006,7 +4696,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4058,16 +4758,30 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"claimsets",
+										"{{CreatedClaimSetId}}"
+									]
+								}
 							},
 							"response": []
 						}
 					],
 					"auth": {
 						"type": "bearer",
-						"bearer": {
-							"token": "{{TOKEN}}"
-						}
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{TOKEN}}",
+								"type": "string"
+							}
+						]
 					},
 					"event": [
 						{
@@ -4143,7 +4857,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4215,7 +4938,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4276,7 +5008,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4335,7 +5076,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4404,7 +5154,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4459,7 +5218,16 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/odsInstances"
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4502,7 +5270,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4566,7 +5344,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4618,7 +5406,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v2/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4731,7 +5529,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4764,7 +5572,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v2/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v2/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4799,7 +5617,17 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4837,7 +5665,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4884,7 +5722,17 @@
 										}
 									}
 								},
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						},
@@ -4924,16 +5772,30 @@
 							"request": {
 								"method": "DELETE",
 								"header": [],
-								"url": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}"
+								"url": {
+									"raw": "{{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"odsInstances",
+										"{{CreateOdsInstanceId}}"
+									]
+								}
 							},
 							"response": []
 						}
 					],
 					"auth": {
 						"type": "bearer",
-						"bearer": {
-							"token": "{{TOKEN}}"
-						}
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{TOKEN}}",
+								"type": "string"
+							}
+						]
 					},
 					"event": [
 						{
@@ -4957,13 +5819,148 @@
 							}
 						}
 					]
+				},
+				{
+					"name": "Tenants",
+					"item": [
+						{
+							"name": "Tenants",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET Tenants: Status code is Found\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"const result = pm.response.json();",
+											"",
+											"pm.test(\"GET Tenant Name: Response result matches tenant\", function () {",
+											"    pm.expect(result.tenantName).to.equal(\"default\");",
+											"    pm.expect(result.adminConnectionString.host).to.not.equal(null);",
+											"    pm.expect(result.adminConnectionString.database).to.not.equal(null);",
+											"    pm.expect(result.securityConnectionString.host).to.not.equal(null);",
+											"    pm.expect(result.securityConnectionString.database).to.not.equal(null);",
+											"});",
+											"",
+											"const GetTenantsSchema = {",
+											"    \"type\": \"object\",",
+											"    \"properties\": {",
+											"    \"tenantName\": {",
+											"        \"type\": \"string\"",
+											"    },",
+											"    \"adminConnectionString\": {",
+											"        \"type\": \"object\",",
+											"        \"properties\": {",
+											"        \"host\": {",
+											"            \"type\": \"string\"",
+											"        },",
+											"        \"database\": {",
+											"            \"type\": \"string\"",
+											"        }",
+											"        },",
+											"    },",
+											"    \"securityConnectionString\": {",
+											"        \"type\": \"object\",",
+											"        \"properties\": {",
+											"        \"host\": {",
+											"            \"type\": \"string\"",
+											"        },",
+											"        \"database\": {",
+											"            \"type\": \"string\"",
+											"        }",
+											"        }",
+											"    }",
+											"    },",
+											"    \"required\": [",
+											"    \"tenantName\"",
+											"    ]",
+											"}",
+											"",
+											"pm.test(\"GET Tenants: Validation Schema Response\", () => {",
+											"    pm.response.to.have.jsonSchema(GetTenantsSchema);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v1/tenants",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v1",
+										"tenants"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Tenants - Invalid Api Mode",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is Bad Request\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test(\"Response matches error format\", function () {",
+											"    pm.expect(response).to.have.property(\"message\");",
+											"});",
+											"",
+											"pm.test(\"Response title is helpful and accurate\", function () {",
+											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/tenants",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"tenants"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			],
 			"auth": {
 				"type": "bearer",
-				"bearer": {
-					"token": "{{TOKEN}}"
-				}
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{TOKEN}}",
+						"type": "string"
+					}
+				]
 			},
 			"event": [
 				{

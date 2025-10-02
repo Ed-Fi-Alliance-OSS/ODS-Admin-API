@@ -39,7 +39,6 @@ jobs:
         run: |
           mkdir ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi ../../Docker/Application
-          cp -r ../EdFi.Ods.AdminApi.AdminConsole ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
 

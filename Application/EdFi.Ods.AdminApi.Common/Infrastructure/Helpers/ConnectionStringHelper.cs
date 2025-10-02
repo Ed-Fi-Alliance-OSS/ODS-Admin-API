@@ -46,4 +46,39 @@ public static class ConnectionStringHelper
         }
         return result;
     }
+
+    public static (string? Host, string? Database) GetHostAndDatabase(string databaseEngine, string? connectionString)
+    {
+        if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.InvariantCultureIgnoreCase))
+        {
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(connectionString);
+                return (builder.DataSource, builder.InitialCatalog);
+            }
+            catch (Exception ex) when (
+                ex is ArgumentException or
+                FormatException or
+                KeyNotFoundException)
+            {
+                _log.Error(ex);
+                return (null, null);
+            }
+        }
+        else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.InvariantCultureIgnoreCase))
+        {
+            try
+            {
+                var builder = new NpgsqlConnectionStringBuilder(connectionString);
+                return (builder.Host, builder.Database);
+            }
+            catch (ArgumentException ex)
+            {
+                _log.Error(ex);
+                return (null, null);
+            }
+        }
+
+        return (null, null);
+    }
 }

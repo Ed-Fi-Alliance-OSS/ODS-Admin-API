@@ -5,6 +5,14 @@
 
 namespace EdFi.Ods.AdminApi.Common.Constants;
 
+public class Constants
+{
+    public const string TenantsCacheKey = "tenants";
+    public const string TenantNameDescription = "Admin API Tenant Name";
+    public const string TenantConnectionStringDescription = "Tenant connection strings";
+    public const string DefaultTenantName = "default";
+}
+
 public enum AdminApiMode
 {
     V2,

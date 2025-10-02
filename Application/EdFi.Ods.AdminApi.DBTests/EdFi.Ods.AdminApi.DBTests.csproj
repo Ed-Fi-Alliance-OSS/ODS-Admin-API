@@ -31,6 +31,9 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="testsappsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
