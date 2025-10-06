@@ -3,8 +3,8 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-# Tag nginx:alpine
-FROM nginx@sha256:da9c94bec1da829ebd52431a84502ec471c8e548ffb2cedbf36260fd9bd1d4d3
+# Tag nginx:alpine3.20
+FROM nginx@sha256:2140dad235c130ac861018a4e13a6bc8aea3a35f3a40e20c1b060d51a7efd250
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
 ENV ADMIN_API_VIRTUAL_NAME=${ADMIN_API_VIRTUAL_NAME:-adminapi}

@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "d327aadc-5703-41da-9ee8-113331168025",
+		"_postman_id": "170362e2-1d87-42e5-9732-d6fbe264d0ba",
 		"name": "Admin API E2E 2.0 - Tenants",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22794466"
+		"_exporter_id": "29458798"
 	},
 	"item": [
 		{
@@ -12,388 +12,6 @@
 				{
 					"name": "Tenants",
 					"item": [
-						{
-							"name": "Tenants",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-											"    pm.test(\"POST Tenants: Status code is Created\", function () {",
-											"        pm.response.to.have.status(201);",
-											"    });",
-											"}",
-											"else {",
-											"    pm.test(\"Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"message\");",
-											"    });",
-											"",
-											"    pm.test(\"Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.message.toLowerCase()).to.contain(\"not multitenant environment.\");",
-											"    });",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"pm.collectionVariables.set(\"CreatedTenantName\", \"Tenant-\" + pm.variables.replaceIn('{{$guid}}'));"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"TenantName\": \"{{CreatedTenantName}}\",\r\n  \"EdFiSecurityConnectionString\": \"{{securityconnectionString}}\",\r\n  \"EdFiAdminConnectionString\": \"{{connectionString}}\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{API_URL}}/v2/tenants",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"tenants"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Tenants Just Name",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-											"    pm.test(\"POST Tenants: Status code is Created\", function () {",
-											"        pm.response.to.have.status(201);",
-											"    });",
-											"}",
-											"else {",
-											"    pm.test(\"Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"message\");",
-											"    });",
-											"",
-											"    pm.test(\"Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.message.toLowerCase()).to.contain(\"not multitenant environment.\");",
-											"    });",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"pm.collectionVariables.set(\"TenantGUID2\", pm.variables.replaceIn('{{$guid}}'));\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"TenantName\": \"Tenant-{{TenantGUID2}}\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{API_URL}}/v2/tenants",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"tenants"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Tenants - Invalid Api Mode",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is Bad Request\", function () {",
-											"    pm.response.to.have.status(400);",
-											"});",
-											"",
-											"const response = pm.response.json();",
-											"",
-											"pm.test(\"Response matches error format\", function () {",
-											"    pm.expect(response).to.have.property(\"message\");",
-											"});",
-											"",
-											"pm.test(\"Response title is helpful and accurate\", function () {",
-											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"TenantName\": \"Tenant-{{TenantGUID}}\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{API_URL}}/v1/tenants",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v1",
-										"tenants"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Tenants - Invalid Admin connection string",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-											"        pm.test(\"POST Tenants Invalid EdFiAdminConnectionString: Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"POST Tenants Invalid EdFiAdminConnectionString: Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"title\");",
-											"        pm.expect(response).to.have.property(\"errors\");",
-											"    });",
-											"",
-											"    pm.test(\"POST Tenants Invalid EdFiAdminConnectionString: Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.title.toLowerCase()).to.contain(\"validation\");",
-											"    });",
-											"",
-											"    pm.test(\"POST Tenants Invalid ConnectionString: Response errors include messages by property\", function () {",
-											"        pm.expect(response.errors[\"EdFiAdminConnectionString\"].length).to.equal(1);",
-											"    });",
-											"",
-											"    pm.test(\"POST Tenants Invalid ConnectionString: Response errors include messages with wrong elements\", function () {",
-											"        pm.expect(response.errors[\"EdFiAdminConnectionString\"][0]).to.contain(\"is not valid\");",
-											"    });",
-											"}",
-											"else {",
-											"    pm.test(\"Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"message\");",
-											"    });",
-											"",
-											"    pm.test(\"Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.message.toLowerCase()).to.contain(\"not multitenant environment.\");",
-											"    });",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"TenantName\": \"Tenant-{{TenantGUID}}\",\r\n  \"EdFiSecurityConnectionString\": \"{{securityconnectionString}}\",\r\n  \"EdFiAdminConnectionString\": \"not-valid-connection-string\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{API_URL}}/v2/tenants",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"tenants"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Tenants - Invalid Security connection string",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-											"    pm.test(\"POST Tenants Invalid EdFiSecurityConnectionString: Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"POST Tenants Invalid EdFiSecurityConnectionString: Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"title\");",
-											"        pm.expect(response).to.have.property(\"errors\");",
-											"    });",
-											"",
-											"    pm.test(\"POST Tenants Invalid EdFiSecurityConnectionString: Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.title.toLowerCase()).to.contain(\"validation\");",
-											"    });",
-											"",
-											"    pm.test(\"POST Tenants Invalid ConnectionString: Response errors include messages by property\", function () {",
-											"        pm.expect(response.errors[\"EdFiSecurityConnectionString\"].length).to.equal(1);",
-											"    });",
-											"",
-											"    pm.test(\"POST Tenants Invalid ConnectionString: Response errors include messages with wrong elements\", function () {",
-											"        pm.expect(response.errors[\"EdFiSecurityConnectionString\"][0]).to.contain(\"is not valid\");",
-											"    });",
-											"}",
-											"else {",
-											"    pm.test(\"Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"message\");",
-											"    });",
-											"",
-											"    pm.test(\"Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.message.toLowerCase()).to.contain(\"not multitenant environment.\");",
-											"    });",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"TenantName\": \"Tenant-{{TenantGUID}}\",\r\n  \"EdFiSecurityConnectionString\": \"not-valid-connection-string\",\r\n  \"EdFiAdminConnectionString\": \"{{connectionString}}\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{API_URL}}/v2/tenants",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"tenants"
-									]
-								}
-							},
-							"response": []
-						},
 						{
 							"name": "Tenants",
 							"event": [
@@ -515,7 +133,7 @@
 							"response": []
 						},
 						{
-							"name": "Tenants Invalid",
+							"name": "Tenant without 's'",
 							"event": [
 								{
 									"listen": "test",
@@ -563,9 +181,7 @@
 											"    const result = pm.response.json();",
 											"",
 											"    pm.test(\"GET Tenant Name: Response result matches tenant\", function () {",
-											"        const tenantName = pm.collectionVariables.get(\"CreatedTenantName\");",
-											"",
-											"        pm.expect(result.tenantName).to.equal(tenantName);",
+											"        pm.expect(result.tenantName).to.equal(\"tenant1\");",
 											"        pm.expect(result.adminConnectionString.host).to.not.equal(null);",
 											"        pm.expect(result.adminConnectionString.database).to.not.equal(null);",
 											"        pm.expect(result.securityConnectionString.host).to.not.equal(null);",
@@ -626,14 +242,14 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{API_URL}}/v2/tenants/{{CreatedTenantName}}",
+									"raw": "{{API_URL}}/v2/tenants/tenant1",
 									"host": [
 										"{{API_URL}}"
 									],
 									"path": [
 										"v2",
 										"tenants",
-										"{{CreatedTenantName}}"
+										"tenant1"
 									]
 								}
 							},
@@ -753,101 +369,6 @@
 										"v2",
 										"tenants",
 										"notexistingtenantname"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Tenants - Invalid Api Mode",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is Bad Request\", function () {",
-											"    pm.response.to.have.status(400);",
-											"});",
-											"",
-											"const response = pm.response.json();",
-											"",
-											"pm.test(\"Response matches error format\", function () {",
-											"    pm.expect(response).to.have.property(\"message\");",
-											"});",
-											"",
-											"pm.test(\"Response title is helpful and accurate\", function () {",
-											"    pm.expect(response.message.toLowerCase()).to.contain(\"wrong api version for this instance mode.\");",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v1/tenants/{{CreatedTenantName}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v1",
-										"tenants",
-										"{{CreatedTenantName}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Tenants",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-											"    pm.test(\"DELETE Tenants: Status code is OK\", function () {",
-											"        pm.response.to.have.status(200);",
-											"    });",
-											"}",
-											"else {",
-											"    pm.test(\"Status code is Bad Request\", function () {",
-											"        pm.response.to.have.status(400);",
-											"    });",
-											"",
-											"    const response = pm.response.json();",
-											"",
-											"    pm.test(\"Response matches error format\", function () {",
-											"        pm.expect(response).to.have.property(\"message\");",
-											"    });",
-											"",
-											"    pm.test(\"Response title is helpful and accurate\", function () {",
-											"        pm.expect(response.message.toLowerCase()).to.contain(\"not multitenant environment.\");",
-											"    });",
-											"}"
-										],
-										"type": "text/javascript",
-										"packages": {},
-										"requests": {}
-									}
-								}
-							],
-							"request": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{API_URL}}/v2/tenants/{{CreatedTenantName}}",
-									"host": [
-										"{{API_URL}}"
-									],
-									"path": [
-										"v2",
-										"tenants",
-										"{{CreatedTenantName}}"
 									]
 								}
 							},
