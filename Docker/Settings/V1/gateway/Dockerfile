@@ -7,8 +7,11 @@
 FROM nginx@sha256:2140dad235c130ac861018a4e13a6bc8aea3a35f3a40e20c1b060d51a7efd250
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
-ENV ADMIN_API_VIRTUAL_NAME=${ADMIN_API_VIRTUAL_NAME:-adminapi}
-ENV ODS_VIRTUAL_NAME=${ODS_VIRTUAL_NAME:-api}
+ARG ADMIN_API_VIRTUAL_NAME=adminapi
+ARG ODS_VIRTUAL_NAME=api
+
+ENV ADMIN_API_VIRTUAL_NAME=${ADMIN_API_VIRTUAL_NAME}
+ENV ODS_VIRTUAL_NAME=${ODS_VIRTUAL_NAME}
 
 COPY ./default.conf.template /etc/nginx/templates/
 

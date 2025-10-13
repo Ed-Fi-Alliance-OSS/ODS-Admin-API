@@ -7,8 +7,8 @@
 FROM edfialliance/ods-api-db-admin:7.3@sha256:0a25a039e575464de1fdf09b2db270f00910f937cb782dfa809ac3c192509233 AS base
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
+ARG POSTGRES_USER=postgres
 ENV POSTGRES_USER=${POSTGRES_USER}
-ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 ENV POSTGRES_DB=postgres
 
 ARG VERSION
@@ -18,7 +18,7 @@ ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
 USER root
 COPY run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
 RUN apk --upgrade --no-cache add dos2unix=~7 unzip=~6
-USER postgres
+USER ${POSTGRES_USER}
 
 FROM base AS setup
 
@@ -44,7 +44,7 @@ RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi
     rm -f /tmp/EdFi_AdminApi_Scripts.zip && \
     apk del dos2unix unzip
 
-USER postgres
+USER ${POSTGRES_USER}
 
 EXPOSE 5432
 
