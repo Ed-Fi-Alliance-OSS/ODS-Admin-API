@@ -1920,8 +1920,8 @@ Status Code **200**
 
 |Name|Type|Required|Restrictions|Description|
 |---|---|---|---|---|
-|*anonymous*|[[authotizationStrategy](#schemaauthotizationstrategy)]|false|none|none|
-|» AuthorizationStrategy|[authotizationStrategy](#schemaauthotizationstrategy)|false|none|none|
+|*anonymous*|[[authorizationStrategy](#schemaauthorizationStrategy)]|false|none|none|
+|» AuthorizationStrategy|[authorizationStrategy](#schemaauthorizationStrategy)|false|none|none|
 |»» id|integer(int32)|false|none|none|
 |»» name|string¦null|false|none|none|
 |»» displayName|string¦null|true|none|none|
@@ -2581,12 +2581,12 @@ Application
 |---|---|---|---|---|
 |applicationName|string¦null|true|none|none|
 
-<h2 id="tocS_authotizationStrategy">authotizationStrategy</h2>
+<h2 id="tocS_authorizationStrategy">authorizationStrategy</h2>
 <!-- backwards compatibility -->
-<a id="schemaauthotizationstrategy"></a>
-<a id="schema_authotizationStrategy"></a>
-<a id="tocSauthotizationstrategy"></a>
-<a id="tocsauthotizationstrategy"></a>
+<a id="schemaauthorizationStrategy"></a>
+<a id="schema_authorizationStrategy"></a>
+<a id="tocSauthorizationStrategy"></a>
+<a id="tocsauthorizationStrategy"></a>
 
 ```json
 {
@@ -3319,8 +3319,8 @@ EditResourceClaimActionsOnClaimSetRequest
 <!-- backwards compatibility -->
 <a id="schemaregisteclientrequest"></a>
 <a id="schema_registeClientRequest"></a>
-<a id="tocSregisteclientrequest"></a>
-<a id="tocsregisteclientrequest"></a>
+<a id="tocsregisterclientrequest"></a>
+<a id="tocsregisterclientrequest"></a>
 
 ```json
 {
