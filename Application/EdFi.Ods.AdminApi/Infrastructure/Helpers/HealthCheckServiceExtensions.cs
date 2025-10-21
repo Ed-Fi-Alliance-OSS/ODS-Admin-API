@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -18,10 +17,31 @@ public static class HealthCheckServiceExtensions
         IConfigurationRoot configuration
     )
     {
-        Dictionary<string, string> connectionStrings;
         var databaseEngine = configuration.Get("AppSettings:DatabaseEngine", "SqlServer");
         var multiTenancyEnabled = configuration.Get("AppSettings:MultiTenancy", false);
-        var connectionStringName = "EdFi_Admin";
+
+        if (!string.IsNullOrEmpty(databaseEngine))
+        {
+            var isSqlServer = DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer);
+            var hcBuilder = services.AddHealthChecks();
+
+            // Add health checks for both EdFi_Admin and EdFi_Security databases
+            AddDatabaseHealthChecks(hcBuilder, configuration, "EdFi_Admin", multiTenancyEnabled, isSqlServer);
+            AddDatabaseHealthChecks(hcBuilder, configuration, "EdFi_Security", multiTenancyEnabled, isSqlServer);
+        }
+
+        return services;
+    }
+
+    private static void AddDatabaseHealthChecks(
+        IHealthChecksBuilder hcBuilder,
+        IConfigurationRoot configuration,
+        string connectionStringName,
+        bool multiTenancyEnabled,
+        bool isSqlServer
+    )
+    {
+        Dictionary<string, string> connectionStrings;
 
         if (multiTenancyEnabled)
         {
@@ -42,24 +62,20 @@ public static class HealthCheckServiceExtensions
             };
         }
 
-        if (!string.IsNullOrEmpty(databaseEngine))
+        foreach (var connectionString in connectionStrings)
         {
-            var isSqlServer = DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer);
-            var hcBuilder = services.AddHealthChecks();
+            var healthCheckName = multiTenancyEnabled
+                ? $"{connectionString.Key}_{connectionStringName}"
+                : connectionStringName;
 
-            foreach (var connectionString in connectionStrings)
+            if (isSqlServer)
             {
-                if (isSqlServer)
-                {
-                    hcBuilder.AddSqlServer(connectionString.Value, name: connectionString.Key);
-                }
-                else
-                {
-                    hcBuilder.AddNpgSql(connectionString.Value, name: connectionString.Key);
-                }
+                hcBuilder.AddSqlServer(connectionString.Value, name: healthCheckName, tags: ["Databases"]);
+            }
+            else
+            {
+                hcBuilder.AddNpgSql(connectionString.Value, name: healthCheckName, tags: ["Databases"]);
             }
         }
-
-        return services;
     }
 }

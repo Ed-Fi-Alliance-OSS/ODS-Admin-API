@@ -23,4 +23,26 @@ public static class HealthCheckServiceExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddHealthCheck(
+        this IServiceCollection services,
+        string adminConnectionString,
+        string securityConnectionString,
+        bool isSqlServer)
+    {
+        var hcBuilder = services.AddHealthChecks();
+
+        if (isSqlServer)
+        {
+            hcBuilder.AddSqlServer(adminConnectionString, name: "EdFi_Admin", tags: ["Databases"]);
+            hcBuilder.AddSqlServer(securityConnectionString, name: "EdFi_Security", tags: ["Databases"]);
+        }
+        else
+        {
+            hcBuilder.AddNpgSql(adminConnectionString, name: "EdFi_Admin", tags: ["Databases"]);
+            hcBuilder.AddNpgSql(securityConnectionString, name: "EdFi_Security", tags: ["Databases"]);
+        }
+
+        return services;
+    }
 }
