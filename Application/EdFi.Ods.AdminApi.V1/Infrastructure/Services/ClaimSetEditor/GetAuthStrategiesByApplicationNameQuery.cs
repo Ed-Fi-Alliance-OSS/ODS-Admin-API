@@ -5,7 +5,7 @@
 
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
-namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 public class GetAuthStrategiesByApplicationNameQuery : IGetAuthStrategiesByApplicationNameQuery
 {

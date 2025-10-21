@@ -28,11 +28,11 @@ public abstract class PlatformSecurityContextTestBase
 
     private readonly Checkpoint _checkpoint = new()
     {
-        TablesToIgnore = new[]
-        {
+        TablesToIgnore =
+        [
             "__MigrationHistory", "DeployJournal", "AdminApiDeployJournal"
-        },
-        SchemasToExclude = Array.Empty<string>()
+        ],
+        SchemasToExclude = []
     };
 
     protected virtual string ConnectionString => TestContext.Database.GetConnectionString();

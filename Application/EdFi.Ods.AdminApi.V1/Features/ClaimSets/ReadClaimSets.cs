@@ -7,7 +7,6 @@ using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Infrastructure.JsonContractResolvers;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using Newtonsoft.Json;
@@ -36,7 +35,7 @@ public class ReadClaimSets : IFeature
         var model = mapper.Map<List<ClaimSetModel>>(claimSets);
         foreach (var claimSet in model)
         {
-            claimSet.ApplicationsCount = getApplications.ExecuteCount(claimSet.Id);           
+            claimSet.ApplicationsCount = getApplications.ExecuteCount(claimSet.Id);
         }
         return Task.FromResult(AdminApiResponse<List<ClaimSetModel>>.Ok(model));
     }
@@ -61,7 +60,8 @@ public class ReadClaimSets : IFeature
         claimSetData.ApplicationsCount = getApplications.ExecuteCount(id);
         claimSetData.ResourceClaims = mapper.Map<List<ResourceClaimModel>>(allResources.ToList());
         return Task.FromResult(AdminApiResponse<ClaimSetDetailsModel>.Ok(claimSetData,
-            new JsonSerializerSettings() {
+            new JsonSerializerSettings()
+            {
                 Formatting = Formatting.Indented,
                 ContractResolver = new ShouldSerializeContractResolver()
             }));

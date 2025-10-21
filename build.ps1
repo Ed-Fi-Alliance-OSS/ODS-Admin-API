@@ -143,11 +143,22 @@ $Env:MSBUILDDISABLENODEREUSE = "1"
 $solutionRoot = "$PSScriptRoot/Application"
 $dockerRoot = "$PSScriptRoot/Docker"
 
-$supportedApiVersions = @(
+$supportedApiVersions7x = @(
     @{
-        OdsPackageName = "EdFi.Suite3.RestApi.Databases.Standard.5.0.0"
-        OdsVersion     = "7.1.1192"
+        OdsPackageName = "EdFi.Suite3.RestApi.Databases.Standard.5.2.0"
+        OdsVersion     = "7.3.10536"
         Prerelease     = $false
+        StandardVersion = "5.2.0"
+        DbDeployVersion = "4.1.52"
+    }
+)
+$supportedApiVersions6x = @(
+    @{
+        OdsPackageName = "EdFi.Suite3.RestApi.Databases"
+        OdsVersion     = "6.2.3630"
+        Prerelease     = $false
+        StandardVersion = "4.0.0"           # v6.2 uses Db.Deploy 3.2.27, version 4.1.52 is for ODS 7.x.
+        DbDeployVersion = "3.2.27"
     }
 )
 $maintainers = "Ed-Fi Alliance, LLC and contributors"
@@ -321,7 +332,15 @@ function ResetTestDatabases {
         $DbUsername,
 
         [string]
-        $DbPassword
+        $DbPassword,
+        
+        [string]
+        [Parameter(Mandatory=$true)]
+        $StandardVersion,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $DbDeployVersion
     )
 
     Invoke-Execute {
@@ -329,18 +348,24 @@ function ResetTestDatabases {
             RestApiPackageVersion    = $OdsVersion
             RestApiPackageName       = $OdsPackageName
             UseIntegratedSecurity    = $UseIntegratedSecurity
+            StandardVersion          = $StandardVersion
             RestApiPackagePrerelease = $Prerelease
             NuGetFeed                = $EdFiNuGetFeed
             DbUsername               = $DbUsername
             DbPassword               = $DbPassword
+            DbDeployVersion          = $DbDeployVersion
         }
 
         Invoke-PrepareDatabasesForTesting @arguments
     }
 }
 
-function IntegrationTests {
-    Invoke-Execute { RunTests -Filter "*.DBTests" }
+function IntegrationTests7x {
+    Invoke-Execute { RunTests -Filter "*AdminApi.DBTests" }
+}
+
+function IntegrationTests6x {
+    Invoke-Execute { RunTests -Filter "*AdminApi.V1.DBTests" }
 }
 
 function RunNuGetPack {
@@ -465,7 +490,7 @@ function Invoke-IntegrationTestSuite {
         $DbPassword
     )
 
-    $supportedApiVersions | ForEach-Object {
+    $supportedApiVersions7x | ForEach-Object {
         Write-Output "Running Integration Tests for ODS Version" $_.OdsVersion
 
         Invoke-Step {
@@ -473,14 +498,39 @@ function Invoke-IntegrationTestSuite {
                 OdsVersion              = $_.OdsVersion
                 OdsPackageName          = $_.OdsPackageName
                 Prerelease              = $_.Prerelease
+                StandardVersion         = $_.StandardVersion
+                DbDeployVersion         = $_.DbDeployVersion
                 UseIntegratedSecurity   = $UseIntegratedSecurity
                 DbUsername              = $DbUsername
                 DbPassword              = $DbPassword
             }
+
             ResetTestDatabases @arguments
         }
         Invoke-Step {
-            IntegrationTests
+            IntegrationTests7x
+        }
+    }
+
+    $supportedApiVersions6x | ForEach-Object {
+        Write-Output "Running Integration Tests for ODS Version" $_.OdsVersion
+
+        Invoke-Step {
+            $arguments = @{
+                OdsVersion              = $_.OdsVersion
+                OdsPackageName          = $_.OdsPackageName
+                Prerelease              = $_.Prerelease
+                StandardVersion         = $_.StandardVersion
+                DbDeployVersion         = $_.DbDeployVersion
+                UseIntegratedSecurity   = $UseIntegratedSecurity
+                DbUsername              = $DbUsername
+                DbPassword              = $DbPassword
+            }
+
+            ResetTestDatabases @arguments
+        }
+        Invoke-Step {
+            IntegrationTests6x
         }
     }
 }

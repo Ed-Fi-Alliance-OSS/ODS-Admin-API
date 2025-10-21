@@ -15,7 +15,7 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models
         public int VendorNamespacePrefixId { get; set; }
 
         [Required]
-        public required virtual Vendor Vendor { get; set; }
+        public virtual required Vendor Vendor { get; set; }
 
         [Required]
         [StringLength(255)]

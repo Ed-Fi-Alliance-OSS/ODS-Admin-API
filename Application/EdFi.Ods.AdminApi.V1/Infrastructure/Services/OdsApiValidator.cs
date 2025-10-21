@@ -5,12 +5,11 @@
 
 using System.Net;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NJsonSchema;
 
-namespace EdFi.Ods.AdminApi.V1.Infrastructure.Api;
+namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services;
 
 public interface IOdsApiValidator
 {
@@ -26,11 +25,9 @@ public class OdsApiValidatorResult
     public Exception? Exception { get; set; }
 }
 
-public class OdsApiValidator : IOdsApiValidator
+public class OdsApiValidator(ISimpleGetRequest getRequest) : IOdsApiValidator
 {
-    private readonly ISimpleGetRequest _getRequest;
-
-    public OdsApiValidator(ISimpleGetRequest getRequest) => _getRequest = getRequest;
+    private readonly ISimpleGetRequest _getRequest = getRequest;
 
     public async Task<OdsApiValidatorResult> Validate(string apiServerUrl)
     {
@@ -176,7 +173,7 @@ public class OdsApiValidator : IOdsApiValidator
     private static JObject ParseJson(string contentAsString)
     {
         return string.IsNullOrEmpty(contentAsString)
-            ? new JObject()
+            ? []
             : JObject.Parse(contentAsString);
     }
 }

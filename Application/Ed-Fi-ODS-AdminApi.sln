@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.Common.Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.V1", "EdFi.Ods.AdminApi.V1\EdFi.Ods.AdminApi.V1.csproj", "{760F71C6-9FD9-4F5B-AE77-34501EE76FBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.V1.DBTests", "EdFi.Ods.AdminApi.V1.DBTests\EdFi.Ods.AdminApi.V1.DBTests.csproj", "{4377A3CF-71EC-4097-AC8C-789ED63075C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +84,14 @@ Global
 		{760F71C6-9FD9-4F5B-AE77-34501EE76FBD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{760F71C6-9FD9-4F5B-AE77-34501EE76FBD}.Release|x64.ActiveCfg = Release|Any CPU
 		{760F71C6-9FD9-4F5B-AE77-34501EE76FBD}.Release|x64.Build.0 = Release|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Debug|x64.Build.0 = Debug|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|x64.ActiveCfg = Release|Any CPU
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +100,7 @@ Global
 		{1D317139-CB19-4D7F-91AC-9A560189C55B} = {D8A26B59-6DAD-4046-9DDE-00D2CFDAE9B6}
 		{F62C9CF6-A632-4894-B61A-674198DAB86E} = {9A9D18B4-718D-4681-BAFE-A1C42E18A7CC}
 		{73259EC2-4AA0-40C2-9C60-8AB1BF369CF5} = {D8A26B59-6DAD-4046-9DDE-00D2CFDAE9B6}
+		{4377A3CF-71EC-4097-AC8C-789ED63075C9} = {D8A26B59-6DAD-4046-9DDE-00D2CFDAE9B6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {30CF2BE4-58CA-4598-9B59-D334FC971A0F}

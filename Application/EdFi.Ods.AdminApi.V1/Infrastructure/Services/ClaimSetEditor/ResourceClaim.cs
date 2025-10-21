@@ -6,7 +6,7 @@
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using Newtonsoft.Json;
 
-namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 public class ResourceClaim
 {

@@ -30,7 +30,7 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
     }
     public virtual string AdminTestingConnectionString => Testing.AdminConnectionString;
 
-    public virtual SqlServerUsersContext AdminDbContext => new SqlServerUsersContext(Testing.GetDbContextOptions(AdminTestingConnectionString));
+    public virtual SqlServerUsersContext AdminDbContext => new(Testing.GetDbContextOptions(AdminTestingConnectionString));
 
     // This bool controls whether or not to run SecurityContext initialization
     // method. Setting this flag to true will cause seed data to be
@@ -158,8 +158,8 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
                 {
                     Action = action,
                     AuthorizationStrategies = authorizationStrategy != null ?
-                    new List<ResourceClaimActionAuthorizationStrategies> { new ResourceClaimActionAuthorizationStrategies
-                    { AuthorizationStrategy = authorizationStrategy} } : null,
+                    [ new ResourceClaimActionAuthorizationStrategies
+                    { AuthorizationStrategy = authorizationStrategy} ] : null,
                     ResourceClaim = resourceClaim,
                     ValidationRuleSetName = null
                 });
@@ -299,7 +299,7 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
                };
            })).ToList();
 
-        var grandChildResourceClaims = grandChildRcNames == null || !grandChildRcNames.Any() ? new List<ResourceClaim>() : childResourceClaims.SelectMany(child => grandChildRcNames.Select(grandChildName =>
+        var grandChildResourceClaims = grandChildRcNames == null || !grandChildRcNames.Any() ? [] : childResourceClaims.SelectMany(child => grandChildRcNames.Select(grandChildName =>
             {
                 var fullName = $"{grandChildName}-{child.ClaimName}";
                 return new ResourceClaim
@@ -350,7 +350,7 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
 
             var rcActionAuthorizationStrategies = testAuthorizationStrategy != null ?
                    new List<ResourceClaimActionAuthorizationStrategies> {
-                    new ResourceClaimActionAuthorizationStrategies { AuthorizationStrategy = testAuthorizationStrategy } } : null;
+                    new() { AuthorizationStrategy = testAuthorizationStrategy } } : null;
 
             var resourceClaimWithDefaultAuthStrategy = new ResourceClaimAction
             {
@@ -374,7 +374,7 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
         using (var securityContext = CreateDbContext())
         {
             var getResourcesByClaimSetIdQuery = new ClaimSetEditorTypes.GetResourcesByClaimSetIdQuery(securityContext, Mapper());
-            list = getResourcesByClaimSetIdQuery.AllResources(securityContextClaimSetId).ToList();
+            list = [.. getResourcesByClaimSetIdQuery.AllResources(securityContextClaimSetId)];
         }
         return list;
     }

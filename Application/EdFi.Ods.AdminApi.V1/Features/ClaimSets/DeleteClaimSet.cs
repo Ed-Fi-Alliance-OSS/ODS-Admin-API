@@ -6,7 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +34,7 @@ public class DeleteClaimSet : IFeature
         }
         catch (AdminApiException exception)
         {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(id), exception.Message) });
+            throw new ValidationException([new ValidationFailure(nameof(id), exception.Message)]);
         }
 
         return Task.FromResult(AdminApiResponse.Deleted("ClaimSet"));
@@ -56,7 +56,7 @@ public class DeleteClaimSet : IFeature
     {
         var associatedApplicationsCount = getApplications.Execute(id).Count();
         if (associatedApplicationsCount > 0)
-            throw new ValidationException(new[] { new ValidationFailure(nameof(id),
-                $"Cannot delete this claim set. This claim set has {associatedApplicationsCount} associated application(s).") });
+            throw new ValidationException([ new ValidationFailure(nameof(id),
+                $"Cannot delete this claim set. This claim set has {associatedApplicationsCount} associated application(s).") ]);
     }
 }

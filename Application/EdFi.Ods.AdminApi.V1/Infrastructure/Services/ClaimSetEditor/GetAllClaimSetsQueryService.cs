@@ -8,25 +8,18 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 using Microsoft.Extensions.Options;
-using ClaimSet = EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor.ClaimSet;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 
-public class GetAllClaimSetsQueryService
+public class GetAllClaimSetsQueryService(ISecurityContext securityContext, IOptions<AppSettings> options)
 {
-    private readonly ISecurityContext _securityContext;
-    private readonly IOptions<AppSettings> _options;
-
-    public GetAllClaimSetsQueryService(ISecurityContext securityContext, IOptions<AppSettings> options)
-    {
-        _securityContext = securityContext;
-        _options = options;
-    }
+    private readonly ISecurityContext _securityContext = securityContext;
+    private readonly IOptions<AppSettings> _options = options;
 
     public IReadOnlyList<ClaimSet> Execute()
     {
-        return _securityContext.ClaimSets
+        return [.. _securityContext.ClaimSets
             .Select(x => new ClaimSet
             {
                 Id = x.ClaimSetId,
@@ -35,13 +28,12 @@ public class GetAllClaimSetsQueryService
                 !Constants.SystemReservedClaimSets.Contains(x.ClaimSetName)
             })
             .Distinct()
-            .OrderBy(x => x.Name)
-            .ToList();
+            .OrderBy(x => x.Name)];
     }
 
     public IReadOnlyList<ClaimSet> Execute(CommonQueryParams commonQueryParams)
     {
-        return _securityContext.ClaimSets
+        return [.. _securityContext.ClaimSets
             .Select(x => new ClaimSet
             {
                 Id = x.ClaimSetId,
@@ -51,7 +43,6 @@ public class GetAllClaimSetsQueryService
             })
             .Distinct()
             .OrderBy(x => x.Name)
-            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
-            .ToList();
+            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)];
     }
 }

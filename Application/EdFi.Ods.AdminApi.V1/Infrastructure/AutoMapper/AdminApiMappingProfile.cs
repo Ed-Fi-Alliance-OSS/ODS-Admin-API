@@ -4,14 +4,15 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.V1.Features.Applications;
-using EdFi.Ods.AdminApi.V1.Features.ClaimSets;
-using EdFi.Ods.AdminApi.V1.Features.OdsInstances;
-using EdFi.Ods.AdminApi.V1.Features.Vendors;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
-using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using Profile = AutoMapper.Profile;
+using EdFi.Ods.AdminApi.V1.Features.Vendors;
+using EdFi.Ods.AdminApi.V1.Features.Applications;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V1.Features.ClaimSets;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
+using ClaimSetEditor = EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V1.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.AutoMapper;
 
@@ -31,7 +32,7 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.ContactEmailAddress, opt => opt.MapFrom(src => src.ContactEmail()))
             .ForMember(dst => dst.NamespacePrefixes, opt => opt.MapFrom(src => src.VendorNamespacePrefixes != null ? src.VendorNamespacePrefixes.ToCommaSeparated() : null));
 
-        CreateMap<Application, ApplicationModel>()
+        CreateMap<Admin.DataAccess.Models.Application, ApplicationModel>()
             .ForMember(dst => dst.EducationOrganizationIds, opt => opt.MapFrom(src => src.EducationOrganizationIds()))
             .ForMember(dst => dst.ProfileName, opt => opt.MapFrom(src => src.ProfileName()))
             .ForMember(dst => dst.OdsInstanceId, opt => opt.MapFrom(src => src.OdsInstance != null ? src.OdsInstance.OdsInstanceId : 0))

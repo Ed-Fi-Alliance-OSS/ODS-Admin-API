@@ -4,9 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
-namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 public class GetApplicationsByClaimSetIdQuery : IGetApplicationsByClaimSetIdQuery
 {

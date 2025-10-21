@@ -3,10 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor.Extensions;
-using Action = EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor.Action;
-
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor.Extensions;
 
 public static class ClaimSetResourceClaimActionAuthStrategiesExtension
@@ -39,7 +35,8 @@ public static class ClaimSetResourceClaimActionAuthStrategiesExtension
     public static ClaimSetResourceClaimActionAuthStrategies?[] AddAuthorizationStrategyOverrides(this ClaimSetResourceClaimActionAuthStrategies?[] claimSetResourceClaimActionAuthStrategies,
         string actionName, AuthorizationStrategy? strategy)
     {
-        if (strategy == null) return claimSetResourceClaimActionAuthStrategies;
+        if (strategy == null)
+            return claimSetResourceClaimActionAuthStrategies;
 
         if (actionName == Action.Create.Value)
         {

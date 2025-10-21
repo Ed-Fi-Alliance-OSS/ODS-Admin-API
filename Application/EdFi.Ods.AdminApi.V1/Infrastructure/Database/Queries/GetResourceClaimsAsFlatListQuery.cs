@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
@@ -17,14 +17,11 @@ public class GetResourceClaimsAsFlatListQuery : IGetResourceClaimsAsFlatListQuer
 {
     private readonly ISecurityContext _securityContext;
 
-    public GetResourceClaimsAsFlatListQuery(ISecurityContext securityContext)
-    {
-        _securityContext = securityContext;
-    }
+    public GetResourceClaimsAsFlatListQuery(ISecurityContext securityContext) => _securityContext = securityContext;
 
     public IReadOnlyList<ResourceClaim> Execute()
     {
-        return _securityContext.ResourceClaims
+        return [.. _securityContext.ResourceClaims
             .Select(x => new ResourceClaim
             {
                 Id = x.ResourceClaimId,
@@ -33,7 +30,6 @@ public class GetResourceClaimsAsFlatListQuery : IGetResourceClaimsAsFlatListQuer
                 ParentName = x.ParentResourceClaim != null ? x.ParentResourceClaim.ResourceName : null
             })
             .Distinct()
-            .OrderBy(x => x.Name)
-            .ToList();
+            .OrderBy(x => x.Name)];
     }
 }

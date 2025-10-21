@@ -7,7 +7,6 @@ using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V1.Infrastructure.JsonContractResolvers;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
@@ -53,7 +52,7 @@ public class EditClaimSet : IFeature
         }
         catch (AdminApiException exception)
         {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(id), exception.Message) });
+            throw new ValidationException([new ValidationFailure(nameof(id), exception.Message)]);
         }
 
         var resourceClaims = mapper.Map<List<ResourceClaim>>(request.ResourceClaims);

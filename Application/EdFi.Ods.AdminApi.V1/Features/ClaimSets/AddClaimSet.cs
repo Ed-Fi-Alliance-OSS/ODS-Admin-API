@@ -6,7 +6,6 @@
 using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V1.Infrastructure.JsonContractResolvers;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
@@ -105,7 +104,7 @@ public class AddClaimSet : IFeature
             {
                 var resourceClaimValidator = new ResourceClaimValidator();
 
-                if (claimSet.ResourceClaims != null && claimSet.ResourceClaims.Any())
+                if (claimSet.ResourceClaims != null && claimSet.ResourceClaims.Count != 0)
                 {
                     foreach (var resourceClaim in claimSet.ResourceClaims)
                     {

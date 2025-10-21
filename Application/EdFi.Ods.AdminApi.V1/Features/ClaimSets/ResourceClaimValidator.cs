@@ -3,21 +3,21 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
-using FluentValidation;
 using System.Data;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
+using FluentValidation;
 
 namespace EdFi.Ods.AdminApi.V1.Features.ClaimSets;
 
 public class ResourceClaimValidator
 {
     private static List<string>? _duplicateResources;
-    
+
     public ResourceClaimValidator()
     {
-        _duplicateResources = new List<string>();
+        _duplicateResources = [];
     }
-    
+
     public void Validate<T>(Lookup<string, ResourceClaim> dbResourceClaims,
         List<string?> dbAuthStrategies, RequestResourceClaimModel resourceClaim, List<ChildrenRequestResourceClaimModel> existingResourceClaims,
         ValidationContext<T> context, string? claimSetName)
@@ -42,23 +42,23 @@ public class ResourceClaimValidator
         }
 
         var resources = dbResourceClaims[resourceClaim.Name!.ToLower()].ToList();
-        if (!resources.Any())
+        if (resources.Count == 0)
         {
             context.AddFailure(propertyName, "This Claim Set contains a resource which is not in the system. Claimset Name: '{ClaimSetName}' Resource name: '{ResourceClaimName}'.\n");
         }
-        
-        if (resourceClaim.AuthStrategyOverridesForCRUD.Any())
+
+        if (resourceClaim.AuthStrategyOverridesForCRUD.Length != 0)
         {
-            if (resourceClaim.AuthStrategyOverridesForCRUD.Count() < 5)
+            if (resourceClaim.AuthStrategyOverridesForCRUD.Length < 5)
                 context.AddFailure(propertyName, "Please provide a list of 5 elements for 'AuthStrategyOverridesForCRUD' in the Resource name: '{ResourceClaimName}'");
         }
 
-        if (resourceClaim.Children.Any())
+        if (resourceClaim.Children.Count != 0)
         {
             foreach (var child in resourceClaim.Children)
             {
                 var childResources = dbResourceClaims[child.Name!.ToLower()].ToList();
-                if (childResources.Any())
+                if (childResources.Count != 0)
                 {
                     foreach (var childResource in childResources)
                     {

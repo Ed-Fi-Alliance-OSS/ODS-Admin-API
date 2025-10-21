@@ -5,7 +5,7 @@
 
 using EdFi.Common;
 
-namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 public class Action : Enumeration<Action, string>
 {

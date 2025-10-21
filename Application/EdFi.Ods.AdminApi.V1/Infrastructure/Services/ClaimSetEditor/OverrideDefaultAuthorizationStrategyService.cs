@@ -7,7 +7,7 @@ using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 
 public class OverrideDefaultAuthorizationStrategyService
 {

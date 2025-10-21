@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.V1.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
@@ -18,9 +18,7 @@ public class GetResourceClaimsQuery : IGetResourceClaimsQuery
     private readonly ISecurityContext _securityContext;
 
     public GetResourceClaimsQuery(ISecurityContext securityContext)
-    {
-        _securityContext = securityContext;
-    }
+    => _securityContext = securityContext;
 
     public IEnumerable<ResourceClaim> Execute()
     {
@@ -43,9 +41,8 @@ public class GetResourceClaimsQuery : IGetResourceClaimsQuery
                 Id = parentResource.ResourceClaimId
             });
         }
-        return resources
+        return [.. resources
             .Distinct()
-            .OrderBy(x => x.Name)
-            .ToList();
+            .OrderBy(x => x.Name)];
     }
 }
