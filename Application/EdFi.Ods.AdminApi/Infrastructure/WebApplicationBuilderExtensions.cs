@@ -26,6 +26,8 @@ using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using log4net;
+using log4net.Config;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -169,10 +171,6 @@ public static class WebApplicationBuilderExtensions
             });
         });
 
-        // Logging
-        var loggingOptions = config.GetSection("Log4NetCore").Get<Log4NetProviderOptions>();
-        webApplicationBuilder.Logging.AddLog4Net(loggingOptions);
-
         // Fluent validation
         webApplicationBuilder
             .Services.AddValidatorsFromAssembly(assembly)
@@ -211,6 +209,30 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AppSettingsFile>(webApplicationBuilder.Configuration);
 
         webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
+    }
+
+    public static void AddLoggingServices(this WebApplicationBuilder webApplicationBuilder)
+    {
+        ConfigurationManager config = webApplicationBuilder.Configuration;
+
+        // Remove all default logging providers (Console, Debug, etc.)
+        webApplicationBuilder.Logging.ClearProviders();
+
+        // Initialize log4net early so we can use it in Program.cs
+        var log4netConfigFileName = webApplicationBuilder.Configuration.GetValue<string>("Log4NetCore:Log4NetConfigFileName");
+        if (!string.IsNullOrEmpty(log4netConfigFileName))
+        {
+            var log4netConfigPath = Path.Combine(AppContext.BaseDirectory, log4netConfigFileName);
+            if (File.Exists(log4netConfigPath))
+            {
+                var log4netConfig = new FileInfo(log4netConfigPath);
+                XmlConfigurator.Configure(LogManager.GetRepository(), log4netConfig);
+            }
+        }
+
+        // Important to display messages based on the Logging section in appsettings.json
+        var loggingOptions = config.GetSection("Log4NetCore").Get<Log4NetProviderOptions>();
+        webApplicationBuilder.Logging.AddLog4Net(loggingOptions);
     }
 
     private static void EnableMultiTenancySupport(this WebApplicationBuilder webApplicationBuilder)
