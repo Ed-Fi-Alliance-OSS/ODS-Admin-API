@@ -180,6 +180,22 @@ public class RequestLoggingMiddleware
                     await response.WriteAsync(JsonSerializer.Serialize(new { message = message }));
                     break;
 
+                case BadHttpRequestException:
+                    _logger.Error(
+                        JsonSerializer.Serialize(
+                            new
+                            {
+                                message = "The request body contains malformed JSON. Please ensure your data is properly formatted and try again.",
+                                error = new { ex.Message, ex.StackTrace },
+                                traceId = context.TraceIdentifier
+                            }
+                        ),
+                        ex
+                    );
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await response.WriteAsync(JsonSerializer.Serialize(new { message = "The request body contains malformed JSON. Please ensure your data is properly formatted and try again." }));
+                    break;
+
                 default:
                     _logger.Error(
                         JsonSerializer.Serialize(

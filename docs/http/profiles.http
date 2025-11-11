@@ -1,0 +1,75 @@
+# This file is intended for use with Admin API 2 running in multi-tenant mode,
+# along with ODS/API 7.x in multi-tenant mode. It assumes there are two
+# different tenants named "tenant1" and "tenant2". Each has only one ODS
+# instance.
+
+@adminapi_url=https://localhost:7214
+# @adminapi_url=https://localhost/adminapi
+
+@adminapi_client=adminapi_client2
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+
+### Register a new client
+POST {{adminapi_url}}/connect/register
+Content-Type: application/x-www-form-urlencoded
+Tenant: tenant2
+
+ClientId={{adminapi_client}}&ClientSecret={{adminapi_secret}}&DisplayName=Admin+API+{{adminapi_client}}
+
+### Get a token
+# @name tokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+Tenant: tenant2
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@token={{tokenRequest.response.body.access_token}}
+
+
+### Get profiles
+GET {{adminapi_url}}/v2/profiles
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Create profile 1
+POST {{adminapi_url}}/v2/profiles
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "profile1",
+  "definition": "<Profile name=\"profile1\">
+  <Resource name=\"School\">
+    <ReadContentType memberSelection=\"ExcludeOnly\">
+      <Property name=\"NameOfInstitution\" />
+      <Property name=\"OperationalStatusDescriptor\" />
+      <Property name=\"CharterApprovalSchoolYearTypeReference\" />
+      <Property name=\"SchoolType\" />
+      <Property name=\"AdministrativeFundingControlDescriptor\" />
+      <Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeAll\" />
+      <Collection name=\"SchoolCategories\" memberSelection=\"IncludeAll\" />
+    </ReadContentType>
+  </Resource>
+</Profile>"
+}
+
+# Given the line breaks it should return 400 with a descriptive error message:
+# {
+#   "message": "The request body contains malformed JSON. Please ensure your data is properly formatted and try again."
+# }
+
+
+### Create profile 2
+POST {{adminapi_url}}/v2/profiles
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "profile1",
+  "definition": "<Profile name=\"profile1\"><Resource name=\"School\"><ReadContentType memberSelection=\"ExcludeOnly\"><Property name=\"NameOfInstitution\" /><Property name=\"OperationalStatusDescriptor\" />  <Property name=\"CharterApprovalSchoolYearTypeReference\" /><Property name=\"SchoolType\" /><Property name=\"AdministrativeFundingControlDescriptor\" /><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeAll\" /><Collection name=\"SchoolCategories\" memberSelection=\"IncludeAll\" /></ReadContentType></Resource></Profile>" 
+}
+
+
