@@ -63,26 +63,75 @@ jobs:
               -Configuration Release `
               -APIVersion $apiVersion
 
+      - name: Get Assembly File Version
+        id: assembly-version
+        shell: pwsh
+        run: |
+          $dllPath = "./Application/EdFi.Ods.AdminApi/publish/EdFi.Ods.AdminApi.dll"
+
+          if (-not (Test-Path $dllPath))
+          {
+              throw "Could not find EdFi.Ods.AdminApi.dll at $dllPath"
+          }
+
+          $fileVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
+          "file-version=$fileVersion" >> $env:GITHUB_OUTPUT
+
       - name: Setup Nuget.exe
         uses: nuget/setup-nuget@323ab0502cd38fdc493335025a96c8fdb0edc71f #v2.0.1
 
       - name: Replace Installer Version Token
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}"
-          $versionWithoutPrefix = $version -replace '^v', ''
+          $version = "${{ steps.assembly-version.outputs.file-version }}"
+
+          Write-Host "Replacing version token with: $version"
 
           $installerPath = "Installer.AdminApi/Install-AdminApi.psm1"
-          $content = Get-Content $installerPath -Raw
-          $content = $content -replace '"__ADMINAPI_VERSION__"', "`"$versionWithoutPrefix`""
-          $content | Set-Content $installerPath -NoNewline
+
+          if (Test-Path $installerPath)
+          {
+              $content = Get-Content $installerPath -Raw
+              $content = $content -replace '"__ADMINAPI_VERSION__"', "`"$version`""
+              $content | Set-Content $installerPath -NoNewline
+
+              Write-Host "Successfully updated version in $installerPath"
+          }
+          else
+          {
+              throw "Could not find installer module at $installerPath"
+          }
 
           $installScriptPath = "Installer.AdminApi/install.ps1"
-          $content = Get-Content $installScriptPath -Raw
-          $content = $content -replace '"__ADMINAPI_VERSION__"', "`"$versionWithoutPrefix`""
-          $content | Set-Content $installScriptPath -NoNewline
 
-          Write-Output "Updated version to $version (or $versionWithoutPrefix) in installer files"
+          if (Test-Path $installScriptPath)
+          {
+              $content = Get-Content $installScriptPath -Raw
+              $content = $content -replace '"__ADMINAPI_VERSION__"', "`"$version`""
+              $content | Set-Content $installScriptPath -NoNewline
+
+              Write-Host "Successfully updated version in $installScriptPath"
+          }
+          else
+          {
+              throw "Could not find installer script at $installScriptPath"
+          }
+
+          # Verify the replacement
+          $verifyContent = Get-Content $installerPath -Raw
+
+          if ($verifyContent -match '__ADMINAPI_VERSION__')
+          {
+              throw "Token replacement failed - __ADMINAPI_VERSION__ still found in $installerPath"
+          }
+
+          $verifyInstallScriptContent = Get-Content $installScriptPath -Raw
+
+          if ($verifyInstallScriptContent -match '__ADMINAPI_VERSION__')
+          {
+              throw "Token replacement failed - __ADMINAPI_VERSION__ still found in $installScriptPath"
+          }
+          Write-Host "Verification passed - token successfully replaced with version: $version"
 
       - name: Create NuGet Packages
         if: success()
