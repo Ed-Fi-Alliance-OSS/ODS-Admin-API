@@ -9,9 +9,9 @@ services:
       context: ../../../../Settings/V2/DB-Ods/mssql/
       dockerfile: Dockerfile
       args:
-        ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.1.776}
-        TPDM_VERSION: ${MSSQL_TPDM_MINIMAL_VERSION:-7.1.609}
-        STANDARD_VERSION: ${STANDARD_VERSION:-5.0.0}
+        ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}
+        TPDM_VERSION: ${MSSQL_TPDM_MINIMAL_VERSION:-7.3.326}
+        STANDARD_VERSION: ${STANDARD_VERSION:-5.2.0}
         EXTENSION_VERSION: ${EXTENSION_VERSION:-1.1.0}
     environment:
       ACCEPT_EULA: "Y"
@@ -35,9 +35,9 @@ services:
       context: ../../../../Settings/V2/DB-Ods/mssql/
       dockerfile: Dockerfile
       args:
-        ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.1.776}
-        TPDM_VERSION: ${MSSQL_TPDM_MINIMAL_VERSION:-7.1.609}
-        STANDARD_VERSION: ${STANDARD_VERSION:-5.0.0}
+        ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}
+        TPDM_VERSION: ${MSSQL_TPDM_MINIMAL_VERSION:-7.3.326}
+        STANDARD_VERSION: ${STANDARD_VERSION:-5.2.0}
         EXTENSION_VERSION: ${EXTENSION_VERSION:-1.1.0}
     environment:
       ACCEPT_EULA: "Y"

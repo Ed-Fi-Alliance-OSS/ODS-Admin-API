@@ -17,8 +17,7 @@ else
     exit 1
 fi
 
-status=`wget -nv -t1 --spider -S https://localhost/api/health --no-check-certificate 2>&1|grep "HTTP/"|awk '{print $2}'`
-
+status=`curl -s -o /dev/null -w "%{http_code}" -k https://localhost/api/health`
 if [[ $status -eq "200" ]]
 then
     echo "--- Ods API application is running ---"

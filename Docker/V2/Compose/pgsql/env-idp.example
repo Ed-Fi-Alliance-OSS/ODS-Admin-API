@@ -68,6 +68,6 @@ OIDC_ENABLE_SERVER_CERTIFICATE=true
 
 
 # Ods Api
-TAG=7.1
+TAG=7.3
 API_HEALTHCHECK_TEST="curl -f http://localhost/health"
 ODS_CONNECTION_STRING_ENCRYPTION_KEY=<Create a new string as symmetric encryption key>

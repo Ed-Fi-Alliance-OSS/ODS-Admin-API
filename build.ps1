@@ -283,17 +283,14 @@ function RunTests {
     $testAssemblies | ForEach-Object {
         Write-Output "Executing: dotnet test $($_)"
         Invoke-Execute {
-
-            $coverageArgs = ""
-
-            if ($script:RunCoverageAnalysis) {
-                $coverageArgs = "--collect:""XPlat Code Coverage"""
+            if ($script:RunCoverageAnalysis)
+            {
+                & dotnet test $_ --collect 'XPlat Code Coverage' --logger "trx;LogFileName=$($_).trx" --nologo
             }
-
-            dotnet test $_ `
-                $coverageArgs `
-                --logger "trx;LogFileName=$($_).trx" `
-                --nologo
+            else
+            {
+                & dotnet test $_ --logger "trx;LogFileName=$($_).trx" --nologo
+            }
         }
     }
 }
