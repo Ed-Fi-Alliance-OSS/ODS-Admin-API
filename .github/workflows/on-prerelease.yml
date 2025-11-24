@@ -326,11 +326,12 @@ jobs:
              PACKAGEVERSION=${REF}
           fi
 
-          if [[ $PACKAGEVERSION =~ "alpha" ]]
+          if [[ $PACKAGEVERSION =~ "pre" ]]
           then
             # Pre-releases get the tag "pre"
             APITAGS="${{ env.IMAGE_NAME }}:pre"
             DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:pre"
+            DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:pre-for-6.2"
           else
             # Releases get the version, plus shortened form for minor release.
             # We are not using shortened form for major or using "latest"
@@ -343,6 +344,7 @@ jobs:
           SEMVERSION=${PACKAGEVERSION:1}  # strip off the leading 'v'
           echo "APITAGS=$APITAGS" >> $GITHUB_OUTPUT
           echo "DBTAGS=$DBTAGS" >> $GITHUB_OUTPUT
+          echo "DBTAGS6x=$DBTAGS6x" >> $GITHUB_OUTPUT
           echo "VERSION=$SEMVERSION" >> $GITHUB_OUTPUT
 
       - name: Log in to Docker Hub
@@ -384,7 +386,7 @@ jobs:
         with:
           images: ${{ env.DATABASE_IMAGE_NAME }}
 
-      - name: Build and push admin api database image
+      - name: Build and push admin api database image 7.x
         uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
         with:
           context: "{{defaultContext}}:Docker/Settings/V2/DB-Admin/pgsql"
@@ -393,5 +395,18 @@ jobs:
           build-args: ADMIN_API_VERSION=${{ steps.prepare-tags.outputs.VERSION }}
           file: Dockerfile
           tags: ${{ steps.prepare-tags.outputs.DBTAGS }}
+          labels: ${{ steps.metadatabase.outputs.labels }}
+          push: true
+
+      - name: Build and push admin api database image 6.x
+        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        if: startsWith(github.event.release.tag_name, 'Pre-Release') || startsWith(github.event.release.tag_name, 'v1.')
+        with:
+          context: "{{defaultContext}}:Docker/Settings/V1/DB-Admin/pgsql"
+          cache-from: type=registry,ref=${{ env.DATABASE_IMAGE_NAME }}:pre-for-6.2
+          cache-to: type=inline
+          build-args: ADMIN_API_VERSION=${{ steps.prepare-tags.outputs.VERSION }}
+          file: Dockerfile
+          tags: ${{ steps.prepare-tags.outputs.DBTAGS6x }}
           labels: ${{ steps.metadatabase.outputs.labels }}
           push: true

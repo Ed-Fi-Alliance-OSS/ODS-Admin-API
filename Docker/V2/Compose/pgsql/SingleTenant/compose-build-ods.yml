@@ -59,4 +59,3 @@ volumes:
   vol-db-ods:
     driver: local
     name: vol-db-ods
-

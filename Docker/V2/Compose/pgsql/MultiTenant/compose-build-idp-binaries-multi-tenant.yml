@@ -74,11 +74,7 @@ services:
       retries: 3
 
   db-admin-tenant1:
-    build:
-      context: ../../../../Settings/V2/DB-Admin/pgsql/
-      dockerfile: Dockerfile
-      args:
-        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
+    image: edfialliance/ods-admin-api-db:pre
     environment:
       ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       POSTGRES_USER: "${POSTGRES_USER}"
@@ -95,11 +91,7 @@ services:
       retries: 3
 
   db-admin-tenant2:
-    build:
-      context: ../../../../Settings/V2/DB-Admin/pgsql/
-      dockerfile: Dockerfile
-      args:
-        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
+    image: edfialliance/ods-admin-api-db:pre
     environment:
       ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       POSTGRES_USER: "${POSTGRES_USER}"

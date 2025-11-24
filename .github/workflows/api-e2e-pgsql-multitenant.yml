@@ -56,7 +56,6 @@ jobs:
         run: |
           docker compose \
             -f '../../Docker/V2/Compose/pgsql/MultiTenant/compose-build-dev-multi-tenant.yml' \
-            -f '../../Docker/V2/Compose/pgsql/MultiTenant/compose-build-ods-multi-tenant.yml' \
             --env-file './E2E Tests/V2/gh-action-setup/.automation_pgsql.env' \
             up -d
 

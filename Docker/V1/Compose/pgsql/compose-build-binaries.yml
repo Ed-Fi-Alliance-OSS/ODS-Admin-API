@@ -78,9 +78,7 @@ services:
       retries: 3
 
   db-admin:
-    build:
-      context: ../../../Settings/V1/DB-Admin/pgsql/
-      dockerfile: Dockerfile
+    image: edfialliance/ods-admin-api-db:pre-for-6.2
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
