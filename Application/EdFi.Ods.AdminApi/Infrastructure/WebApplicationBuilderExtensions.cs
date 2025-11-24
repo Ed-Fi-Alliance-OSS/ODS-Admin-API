@@ -96,6 +96,7 @@ public static class WebApplicationBuilderExtensions
         var issuer = webApplicationBuilder.Configuration.GetValue<string>("Authentication:IssuerUrl");
         webApplicationBuilder.Services.AddSwaggerGen(opt =>
         {
+            opt.EnableAnnotations();
             opt.CustomSchemaIds(x =>
             {
                 var name = x.FullName?.Replace(x.Namespace + ".", "");
