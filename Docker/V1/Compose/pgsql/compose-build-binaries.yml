@@ -56,8 +56,8 @@ services:
       Authentication__SigningKey: ${SIGNING_KEY}
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
       AdminConsoleSettings__CorsSettings__EnableCors: "${ENABLE_CORS:-false}"
-      ConnectionStrings__EdFi_Admin: "host=admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
-      ConnectionStrings__EdFi_Security: "host=admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
+      ConnectionStrings__EdFi_Admin: "host=db-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
+      ConnectionStrings__EdFi_Security: "host=db-admin;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
       IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}
