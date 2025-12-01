@@ -30,7 +30,8 @@ RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi
     rm -r /tmp/AdminApiScripts/AdminApi &&\
     dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
     dos2unix /tmp/AdminApiScripts/PgSql/* && \
-    chmod -R 600 /tmp/AdminApiScripts/PgSql
+    chmod -R 700 /tmp/AdminApiScripts/PgSql && \
+    chmod 700 /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
 USER ${POSTGRES_USER}
 
 EXPOSE 5432

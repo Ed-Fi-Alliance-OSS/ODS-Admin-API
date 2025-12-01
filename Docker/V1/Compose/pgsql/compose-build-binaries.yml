@@ -28,6 +28,8 @@ services:
     build:
       context: ../../../
       dockerfile: api.pgsql.Dockerfile
+      args:
+        ADMIN_API_VERSION: ${ADMIN_API_VERSION:-1.4.2}
     environment:
       ADMIN_POSTGRES_HOST: db-admin
       POSTGRES_PORT: 5432
@@ -41,9 +43,12 @@ services:
       ADMIN_API_VIRTUAL_NAME: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       ODS_API_VERSION: ${ODS_API_VERSION}
       AppSettings__AdminApiMode: ${ADMINAPI_MODE:-V1}
+      EnableDockerEnvironment: true
+      SwaggerSettings__EnableSwagger: true
+      EnableSwagger: true
+      Authentication__AllowRegistration: true
 # ---
       ADMIN_API_VERSION: ${ADMIN_API_VERSION}
-      API_INTERNAL_URL: ${API_INTERNAL_URL}
       AppSettings__DatabaseEngine: "PostgreSql"
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
       AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
