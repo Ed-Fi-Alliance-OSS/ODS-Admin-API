@@ -13,8 +13,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
   '/v2/tenants/{tenantName}':
@@ -32,8 +30,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
   /v2/resourceClaims:
@@ -89,8 +85,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -119,8 +113,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -177,8 +169,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -235,8 +225,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -315,8 +303,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -343,8 +329,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -369,8 +353,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -404,8 +386,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -431,8 +411,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -492,8 +470,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -520,8 +496,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -546,8 +520,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -581,8 +553,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -608,8 +578,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -673,8 +641,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -701,8 +667,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -727,8 +691,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -762,8 +724,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -789,8 +749,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -839,8 +797,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -867,8 +823,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -893,8 +847,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -928,8 +880,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -955,8 +905,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1005,8 +953,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1033,8 +979,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -1059,8 +1003,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1094,8 +1036,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1121,8 +1061,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1146,8 +1084,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1211,8 +1147,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1239,8 +1173,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -1265,8 +1197,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1300,8 +1230,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1327,8 +1255,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1377,8 +1303,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1451,8 +1375,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1509,8 +1431,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1544,8 +1464,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1571,8 +1489,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1596,8 +1512,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1627,8 +1541,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1659,8 +1571,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1687,8 +1597,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -1717,8 +1625,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1752,8 +1658,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1779,8 +1683,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1840,8 +1742,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '200':
@@ -1886,8 +1786,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -1910,8 +1808,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '400':
@@ -1948,8 +1844,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -1981,8 +1875,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -2015,8 +1907,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -2117,8 +2007,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -2149,8 +2037,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -2174,8 +2060,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':
@@ -2205,8 +2089,6 @@ paths:
           description: Unauthorized. The request requires authentication
         '403':
           description: 'Forbidden. The request is authenticated, but not authorized to access this resource'
-        '409':
-          description: 'Conflict. The request is authenticated, but it has a conflict with an existing element'
         '500':
           description: Internal server error. An unhandled error occurred on the server. See the response body for details.
         '404':

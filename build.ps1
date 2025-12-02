@@ -227,33 +227,10 @@ function GenerateOpenAPI {
     }
 }
 
-function GenerateOpenAPIAdminConsole {
-    Invoke-Execute {
-        Push-Location $solutionRoot/EdFi.Ods.AdminApi/
-        $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-console-$APIVersion.yaml"
-        $dllPath = "./bin/Release/net8.0/EdFi.Ods.AdminApi.dll"
-
-        try {
-            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath adminconsole
-        }
-        finally {
-            Pop-Location
-        }
-    }
-}
-
 function GenerateDocumentation {
     Invoke-Execute {
         $outputOpenAPI = "docs/api-specifications/openapi-yaml/admin-api-$APIVersion.yaml"
         $outputMD = "docs/api-specifications/markdown/admin-api-$APIVersion-summary.md"
-        widdershins --search false --omitHeader true --code true --summary $outputOpenAPI -o $outputMD
-    }
-}
-
-function GenerateDocumentationAdminConsole {
-    Invoke-Execute {
-        $outputOpenAPI = "docs/api-specifications/openapi-yaml/admin-api-console-$APIVersion.yaml"
-        $outputMD = "docs/api-specifications/markdown/admin-api-console-$APIVersion-summary.md"
         widdershins --search false --omitHeader true --code true --summary $outputOpenAPI -o $outputMD
     }
 }
@@ -433,9 +410,7 @@ function Invoke-GenerateOpenAPIAndMD {
     Invoke-Step { Restore }
     Invoke-Step { Compile }
     Invoke-Step { GenerateOpenAPI }
-    Invoke-Step { GenerateOpenAPIAdminConsole }
     Invoke-Step { GenerateDocumentation }
-    Invoke-Step { GenerateDocumentationAdminConsole }
 }
 
 function Invoke-SetAssemblyInfo {

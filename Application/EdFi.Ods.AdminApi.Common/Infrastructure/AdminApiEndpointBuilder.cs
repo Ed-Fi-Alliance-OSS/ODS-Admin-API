@@ -43,9 +43,6 @@ public class AdminApiEndpointBuilder
     public static AdminApiEndpointBuilder MapPut(IEndpointRouteBuilder endpoints, string route, Delegate handler)
         => new(endpoints, HttpVerb.PUT, route, handler);
 
-    public static AdminApiEndpointBuilder MapPatch(IEndpointRouteBuilder endpoints, string route, Delegate handler)
-        => new(endpoints, HttpVerb.PATCH, route, handler);
-
     public static AdminApiEndpointBuilder MapDelete(IEndpointRouteBuilder endpoints, string route, Delegate handler)
         => new(endpoints, HttpVerb.DELETE, route, handler);
 
@@ -73,10 +70,10 @@ public class AdminApiEndpointBuilder
 
     public void BuildForVersions(params AdminApiVersions.AdminApiVersion[] versions)
     {
-        BuildForVersions(string.Empty, versions);
+        BuildForVersions(string.Empty, false, versions);
     }
 
-    public void BuildForVersions(string authorizationPolicy, params AdminApiVersions.AdminApiVersion[] versions)
+    public void BuildForVersions(string authorizationPolicy, bool display409 = false, params AdminApiVersions.AdminApiVersion[] versions)
     {
         if (versions.Length == 0)
             throw new ArgumentException("Must register for at least 1 version");
@@ -98,7 +95,6 @@ public class AdminApiEndpointBuilder
                 HttpVerb.POST => _endpoints.MapPost(versionedRoute, _handler),
                 HttpVerb.PUT => _endpoints.MapPut(versionedRoute, _handler),
                 HttpVerb.DELETE => _endpoints.MapDelete(versionedRoute, _handler),
-                HttpVerb.PATCH => _endpoints.MapPatch(versionedRoute, _handler),
                 _ => throw new ArgumentOutOfRangeException($"Unconfigured HTTP verb for mapping: {_verb}")
             };
 
@@ -125,7 +121,8 @@ public class AdminApiEndpointBuilder
             builder.WithGroupName(version.ToString());
             builder.WithResponseCode(401, "Unauthorized. The request requires authentication");
             builder.WithResponseCode(403, "Forbidden. The request is authenticated, but not authorized to access this resource");
-            builder.WithResponseCode(409, "Conflict. The request is authenticated, but it has a conflict with an existing element");
+            if (display409)
+                builder.WithResponseCode(409, "Conflict. The request is authenticated, but it has a conflict with an existing element");
             builder.WithResponseCode(500, FeatureCommonConstants.InternalServerErrorResponseDescription);
 
             if (_route.Contains("id", StringComparison.InvariantCultureIgnoreCase))
@@ -192,5 +189,5 @@ public class AdminApiEndpointBuilder
         return this;
     }
 
-    private enum HttpVerb { GET, POST, PUT, DELETE, PATCH }
+    private enum HttpVerb { GET, POST, PUT, DELETE }
 }
