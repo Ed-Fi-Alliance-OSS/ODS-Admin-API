@@ -3,8 +3,8 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-#edfialliance/ods-api-db-admin:7.3
-FROM edfialliance/ods-api-db-admin:7.3@sha256:0a25a039e575464de1fdf09b2db270f00910f937cb782dfa809ac3c192509233 AS base
+#edfialliance/ods-api-db-admin:7.3.1
+FROM edfialliance/ods-api-db-admin:7.3.1@sha256:9d6c6ad298f5eb2ea58d7b2c1c7ea5f6bdfcd12d90028b98fbfea4237a5610f2 AS base
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
 ARG POSTGRES_USER=postgres
@@ -17,7 +17,7 @@ ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
 
 USER root
 COPY run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
-RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r14 && rm -rf /var/cache/apk/*
+RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 && rm -rf /var/cache/apk/*
 USER ${POSTGRES_USER}
 
 FROM base AS setup

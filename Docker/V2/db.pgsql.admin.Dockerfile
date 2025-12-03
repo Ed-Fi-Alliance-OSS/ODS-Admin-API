@@ -5,9 +5,9 @@
 
 FROM alpine:3.20@sha256:187cce89a2fdd4eaf457a0af45f5ce27672f35ce0f6df49b5b0ee835afe0561b AS assets
 
-FROM edfialliance/ods-api-db-admin:7.3@sha256:0a25a039e575464de1fdf09b2db270f00910f937cb782dfa809ac3c192509233 AS base
+FROM edfialliance/ods-api-db-admin:7.3.1@sha256:9d6c6ad298f5eb2ea58d7b2c1c7ea5f6bdfcd12d90028b98fbfea4237a5610f2 AS base
 USER root
-RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r14 && rm -rf /var/cache/apk/*
+RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 && rm -rf /var/cache/apk/*
 
 FROM base AS setup
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"

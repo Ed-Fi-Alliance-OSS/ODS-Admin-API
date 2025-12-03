@@ -392,6 +392,7 @@ jobs:
           context: "{{defaultContext}}:Docker/Settings/V2/DB-Admin/pgsql"
           cache-from: type=registry,ref=${{ env.DATABASE_IMAGE_NAME }}:pre
           cache-to: type=inline
+          platforms: linux/amd64,linux/arm64
           build-args: ADMIN_API_VERSION=${{ steps.prepare-tags.outputs.VERSION }}
           file: Dockerfile
           tags: ${{ steps.prepare-tags.outputs.DBTAGS }}
