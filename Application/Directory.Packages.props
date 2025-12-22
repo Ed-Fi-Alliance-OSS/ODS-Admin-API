@@ -17,7 +17,7 @@
     <PackageVersion Include="AutoMapper" Version="13.0.1" />
 
     <!-- Azure -->
-    <PackageVersion Include="Azure.Identity" Version="1.12.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.17.1" />
 
     <!-- Testing -->
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
@@ -51,7 +51,7 @@
 
     <!-- Microsoft Core -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.63.0" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.78.0" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.11.0" />
     
     <!-- Code Analysis -->
