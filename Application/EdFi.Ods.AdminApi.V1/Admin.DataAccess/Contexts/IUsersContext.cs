@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,6 +38,8 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts
         DbSet<OwnershipToken> OwnershipTokens { get; set; }
 
         DbSet<ApiClientOwnershipToken> ApiClientOwnershipTokens { get; set; }
+
+        DbSet<EducationOrganization> EducationOrganizations { get; set; }
 
         int SaveChanges();
 

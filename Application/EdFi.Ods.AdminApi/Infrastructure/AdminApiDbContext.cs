@@ -5,6 +5,7 @@
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,7 @@ public class AdminApiDbContext : DbContext
         modelBuilder.Entity<ApiScope>().ToTable("Scopes").HasKey(s => s.Id);
         modelBuilder.Entity<ApiAuthorization>().ToTable("Authorizations").HasKey(a => a.Id);
         modelBuilder.Entity<ApiToken>().ToTable("Tokens").HasKey(t => t.Id);
+        modelBuilder.Entity<EducationOrganization>().ToTable("EducationOrganizations").HasKey(t => t.Id);
 
         var engine = _configuration.Get("AppSettings:DatabaseEngine", "SqlServer");
         modelBuilder.ApplyDatabaseServerSpecificConventions(engine);

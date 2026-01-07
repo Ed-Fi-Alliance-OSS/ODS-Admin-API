@@ -5,6 +5,7 @@
 
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Extensions;
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,8 @@ namespace EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts
         public DbSet<ApiClientOwnershipToken> ApiClientOwnershipTokens { get; set; }
 
         public DbSet<WebPagesUsersInRoles> UsersInRoles { get; set; }
+
+        public DbSet<EducationOrganization> EducationOrganizations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
