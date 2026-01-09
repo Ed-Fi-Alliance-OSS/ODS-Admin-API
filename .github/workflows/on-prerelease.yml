@@ -339,6 +339,7 @@ jobs:
             MINOR=`echo ${PACKAGEVERSION} | awk -F"." '{print $1"."$2}'`
             APITAGS="${{ env.IMAGE_NAME }}:${PACKAGEVERSION},${{ env.IMAGE_NAME }}:${MINOR}"
             DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION},${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
+            DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION}-6.2,${{ env.DATABASE_IMAGE_NAME }}:${MINOR}-6.2"
           fi
 
           SEMVERSION=${PACKAGEVERSION:1}  # strip off the leading 'v'
