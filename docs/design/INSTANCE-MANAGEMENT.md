@@ -1,13 +1,20 @@
-
 # Ed-Fi ODS Instance Management Design
 
-This document describes the design and workflow for managing Ed-Fi ODS database instances using the Admin API. All orchestration, job scheduling, and status updates are handled by the Admin API, leveraging Quartz.NET for asynchronous operations.
+This document describes the design and workflow for managing Ed-Fi ODS database
+instances using the Admin API. All orchestration, job scheduling, and status
+updates are handled by the Admin API, leveraging Quartz.NET for asynchronous
+operations.
+
+## API Endpoints Overview
+
+Database instance management operations are performed on the `adminapi.DbInstances`
+endpoint for direct database management (create, rename, delete).
 
 ## System Architecture
 
 ```mermaid
 C4Container
-    title "Instance Management"
+    title "Database Instance Management"
 
     System(ClientApp, "ClientApp", "A web application for managing ODS/API Deployments")
     UpdateElementStyle(ClientApp, $bgColor="silver")
@@ -39,46 +46,42 @@ C4Container
 
 ## Functional Requirements and Status Values
 
-Users will need the ability to perform the following operations for ODS database
-instances:
+### adminapi.DbInstances Endpoint Operations
 
-1. Create a new instance and insert records into the `dbo.OdsInstances` and related tables.
-2. Rename an existing instance in `dbo.OdsInstances`.
-3. Delete an existing instance and delete records from `dbo.OdsInstances`.
+The `adminapi.DbInstances` endpoint supports the following operations:
 
-The first three operations will also require updating the `Status` field in the
-`adminapi.Instances` table. From this perspective, the delete operation will
-be a _soft delete_ for audit purposes. That is, the
-`adminapi.Instances.Status` field will be set to "DELETED" instead of
-physically deleting the row.
+1. **Create Database Instance**: Provision a new ODS database instance. This operation creates a new record in `adminapi.DbInstances` and provisions the database using the specified template (minimal or sample).
+2. **Delete Database Instance**: Remove an existing database instance. This is a soft delete; the `Status` field in `adminapi.DbInstances` is set to "DELETED" for audit purposes, and the database is dropped.
+3. **Read all the database Instances**: Read instance details (OdsInstanceId, OdsInstanceName, Status, DatabaseTemplate).
+4. **Read database Instance by Id**: Read Instance details by OdsInstance id.
 
-> [!NOTE]
-> Valid Instances.Status values - "Pending","Completed","InProgress", "Pending_Delete", "Deleted", "Delete_Failed", "Error"
+All operations update the `Status` field in `adminapi.DbInstances` to reflect the current state (e.g., "Pending", "Completed", "InProgress", "Pending_Delete", "Deleted", "Delete_Failed", "Error").
 
 ```sql
- CREATE TABLE [adminapi].[Instances] (
-        [Id] INT IDENTITY(1,1) NOT NULL,
-        [OdsInstanceId] INT NOT NULL,
-        [InstanceName] NVARCHAR(100) NOT NULL, 
-        [Status] NVARCHAR(75) NOT NULL,
-        [OdsDatabaseName] NVARCHAR(255) NULL,
-        [LastRefreshed] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-        [LastModifiedDate] DATETIME2 NULL,
-        CONSTRAINT [PK_Instances] PRIMARY KEY ([Id])
-
+CREATE TABLE [adminapi].[DbInstances] (
+    [Id] INT IDENTITY(1,1) NOT NULL,
+    [OdsInstanceId] INT NOT NULL,
+    [OdsInstanceName] NVARCHAR(100) NOT NULL, 
+    [Status] NVARCHAR(75) NOT NULL,
+    [DatabaseTemplate] NVARCHAR(100) NOT NULL,
+    [DatabaseName] NVARCHAR(255) NULL,
+    [LastRefreshed] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [LastModifiedDate] DATETIME2 NULL,
+    CONSTRAINT [PK_DbInstances] PRIMARY KEY ([Id])
+)
 ```
 
 ## Instance Management Workflow
 
-All instance management operations are now orchestrated by the Admin API. The Admin API schedules and executes instance creation, update/ rename, and deletion jobs (using a job scheduler such as Quartz.NET), updates the status in the database, and manages all related metadata.
+All instance management operations are now orchestrated by the Admin API. The Admin API schedules and executes database instance creation, and deletion jobs via the `adminapi.DbInstances` endpoint (using a job scheduler such as Quartz.NET), updates the status in the `adminapi.DbInstances` table, and manages all related metadata. Successfully created database instance details will be creating a new record on dbo.OdsInstances table with connection string.
 
 > [!TIP]
-> The processes below refer to a new `adminapi.Instances` table managed by Admin API 2.
+> The processes below refer to the single `adminapi.DbInstances` table managed by Admin API 2.
 > Admin API 2 on startup queries the `dbo.OdsInstances` table used by the ODS/API
 > and inserts missing records into the new table. This solves a potential
 > synchronization problem between these two tables.
 
-### 1. Create New Instance
+#### Create Database Instance
 
 ```mermaid
 sequenceDiagram
@@ -87,17 +90,17 @@ sequenceDiagram
     participant ODSDatabase
     participant EdFiAdminDB
 
-    ClientApp->>AdminAPI: Submit request to create new instance (includes Name, Instance Type, Connection String)
+    ClientApp->>AdminAPI: POST /DbInstances (includes Name, DatabaseTemplate)
     AdminAPI->>AdminAPI: Validate input data
-    AdminAPI->>AdminAPI: Record job metadata and add instance entry to "Instances" table with status "Pending"
-    AdminAPI->>AdminAPI: Schedule Quartz job - "CreateOdsInstanceJob{model.id}"
+    AdminAPI->>AdminAPI: Record job metadata and add instance entry to "DbInstances" table with status "Pending"
+    AdminAPI->>AdminAPI: Schedule Quartz job - "CreateDbInstanceJob{model.id}"
     AdminAPI->>ODSDatabase: Provision new ODS database (clone from template)
     ODSDatabase-->>AdminAPI: Confirm database creation
-    AdminAPI->>EdFiAdminDB: Begin transaction to update "Instances" status to "Completed" and insert record into OdsInstance table
+    AdminAPI->>EdFiAdminDB: Begin transaction to update "DbInstances" status to "Completed" and insert record into OdsInstance table
     AdminAPI->>EdFiAdminDB: Commit transaction
 ```
 
-### 2. Delete Instance
+#### Delete Database Instance
 
 ```mermaid
 sequenceDiagram
@@ -106,58 +109,27 @@ sequenceDiagram
     participant EdFi_Admin
     participant DbServer
 
-    ClientApp ->> AdminAPI: DELETE /OdsInstances/{id}
-    AdminAPI ->> EdFi_Admin: UPDATE adminapi.Instances SET status = "PENDING_DELETE"
+    ClientApp ->> AdminAPI: DELETE /DbInstances/{id}
+    AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = "PENDING_DELETE"
     AdminAPI -->> ClientApp: 204 Ok
 
-    AdminAPI ->> AdminAPI: Schedule DeleteInstance job (Quartz.NET)
+    AdminAPI ->> AdminAPI: Schedule DeleteDbInstance job (Quartz.NET)
     AdminAPI ->> DbServer: Drop database
 
     alt Drop successful
         AdminAPI ->> EdFi_Admin: BEGIN TRANSACTION
-        AdminAPI --> EdFi_Admin: UPDATE Status = DELETED FROM adminapi.Instances Status
+        AdminAPI --> EdFi_Admin: UPDATE Status = DELETED FROM adminapi.DbInstances Status
         AdminAPI ->> EdFi_Admin: DELETE FROM dbo.OdsInstanceDerivative
         AdminAPI ->> EdFi_Admin: DELETE FROM dbo.OdsInstanceContext
         AdminAPI ->> EdFi_Admin: DELETE FROM dbo.OdsInstances
         AdminAPI ->> EdFi_Admin: DELETE FROM dbo.ApiClients and dbo.ApiClientOdsInstances
         AdminAPI ->> EdFi_Admin: COMMIT TRANSACTION
     else Drop failed
-        AdminAPI --> EdFi_Admin: UPDATE Status = DELETE_FAILED FROM adminapi.Instances Status
+        AdminAPI --> EdFi_Admin: UPDATE Status = DELETE_FAILED FROM adminapi.DbInstances Status
     end
-```
-
-### 3. Rename Instance
-
-```mermaid
-sequenceDiagram
-    actor ClientApp
-    participant AdminAPI
-    participant EdFi_Admin
-    participant DbServer
-
-    ClientApp ->> AdminAPI: PATCH /OdsInstances/{id}
-    AdminAPI ->> EdFi_Admin: UPDATE adminapi.Instance SET status = "PENDING_RENAME"
-    AdminAPI -->> ClientApp: 204 Ok
-
-    AdminAPI ->> AdminAPI: Schedule RenameInstance job (Quartz.NET)
-    AdminAPI ->> DbServer: Rename database
-
-    alt Rename successful
-        AdminAPI ->> EdFi_Admin: BEGIN TRANSACTION
-        AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstances
-        AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceContext
-        AdminAPI ->> EdFi_Admin: INSERT INTO dbo.OdsInstanceDerivative
-
-        AdminAPI ->> EdFi_Admin: UPDATE adminapi.Instances (status, credentials)
-        AdminAPI ->> EdFi_Admin: COMMIT
-    else Rename failed
-        AdminAPI --> EdFi_Admin: UPDATE Status = RENAME_FAILED FROM adminapi.Instance Status
-    end
-    AdminAPI -->> ClientApp: 200 OK
 ```
 
 ## Cloud Support (Planned)
 
 > [!NOTE]
-> Placeholder. Assuming that the create database process will differ across the
-> managed database solutions.
+> Placeholder. The `adminapi.DbInstances` endpoint will support cloud database providers in future releases. The database creation process may differ across managed database solutions.
