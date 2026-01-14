@@ -199,7 +199,7 @@ sequenceDiagram
   end
 ```
 
-### Read OdsInstances
+### Read DbInstances
 
 * **Read all database Instances**: Read instances with details (OdsInstanceId,
   OdsInstanceName, Status, DatabaseTemplate etc..).
