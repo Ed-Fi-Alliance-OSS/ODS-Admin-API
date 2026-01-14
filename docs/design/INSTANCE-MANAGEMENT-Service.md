@@ -1,17 +1,74 @@
 
 # Instance Management Service Layer Design
 
-## Supported Operations and Endpoints
+## Interface and Implementation Patterns
 
-The main endpoint for database management is `/dbInstances`. Each database provider must implement the following operations according to its environment and technology:
+The [EdFi.Ods.Sandbox](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS/tree/main/Application/EdFi.Ods.Sandbox) library provides a reference implementation for instance management in a sandbox environment.
 
-* **Create Database** (`POST /dbInstances`): Create a new Ed-Fi database instance in the target environment (on-premises or cloud). Includes options for minimal or sample template population. The Admin API generates the database name and associates it with the OdsInstance.
-* **Copy Database** (`POST /dbInstances/copy`): Clone an existing Ed-Fi database instance, allowing a custom name for the new instance. Copies all data from the source and ensures the new database is online, or reports errors if unsuccessful.
-* **Delete Database** (`DELETE /dbInstances/{id}`): Remove an Ed-Fi database instance and ensure the database is deleted and offline. Consider feature-flagging this operation to prevent accidental data loss in production environments.
-* **Instance Info** (`GET /dbInstances/{id}/info`): Return metadata such as database size and server details for operational insight.
-* **Instance Status** (`GET /dbInstances/{id}/status`): Report the current status of the instance (online, offline, recovering, etc).
+* **IInstanceProvisioner.cs** - Interface defining all required operations (_AddInstance_, _CopyInstance_, _DeleteInstance_, _InstanceInfo_, _InstanceStatus_). Each provider must implement these methods for its database or storage technology.
+* **InstanceProvisionerBase.cs** - Base class for common elements such as connection management and shared variables.
+* **InstanceStatus.cs** - Object class representing instance status values (e.g., "ERROR").
 
-The `/odsInstances` endpoint is used for managing ODS instance records and metadata, without triggering database creation jobs. This is useful for SaaS providers who manage databases externally but need to maintain ODS instance records.
+### Recommended Implementations
+
+Provide implementations for Docker and Windows environments:
+
+* **PostgresInstanceProvisioner.cs** - Uses PostgreSQL DDL functions for instance management.
+* **SqlServerSandboxProvisioner.cs** - Uses MS-SQL DDL and DBCC commands for instance management.
+
+## Implementation Details
+
+The Instance Management Service Layer orchestrates database instance operations (create, copy, delete, status, info) across supported database platforms. The implementation uses a provider pattern for extensibility and separation of concerns.
+
+### Key Components
+
+* **IInstanceProvisioner**  
+ Defines the contract for all instance management operations:
+  * `AddInstance`
+  * `CopyInstance`
+  * `DeleteInstance`
+  * `InstanceInfo`
+  * `InstanceStatus`
+ Each database provider (e.g., PostgreSQL, SQL Server) implements this interface.
+
+* **InstanceProvisionerBase**  
+ Provides shared logic for connection management, error handling, and logging. Concrete provisioners inherit from this base class.
+
+* **InstanceStatus**  
+ Represents the status and metadata of a managed instance (e.g., status, size, last modified).
+
+### Provider Implementations
+
+* **PostgresInstanceProvisioner**  
+ Implements instance management using PostgreSQL DDL commands and system views. Handles database creation, cloning (via template), deletion, and status queries.
+
+* **SqlServerSandboxProvisioner**  
+ Implements instance management for Microsoft SQL Server using DDL, BACKUP/RESTORE, and DBCC commands. Handles file movement and status queries.
+
+### Service Layer Workflow
+
+1. **Request Handling**  
+  The service receives a request (e.g., create, delete, status, info) and selects the appropriate provisioner based on configuration or instance type.
+
+2. **Operation Execution**  
+  The selected provisioner executes the requested operation using the appropriate SQL commands and updates status objects.
+
+3. **Error Handling**  
+  All operations are wrapped with error handling and logging. Failures are reported via the `InstanceStatus` object.
+
+4. **Extensibility**  
+  New database providers can be added by implementing the `IInstanceProvisioner` interface and registering the implementation.
+
+### Example Usage
+
+```csharp
+IInstanceProvisioner provisioner = GetProvisionerFor(instanceType);
+var status = await provisioner.AddInstance(instanceConfig);
+if (status.IsError)
+{
+  // Handle error, log details
+}
+```
 
 ## Example SQL Commands
 
@@ -24,18 +81,3 @@ The following SQL commands illustrate how these operations are performed in Post
 | Delete Database    | `DROP DATABASE database_name;`                               | `DROP DATABASE database_name;`                               |
 | Instance Info      | `SELECT pg_size_pretty(pg_database_size('database_name')) AS size;` | `USE database_name; EXEC sp_spaceused;`                      |
 | Instance Status    | `SELECT datname AS database_name,        numbackends AS active_connections FROM pg_stat_database;` | `SELECT name AS database_name, state_desc AS status FROM sys.databases;` |
-
-## Interface and Implementation Patterns
-
-The [EdFi.Ods.Sandbox](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS/tree/main/Application/EdFi.Ods.Sandbox) library provides a reference implementation for instance management in a sandbox environment. Recommended interface and class structure for the Instance Management Microservice:
-
-* **IInstanceProvisioner.cs** - Interface defining all required operations (_AddInstance_, _CopyInstance_, _DeleteInstance_, _RenameInstance_, _InstanceStatus_). Each provider must implement these methods for its database or storage technology.
-* **InstanceProvisionerBase.cs** - Base class for common elements such as connection management and shared variables.
-* **InstanceStatus.cs** - Object class representing instance status values (e.g., "ERROR").
-
-### Recommended Implementations
-
-For Admin Console 1.0, provide implementations for Docker and Windows environments:
-
-* **PostgresInstanceProvisioner.cs** - Uses PostgreSQL DDL functions for instance management.
-* **SqlServerSandboxProvisioner.cs** - Uses MS-SQL DDL and DBCC commands for instance management.
