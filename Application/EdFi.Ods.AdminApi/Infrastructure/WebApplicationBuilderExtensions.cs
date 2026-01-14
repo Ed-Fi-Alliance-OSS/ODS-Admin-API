@@ -19,9 +19,11 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
+using EdFi.Ods.AdminApi.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
+using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
@@ -210,6 +212,8 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AppSettingsFile>(webApplicationBuilder.Configuration);
 
         webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
+
+        webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
     }
 
     public static void AddLoggingServices(this WebApplicationBuilder webApplicationBuilder)
@@ -335,6 +339,12 @@ public static class WebApplicationBuilderExtensions
                             AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
                         )
                     );
+
+                    webApplicationBuilder.Services.AddScoped<IAdminApiUserContext>(
+                        sp => new AdminConsolePostgresUsersContext(
+                            AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                        )
+                    );
                 }
                 else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
@@ -355,6 +365,13 @@ public static class WebApplicationBuilderExtensions
                     );
 
                     webApplicationBuilder.Services.AddScoped<IUsersContext>(
+                        (sp) =>
+                            new AdminConsoleSqlServerUsersContext(
+                                AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
+                            )
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<IAdminApiUserContext>(
                         (sp) =>
                             new AdminConsoleSqlServerUsersContext(
                                 AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)

@@ -7,11 +7,11 @@ CREATE TABLE IF NOT EXISTS adminapi.EducationOrganizations (
     Id INT NOT NULL GENERATED ALWAYS AS IDENTITY,
     InstanceId int NOT NULL,
     InstanceName VARCHAR(100) NOT NULL,
-    EducationOrganizationId int NOT NULL,
+    EducationOrganizationId BIGINT NOT NULL,
     NameOfInstitution VARCHAR(75) NOT NULL,
     ShortNameOfInstitution VARCHAR(75),
     Discriminator VARCHAR(128) NOT NULL,
-    ParentId int,
+    ParentId BIGINT,
     OdsDatabaseName VARCHAR(255),
     LastRefreshed TIMESTAMP DEFAULT NOW(),
     LastModifiedDate TIMESTAMP
