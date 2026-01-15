@@ -167,7 +167,7 @@ public class EducationOrganizationService : IEducationOrganizationService
                 context.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
             }
 
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 
