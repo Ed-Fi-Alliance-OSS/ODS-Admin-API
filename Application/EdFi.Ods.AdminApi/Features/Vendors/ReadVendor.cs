@@ -11,7 +11,6 @@ using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
-using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 
 namespace EdFi.Ods.AdminApi.Features.Vendors;
 
