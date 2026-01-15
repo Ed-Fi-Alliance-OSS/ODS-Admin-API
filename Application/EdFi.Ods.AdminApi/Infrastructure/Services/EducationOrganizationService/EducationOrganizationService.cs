@@ -57,7 +57,7 @@ public class EducationOrganizationService : IEducationOrganizationService
     private readonly ISymmetricStringEncryptionProvider _encryptionProvider;
 
     public EducationOrganizationService(
-        [FromServices] ITenantsService tenantsService,
+        ITenantsService tenantsService,
         IOptions<AppSettings> options,
         ITenantConfigurationProvider tenantConfigurationProvider,
         IAdminApiUserContext adminApiUsersContext,
