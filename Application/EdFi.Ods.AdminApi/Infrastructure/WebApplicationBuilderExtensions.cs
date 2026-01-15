@@ -212,7 +212,6 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AppSettingsFile>(webApplicationBuilder.Configuration);
 
         webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
-
         webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
     }
 
