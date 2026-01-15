@@ -231,7 +231,9 @@ public class EducationOrganizationService : IEducationOrganizationService
 
     private async Task<List<TenantModel>> GetTenantsAsync()
     {
-        return await _tenantsService.GetTenantsAsync();
+        var tenants = await _tenantsService.GetTenantsAsync();
+
+        return tenants ?? new List<TenantModel>();
     }
 }
 
