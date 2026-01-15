@@ -11,7 +11,5 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Database;
 
 public interface IAdminApiUserContext : IUsersContext
 {
-
     DbSet<EducationOrganization> EducationOrganizations { get; set; }
-
 }
