@@ -80,36 +80,46 @@ public class EducationOrganizationService : IEducationOrganizationService
         if (multiTenancyEnabled)
         {
             var tenants = await GetTenantsAsync();
-            foreach (var tenant in tenants)
+            var tenantConfigurations = _tenantConfigurationProvider.Get();
+
+            var tenantsWithConfiguration = tenants
+                .Where(tenant => tenant.TenantName is not null &&
+                                tenantConfigurations.TryGetValue(tenant.TenantName, out var config) &&
+                                config is not null)
+                .Select(tenant => tenantConfigurations[tenant.TenantName!]);
+
+            foreach (var tenantConfiguration in tenantsWithConfiguration)
             {
-                if (_tenantConfigurationProvider.Get().TryGetValue(tenant.TenantName!, out var tenantConfiguration) && tenantConfiguration != null)
-                {
-                    if (databaseEngine.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var optionsBuilder = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>();
-                        optionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-                        var adminApiUsersContext = new AdminConsoleSqlServerUsersContext(optionsBuilder.Options);
-
-                        await ProcessOdsInstance(adminApiUsersContext, encryptionKey, databaseEngine);
-                    }
-                    else if (databaseEngine.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var optionsBuilder = new DbContextOptionsBuilder<AdminConsolePostgresUsersContext>();
-                        optionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
-                        var adminApiUsersContext = new AdminConsolePostgresUsersContext(optionsBuilder.Options);
-
-                        await ProcessOdsInstance(adminApiUsersContext, encryptionKey, databaseEngine);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Database engine '{databaseEngine}' is not supported.");
-                    }
-                }
+                await ProcessTenantConfiguration(tenantConfiguration, encryptionKey, databaseEngine);
             }
         }
         else
         {
             await ProcessOdsInstance(_adminApiUsersContext, encryptionKey, databaseEngine);
+        }
+    }
+
+    private async Task ProcessTenantConfiguration(TenantConfiguration tenantConfiguration, string encryptionKey, string databaseEngine)
+    {
+        if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>();
+            optionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
+            var adminApiUsersContext = new AdminConsoleSqlServerUsersContext(optionsBuilder.Options);
+
+            await ProcessOdsInstance(adminApiUsersContext, encryptionKey, databaseEngine);
+        }
+        else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<AdminConsolePostgresUsersContext>();
+            optionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
+            var adminApiUsersContext = new AdminConsolePostgresUsersContext(optionsBuilder.Options);
+
+            await ProcessOdsInstance(adminApiUsersContext, encryptionKey, databaseEngine);
+        }
+        else
+        {
+            throw new NotSupportedException($"Database engine '{databaseEngine}' is not supported.");
         }
     }
 
@@ -167,7 +177,7 @@ public class EducationOrganizationService : IEducationOrganizationService
                 context.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
             }
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(CancellationToken.None);
         }
     }
 
@@ -176,7 +186,7 @@ public class EducationOrganizationService : IEducationOrganizationService
         if (databaseEngine is null)
             throw new InvalidOperationException("Database engine must be specified.");
 
-        if (databaseEngine.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+        if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
@@ -184,7 +194,7 @@ public class EducationOrganizationService : IEducationOrganizationService
             using var reader = await command.ExecuteReaderAsync();
             return await ReadEducationOrganizationsFromDbDataReader(reader);
         }
-        else if (databaseEngine.Equals("PostgreSql", StringComparison.OrdinalIgnoreCase))
+        else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
         {
             using var connection = new Npgsql.NpgsqlConnection(connectionString);
             await connection.OpenAsync();
