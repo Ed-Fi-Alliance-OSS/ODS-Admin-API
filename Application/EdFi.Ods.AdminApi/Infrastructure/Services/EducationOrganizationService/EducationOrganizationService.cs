@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Data.Common;
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
@@ -11,7 +12,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
-using EdFi.Ods.AdminApi.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -53,22 +53,28 @@ public class EducationOrganizationService : IEducationOrganizationService
     private readonly ITenantsService _tenantsService;
     private readonly IOptions<AppSettings> _options;
     private readonly ITenantConfigurationProvider _tenantConfigurationProvider;
-    private readonly IAdminApiUserContext _adminApiUsersContext;
+    private readonly IUsersContext _usersContext;
+    private readonly AdminApiDbContext _adminApiDbContext;
     private readonly ISymmetricStringEncryptionProvider _encryptionProvider;
+    private readonly IConfiguration _configuration;
 
     public EducationOrganizationService(
         ITenantsService tenantsService,
         IOptions<AppSettings> options,
         ITenantConfigurationProvider tenantConfigurationProvider,
-        IAdminApiUserContext adminApiUsersContext,
-        ISymmetricStringEncryptionProvider encryptionProvider
+        IUsersContext usersContext,
+        AdminApiDbContext adminApiDbContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        IConfiguration configuration
         )
     {
         _tenantsService = tenantsService;
         _options = options;
         _tenantConfigurationProvider = tenantConfigurationProvider;
-        _adminApiUsersContext = adminApiUsersContext;
+        _usersContext = usersContext;
+        _adminApiDbContext = adminApiDbContext;
         _encryptionProvider = encryptionProvider;
+        _configuration = configuration;
     }
 
     public async Task Execute()
@@ -95,27 +101,40 @@ public class EducationOrganizationService : IEducationOrganizationService
         }
         else
         {
-            await ProcessOdsInstance(_adminApiUsersContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstance(_usersContext, _adminApiDbContext, encryptionKey, databaseEngine);
         }
     }
 
     private async Task ProcessTenantConfiguration(TenantConfiguration tenantConfiguration, string encryptionKey, string databaseEngine)
     {
+        IUsersContext usersContext;
+        AdminApiDbContext adminApiDbContext;
+
         if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
-            var optionsBuilder = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>();
-            optionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-            var adminApiUsersContext = new AdminConsoleSqlServerUsersContext(optionsBuilder.Options);
+            var usersOptionsBuilder = new DbContextOptionsBuilder<SqlServerUsersContext>();
+            usersOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
+            usersContext = new SqlServerUsersContext(usersOptionsBuilder.Options);
 
-            await ProcessOdsInstance(adminApiUsersContext, encryptionKey, databaseEngine);
+            var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+            adminApiOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
+            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+
+            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
         }
         else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
         {
-            var optionsBuilder = new DbContextOptionsBuilder<AdminConsolePostgresUsersContext>();
-            optionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
-            var adminApiUsersContext = new AdminConsolePostgresUsersContext(optionsBuilder.Options);
+            var usersOptionsBuilder = new DbContextOptionsBuilder<PostgresUsersContext>();
+            usersOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
+            usersOptionsBuilder.UseLowerCaseNamingConvention();
+            usersContext = new PostgresUsersContext(usersOptionsBuilder.Options);
 
-            await ProcessOdsInstance(adminApiUsersContext, encryptionKey, databaseEngine);
+            var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+            adminApiOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
+            adminApiOptionsBuilder.UseLowerCaseNamingConvention();
+            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+
+            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
         }
         else
         {
@@ -123,9 +142,10 @@ public class EducationOrganizationService : IEducationOrganizationService
         }
     }
 
-    public virtual async Task ProcessOdsInstance(IAdminApiUserContext context, string encryptionKey, string databaseEngine)
+    public virtual async Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine)
     {
-        var odsInstances = await context.OdsInstances.ToListAsync();
+        var odsInstances = await usersContext.OdsInstances.ToListAsync();
+
         foreach (var odsInstance in odsInstances)
         {
             _encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString);
@@ -135,7 +155,7 @@ public class EducationOrganizationService : IEducationOrganizationService
 
             Dictionary<long, EducationOrganization>? existingEducationOrganizations;
 
-            existingEducationOrganizations = await context.EducationOrganizations
+            existingEducationOrganizations = await adminApiDbContext.EducationOrganizations
             .Where(e => e.InstanceId == odsInstance.OdsInstanceId)
             .ToDictionaryAsync(e => e.EducationOrganizationId);
 
@@ -154,7 +174,7 @@ public class EducationOrganizationService : IEducationOrganizationService
                 }
                 else
                 {
-                    context.EducationOrganizations.Add(new EducationOrganization
+                    adminApiDbContext.EducationOrganizations.Add(new EducationOrganization
                     {
                         EducationOrganizationId = edorg.EducationOrganizationId,
                         NameOfInstitution = edorg.NameOfInstitution,
@@ -174,10 +194,10 @@ public class EducationOrganizationService : IEducationOrganizationService
 
             if (educationOrganizationsToDelete.Count > 0)
             {
-                context.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
+                adminApiDbContext.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
             }
 
-            await context.SaveChangesAsync(CancellationToken.None);
+            await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
         }
     }
 

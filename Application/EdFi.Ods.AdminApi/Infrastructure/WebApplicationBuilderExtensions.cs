@@ -334,13 +334,7 @@ public static class WebApplicationBuilderExtensions
                     ));
 
                     webApplicationBuilder.Services.AddScoped<IUsersContext>(
-                        sp => new AdminConsolePostgresUsersContext(
-                            AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
-                        )
-                    );
-
-                    webApplicationBuilder.Services.AddScoped<IAdminApiUserContext>(
-                        sp => new AdminConsolePostgresUsersContext(
+                        sp => new PostgresUsersContext(
                             AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
                         )
                     );
@@ -365,14 +359,7 @@ public static class WebApplicationBuilderExtensions
 
                     webApplicationBuilder.Services.AddScoped<IUsersContext>(
                         (sp) =>
-                            new AdminConsoleSqlServerUsersContext(
-                                AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
-                            )
-                    );
-
-                    webApplicationBuilder.Services.AddScoped<IAdminApiUserContext>(
-                        (sp) =>
-                            new AdminConsoleSqlServerUsersContext(
+                            new SqlServerUsersContext(
                                 AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
                             )
                     );
