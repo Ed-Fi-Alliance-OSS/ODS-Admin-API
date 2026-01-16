@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
+using Quartz;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -91,6 +92,9 @@ public static class WebApplicationBuilderExtensions
             opt.ReportApiVersions = true;
             opt.AssumeDefaultVersionWhenUnspecified = false;
         });
+
+        // Add Quartz services
+        RegisterQuartzServices(webApplicationBuilder);
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));
         var issuer = webApplicationBuilder.Configuration.GetValue<string>("Authentication:IssuerUrl");
@@ -567,6 +571,12 @@ public static class WebApplicationBuilderExtensions
                 });
             }
         });
+    }
+
+    private static void RegisterQuartzServices(WebApplicationBuilder webApplicationBuilder)
+    {
+        webApplicationBuilder.Services.AddQuartz();
+        webApplicationBuilder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
     }
 
     private enum HttpVerbOrder

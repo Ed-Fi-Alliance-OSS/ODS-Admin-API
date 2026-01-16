@@ -5,7 +5,10 @@
 
 namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 
-public interface IJobStatusService
+public class JobStatus
 {
-    Task SetStatusAsync(string jobId, QuartzJobStatus status, string? errorMessage = null);
+    public int Id { get; set; }
+    public string JobId { get; set; } = null!;
+    public string Status { get; set; } = null!;
+    public string? ErrorMessage { get; set; }
 }

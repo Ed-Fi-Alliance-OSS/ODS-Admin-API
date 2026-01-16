@@ -3,8 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Quartz;
 
@@ -20,21 +18,21 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs
             var jobId = context.JobDetail.Key.Name;
             try
             {
-                await _jobStatusService.SetStatusAsync(jobId, JobStatus.InProgress);
+                await _jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.InProgress);
                 await ExecuteJobAsync(context);
-                await _jobStatusService.SetStatusAsync(jobId, JobStatus.Completed);
+                await _jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Completed);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Job {JobId} failed.", jobId);
-                await _jobStatusService.SetStatusAsync(jobId, JobStatus.Error, ex.Message);
+                await _jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Error, ex.Message);
             }
         }
 
         protected abstract Task ExecuteJobAsync(IJobExecutionContext context);
     }
 
-    public enum JobStatus
+    public enum QuartzJobStatus
     {
         Pending,
         InProgress,

@@ -23,6 +23,7 @@ public class AppSettings
     public bool MultiTenancy { get; set; }
     public bool PreventDuplicateApplications { get; set; }
     public bool EnableApplicationResetEndpoint { get; set; }
+    public int EdOrgsRefreshIntervalInMins { get; set; }
     public string? AdminApiMode { get; set; }
 }
 
