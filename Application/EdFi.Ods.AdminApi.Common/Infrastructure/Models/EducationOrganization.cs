@@ -10,11 +10,11 @@ public class EducationOrganization
     public int Id { get; set; }
     public int InstanceId { get; set; }
     public string InstanceName { get; set; } = string.Empty;
-    public int EducationOrganizationId { get; set; }
+    public long EducationOrganizationId { get; set; }
     public string NameOfInstitution { get; set; } = string.Empty;
     public string? ShortNameOfInstitution { get; set; }
     public string Discriminator { get; set; } = string.Empty;
-    public int? ParentId { get; set; }
+    public long? ParentId { get; set; }
     public string? OdsDatabaseName { get; set; }
     public DateTime LastRefreshed { get; set; }
     public DateTime? LastModifiedDate { get; set; }

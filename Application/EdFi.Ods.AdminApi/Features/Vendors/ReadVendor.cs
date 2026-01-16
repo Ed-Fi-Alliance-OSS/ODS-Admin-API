@@ -29,12 +29,9 @@ public class ReadVendor : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetVendors(
-        IGetVendorsQuery getVendorsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? company, string? namespacePrefixes, string? contactName, string? contactEmailAddress)
+    internal static Task<IResult> GetVendors(IGetVendorsQuery getVendorsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? company, string? namespacePrefixes, string? contactName, string? contactEmailAddress)
     {
-        var vendorList = mapper.Map<List<VendorModel>>(getVendorsQuery.Execute(
-            commonQueryParams,
-            id, company, namespacePrefixes, contactName, contactEmailAddress));
+        var vendorList = mapper.Map<List<VendorModel>>(getVendorsQuery.Execute(commonQueryParams, id, company, namespacePrefixes, contactName, contactEmailAddress));
         return Task.FromResult(Results.Ok(vendorList));
     }
 

@@ -21,6 +21,8 @@ public class AdminApiDbContext : DbContext
         _configuration = configuration;
     }
 
+    public DbSet<EducationOrganization> EducationOrganizations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
