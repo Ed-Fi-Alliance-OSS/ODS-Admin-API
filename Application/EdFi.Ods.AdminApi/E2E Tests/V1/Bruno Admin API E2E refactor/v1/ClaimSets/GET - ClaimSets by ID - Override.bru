@@ -1,0 +1,47 @@
+meta {
+  name: ClaimSets by ID - Override
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response result matches claimset", function () {
+      const claimSetId = bru.getVar("CreatedClaimSetIdOverride");
+      
+      expect(result.id).to.equal(claimSetId);
+      expect(result.name).to.equal(`Test ClaimSet ${bru.getVar("ClaimSetOverrideGUID")}`);
+      expect(result.isSystemReserved).to.equal(false);
+      expect(result.applicationsCount).to.equal(0);
+      expect(result.resourceClaims).to.not.be.empty;
+      const educationStandardsResourceClaim = result.resourceClaims.find(r => r.name === "educationStandards")
+      expect(educationStandardsResourceClaim).to.be.an("object", "The educationStandards resource claim was not found.")
+      expect(educationStandardsResourceClaim.authStrategyOverridesForCRUD).to.not.be.empty;
+      expect(educationStandardsResourceClaim.authStrategyOverridesForCRUD[1]).to.be.an("object", "The override for read action in resource claim educationStandards was not found.")
+  
+      const academicSubjectDescriptorResourceClaim = result.resourceClaims.find(r => r.name === "academicSubjectDescriptor")
+      expect(academicSubjectDescriptorResourceClaim).to.be.an("object", "The academicSubjectDescriptor resource claim was not found.")
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,72 @@
+meta {
+  name: ClaimSets_1
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{API_URL}}/v1/claimsets/
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const results = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  const findClaimSetById = function(results, claimSetId) {
+      let found = null;
+      results.forEach((claimSet) => {
+          if (claimSet.id === claimSetId) found = claimSet; 
+      });
+      return found;
+  }
+  
+  const findClaimSetByName = function(results, claimSetName) {
+      let found = null;
+      results.forEach((claimSet) => {
+          if ((claimSet.name ?? "") === claimSetName) found = claimSet; 
+      });
+      return found;
+  }
+  
+  test("Response result includes claimsets", function () {
+      expect(results.length).to.be.greaterThan(0);
+  
+      const result = findClaimSetById(results, bru.getVar("CreatedClaimSetId"));
+      
+      expect(result.name).to.equal(`Test ClaimSet ${bru.getVar("ClaimSetGUID")}`);
+      expect(result.isSystemReserved).to.equal(false);
+      expect(result.applicationsCount).to.equal(0);
+      
+      const resultOverride = findClaimSetById(results, bru.getVar("CreatedClaimSetIdOverride"));
+      
+      expect(resultOverride.name).to.equal(`Test ClaimSet ${bru.getVar("ClaimSetOverrideGUID")}`);
+      expect(resultOverride.isSystemReserved).to.equal(false);
+      expect(resultOverride.applicationsCount).to.equal(0);
+  });
+  
+  // Extract ID for "AB Connect"
+  let abConnect = findClaimSetByName(results, "AB Connect");
+  console.log("SystemReservedClaimSetId", abConnect);
+  bru.setVar("SystemReservedClaimSetId", abConnect.id);
+  
+  // Extract ID for "Ed-Fi Sandbox"
+  let sandbox = findClaimSetByName(results, "Ed-Fi Sandbox");
+  console.log("OtherExistingClaimSetId", sandbox);
+  bru.setVar("OtherExistingClaimSetId", sandbox.id);
+}
+
+settings {
+  encodeUrl: true
+}

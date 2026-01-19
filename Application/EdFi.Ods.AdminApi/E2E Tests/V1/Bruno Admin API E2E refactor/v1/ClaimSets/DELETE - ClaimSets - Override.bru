@@ -1,0 +1,33 @@
+meta {
+  name: ClaimSets - Override
+  type: http
+  seq: 28
+}
+
+delete {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("claimset");
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

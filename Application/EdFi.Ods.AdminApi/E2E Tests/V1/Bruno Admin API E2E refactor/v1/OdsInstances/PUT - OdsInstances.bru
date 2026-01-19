@@ -1,0 +1,57 @@
+meta {
+  name: OdsInstances
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Updated Ods Instance {{OdsSetGUID}}",
+      "instanceType": "Updated Type",
+      "status": "Updated Status",
+      "isExtended": false,
+      "version": "Updated Version"
+  }
+}
+
+script:pre-request {
+  bru.setVar("OdsSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("odsinstance");
+      expect(response.title.toLowerCase()).to.contain("updated");
+  });
+  
+  test("Response result includes updated ods instance", function () {
+      expect(result.name).to.contains("Updated Ods Instance");
+      expect(result.instanceType).to.equal("Updated Type");
+      expect(result.version).to.equal("Updated Version");
+      expect(result.isExtended).to.equal(false);
+      expect(result.status).to.equal("Updated Status");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,49 @@
+meta {
+  name: OdsInstances Invalid
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{API_URL}}/v1/odsInstances
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "",
+      "instanceType": "",
+      "status": "",
+      "version": ""
+  }
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("Response errors include messages by property", function () {
+      expect(response.errors["Name"].length).to.equal(1);
+      expect(response.errors["InstanceType"].length).to.equal(1);
+      expect(response.errors["Status"].length).to.equal(1);
+      expect(response.errors["Version"].length).to.equal(1);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

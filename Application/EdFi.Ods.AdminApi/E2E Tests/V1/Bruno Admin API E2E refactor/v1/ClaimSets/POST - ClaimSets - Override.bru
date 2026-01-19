@@ -1,0 +1,117 @@
+meta {
+  name: ClaimSets - Override
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{API_URL}}/v1/claimsets/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Test ClaimSet {{ClaimSetOverrideGUID}}",
+      "resourceClaims": [
+        {
+          "name": "educationStandards",
+          "create": true,
+          "read": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            {
+            "authorizationStrategies": [
+              {
+                "authStrategyName": "RelationshipsWithPeopleOnly",
+                "isInheritedFromParent": true
+              }
+            ]
+           },
+            null,
+            null,
+            null
+          ],
+          "children": [
+            {
+              "name": "learningObjective",
+              "read": true,
+              "create": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "academicSubjectDescriptor",
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": []
+        }      
+      ]
+  }
+  
+}
+
+script:pre-request {
+  bru.setVar("ClaimSetOverrideGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("Override Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Override Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Override Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("claimset");
+      expect(response.title.toLowerCase()).to.contain("created");
+  });
+  
+  test("Override Response includes location in header", function () {
+      expect(res.getHeaders()).to.have.property("Location".toLowerCase());
+  //     pm.response.to.be.header("Location", `/claimsets/${result.id}`);
+  });
+  
+  test("Override Response result includes claimSet key and secret", function () {
+      expect(result).to.have.property("id");
+  });
+  
+  if(result.id) {
+      bru.setVar("CreatedClaimSetIdOverride", result.id);
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,50 @@
+meta {
+  name: Applications - Invalid
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{API_URL}}/v1/applications/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "applicationName": "",
+    "vendorId": {{ApplicationVendorId}},
+    "claimSetName": "",
+    "profileId": null,
+    "educationOrganizationIds": []
+  }
+  
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("Response errors include messages by property", function () {
+      expect(response.errors["ApplicationName"].length).to.equal(1);
+      expect(response.errors["ClaimSetName"].length).to.equal(1);
+      expect(response.errors["EducationOrganizationIds"].length).to.equal(1);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

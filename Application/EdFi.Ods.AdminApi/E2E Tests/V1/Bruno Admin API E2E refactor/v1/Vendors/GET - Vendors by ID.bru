@@ -1,0 +1,41 @@
+meta {
+  name: Vendors by ID
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v1/vendors/{{CreatedVendorId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response result matches vendor", function () {
+      const vendorId = bru.getVar("CreatedVendorId");
+      
+      expect(result.vendorId).to.equal(vendorId);
+      expect(result.company).to.equal("Test Company");
+      expect(result.namespacePrefixes).to.equal("uri://ed-fi.org");
+      expect(result.contactName).to.equal("Test User");
+      expect(result.contactEmailAddress).to.equal("test@test-ed-fi.org");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

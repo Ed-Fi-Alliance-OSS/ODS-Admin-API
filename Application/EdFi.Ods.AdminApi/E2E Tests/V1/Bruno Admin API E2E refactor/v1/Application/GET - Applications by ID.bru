@@ -1,0 +1,56 @@
+meta {
+  name: Applications by ID
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{API_URL}}/v1/applications/{{CreatedApplicationId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = response ? response.result : null;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response result matches application", function () {
+      const applicationId = bru.getVar("CreatedApplicationId");
+      
+      if(result) {
+          expect(result.applicationId).to.equal(applicationId);
+          expect(result.applicationName).to.contains("Application");
+          expect(result.claimSetName).to.equal("Ed-Fi Sandbox");
+          expect(result.educationOrganizationIds).to.length(1);
+          expect(result.educationOrganizationIds[0]).to.equal(255901);
+          expect(result.profileName).to.equal(null);
+          expect(result.odsInstanceId).to.equal(bru.getVar("OdsInstanceId"));
+          expect(result.odsInstanceName).to.contains("Test Ods Instance");
+          expect(result.profiles).to.length(0);
+          expect(result.vendorId).to.not.equal(null);
+          expect(result.vendorId).to.greaterThan(0);
+      } else {
+          throw new Error("Result is null or undefined");
+      }
+  });
+  
+  test("Response result does not include key or secret", function () {  
+      expect(result).to.not.have.property("key");
+      expect(result).to.not.have.property("secret");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

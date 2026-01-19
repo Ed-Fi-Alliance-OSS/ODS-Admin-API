@@ -1,0 +1,41 @@
+meta {
+  name: OdsInstance by ID
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v1/odsInstances/{{CreateOdsInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response result matches ods instance", function () {
+      const odsInstanceId = bru.getVar("CreateOdsInstanceId");
+      
+      expect(result.id).to.equal(odsInstanceId);
+      expect(result.name).to.contains("Test Ods Instance");
+      expect(result.instanceType).to.equal("Test Type");
+      expect(result.version).to.equal("Test Version");
+      expect(result.isExtended).to.equal(true);
+      expect(result.status).to.equal("Test Status");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}
