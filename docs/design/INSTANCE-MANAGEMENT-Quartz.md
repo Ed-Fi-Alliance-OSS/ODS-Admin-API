@@ -79,6 +79,7 @@ public async Task<IActionResult> CreateInstance([FromBody] InstanceModel model)
     var job = JobBuilder.Create<CreateInstanceJob>()
         .WithIdentity($"CreateInstanceJob-{model.Id}")
         .UsingJobData("InstanceId", model.Id)
+        .UsingJobData("TenantId", model.TenantId)
         .UsingJobData("OdsInstanceMetadata", JsonConvert.SerializeObject(model))
         .Build();
 

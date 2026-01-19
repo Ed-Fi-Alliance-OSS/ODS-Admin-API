@@ -5,6 +5,10 @@
 
 The [EdFi.Ods.Sandbox](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS/tree/main/Application/EdFi.Ods.Sandbox) library provides a reference implementation for instance management in a sandbox environment.
 
+The Instance Management Worker implementation files can be referenced from the
+following repository
+[Ed-Fi-Admin-Console-Instance-Management-Worker-Process](<https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-Admin-Console-Instance-Management-Worker-Process/tree/main/src/EdFi.AdminConsole.InstanceMgrWorker.Provisioner>)
+
 * **IInstanceProvisioner.cs** - Interface defining all required operations (_AddInstance_, _CopyInstance_, _DeleteInstance_, _InstanceInfo_, _InstanceStatus_). Each provider must implement these methods for its database or storage technology.
 * **InstanceProvisionerBase.cs** - Base class for common elements such as connection management and shared variables.
 * **InstanceStatus.cs** - Object class representing instance status values (e.g., "ERROR").
