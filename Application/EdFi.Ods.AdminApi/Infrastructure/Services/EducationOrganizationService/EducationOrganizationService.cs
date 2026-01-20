@@ -13,7 +13,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -22,76 +21,38 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService
 
 public interface IEducationOrganizationService
 {
-    Task Execute();
+    Task Execute(string? tenantName);
 }
 
-public class EducationOrganizationService : IEducationOrganizationService
+public class EducationOrganizationService(
+    ITenantsService tenantsService,
+    IOptions<AppSettings> options,
+    ITenantConfigurationProvider tenantConfigurationProvider,
+    IUsersContext usersContext,
+    AdminApiDbContext adminApiDbContext,
+    ISymmetricStringEncryptionProvider encryptionProvider,
+    IConfiguration configuration
+        ) : IEducationOrganizationService
 {
-    private const string AllEdorgQuery = @"
-       SELECT
-       edorg.educationorganizationid,
-       edorg.nameofinstitution,
-       edorg.shortnameofinstitution,
-       edorg.discriminator,
-       edorg.id,
-       COALESCE(scl.localeducationagencyid, lea.parentlocaleducationagencyid, lea.educationservicecenterid, lea.stateeducationagencyid, esc.stateeducationagencyid) AS parentid
-       FROM
-       edfi.educationorganization edorg
-       LEFT JOIN edfi.school scl
-       ON
-       edorg.educationorganizationid = scl.schoolid
-       LEFT JOIN edfi.localeducationagency lea
-       ON
-       edorg.educationorganizationid = lea.localeducationagencyid
-       LEFT JOIN edfi.educationservicecenter esc
-       on
-       edorg.educationorganizationid = esc.educationservicecenterid
-       WHERE edorg.discriminator in
-       ('edfi.StateEducationAgency', 'edfi.EducationServiceCenter', 'edfi.LocalEducationAgency', 'edfi.School');
-   ";
+    private const string AllEdorgStoredProcSqlServer = "GetEducationOrganizations";
+    private const string AllEdorgStoredProcPostgres = "get_education_organizations";
 
-    private readonly ITenantsService _tenantsService;
-    private readonly IOptions<AppSettings> _options;
-    private readonly ITenantConfigurationProvider _tenantConfigurationProvider;
-    private readonly IUsersContext _usersContext;
-    private readonly AdminApiDbContext _adminApiDbContext;
-    private readonly ISymmetricStringEncryptionProvider _encryptionProvider;
-    private readonly IConfiguration _configuration;
-
-    public EducationOrganizationService(
-        ITenantsService tenantsService,
-        IOptions<AppSettings> options,
-        ITenantConfigurationProvider tenantConfigurationProvider,
-        IUsersContext usersContext,
-        AdminApiDbContext adminApiDbContext,
-        ISymmetricStringEncryptionProvider encryptionProvider,
-        IConfiguration configuration
-        )
+    public async Task Execute(string? tenantName)
     {
-        _tenantsService = tenantsService;
-        _options = options;
-        _tenantConfigurationProvider = tenantConfigurationProvider;
-        _usersContext = usersContext;
-        _adminApiDbContext = adminApiDbContext;
-        _encryptionProvider = encryptionProvider;
-        _configuration = configuration;
-    }
-
-    public async Task Execute()
-    {
-        var multiTenancyEnabled = _options.Value.MultiTenancy;
-        var encryptionKey = _options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
-        var databaseEngine = DatabaseEngineEnum.Parse(_options.Value.DatabaseEngine ?? throw new NotFoundException<string>(nameof(AppSettings), nameof(AppSettings.DatabaseEngine)));
+        var multiTenancyEnabled = options.Value.MultiTenancy;
+        var encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
+        var databaseEngine = DatabaseEngineEnum.Parse(options.Value.DatabaseEngine ?? throw new NotFoundException<string>(nameof(AppSettings), nameof(AppSettings.DatabaseEngine)));
 
         if (multiTenancyEnabled)
         {
             var tenants = await GetTenantsAsync();
-            var tenantConfigurations = _tenantConfigurationProvider.Get();
+            var tenantConfigurations = tenantConfigurationProvider.Get();
 
             var tenantsWithConfiguration = tenants
                 .Where(tenant => tenant.TenantName is not null &&
-                                tenantConfigurations.TryGetValue(tenant.TenantName, out var config) &&
-                                config is not null)
+                                 tenant.TenantName.Equals(tenantName, StringComparison.OrdinalIgnoreCase) &&
+                                 tenantConfigurations.TryGetValue(tenant.TenantName, out var config) &&
+                                 config is not null)
                 .Select(tenant => tenantConfigurations[tenant.TenantName!]);
 
             foreach (var tenantConfiguration in tenantsWithConfiguration)
@@ -101,15 +62,12 @@ public class EducationOrganizationService : IEducationOrganizationService
         }
         else
         {
-            await ProcessOdsInstance(_usersContext, _adminApiDbContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
         }
     }
 
     private async Task ProcessTenantConfiguration(TenantConfiguration tenantConfiguration, string encryptionKey, string databaseEngine)
     {
-        IUsersContext usersContext;
-        AdminApiDbContext adminApiDbContext;
-
         if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
             var usersOptionsBuilder = new DbContextOptionsBuilder<SqlServerUsersContext>();
@@ -118,7 +76,7 @@ public class EducationOrganizationService : IEducationOrganizationService
 
             var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
             adminApiOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, configuration);
 
             await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
         }
@@ -132,7 +90,7 @@ public class EducationOrganizationService : IEducationOrganizationService
             var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
             adminApiOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
             adminApiOptionsBuilder.UseLowerCaseNamingConvention();
-            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, configuration);
 
             await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
         }
@@ -148,7 +106,7 @@ public class EducationOrganizationService : IEducationOrganizationService
 
         foreach (var odsInstance in odsInstances)
         {
-            _encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString);
+            encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString);
             var connectionString = decryptedConnectionString ?? throw new InvalidOperationException("Decrypted connection string can't be null.");
 
             var edorgs = await GetEducationOrganizationsAsync(connectionString, databaseEngine);
@@ -210,7 +168,10 @@ public class EducationOrganizationService : IEducationOrganizationService
         {
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
-            using var command = new SqlCommand(AllEdorgQuery, connection);
+            using var command = new SqlCommand(AllEdorgStoredProcSqlServer, connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             using var reader = await command.ExecuteReaderAsync();
             return await ReadEducationOrganizationsFromDbDataReader(reader);
         }
@@ -218,7 +179,7 @@ public class EducationOrganizationService : IEducationOrganizationService
         {
             using var connection = new Npgsql.NpgsqlConnection(connectionString);
             await connection.OpenAsync();
-            using var command = new Npgsql.NpgsqlCommand(AllEdorgQuery, connection);
+            using var command = new Npgsql.NpgsqlCommand($"SELECT * FROM {AllEdorgStoredProcPostgres}()", connection);
             using var reader = await command.ExecuteReaderAsync();
             return await ReadEducationOrganizationsFromDbDataReader(reader);
         }
@@ -261,7 +222,7 @@ public class EducationOrganizationService : IEducationOrganizationService
 
     private async Task<List<TenantModel>> GetTenantsAsync()
     {
-        var tenants = await _tenantsService.GetTenantsAsync();
+        var tenants = await tenantsService.GetTenantsAsync();
 
         return tenants ?? new List<TenantModel>();
     }

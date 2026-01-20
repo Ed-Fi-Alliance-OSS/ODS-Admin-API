@@ -12,7 +12,7 @@ public class AddClaimSetCommand
 
     public AddClaimSetCommand(ISecurityContext context)
     {
-        _context = context;     
+        _context = context;
     }
 
     public int Execute(IAddClaimSetModel claimSet)

@@ -5,23 +5,23 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Database;
-using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
+using EducationOrganizationServiceImpl = EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService;
+
 
 namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.EducationOrganizationService;
 
@@ -58,19 +58,25 @@ internal class EducationOrganizationServiceTests
     public async Task Execute_Should_Throw_InvalidOperationException_When_EncryptionKey_Is_Null()
     {
         _appSettings.EncryptionKey = null;
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_EncryptionKeyNull")
             .Options;
-        var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_EncryptionKeyNull_Admin").Options,
+            A.Fake<IConfiguration>());
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        // Ensure the correct class is instantiated here.
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute())
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
             .ContinueWith(t => t.Result.Message.ShouldBe("EncryptionKey can't be null."));
     }
 
@@ -78,29 +84,37 @@ internal class EducationOrganizationServiceTests
     public async Task Execute_Should_Throw_NotFoundException_When_DatabaseEngine_Is_Null()
     {
         _appSettings.DatabaseEngine = null;
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_DatabaseEngineNull")
             .Options;
-        var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_DatabaseEngineNull_Admin").Options,
+            A.Fake<IConfiguration>());
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
-        await Should.ThrowAsync<Exception>(async () => await service.Execute());
+        await Should.ThrowAsync<Exception>(async () => await service.Execute(null));
     }
 
     [Test]
     public async Task Execute_Should_Process_Single_Tenant_When_MultiTenancy_Disabled()
     {
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_SingleTenant")
             .Options;
 
-        using var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_SingleTenant_Admin").Options,
+            A.Fake<IConfiguration>());
 
         var odsInstance = new OdsInstance
         {
@@ -108,15 +122,17 @@ internal class EducationOrganizationServiceTests
             Name = "TestInstance",
             ConnectionString = "encrypted-connection-string"
         };
-        context.OdsInstances.Add(odsInstance);
-        await context.SaveChangesAsync();
+        usersContext.OdsInstances.Add(odsInstance);
+        await usersContext.SaveChangesAsync();
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
         string decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
@@ -125,19 +141,18 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute())
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
             .ContinueWith(t => t.Result.Message.ShouldBe("Decrypted connection string can't be null."));
     }
 
     [Test]
-    public async Task Execute_Should_Process_Multiple_Tenants_When_MultiTenancy_Enabled()
+    public async Task Execute_Should_Process_For_Selected_Tenant_When_MultiTenancy_Enabled()
     {
         _appSettings.MultiTenancy = true;
 
         var tenants = new List<TenantModel>
         {
-            new TenantModel
-            {
+            new() {
                 TenantName = "tenant1",
                 ConnectionStrings = new TenantModelConnectionStrings
                 {
@@ -145,8 +160,7 @@ internal class EducationOrganizationServiceTests
                     EdFiSecurityConnectionString = "Server=localhost;Database=EdFi_Security_Tenant1;TrustServerCertificate=True"
                 }
             },
-            new TenantModel
-            {
+            new() {
                 TenantName = "tenant2",
                 ConnectionStrings = new TenantModelConnectionStrings
                 {
@@ -180,29 +194,34 @@ internal class EducationOrganizationServiceTests
 
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfigurations);
 
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_MultiTenant")
             .Options;
 
-        using var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_MultiTenant_Admin").Options,
+            A.Fake<IConfiguration>());
 
         var processOdsInstanceCallCount = 0;
         var service = new TestableEducationOrganizationService(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
+            usersContext,
+            adminApiDbContext,
             _encryptionProvider,
+            A.Fake<IConfiguration>(),
             () => processOdsInstanceCallCount++);
 
-        await service.Execute();
+        await service.Execute("tenant1");
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _tenantConfigurationProvider.Get()).MustHaveHappened();
-        processOdsInstanceCallCount.ShouldBe(2);
+        processOdsInstanceCallCount.ShouldBe(1);
     }
 
-    private class TestableEducationOrganizationService : EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService
+    private class TestableEducationOrganizationService : EducationOrganizationServiceImpl
     {
         private readonly Action _onProcessOdsInstance;
 
@@ -210,15 +229,17 @@ internal class EducationOrganizationServiceTests
             ITenantsService tenantsService,
             IOptions<AppSettings> options,
             ITenantConfigurationProvider tenantConfigurationProvider,
-            IAdminApiUserContext adminApiUsersContext,
+            IUsersContext usersContext,
+            AdminApiDbContext adminApiDbContext,
             ISymmetricStringEncryptionProvider encryptionProvider,
+            IConfiguration configuration,
             Action onProcessOdsInstance)
-            : base(tenantsService, options, tenantConfigurationProvider, adminApiUsersContext, encryptionProvider)
+            : base(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration)
         {
             _onProcessOdsInstance = onProcessOdsInstance;
         }
 
-        public override Task ProcessOdsInstance(IAdminApiUserContext context, string encryptionKey, string databaseEngine)
+        public override Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine)
         {
             _onProcessOdsInstance();
             return Task.CompletedTask;
@@ -230,21 +251,26 @@ internal class EducationOrganizationServiceTests
     {
         _appSettings.DatabaseEngine = "InvalidEngine";
 
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_InvalidEngine")
             .Options;
 
-        using var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_InvalidEngine_Admin").Options,
+            A.Fake<IConfiguration>());
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
-        var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute());
-        exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\"");
+        var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null));
+        exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\". Supported engines: SqlServer, and PostgreSql.");
     }
 
     [Test]
@@ -252,11 +278,14 @@ internal class EducationOrganizationServiceTests
     {
         _appSettings.DatabaseEngine = "PostgreSql";
 
-        var contextOptions = new DbContextOptionsBuilder<AdminConsolePostgresUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<PostgresUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_PostgreSql")
             .Options;
 
-        using var context = new AdminConsolePostgresUsersContext(contextOptions);
+        using var usersContext = new PostgresUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_PostgreSql_Admin").Options,
+            A.Fake<IConfiguration>());
 
         var odsInstance = new OdsInstance
         {
@@ -264,15 +293,17 @@ internal class EducationOrganizationServiceTests
             Name = "TestInstance",
             ConnectionString = "encrypted-connection-string"
         };
-        context.OdsInstances.Add(odsInstance);
-        await context.SaveChangesAsync();
+        usersContext.OdsInstances.Add(odsInstance);
+        await usersContext.SaveChangesAsync();
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
         string decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
@@ -281,7 +312,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute());
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null));
     }
 
     [Test]
@@ -292,8 +323,7 @@ internal class EducationOrganizationServiceTests
 
         var tenants = new List<TenantModel>
         {
-            new TenantModel
-            {
+            new() {
                 TenantName = "tenant1",
                 ConnectionStrings = new TenantModelConnectionStrings
                 {
@@ -319,11 +349,15 @@ internal class EducationOrganizationServiceTests
 
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfigurations);
 
-        var contextOptions = new DbContextOptionsBuilder<AdminConsolePostgresUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<PostgresUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_MultiTenantPostgres")
             .Options;
 
-        using var context = new AdminConsolePostgresUsersContext(contextOptions);
+        using var context = new PostgresUsersContext(contextOptions);
+
+        var adminApiDbContext = new AdminApiDbContext(
+           new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_MultiTenantPostgres").Options,
+           A.Fake<IConfiguration>());
 
         var processOdsInstanceCallCount = 0;
         var service = new TestableEducationOrganizationService(
@@ -331,10 +365,12 @@ internal class EducationOrganizationServiceTests
             _options,
             _tenantConfigurationProvider,
             context,
+            adminApiDbContext,
             _encryptionProvider,
+            A.Fake<IConfiguration>(),
             () => processOdsInstanceCallCount++);
 
-        await service.Execute();
+        await service.Execute("tenant1");
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
@@ -347,20 +383,25 @@ internal class EducationOrganizationServiceTests
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).Returns(new List<TenantModel>());
 
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_EmptyTenants")
             .Options;
 
-        using var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_EmptyTenants_Admin").Options,
+            A.Fake<IConfiguration>());
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
-        await service.Execute();
+        await service.Execute(null);
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
     }
@@ -388,20 +429,25 @@ internal class EducationOrganizationServiceTests
         var emptyTenantConfigurations = new Dictionary<string, TenantConfiguration>();
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(emptyTenantConfigurations);
 
-        var contextOptions = new DbContextOptionsBuilder<AdminConsoleSqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_NoTenantConfig")
             .Options;
 
-        using var context = new AdminConsoleSqlServerUsersContext(contextOptions);
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_NoTenantConfig_Admin").Options,
+            A.Fake<IConfiguration>());
 
-        var service = new EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService(
+        var service = new EducationOrganizationServiceImpl(
             _tenantsService,
             _options,
             _tenantConfigurationProvider,
-            context,
-            _encryptionProvider);
+            usersContext,
+            adminApiDbContext,
+            _encryptionProvider,
+            A.Fake<IConfiguration>());
 
-        await service.Execute();
+        await service.Execute(null);
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
     }

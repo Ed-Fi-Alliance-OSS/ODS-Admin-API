@@ -3,6 +3,8 @@
 -- The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 -- See the LICENSE and NOTICES files in the project root for more information.
 
+IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE TABLE_SCHEMA = 'adminapi' and TABLE_NAME = 'EducationOrganizations')
+BEGIN
 CREATE TABLE [adminapi].[EducationOrganizations] (
       [Id] INT IDENTITY(1,1) NOT NULL,
       [InstanceId] INT NOT NULL,
@@ -23,3 +25,4 @@ CREATE NONCLUSTERED INDEX [IX_EducationOrganizations_InstanceId]
 
 CREATE NONCLUSTERED INDEX [IX_EducationOrganizations_EducationOrganizationId]
     ON [adminapi].[EducationOrganizations] ([EducationOrganizationId]);
+END

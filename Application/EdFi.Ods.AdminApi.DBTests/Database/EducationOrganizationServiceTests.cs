@@ -7,18 +7,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -35,6 +36,10 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     private IOptions<AppSettings> _options;
     private AppSettings _appSettings;
     private string _encryptionKey;
+    private IConfiguration _configuration;
+    //private AdminApiDbContext _adminApiDbContext;
+    private IUsersContext _usersContext;
+
 
     [SetUp]
     public new async Task SetUp()
@@ -45,6 +50,13 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         _tenantConfigurationProvider = new Mock<ITenantConfigurationProvider>();
         _encryptionProvider = new Mock<ISymmetricStringEncryptionProvider>();
 
+        _configuration = new ConfigurationBuilder()
+           .AddInMemoryCollection(new Dictionary<string, string>
+           {
+                { "AppSettings:DatabaseEngine", "SqlServer" }
+           })
+           .Build();
+
         _encryptionKey = Convert.ToBase64String(new byte[32]);
         _appSettings = new AppSettings
         {
@@ -54,6 +66,8 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         };
 
         _options = Options.Create(_appSettings);
+
+        _usersContext = new SqlServerUsersContext(GetDbContextOptions());
     }
 
     [Test]
@@ -75,50 +89,51 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(true);
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                adminApiDbContext,
+                _encryptionProvider.Object,
+                _configuration);
 
             // Since we don't have actual EdFi ODS tables in the test database,
             // we'll test that the service executes without errors
             // and verify the infrastructure works correctly
-            Should.NotThrow(() => service.Execute().GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
         });
     }
 
-    private static void AdminApiTransaction(Action<IAdminApiUserContext> action)
+    private void AdminApiTransaction(Action<AdminApiDbContext> action)
     {
-        using var usersContext = new AdminConsoleSqlServerUsersContext(GetDbContextOptions());
-        using var transaction = usersContext.Database.BeginTransaction();
-        action(usersContext);
-        usersContext.SaveChanges();
+        var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+        adminApiOptionsBuilder.UseSqlServer(ConnectionString);
+        var _adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+
+        using var transaction = _adminApiDbContext.Database.BeginTransaction();
+        action(_adminApiDbContext);
+        _adminApiDbContext.SaveChanges();
         transaction.Commit();
     }
 
-    private class TestableEducationOrganizationService : EducationOrganizationService
+    private class TestableEducationOrganizationService(
+        ITenantsService tenantsService,
+        IOptions<AppSettings> options,
+        ITenantConfigurationProvider tenantConfigurationProvider,
+        IUsersContext usersContext,
+        AdminApiDbContext adminApiDbContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        IConfiguration configuration) : EducationOrganizationService(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration)
     {
-        public TestableEducationOrganizationService(
-            ITenantsService tenantsService,
-            IOptions<AppSettings> options,
-            ITenantConfigurationProvider tenantConfigurationProvider,
-            IAdminApiUserContext adminApiUsersContext,
-            ISymmetricStringEncryptionProvider encryptionProvider)
-            : base(tenantsService, options, tenantConfigurationProvider, adminApiUsersContext, encryptionProvider)
-        {
-        }
-
         public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
             // Return hardcoded 2 records for testing
             var results = new List<EducationOrganizationResult>
             {
-                new EducationOrganizationResult
-                {
+                new() {
                     EducationOrganizationId = 255901,
                     NameOfInstitution = "Test School 1",
                     ShortNameOfInstitution = "TS1",
@@ -126,8 +141,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                     Id = Guid.NewGuid(),
                     ParentId = 255900
                 },
-                new EducationOrganizationResult
-                {
+                new() {
                     EducationOrganizationId = 255902,
                     NameOfInstitution = "Test School 2",
                     ShortNameOfInstitution = "TS2",
@@ -177,18 +191,20 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(true);
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object,
+                _configuration);
 
-            Should.NotThrow(() => service.Execute().GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
 
-            var updatedEdOrg = adminApiUsersContext.EducationOrganizations
+            var updatedEdOrg = _adminApiDbContext.EducationOrganizations
                 .FirstOrDefault(e => e.EducationOrganizationId == existingEdOrg.EducationOrganizationId);
 
             updatedEdOrg.ShouldNotBeNull();
@@ -232,20 +248,21 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(true);
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object, _configuration);
 
-            Should.NotThrow(() => service.Execute().GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
 
             // After execution, since the hardcoded data doesn't include EducationOrganizationId 999999,
             // the service should have removed our test EdOrg
-            var deletedEdOrg = adminApiUsersContext.EducationOrganizations
+            var deletedEdOrg = _adminApiDbContext.EducationOrganizations
                 .FirstOrDefault(e => e.EducationOrganizationId == edOrgToBeDeleted.EducationOrganizationId);
 
             // The EdOrg should be removed since it's not in the mocked result set
@@ -258,17 +275,18 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     {
         _appSettings.EncryptionKey = null;
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object, _configuration);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
-                service.Execute().GetAwaiter().GetResult());
+                service.Execute(null).GetAwaiter().GetResult());
 
             exception.Message.ShouldBe("EncryptionKey can't be null.");
         });
@@ -279,16 +297,17 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     {
         _appSettings.DatabaseEngine = null;
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object, _configuration);
 
-            Should.Throw<Exception>(() => service.Execute().GetAwaiter().GetResult());
+            Should.Throw<Exception>(() => service.Execute(null).GetAwaiter().GetResult());
         });
     }
 
@@ -297,17 +316,18 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     {
         _appSettings.DatabaseEngine = "InvalidEngine";
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object, _configuration);
 
             var exception = Should.Throw<NotSupportedException>(() =>
-                service.Execute().GetAwaiter().GetResult());
+                service.Execute(null).GetAwaiter().GetResult());
 
             exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\"");
         });
@@ -332,17 +352,18 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(false);
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
-            var service = new TestableEducationOrganizationService(
+            var service = new EducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object, _configuration);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
-                service.Execute().GetAwaiter().GetResult());
+                service.Execute(null).GetAwaiter().GetResult());
 
             exception.Message.ShouldBe("Decrypted connection string can't be null.");
         });
@@ -374,20 +395,33 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(true);
 
-        AdminApiTransaction(adminApiUsersContext =>
+        AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new TestableEducationOrganizationService(
                 _tenantsService.Object,
                 _options,
                 _tenantConfigurationProvider.Object,
-                adminApiUsersContext,
-                _encryptionProvider.Object);
+                _usersContext,
+                _adminApiDbContext,
+                _encryptionProvider.Object, _configuration);
 
-            Should.NotThrow(() => service.Execute().GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
 
             // Verify both instances were processed
-            var instances = adminApiUsersContext.OdsInstances.ToList();
+            var instances = _usersContext.OdsInstances.ToList();
             instances.Count.ShouldBeGreaterThanOrEqualTo(2);
         });
+    }
+
+    // Add the TearDown method to ensure _usersContext is disposed properly
+    [TearDown]
+    public void TearDown()
+    {
+        if (_usersContext != null)
+        {
+            // Replace DisposeAsync with synchronous Dispose since IUsersContext does not support DisposeAsync
+            _usersContext.Dispose();
+            _usersContext = null;
+        }
     }
 }
