@@ -224,33 +224,42 @@ public class EducationOrganizationService(
 
         try
         {
-            while (await reader.ReadAsync())
+            try
             {
-                var educationOrganizationId = Convert.ToInt64(
-                            reader.GetInt32(reader.GetOrdinal("educationorganizationid"))
-                        );
-                var nameOfInstitution = reader.GetString(reader.GetOrdinal("nameofinstitution"));
-                var shortNameOfInstitutionOrdinal = reader.GetOrdinal("shortnameofinstitution");
-                string? shortNameOfInstitution = await reader.IsDBNullAsync(shortNameOfInstitutionOrdinal)
-                    ? null
-                    : reader.GetString(shortNameOfInstitutionOrdinal);
-                var discriminator = reader.GetString(reader.GetOrdinal("discriminator"));
-                var id = reader.GetGuid(reader.GetOrdinal("id"));
-                var parentIdOrdinal = reader.GetOrdinal("parentid");
-                long? parentId = await reader.IsDBNullAsync(parentIdOrdinal) ? null : Convert.ToInt64(
-                            reader.GetInt32(parentIdOrdinal)
-                        );
-
-                results.Add(new EducationOrganizationResult
+                while (await reader.ReadAsync())
                 {
-                    EducationOrganizationId = educationOrganizationId,
-                    NameOfInstitution = nameOfInstitution,
-                    ShortNameOfInstitution = shortNameOfInstitution,
-                    Discriminator = discriminator,
-                    Id = id,
-                    ParentId = parentId
-                });
+                    long educationOrganizationId = Convert("educationorganizationid");
+                    var nameOfInstitution = reader.GetString(reader.GetOrdinal("nameofinstitution"));
+                    var shortNameOfInstitutionOrdinal = reader.GetOrdinal("shortnameofinstitution");
+                    string? shortNameOfInstitution = await reader.IsDBNullAsync(shortNameOfInstitutionOrdinal)
+                        ? null
+                        : reader.GetString(shortNameOfInstitutionOrdinal);
+                    var discriminator = reader.GetString(reader.GetOrdinal("discriminator"));
+                    var id = reader.GetGuid(reader.GetOrdinal("id"));
+                    long? parentId = await reader.IsDBNullAsync(reader.GetOrdinal("parentid"))
+                        ? null
+                        : Convert("parentid");
+
+                    results.Add(new EducationOrganizationResult
+                    {
+                        EducationOrganizationId = educationOrganizationId,
+                        NameOfInstitution = nameOfInstitution,
+                        ShortNameOfInstitution = shortNameOfInstitution,
+                        Discriminator = discriminator,
+                        Id = id,
+                        ParentId = parentId
+                    });
+                }
             }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    ex,
+                    "Data conversion error while reading education organizations. {Error}",
+                    ex.Message
+                );
+            }
+
         }
         catch (Exception ex)
         {
@@ -259,6 +268,17 @@ public class EducationOrganizationService(
         finally
         {
             await reader.CloseAsync();
+        }
+
+        long Convert(string columnName)
+        {
+            var value = reader[columnName]?.ToString();
+
+            if (!long.TryParse(value, out var educationOrganizationId))
+            {
+                throw new InvalidOperationException($"Invalid {columnName} value: {value}");
+            }
+            return educationOrganizationId;
         }
 
         return results;
