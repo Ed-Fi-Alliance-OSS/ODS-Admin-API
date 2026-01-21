@@ -11,24 +11,43 @@ public static class QuartzJobScheduler
 {
     public static async Task ScheduleJob<TJob>(
         IScheduler scheduler,
-        string jobId,
+        JobKey jobKey,
         IDictionary<string, object> jobData,
         bool startImmediately = true,
         TimeSpan? interval = null)
         where TJob : IJob
     {
         var job = JobBuilder.Create<TJob>()
-            .WithIdentity(jobId)
+            .WithIdentity(jobKey)
             .UsingJobData([.. jobData])
             .Build();
+
+        // Check if job already exists or is running
+        var existingJob = await scheduler.GetJobDetail(jobKey);
+        if (existingJob != null)
+        {
+            // Optionally, check if a trigger is currently running for this job
+            var triggers = await scheduler.GetTriggersOfJob(jobKey);
+            foreach (var existingTrigger in triggers)
+            {
+                var state = await scheduler.GetTriggerState(existingTrigger.Key);
+                if (state == TriggerState.Normal || state == TriggerState.Blocked)
+                {
+                    // Job is already scheduled or running
+                    return;
+                }
+            }
+        }
 
         ITrigger trigger;
         if (startImmediately)
         {
+            job.JobDataMap.Put(JobConstants.JobTypeKey, JobType.AdHoc);
             trigger = TriggerBuilder.Create().StartNow().Build();
         }
         else if (interval.HasValue)
         {
+            job.JobDataMap.Put(JobConstants.JobTypeKey, JobType.Scheduled);
             trigger = TriggerBuilder.Create()
                 .StartNow()
                 .WithSimpleSchedule(x => x.WithInterval(interval.Value).RepeatForever())

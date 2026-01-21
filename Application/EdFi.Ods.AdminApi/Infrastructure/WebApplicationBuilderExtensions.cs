@@ -12,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
@@ -24,6 +25,7 @@ using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
@@ -580,6 +582,8 @@ public static class WebApplicationBuilderExtensions
     {
         webApplicationBuilder.Services.AddQuartz();
         webApplicationBuilder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+        webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
+        webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
     }
 
     private enum HttpVerbOrder

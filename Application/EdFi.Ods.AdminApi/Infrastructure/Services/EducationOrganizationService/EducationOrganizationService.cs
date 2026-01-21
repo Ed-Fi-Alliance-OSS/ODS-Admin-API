@@ -31,11 +31,32 @@ public class EducationOrganizationService(
     IUsersContext usersContext,
     AdminApiDbContext adminApiDbContext,
     ISymmetricStringEncryptionProvider encryptionProvider,
-    IConfiguration configuration
+    IConfiguration configuration,
+    ILogger<EducationOrganizationService> logger
         ) : IEducationOrganizationService
 {
-    private const string AllEdorgStoredProcSqlServer = "GetEducationOrganizations";
-    private const string AllEdorgStoredProcPostgres = "get_education_organizations";
+    private const string AllEdorgQuery = @"
+       SELECT
+       edorg.educationorganizationid,
+       edorg.nameofinstitution,
+       edorg.shortnameofinstitution,
+       edorg.discriminator,
+       edorg.id,
+       COALESCE(scl.localeducationagencyid, lea.parentlocaleducationagencyid, lea.educationservicecenterid, lea.stateeducationagencyid, esc.stateeducationagencyid) AS parentid
+       FROM
+       edfi.educationorganization edorg
+       LEFT JOIN edfi.school scl
+       ON
+       edorg.educationorganizationid = scl.schoolid
+       LEFT JOIN edfi.localeducationagency lea
+       ON
+       edorg.educationorganizationid = lea.localeducationagencyid
+       LEFT JOIN edfi.educationservicecenter esc
+       on
+       edorg.educationorganizationid = esc.educationservicecenterid
+       WHERE edorg.discriminator in
+       ('edfi.StateEducationAgency', 'edfi.EducationServiceCenter', 'edfi.LocalEducationAgency', 'edfi.School');
+   ";
 
     public async Task Execute(string? tenantName)
     {
@@ -47,15 +68,21 @@ public class EducationOrganizationService(
         {
             var tenants = await GetTenantsAsync();
             var tenantConfigurations = tenantConfigurationProvider.Get();
+            List<TenantConfiguration>? tenantsWithConfigurations = null;
 
-            var tenantsWithConfiguration = tenants
+            tenantsWithConfigurations = [.. tenants
                 .Where(tenant => tenant.TenantName is not null &&
-                                 tenant.TenantName.Equals(tenantName, StringComparison.OrdinalIgnoreCase) &&
                                  tenantConfigurations.TryGetValue(tenant.TenantName, out var config) &&
                                  config is not null)
-                .Select(tenant => tenantConfigurations[tenant.TenantName!]);
+                .Select(tenant => tenantConfigurations[tenant.TenantName!])];
 
-            foreach (var tenantConfiguration in tenantsWithConfiguration)
+            if (!string.IsNullOrEmpty(tenantName))
+            {
+                tenantsWithConfigurations = [.. tenantsWithConfigurations.Where(tc => !string.IsNullOrEmpty(tc.TenantIdentifier)
+                && tc.TenantIdentifier.Equals(tenantName, StringComparison.OrdinalIgnoreCase))];
+            }
+
+            foreach (var tenantConfiguration in tenantsWithConfigurations)
             {
                 await ProcessTenantConfiguration(tenantConfiguration, encryptionKey, databaseEngine);
             }
@@ -106,60 +133,65 @@ public class EducationOrganizationService(
 
         foreach (var odsInstance in odsInstances)
         {
-            encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString);
-            var connectionString = decryptedConnectionString ?? throw new InvalidOperationException("Decrypted connection string can't be null.");
-
-            var edorgs = await GetEducationOrganizationsAsync(connectionString, databaseEngine);
-
-            Dictionary<long, EducationOrganization>? existingEducationOrganizations;
-
-            existingEducationOrganizations = await adminApiDbContext.EducationOrganizations
-            .Where(e => e.InstanceId == odsInstance.OdsInstanceId)
-            .ToDictionaryAsync(e => e.EducationOrganizationId);
-
-            var currentSourceIds = new HashSet<long>(edorgs.Select(e => e.EducationOrganizationId));
-
-            foreach (var edorg in edorgs)
+            if (encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString))
             {
-                if (existingEducationOrganizations.TryGetValue(edorg.EducationOrganizationId, out var existing))
+
+                var edorgs = await GetEducationOrganizationsAsync(decryptedConnectionString, databaseEngine);
+
+                Dictionary<long, EducationOrganization>? existingEducationOrganizations;
+
+                existingEducationOrganizations = await adminApiDbContext.EducationOrganizations
+                .Where(e => e.InstanceId == odsInstance.OdsInstanceId)
+                .ToDictionaryAsync(e => e.EducationOrganizationId);
+
+                var currentSourceIds = new HashSet<long>(edorgs.Select(e => e.EducationOrganizationId));
+
+                foreach (var edorg in edorgs)
                 {
-                    existing.NameOfInstitution = edorg.NameOfInstitution;
-                    existing.ShortNameOfInstitution = edorg.ShortNameOfInstitution;
-                    existing.Discriminator = edorg.Discriminator;
-                    existing.ParentId = edorg.ParentId;
-                    existing.LastModifiedDate = DateTime.UtcNow;
-                    existing.LastRefreshed = DateTime.UtcNow;
-                }
-                else
-                {
-                    adminApiDbContext.EducationOrganizations.Add(new EducationOrganization
+                    if (existingEducationOrganizations.TryGetValue(edorg.EducationOrganizationId, out var existing))
                     {
-                        EducationOrganizationId = edorg.EducationOrganizationId,
-                        NameOfInstitution = edorg.NameOfInstitution,
-                        ShortNameOfInstitution = edorg.ShortNameOfInstitution,
-                        Discriminator = edorg.Discriminator,
-                        ParentId = edorg.ParentId,
-                        InstanceId = odsInstance.OdsInstanceId,
-                        LastModifiedDate = DateTime.UtcNow,
-                        LastRefreshed = DateTime.UtcNow
-                    });
+                        existing.NameOfInstitution = edorg.NameOfInstitution;
+                        existing.ShortNameOfInstitution = edorg.ShortNameOfInstitution;
+                        existing.Discriminator = edorg.Discriminator;
+                        existing.ParentId = edorg.ParentId;
+                        existing.LastModifiedDate = DateTime.UtcNow;
+                        existing.LastRefreshed = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        adminApiDbContext.EducationOrganizations.Add(new EducationOrganization
+                        {
+                            EducationOrganizationId = edorg.EducationOrganizationId,
+                            NameOfInstitution = edorg.NameOfInstitution,
+                            ShortNameOfInstitution = edorg.ShortNameOfInstitution,
+                            Discriminator = edorg.Discriminator,
+                            ParentId = edorg.ParentId,
+                            InstanceId = odsInstance.OdsInstanceId,
+                            InstanceName = odsInstance.Name,
+                            LastModifiedDate = DateTime.UtcNow,
+                            LastRefreshed = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                var educationOrganizationsToDelete = existingEducationOrganizations.Values
+                    .Where(e => !currentSourceIds.Contains(e.EducationOrganizationId))
+                    .ToList();
+
+                if (educationOrganizationsToDelete.Count > 0)
+                {
+                    adminApiDbContext.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
                 }
             }
-
-            var educationOrganizationsToDelete = existingEducationOrganizations.Values
-                .Where(e => !currentSourceIds.Contains(e.EducationOrganizationId))
-                .ToList();
-
-            if (educationOrganizationsToDelete.Count > 0)
+            else
             {
-                adminApiDbContext.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
+                logger.LogError("Failed to decrypt connection string for ODS Instance ID {OdsInstanceId}. Skipping education organization synchronization for this instance.", odsInstance.OdsInstanceId);
             }
-
             await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
         }
     }
 
-    public virtual async Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
+    public virtual async Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string? connectionString, string databaseEngine)
     {
         if (databaseEngine is null)
             throw new InvalidOperationException("Database engine must be specified.");
@@ -168,10 +200,7 @@ public class EducationOrganizationService(
         {
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
-            using var command = new SqlCommand(AllEdorgStoredProcSqlServer, connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure
-            };
+            using var command = new SqlCommand(AllEdorgQuery, connection);
             using var reader = await command.ExecuteReaderAsync();
             return await ReadEducationOrganizationsFromDbDataReader(reader);
         }
@@ -179,7 +208,7 @@ public class EducationOrganizationService(
         {
             using var connection = new Npgsql.NpgsqlConnection(connectionString);
             await connection.OpenAsync();
-            using var command = new Npgsql.NpgsqlCommand($"SELECT * FROM {AllEdorgStoredProcPostgres}()", connection);
+            using var command = new Npgsql.NpgsqlCommand(AllEdorgQuery, connection);
             using var reader = await command.ExecuteReaderAsync();
             return await ReadEducationOrganizationsFromDbDataReader(reader);
         }
@@ -189,32 +218,47 @@ public class EducationOrganizationService(
         }
     }
 
-    private static async Task<List<EducationOrganizationResult>> ReadEducationOrganizationsFromDbDataReader(DbDataReader reader)
+    private async Task<List<EducationOrganizationResult>> ReadEducationOrganizationsFromDbDataReader(DbDataReader reader)
     {
         var results = new List<EducationOrganizationResult>();
 
-        while (await reader.ReadAsync())
+        try
         {
-            var educationOrganizationId = reader.GetInt64(reader.GetOrdinal("educationorganizationid"));
-            var nameOfInstitution = reader.GetString(reader.GetOrdinal("nameofinstitution"));
-            var shortNameOfInstitutionOrdinal = reader.GetOrdinal("shortnameofinstitution");
-            string? shortNameOfInstitution = await reader.IsDBNullAsync(shortNameOfInstitutionOrdinal)
-                ? null
-                : reader.GetString(shortNameOfInstitutionOrdinal);
-            var discriminator = reader.GetString(reader.GetOrdinal("discriminator"));
-            var id = reader.GetGuid(reader.GetOrdinal("id"));
-            var parentIdOrdinal = reader.GetOrdinal("parentid");
-            long? parentId = await reader.IsDBNullAsync(parentIdOrdinal) ? null : reader.GetInt64(parentIdOrdinal);
-
-            results.Add(new EducationOrganizationResult
+            while (await reader.ReadAsync())
             {
-                EducationOrganizationId = educationOrganizationId,
-                NameOfInstitution = nameOfInstitution,
-                ShortNameOfInstitution = shortNameOfInstitution,
-                Discriminator = discriminator,
-                Id = id,
-                ParentId = parentId
-            });
+                var educationOrganizationId = Convert.ToInt64(
+                            reader.GetInt32(reader.GetOrdinal("educationorganizationid"))
+                        );
+                var nameOfInstitution = reader.GetString(reader.GetOrdinal("nameofinstitution"));
+                var shortNameOfInstitutionOrdinal = reader.GetOrdinal("shortnameofinstitution");
+                string? shortNameOfInstitution = await reader.IsDBNullAsync(shortNameOfInstitutionOrdinal)
+                    ? null
+                    : reader.GetString(shortNameOfInstitutionOrdinal);
+                var discriminator = reader.GetString(reader.GetOrdinal("discriminator"));
+                var id = reader.GetGuid(reader.GetOrdinal("id"));
+                var parentIdOrdinal = reader.GetOrdinal("parentid");
+                long? parentId = await reader.IsDBNullAsync(parentIdOrdinal) ? null : Convert.ToInt64(
+                            reader.GetInt32(parentIdOrdinal)
+                        );
+
+                results.Add(new EducationOrganizationResult
+                {
+                    EducationOrganizationId = educationOrganizationId,
+                    NameOfInstitution = nameOfInstitution,
+                    ShortNameOfInstitution = shortNameOfInstitution,
+                    Discriminator = discriminator,
+                    Id = id,
+                    ParentId = parentId
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error reading education organizations from database. {Error}", ex.Message);
+        }
+        finally
+        {
+            await reader.CloseAsync();
         }
 
         return results;

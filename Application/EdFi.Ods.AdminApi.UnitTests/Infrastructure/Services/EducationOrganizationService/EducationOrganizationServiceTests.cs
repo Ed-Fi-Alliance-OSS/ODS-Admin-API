@@ -17,6 +17,7 @@ using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -34,6 +35,7 @@ internal class EducationOrganizationServiceTests
     private ISymmetricStringEncryptionProvider _encryptionProvider = null!;
     private AppSettings _appSettings = null!;
     private string _encryptionKey = null!;
+    private ILogger<EducationOrganizationServiceImpl> _logger = null!;
 
     [SetUp]
     public void SetUp()
@@ -52,6 +54,7 @@ internal class EducationOrganizationServiceTests
         };
 
         A.CallTo(() => _options.Value).Returns(_appSettings);
+        _logger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
     }
 
     [Test]
@@ -74,7 +77,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
             .ContinueWith(t => t.Result.Message.ShouldBe("EncryptionKey can't be null."));
@@ -99,7 +102,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         await Should.ThrowAsync<Exception>(async () => await service.Execute(null));
     }
@@ -132,7 +135,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         string decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
@@ -141,8 +144,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
-            .ContinueWith(t => t.Result.Message.ShouldBe("Decrypted connection string can't be null."));
+        Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -212,7 +214,8 @@ internal class EducationOrganizationServiceTests
             adminApiDbContext,
             _encryptionProvider,
             A.Fake<IConfiguration>(),
-            () => processOdsInstanceCallCount++);
+            () => processOdsInstanceCallCount++,
+            _logger);
 
         await service.Execute("tenant1");
 
@@ -233,8 +236,8 @@ internal class EducationOrganizationServiceTests
             AdminApiDbContext adminApiDbContext,
             ISymmetricStringEncryptionProvider encryptionProvider,
             IConfiguration configuration,
-            Action onProcessOdsInstance)
-            : base(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration)
+            Action onProcessOdsInstance, ILogger<EducationOrganizationServiceImpl> logger)
+            : base(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration, logger)
         {
             _onProcessOdsInstance = onProcessOdsInstance;
         }
@@ -267,7 +270,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null));
         exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\". Supported engines: SqlServer, and PostgreSql.");
@@ -303,7 +306,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         string decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
@@ -312,7 +315,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null));
+        Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -368,7 +371,7 @@ internal class EducationOrganizationServiceTests
             adminApiDbContext,
             _encryptionProvider,
             A.Fake<IConfiguration>(),
-            () => processOdsInstanceCallCount++);
+            () => processOdsInstanceCallCount++, _logger);
 
         await service.Execute("tenant1");
 
@@ -399,7 +402,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         await service.Execute(null);
 
@@ -445,7 +448,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>());
+            A.Fake<IConfiguration>(), _logger);
 
         await service.Execute(null);
 
