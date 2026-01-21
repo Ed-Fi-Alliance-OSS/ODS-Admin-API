@@ -11,7 +11,7 @@ namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 public class EducationOrganizationModel
 {
     [SwaggerSchema(Description = "Education organization identifier", Nullable = false)]
-    public int EducationOrganizationId { get; set; }
+    public long EducationOrganizationId { get; set; }
 
     [SwaggerSchema(Description = "Name of the education organization", Nullable = false)]
     public string? NameOfInstitution { get; set; }
@@ -23,7 +23,7 @@ public class EducationOrganizationModel
     public string? Discriminator { get; set; }
 
     [SwaggerSchema(Description = "Parent education organization identifier")]
-    public int? ParentId { get; set; }
+    public long? ParentId { get; set; }
 
     [SwaggerSchema(Description = "ODS instance identifier", Nullable = false)]
     public int InstanceId { get; set; }

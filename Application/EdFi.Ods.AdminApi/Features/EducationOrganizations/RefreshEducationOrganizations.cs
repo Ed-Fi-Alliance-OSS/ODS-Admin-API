@@ -5,6 +5,7 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
@@ -25,28 +26,55 @@ public class RefreshEducationOrganizations : IFeature
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/educationOrganizations/refresh/{instanceId}", RefreshEducationOrganizationsByInstance)
+            .MapPost(endpoints, "/educationOrganizations/refresh/{tenantName}", RefreshEducationOrganizationsByTenant)
             .WithSummaryAndDescription(
-                "Refreshes education organizations for a specific ODS instance",
-                "Triggers a refresh of education organization data for the specified ODS instance"
+                "Refreshes education organizations for a specific tenant",
+                "Triggers a refresh of education organization data for the specified tenant"
             )
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
+        [FromServices] IEducationOrganizationService educationOrganizationService,
         [FromServices] ILogger<RefreshEducationOrganizations> logger)
     {
-        // TODO: Implement service layer integration when available
-        // This should trigger the RefreshEducationOrganizationCommand for all instances
-
-        return Results.Accepted();
+        try
+        {
+            await educationOrganizationService.Execute(null);
+            logger.LogInformation("Successfully triggered refresh for all education organizations");
+            return Results.Accepted();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error refreshing education organizations");
+            return Results.Problem(
+                title: "Error refreshing education organizations",
+                detail: ex.Message,
+                statusCode: 500
+            );
+        }
     }
 
-    public static async Task<IResult> RefreshEducationOrganizationsByInstance(
+    public static async Task<IResult> RefreshEducationOrganizationsByTenant(
+        [FromServices] IEducationOrganizationService educationOrganizationService,
         [FromServices] ILogger<RefreshEducationOrganizations> logger,
-        int instanceId)
+        string tenantName)
     {
-        return Results.Accepted();
+        try
+        {
+            await educationOrganizationService.Execute(tenantName);
+            logger.LogInformation("Successfully triggered refresh for tenant: {TenantName}", tenantName);
+            return Results.Accepted();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error refreshing education organizations for tenant: {TenantName}", tenantName);
+            return Results.Problem(
+                title: $"Error refreshing education organizations for tenant: {tenantName}",
+                detail: ex.Message,
+                statusCode: 500
+            );
+        }
     }
 }

@@ -3,11 +3,12 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 
@@ -35,23 +36,57 @@ public class ReadEducationOrganizations : IFeature
     }
 
     public static async Task<IResult> GetEducationOrganizations(
-        [FromServices] ILogger<ReadEducationOrganizations> logger)
+        [FromServices] AdminApiDbContext context,
+        [FromServices] IUsersContext usersContext)
     {
-
-        // TODO: Implement service layer integration when available
-        // For now, return empty list as placeholder
-        var educationOrganizations = new List<EducationOrganizationModel>();
+        var educationOrganizations = await context.EducationOrganizations
+            .Join(
+                usersContext.OdsInstances,
+                edOrg => edOrg.InstanceId,
+                instance => instance.OdsInstanceId,
+                (edOrg, instance) => new EducationOrganizationModel
+                {
+                    EducationOrganizationId = edOrg.EducationOrganizationId,
+                    NameOfInstitution = edOrg.NameOfInstitution,
+                    ShortNameOfInstitution = edOrg.ShortNameOfInstitution,
+                    Discriminator = edOrg.Discriminator,
+                    ParentId = edOrg.ParentId,
+                    InstanceId = edOrg.InstanceId,
+                    InstanceName = instance.Name,
+                    OdsDatabaseName = edOrg.OdsDatabaseName,
+                    LastRefreshed = edOrg.LastRefreshed,
+                    LastModifiedDate = edOrg.LastModifiedDate
+                })
+            .ToListAsync();
 
         return Results.Ok(educationOrganizations);
     }
 
     public static async Task<IResult> GetEducationOrganizationsByInstance(
-        [FromServices] ILogger<ReadEducationOrganizations> logger,
+        [FromServices] AdminApiDbContext context,
+        [FromServices] IUsersContext usersContext,
         int instanceId)
     {
-        // TODO: Implement service layer integration when available
-        // For now, return empty list as placeholder
-        var educationOrganizations = new List<EducationOrganizationModel>();
+        var educationOrganizations = await context.EducationOrganizations
+            .Where(e => e.InstanceId == instanceId)
+            .Join(
+                usersContext.OdsInstances,
+                edOrg => edOrg.InstanceId,
+                instance => instance.OdsInstanceId,
+                (edOrg, instance) => new EducationOrganizationModel
+                {
+                    EducationOrganizationId = edOrg.EducationOrganizationId,
+                    NameOfInstitution = edOrg.NameOfInstitution,
+                    ShortNameOfInstitution = edOrg.ShortNameOfInstitution,
+                    Discriminator = edOrg.Discriminator,
+                    ParentId = edOrg.ParentId,
+                    InstanceId = edOrg.InstanceId,
+                    InstanceName = instance.Name,
+                    OdsDatabaseName = edOrg.OdsDatabaseName,
+                    LastRefreshed = edOrg.LastRefreshed,
+                    LastModifiedDate = edOrg.LastModifiedDate
+                })
+            .ToListAsync();
 
         return Results.Ok(educationOrganizations);
     }
