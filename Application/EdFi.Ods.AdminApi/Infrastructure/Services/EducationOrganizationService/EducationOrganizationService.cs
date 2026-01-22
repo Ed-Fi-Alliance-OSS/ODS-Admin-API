@@ -52,7 +52,7 @@ public class EducationOrganizationService(
        ON
        edorg.educationorganizationid = lea.localeducationagencyid
        LEFT JOIN edfi.educationservicecenter esc
-       on
+       ON
        edorg.educationorganizationid = esc.educationservicecenterid
        WHERE edorg.discriminator in
        ('edfi.StateEducationAgency', 'edfi.EducationServiceCenter', 'edfi.LocalEducationAgency', 'edfi.School');
@@ -68,13 +68,13 @@ public class EducationOrganizationService(
         {
             var tenants = await GetTenantsAsync();
             var tenantConfigurations = tenantConfigurationProvider.Get();
-            List<TenantConfiguration>? tenantsWithConfigurations = null;
 
-            tenantsWithConfigurations = [.. tenants
+            var tenantsWithConfigurations = tenants
                 .Where(tenant => tenant.TenantName is not null &&
                                  tenantConfigurations.TryGetValue(tenant.TenantName, out var config) &&
                                  config is not null)
-                .Select(tenant => tenantConfigurations[tenant.TenantName!])];
+                .Select(tenant => tenantConfigurations[tenant.TenantName!])
+                .ToList();
 
             if (!string.IsNullOrEmpty(tenantName))
             {
@@ -224,9 +224,9 @@ public class EducationOrganizationService(
 
         try
         {
-            try
+            while (await reader.ReadAsync())
             {
-                while (await reader.ReadAsync())
+                try
                 {
                     long educationOrganizationId = Convert("educationorganizationid");
                     var nameOfInstitution = reader.GetString(reader.GetOrdinal("nameofinstitution"));
@@ -250,16 +250,15 @@ public class EducationOrganizationService(
                         ParentId = parentId
                     });
                 }
+                catch (Exception ex)
+                {
+                    logger.LogError(
+                        ex,
+                        "Data conversion error while reading education organizations. {Error}",
+                        ex.Message
+                    );
+                }
             }
-            catch (Exception ex)
-            {
-                logger.LogError(
-                    ex,
-                    "Data conversion error while reading education organizations. {Error}",
-                    ex.Message
-                );
-            }
-
         }
         catch (Exception ex)
         {

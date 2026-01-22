@@ -11,8 +11,16 @@ CREATE TABLE [adminapi].[JobStatuses] (
     [Status] NVARCHAR(50) NOT NULL,
     [ErrorMessage] NVARCHAR(1000) NULL
 );
+END
 
 -- Unique constraint to prevent duplicate JobId
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.key_constraints
+    WHERE [type] = 'UQ'
+      AND [name] = 'UQ_JobStatuses_JobId'
+)
+BEGIN
 ALTER TABLE [adminapi].[JobStatuses]
 ADD CONSTRAINT UQ_JobStatuses_JobId UNIQUE ([JobId]);
 END

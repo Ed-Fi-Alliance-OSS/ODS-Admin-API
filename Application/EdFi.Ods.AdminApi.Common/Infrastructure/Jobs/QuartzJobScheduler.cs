@@ -28,14 +28,11 @@ public static class QuartzJobScheduler
         {
             // Optionally, check if a trigger is currently running for this job
             var triggers = await scheduler.GetTriggersOfJob(jobKey);
-            foreach (var existingTrigger in triggers)
+            var states = await Task.WhenAll(triggers.Select(t => scheduler.GetTriggerState(t.Key)));
+            if (states.Any(state => state == TriggerState.Normal || state == TriggerState.Blocked))
             {
-                var state = await scheduler.GetTriggerState(existingTrigger.Key);
-                if (state == TriggerState.Normal || state == TriggerState.Blocked)
-                {
-                    // Job is already scheduled or running
-                    return;
-                }
+                // Job is already scheduled or running
+                return;
             }
         }
 

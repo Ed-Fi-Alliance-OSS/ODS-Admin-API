@@ -93,8 +93,7 @@ var edOrgsRefreshIntervalInMins = app.Configuration.GetValue<string>(
 
 if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
 {
-    using var scope = app.Services.CreateScope();
-    var schedulerFactory = scope.ServiceProvider.GetRequiredService<ISchedulerFactory>();
+    var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
     var scheduler = await schedulerFactory.GetScheduler();
 
     await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(

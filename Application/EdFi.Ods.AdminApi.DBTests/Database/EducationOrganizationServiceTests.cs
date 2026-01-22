@@ -15,7 +15,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.EntityFrameworkCore;
@@ -124,7 +123,6 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         transaction.Commit();
     }
 
-    // Replace the incorrect ILogger<EducationOrganizationService> logger with the correct ILogger interface
     private class TestableEducationOrganizationService(
         ITenantsService tenantsService,
         IOptions<AppSettings> options,
