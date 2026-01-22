@@ -99,7 +99,7 @@ if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
     await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
         scheduler,
         jobKey: new JobKey(
-            $"{JobConstants.RefreshEducationOrganizationsJobName}-{DateTime.UtcNow:yyyyMMddHH}"
+            $"{JobConstants.RefreshEducationOrganizationsJobName}-{DateTime.UtcNow:yyyyMMddHHmmss}"
         ),
         jobData: new Dictionary<string, object>(),
         startImmediately: false,
