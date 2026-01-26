@@ -16,7 +16,7 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs
         public async Task Execute(IJobExecutionContext context)
         {
             var jobId = context.JobDetail.Key.Name;
-            var runId = $"{jobId}-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            var runId = $"{jobId}-{context.FireInstanceId}";
             try
             {
                 await _jobStatusService.SetStatusAsync(runId, QuartzJobStatus.InProgress);
@@ -25,7 +25,7 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Job {JobId} failed.", runId);
+                _logger.LogError(ex, "Job {JobId} with Run {RunId} failed.", jobId, runId);
                 await _jobStatusService.SetStatusAsync(runId, QuartzJobStatus.Error, ex.Message);
             }
         }

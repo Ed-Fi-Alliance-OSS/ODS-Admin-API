@@ -98,7 +98,7 @@ if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
 
     await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
         scheduler,
-        jobKey: new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}"),
+        jobKey: new JobKey(JobConstants.RefreshEducationOrganizationsJobName),
         jobData: new Dictionary<string, object>(),
         startImmediately: false,
         interval: TimeSpan.FromMinutes(refreshInterval)

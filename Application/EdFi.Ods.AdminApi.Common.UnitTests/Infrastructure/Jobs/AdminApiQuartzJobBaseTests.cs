@@ -7,6 +7,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Quartz;
+using Shouldly;
 
 namespace EdFi.Ods.AdminApi.Common.UnitTests.Infrastructure.Jobs;
 
@@ -34,14 +35,23 @@ public class AdminApiQuartzJobBaseTests
     {
         // Arrange
         var job = new TestQuartzJob(_logger, _jobStatusService);
+        string? capturedId = null;
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.InProgress, null))
+            .Invokes((string id, QuartzJobStatus status, string? message) => capturedId = id);
 
         // Act
         await job.Execute(_jobExecutionContext);
 
         // Assert
-        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.InProgress, null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Completed, null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Error, A<string>._)).MustNotHaveHappened();
+        // Ensure the id was captured and matches the expected format
+        capturedId.ShouldNotBeNull();
+        capturedId!.ShouldStartWith("TestJob-");
+        // Ensure InProgress was set with the captured id
+        A.CallTo(() => _jobStatusService.SetStatusAsync(capturedId, QuartzJobStatus.InProgress, null)).MustHaveHappenedOnceExactly();
+        // Ensure Completed was set with the same id
+        A.CallTo(() => _jobStatusService.SetStatusAsync(capturedId, QuartzJobStatus.Completed, null)).MustHaveHappenedOnceExactly();
+        // Ensure Error was never set with the same id
+        A.CallTo(() => _jobStatusService.SetStatusAsync(capturedId, QuartzJobStatus.Error, A<string>._)).MustNotHaveHappened();
     }
 
     [Test]
@@ -49,16 +59,22 @@ public class AdminApiQuartzJobBaseTests
     {
         // Arrange
         var job = new TestQuartzJob(_logger, _jobStatusService, throwOnExecute: true);
+        string? capturedId = null;
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.InProgress, null))
+            .Invokes((string id, QuartzJobStatus status, string? message) => capturedId = id);
 
         // Act
         await job.Execute(_jobExecutionContext);
 
         // Assert
-        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")),
-                                QuartzJobStatus.InProgress,
-                                null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Completed, null)).MustNotHaveHappened();
-        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Error, A<string>.That.Contains("Test exception"))).MustHaveHappenedOnceExactly();
+        capturedId.ShouldNotBeNull();
+        capturedId!.ShouldStartWith("TestJob-");
+        // Ensure InProgress was set with the captured id
+        A.CallTo(() => _jobStatusService.SetStatusAsync(capturedId, QuartzJobStatus.InProgress, null)).MustHaveHappenedOnceExactly();
+        // Ensure Completed was never set with the same id
+        A.CallTo(() => _jobStatusService.SetStatusAsync(capturedId, QuartzJobStatus.Completed, null)).MustNotHaveHappened();
+        // Ensure Error was set with the same id and correct message
+        A.CallTo(() => _jobStatusService.SetStatusAsync(capturedId, QuartzJobStatus.Error, A<string>.That.Contains("Test exception"))).MustHaveHappenedOnceExactly();
 
     }
 
