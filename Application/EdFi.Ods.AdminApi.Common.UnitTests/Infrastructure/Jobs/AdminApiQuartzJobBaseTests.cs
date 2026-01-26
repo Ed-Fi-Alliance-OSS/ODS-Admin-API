@@ -39,9 +39,9 @@ public class AdminApiQuartzJobBaseTests
         await job.Execute(_jobExecutionContext);
 
         // Assert
-        A.CallTo(() => _jobStatusService.SetStatusAsync("TestJob", QuartzJobStatus.InProgress, null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _jobStatusService.SetStatusAsync("TestJob", QuartzJobStatus.Completed, null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _jobStatusService.SetStatusAsync("TestJob", QuartzJobStatus.Error, A<string>._)).MustNotHaveHappened();
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.InProgress, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Completed, null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Error, A<string>._)).MustNotHaveHappened();
     }
 
     [Test]
@@ -54,9 +54,11 @@ public class AdminApiQuartzJobBaseTests
         await job.Execute(_jobExecutionContext);
 
         // Assert
-        A.CallTo(() => _jobStatusService.SetStatusAsync("TestJob", QuartzJobStatus.InProgress, null)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _jobStatusService.SetStatusAsync("TestJob", QuartzJobStatus.Completed, null)).MustNotHaveHappened();
-        A.CallTo(() => _jobStatusService.SetStatusAsync("TestJob", QuartzJobStatus.Error, A<string>.That.Contains("Test exception"))).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")),
+                                QuartzJobStatus.InProgress,
+                                null)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Completed, null)).MustNotHaveHappened();
+        A.CallTo(() => _jobStatusService.SetStatusAsync(A<string>.That.Matches(id => id.StartsWith("TestJob-")), QuartzJobStatus.Error, A<string>.That.Contains("Test exception"))).MustHaveHappenedOnceExactly();
 
     }
 
@@ -89,4 +91,3 @@ public class AdminApiQuartzJobBaseTests
         }
     }
 }
-

@@ -16,16 +16,17 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs
         public async Task Execute(IJobExecutionContext context)
         {
             var jobId = context.JobDetail.Key.Name;
+            var runId = $"{jobId}-{DateTime.UtcNow:yyyyMMddHHmmss}";
             try
             {
-                await _jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.InProgress);
+                await _jobStatusService.SetStatusAsync(runId, QuartzJobStatus.InProgress);
                 await ExecuteJobAsync(context);
-                await _jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Completed);
+                await _jobStatusService.SetStatusAsync(runId, QuartzJobStatus.Completed);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Job {JobId} failed.", jobId);
-                await _jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Error, ex.Message);
+                _logger.LogError(ex, "Job {JobId} failed.", runId);
+                await _jobStatusService.SetStatusAsync(runId, QuartzJobStatus.Error, ex.Message);
             }
         }
 
