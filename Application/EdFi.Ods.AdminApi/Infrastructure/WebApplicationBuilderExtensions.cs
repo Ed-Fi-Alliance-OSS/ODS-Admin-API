@@ -12,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
@@ -24,6 +25,7 @@ using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
@@ -35,6 +37,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
+using Quartz;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -93,6 +96,9 @@ public static class WebApplicationBuilderExtensions
             opt.ReportApiVersions = true;
             opt.AssumeDefaultVersionWhenUnspecified = false;
         });
+
+        // Add Quartz services
+        RegisterQuartzServices(webApplicationBuilder);
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));
         var issuer = webApplicationBuilder.Configuration.GetValue<string>("Authentication:IssuerUrl");
@@ -570,6 +576,14 @@ public static class WebApplicationBuilderExtensions
                 });
             }
         });
+    }
+
+    private static void RegisterQuartzServices(WebApplicationBuilder webApplicationBuilder)
+    {
+        webApplicationBuilder.Services.AddQuartz();
+        webApplicationBuilder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+        webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
+        webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
     }
 
     private enum HttpVerbOrder

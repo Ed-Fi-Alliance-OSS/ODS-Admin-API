@@ -5,21 +5,18 @@
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
-public class AdminApiDbContext : DbContext
+public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, IConfiguration configuration) : DbContext(options)
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration _configuration = configuration;
 
-    public AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, IConfiguration configuration)
-        : base(options)
-    {
-        _configuration = configuration;
-    }
+    public DbSet<JobStatus> JobStatuses { get; set; }
 
     public DbSet<EducationOrganization> EducationOrganizations { get; set; }
 
@@ -33,6 +30,7 @@ public class AdminApiDbContext : DbContext
         modelBuilder.Entity<ApiAuthorization>().ToTable("Authorizations").HasKey(a => a.Id);
         modelBuilder.Entity<ApiToken>().ToTable("Tokens").HasKey(t => t.Id);
         modelBuilder.Entity<EducationOrganization>().ToTable("EducationOrganizations").HasKey(t => t.Id);
+        modelBuilder.Entity<JobStatus>().ToTable("JobStatuses").HasKey(t => t.Id);
 
         var engine = _configuration.Get("AppSettings:DatabaseEngine", "SqlServer");
         modelBuilder.ApplyDatabaseServerSpecificConventions(engine);

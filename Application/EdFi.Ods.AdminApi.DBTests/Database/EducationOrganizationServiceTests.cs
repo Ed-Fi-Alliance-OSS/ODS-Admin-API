@@ -15,11 +15,11 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -37,8 +37,8 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     private AppSettings _appSettings;
     private string _encryptionKey;
     private IConfiguration _configuration;
-    //private AdminApiDbContext _adminApiDbContext;
     private IUsersContext _usersContext;
+    private ILogger<EducationOrganizationService> _logger;
 
 
     [SetUp]
@@ -68,6 +68,8 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         _options = Options.Create(_appSettings);
 
         _usersContext = new SqlServerUsersContext(GetDbContextOptions());
+        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+        _logger = loggerFactory.CreateLogger<EducationOrganizationService>();
     }
 
     [Test]
@@ -98,7 +100,9 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _usersContext,
                 adminApiDbContext,
                 _encryptionProvider.Object,
-                _configuration);
+                _logger,
+                _configuration
+                );
 
             // Since we don't have actual EdFi ODS tables in the test database,
             // we'll test that the service executes without errors
@@ -126,7 +130,8 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         IUsersContext usersContext,
         AdminApiDbContext adminApiDbContext,
         ISymmetricStringEncryptionProvider encryptionProvider,
-        IConfiguration configuration) : EducationOrganizationService(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration)
+        ILogger<EducationOrganizationService> logger,
+        IConfiguration configuration) : EducationOrganizationService(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration, logger)
     {
         public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
@@ -200,6 +205,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _usersContext,
                 _adminApiDbContext,
                 _encryptionProvider.Object,
+                _logger,
                 _configuration);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
@@ -256,7 +262,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _tenantConfigurationProvider.Object,
                 _usersContext,
                 _adminApiDbContext,
-                _encryptionProvider.Object, _configuration);
+                _encryptionProvider.Object, _logger, _configuration);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
@@ -283,7 +289,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _tenantConfigurationProvider.Object,
                 _usersContext,
                 _adminApiDbContext,
-                _encryptionProvider.Object, _configuration);
+                _encryptionProvider.Object, _logger, _configuration);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
                 service.Execute(null, null).GetAwaiter().GetResult());
@@ -305,7 +311,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _tenantConfigurationProvider.Object,
                 _usersContext,
                 _adminApiDbContext,
-                _encryptionProvider.Object, _configuration);
+                _encryptionProvider.Object, _logger, _configuration);
 
             Should.Throw<Exception>(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
@@ -324,7 +330,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _tenantConfigurationProvider.Object,
                 _usersContext,
                 _adminApiDbContext,
-                _encryptionProvider.Object, _configuration);
+                _encryptionProvider.Object, _logger, _configuration);
 
             var exception = Should.Throw<NotSupportedException>(() =>
                 service.Execute(null, null).GetAwaiter().GetResult());
@@ -352,6 +358,8 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(false);
 
+        var mockLogger = new Mock<ILogger<EducationOrganizationService>>();
+
         AdminApiTransaction(_adminApiDbContext =>
         {
             var service = new EducationOrganizationService(
@@ -360,12 +368,20 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _tenantConfigurationProvider.Object,
                 _usersContext,
                 _adminApiDbContext,
-                _encryptionProvider.Object, _configuration);
+                _encryptionProvider.Object, _configuration, mockLogger.Object);
 
-            var exception = Should.Throw<InvalidOperationException>(() =>
-                service.Execute(null, null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
 
-            exception.Message.ShouldBe("Decrypted connection string can't be null.");
+            var error = $"Failed to decrypt connection string for ODS Instance ID {odsInstance.OdsInstanceId}. Skipping education organization synchronization for this instance.";
+
+            mockLogger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(error)),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.AtLeastOnce);
         });
     }
 
@@ -403,7 +419,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _tenantConfigurationProvider.Object,
                 _usersContext,
                 _adminApiDbContext,
-                _encryptionProvider.Object, _configuration);
+                _encryptionProvider.Object, _logger, _configuration);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
@@ -419,7 +435,6 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     {
         if (_usersContext != null)
         {
-            // Replace DisposeAsync with synchronous Dispose since IUsersContext does not support DisposeAsync
             _usersContext.Dispose();
             _usersContext = null;
         }

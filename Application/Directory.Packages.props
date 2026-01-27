@@ -23,6 +23,8 @@
     <PackageVersion Include="NUnit" Version="4.1.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.3.0" />
+    <PackageVersion Include="Quartz" Version="3.15.1" />
+    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.1" />
     <PackageVersion Include="Respawn" Version="4.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <!-- Ed-Fi -->
