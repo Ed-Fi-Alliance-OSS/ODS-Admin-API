@@ -14,19 +14,19 @@ public class EducationOrganizationModel
     public int InstanceId { get; set; }
 
     [SwaggerSchema(Description = "ODS instance name", Nullable = false)]
-    public string? InstanceName { get; set; }
+    public string InstanceName { get; set; } = string.Empty;
 
     [SwaggerSchema(Description = "Education organization identifier", Nullable = false)]
     public long EducationOrganizationId { get; set; }
 
     [SwaggerSchema(Description = "Name of the education organization", Nullable = false)]
-    public string? NameOfInstitution { get; set; }
+    public string NameOfInstitution { get; set; } = string.Empty;
 
     [SwaggerSchema(Description = "Short name of the education organization")]
     public string? ShortNameOfInstitution { get; set; }
 
     [SwaggerSchema(Description = "Type of education organization (e.g., LocalEducationAgency, School)", Nullable = false)]
-    public string? Discriminator { get; set; }
+    public string Discriminator { get; set; } = string.Empty;
 
     [SwaggerSchema(Description = "Parent education organization identifier")]
     public long? ParentId { get; set; }

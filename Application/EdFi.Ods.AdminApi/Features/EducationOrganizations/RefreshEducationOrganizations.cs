@@ -7,6 +7,7 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -32,13 +33,14 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for a specific ODS instance",
                 "Triggers a refresh of education organization data for the specified ODS instance"
             )
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithRouteOptions(b => b
+                .WithResponseCode(202)
+                .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
         [FromServices] IEducationOrganizationService educationOrganizationService,
-        [FromServices] ILogger<RefreshEducationOrganizations> logger,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider)
     {
         var tenantConfiguration = tenantConfigurationProvider.Get();
@@ -54,10 +56,12 @@ public class RefreshEducationOrganizations : IFeature
 
     public static async Task<IResult> RefreshEducationOrganizationsByInstance(
         [FromServices] IEducationOrganizationService educationOrganizationService,
-        [FromServices] ILogger<RefreshEducationOrganizations> logger,
+        [FromServices] IGetOdsInstanceQuery getOdsInstanceQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         int instanceId)
     {
+        getOdsInstanceQuery.Execute(instanceId);
+
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 

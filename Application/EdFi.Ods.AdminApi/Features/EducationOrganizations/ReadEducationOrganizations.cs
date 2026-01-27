@@ -47,9 +47,12 @@ public class ReadEducationOrganizations : IFeature
 
     public static async Task<IResult> GetEducationOrganizationsByInstance(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
+        [FromServices] IGetOdsInstanceQuery getOdsInstanceQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
         int instanceId)
     {
+        getOdsInstanceQuery.Execute(instanceId);
+
         var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
             commonQueryParams,
             instanceId: instanceId);
