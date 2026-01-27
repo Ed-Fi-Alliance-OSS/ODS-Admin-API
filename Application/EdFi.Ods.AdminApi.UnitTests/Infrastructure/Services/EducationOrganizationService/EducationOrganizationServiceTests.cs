@@ -144,7 +144,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+        Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -315,7 +315,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+        Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
     }
 
     [Test]

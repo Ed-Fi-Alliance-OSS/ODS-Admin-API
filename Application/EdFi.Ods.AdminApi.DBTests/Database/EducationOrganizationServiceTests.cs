@@ -370,7 +370,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _adminApiDbContext,
                 _encryptionProvider.Object, _configuration, mockLogger.Object);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var error = $"Failed to decrypt connection string for ODS Instance ID {odsInstance.OdsInstanceId}. Skipping education organization synchronization for this instance.";
 
