@@ -339,15 +339,14 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"GET EducationOrganizations By Instance Not Found: Status code is OK with empty array\", function () {",
-											"    pm.response.to.have.status(200);",
+											"pm.test(\"GET EducationOrganizations By Instance Not Found: Status code is Not Found\", function () {",
+											"    pm.response.to.have.status(404);",
 											"});",
 											"",
 											"const response = pm.response.json();",
 											"",
-											"pm.test(\"GET EducationOrganizations By Instance Not Found: Response is empty array\", function () {",
-											"    pm.expect(response).to.be.an('array');",
-											"    pm.expect(response.length).to.equal(0);",
+											"pm.test(\"GET EducationOrganizations By Instance Not Found: Response has error details\", function () {",
+											"    pm.expect(response).to.have.property(\"title\");",
 											"});"
 										],
 										"type": "text/javascript"
@@ -597,19 +596,14 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"POST EducationOrganizations Refresh By Non-Existent Instance: Status code is Accepted\", function () {",
-											"    pm.response.to.have.status(202);",
+											"pm.test(\"POST EducationOrganizations Refresh By Non-Existent Instance: Status code is Not Found\", function () {",
+											"    pm.response.to.have.status(404);",
 											"});",
 											"",
 											"const response = pm.response.json();",
 											"",
-											"pm.test(\"POST EducationOrganizations Refresh By Non-Existent Instance: Response matches success format\", function () {",
-											"    pm.expect(response).to.have.property(\"message\");",
-											"});",
-											"",
-											"pm.test(\"POST EducationOrganizations Refresh By Non-Existent Instance: Response message is helpful\", function () {",
-											"    pm.expect(response.message.toLowerCase()).to.contain(\"queued\");",
-											"    pm.expect(response.message.toLowerCase()).to.contain(\"instance\");",
+											"pm.test(\"POST EducationOrganizations Refresh By Non-Existent Instance: Response has error details\", function () {",
+											"    pm.expect(response).to.have.property(\"title\");",
 											"});"
 										],
 										"type": "text/javascript"
