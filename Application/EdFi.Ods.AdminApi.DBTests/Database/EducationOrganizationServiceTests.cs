@@ -107,7 +107,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             // Since we don't have actual EdFi ODS tables in the test database,
             // we'll test that the service executes without errors
             // and verify the infrastructure works correctly
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
     }
 
@@ -208,7 +208,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _logger,
                 _configuration);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var updatedEdOrg = _adminApiDbContext.EducationOrganizations
                 .FirstOrDefault(e => e.EducationOrganizationId == existingEdOrg.EducationOrganizationId);
@@ -264,7 +264,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _adminApiDbContext,
                 _encryptionProvider.Object, _logger, _configuration);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             // After execution, since the hardcoded data doesn't include EducationOrganizationId 999999,
             // the service should have removed our test EdOrg
@@ -292,7 +292,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _encryptionProvider.Object, _logger, _configuration);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
-                service.Execute(null).GetAwaiter().GetResult());
+                service.Execute(null, null).GetAwaiter().GetResult());
 
             exception.Message.ShouldBe("EncryptionKey can't be null.");
         });
@@ -313,7 +313,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _adminApiDbContext,
                 _encryptionProvider.Object, _logger, _configuration);
 
-            Should.Throw<Exception>(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.Throw<Exception>(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
     }
 
@@ -333,7 +333,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _encryptionProvider.Object, _logger, _configuration);
 
             var exception = Should.Throw<NotSupportedException>(() =>
-                service.Execute(null).GetAwaiter().GetResult());
+                service.Execute(null, null).GetAwaiter().GetResult());
 
             exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\"");
         });
@@ -370,7 +370,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _adminApiDbContext,
                 _encryptionProvider.Object, _configuration, mockLogger.Object);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var error = $"Failed to decrypt connection string for ODS Instance ID {odsInstance.OdsInstanceId}. Skipping education organization synchronization for this instance.";
 
@@ -421,7 +421,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _adminApiDbContext,
                 _encryptionProvider.Object, _logger, _configuration);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             // Verify both instances were processed
             var instances = _usersContext.OdsInstances.ToList();
