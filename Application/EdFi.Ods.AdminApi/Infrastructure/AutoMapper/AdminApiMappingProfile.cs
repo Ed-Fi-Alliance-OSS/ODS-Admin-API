@@ -194,13 +194,6 @@ public class AdminApiMappingProfile : Profile
                 opt.ConvertUsing<OdsInstanceIdsForApiClientConverter, int>(src => src.ApiClientId);
             });
 
-        CreateMap<EducationOrganization, EducationOrganizationModel>()
-            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
-            .ForMember(dst => dst.InstanceName, opt => opt.MapFrom(src => src.InstanceName))
-            .ForMember(dst => dst.EducationOrganizationId, opt => opt.MapFrom(src => src.EducationOrganizationId))
-            .ForMember(dst => dst.NameOfInstitution, opt => opt.MapFrom(src => src.NameOfInstitution))
-            .ForMember(dst => dst.ShortNameOfInstitution, opt => opt.MapFrom(src => src.ShortNameOfInstitution))
-            .ForMember(dst => dst.Discriminator, opt => opt.MapFrom(src => src.Discriminator))
-            .ForMember(dst => dst.ParentId, opt => opt.MapFrom(src => src.ParentId));
+        CreateMap<EducationOrganization, EducationOrganizationModel>();
     }
 }
