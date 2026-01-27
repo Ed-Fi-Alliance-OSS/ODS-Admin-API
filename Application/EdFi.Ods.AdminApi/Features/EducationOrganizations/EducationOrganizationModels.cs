@@ -10,6 +10,12 @@ namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 [SwaggerSchema(Title = "EducationOrganization")]
 public class EducationOrganizationModel
 {
+    [SwaggerSchema(Description = "ODS instance identifier", Nullable = false)]
+    public int InstanceId { get; set; }
+
+    [SwaggerSchema(Description = "ODS instance name", Nullable = false)]
+    public string? InstanceName { get; set; }
+
     [SwaggerSchema(Description = "Education organization identifier", Nullable = false)]
     public long EducationOrganizationId { get; set; }
 
@@ -24,19 +30,5 @@ public class EducationOrganizationModel
 
     [SwaggerSchema(Description = "Parent education organization identifier")]
     public long? ParentId { get; set; }
-
-    [SwaggerSchema(Description = "ODS instance identifier", Nullable = false)]
-    public int InstanceId { get; set; }
-
-    [SwaggerSchema(Description = "ODS instance name", Nullable = false)]
-    public string? InstanceName { get; set; }
-
-    [SwaggerSchema(Description = "ODS database name")]
-    public string? OdsDatabaseName { get; set; }
-
-    [SwaggerSchema(Description = "Last time the data was refreshed")]
-    public DateTime? LastRefreshed { get; set; }
-
-    [SwaggerSchema(Description = "Last time the education organization was modified")]
-    public DateTime? LastModifiedDate { get; set; }
 }
+

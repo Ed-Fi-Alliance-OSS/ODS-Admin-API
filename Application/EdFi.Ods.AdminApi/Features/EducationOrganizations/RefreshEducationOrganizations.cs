@@ -5,10 +5,11 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 
@@ -26,10 +27,10 @@ public class RefreshEducationOrganizations : IFeature
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/educationOrganizations/refresh/{tenantName}", RefreshEducationOrganizationsByTenant)
+            .MapPost(endpoints, "/educationOrganizations/refresh/{instanceId}", RefreshEducationOrganizationsByInstance)
             .WithSummaryAndDescription(
-                "Refreshes education organizations for a specific tenant",
-                "Triggers a refresh of education organization data for the specified tenant"
+                "Refreshes education organizations for a specific ODS instance",
+                "Triggers a refresh of education organization data for the specified ODS instance"
             )
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V2);
@@ -37,44 +38,35 @@ public class RefreshEducationOrganizations : IFeature
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
         [FromServices] IEducationOrganizationService educationOrganizationService,
-        [FromServices] ILogger<RefreshEducationOrganizations> logger)
+        [FromServices] ILogger<RefreshEducationOrganizations> logger,
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider)
     {
-        try
+        var tenantConfiguration = tenantConfigurationProvider.Get();
+        var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
+
+        await educationOrganizationService.Execute(tenantIdentifier, instanceId: null);
+
+        return Results.Accepted(null, new
         {
-            await educationOrganizationService.Execute(null);
-            logger.LogInformation("Successfully triggered refresh for all education organizations");
-            return Results.Accepted();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error refreshing education organizations");
-            return Results.Problem(
-                title: "Error refreshing education organizations",
-                detail: ex.Message,
-                statusCode: 500
-            );
-        }
+            Message = "Education organizations refresh has been queued for all instances"
+        });
     }
 
-    public static async Task<IResult> RefreshEducationOrganizationsByTenant(
+    public static async Task<IResult> RefreshEducationOrganizationsByInstance(
         [FromServices] IEducationOrganizationService educationOrganizationService,
         [FromServices] ILogger<RefreshEducationOrganizations> logger,
-        string tenantName)
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        int instanceId)
     {
-        try
+        var tenantConfiguration = tenantConfigurationProvider.Get();
+        var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
+
+        await educationOrganizationService.Execute(tenantIdentifier, instanceId);
+
+        return Results.Accepted(null, new
         {
-            await educationOrganizationService.Execute(tenantName);
-            logger.LogInformation("Successfully triggered refresh for tenant: {TenantName}", tenantName);
-            return Results.Accepted();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error refreshing education organizations for tenant: {TenantName}", tenantName);
-            return Results.Problem(
-                title: $"Error refreshing education organizations for tenant: {tenantName}",
-                detail: ex.Message,
-                statusCode: 500
-            );
-        }
+            Message = $"Education organizations refresh has been queued for instance {instanceId}"
+        });
     }
 }
+

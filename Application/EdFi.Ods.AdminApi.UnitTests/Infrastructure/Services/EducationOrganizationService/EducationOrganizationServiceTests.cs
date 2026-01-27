@@ -76,7 +76,7 @@ internal class EducationOrganizationServiceTests
             _encryptionProvider,
             A.Fake<IConfiguration>());
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null, null))
             .ContinueWith(t => t.Result.Message.ShouldBe("EncryptionKey can't be null."));
     }
 
@@ -101,7 +101,7 @@ internal class EducationOrganizationServiceTests
             _encryptionProvider,
             A.Fake<IConfiguration>());
 
-        await Should.ThrowAsync<Exception>(async () => await service.Execute(null));
+        await Should.ThrowAsync<Exception>(async () => await service.Execute(null, null));
     }
 
     [Test]
@@ -141,7 +141,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null, null))
             .ContinueWith(t => t.Result.Message.ShouldBe("Decrypted connection string can't be null."));
     }
 
@@ -214,7 +214,7 @@ internal class EducationOrganizationServiceTests
             A.Fake<IConfiguration>(),
             () => processOdsInstanceCallCount++);
 
-        await service.Execute("tenant1");
+        await service.Execute("tenant1", null);
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
         A.CallTo(() => _tenantConfigurationProvider.Get()).MustHaveHappened();
@@ -239,7 +239,7 @@ internal class EducationOrganizationServiceTests
             _onProcessOdsInstance = onProcessOdsInstance;
         }
 
-        public override Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine)
+        public override Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
         {
             _onProcessOdsInstance();
             return Task.CompletedTask;
@@ -269,7 +269,7 @@ internal class EducationOrganizationServiceTests
             _encryptionProvider,
             A.Fake<IConfiguration>());
 
-        var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null));
+        var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null, null));
         exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\". Supported engines: SqlServer, and PostgreSql.");
     }
 
@@ -312,7 +312,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null));
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null, null));
     }
 
     [Test]
@@ -370,7 +370,7 @@ internal class EducationOrganizationServiceTests
             A.Fake<IConfiguration>(),
             () => processOdsInstanceCallCount++);
 
-        await service.Execute("tenant1");
+        await service.Execute("tenant1", null);
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
@@ -401,7 +401,7 @@ internal class EducationOrganizationServiceTests
             _encryptionProvider,
             A.Fake<IConfiguration>());
 
-        await service.Execute(null);
+        await service.Execute(null, null);
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
     }
@@ -447,7 +447,7 @@ internal class EducationOrganizationServiceTests
             _encryptionProvider,
             A.Fake<IConfiguration>());
 
-        await service.Execute(null);
+        await service.Execute(null, null);
 
         A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
     }

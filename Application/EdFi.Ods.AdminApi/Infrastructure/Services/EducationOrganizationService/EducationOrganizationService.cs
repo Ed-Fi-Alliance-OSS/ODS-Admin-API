@@ -21,7 +21,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService
 
 public interface IEducationOrganizationService
 {
-    Task Execute(string? tenantName);
+    Task Execute(string? tenantName, int? instanceId);
 }
 
 public class EducationOrganizationService(
@@ -37,7 +37,7 @@ public class EducationOrganizationService(
     private const string AllEdorgStoredProcSqlServer = "GetEducationOrganizations";
     private const string AllEdorgStoredProcPostgres = "get_education_organizations";
 
-    public async Task Execute(string? tenantName)
+    public async Task Execute(string? tenantName, int? instanceId)
     {
         var multiTenancyEnabled = options.Value.MultiTenancy;
         var encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
@@ -57,16 +57,16 @@ public class EducationOrganizationService(
 
             foreach (var tenantConfiguration in tenantsWithConfiguration)
             {
-                await ProcessTenantConfiguration(tenantConfiguration, encryptionKey, databaseEngine);
+                await ProcessTenantConfiguration(tenantConfiguration, encryptionKey, databaseEngine, instanceId);
             }
         }
         else
         {
-            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine, instanceId);
         }
     }
 
-    private async Task ProcessTenantConfiguration(TenantConfiguration tenantConfiguration, string encryptionKey, string databaseEngine)
+    private async Task ProcessTenantConfiguration(TenantConfiguration tenantConfiguration, string encryptionKey, string databaseEngine, int? instanceId)
     {
         if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
@@ -78,7 +78,7 @@ public class EducationOrganizationService(
             adminApiOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
             adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, configuration);
 
-            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine, instanceId);
         }
         else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
         {
@@ -92,7 +92,7 @@ public class EducationOrganizationService(
             adminApiOptionsBuilder.UseLowerCaseNamingConvention();
             adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, configuration);
 
-            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine, instanceId);
         }
         else
         {
@@ -100,9 +100,13 @@ public class EducationOrganizationService(
         }
     }
 
-    public virtual async Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine)
+    public virtual async Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
     {
-        var odsInstances = await usersContext.OdsInstances.ToListAsync();
+        var odsInstances = instanceId.HasValue
+            ? await usersContext.OdsInstances
+                .Where(o => o.OdsInstanceId == instanceId.Value)
+                .ToListAsync()
+            : await usersContext.OdsInstances.ToListAsync();
 
         foreach (var odsInstance in odsInstances)
         {

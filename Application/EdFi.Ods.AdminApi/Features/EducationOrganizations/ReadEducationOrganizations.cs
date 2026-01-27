@@ -3,12 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 
@@ -36,57 +35,24 @@ public class ReadEducationOrganizations : IFeature
     }
 
     public static async Task<IResult> GetEducationOrganizations(
-        [FromServices] AdminApiDbContext context,
-        [FromServices] IUsersContext usersContext)
+        [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
+        [AsParameters] CommonQueryParams commonQueryParams)
     {
-        var educationOrganizations = await context.EducationOrganizations
-            .Join(
-                usersContext.OdsInstances,
-                edOrg => edOrg.InstanceId,
-                instance => instance.OdsInstanceId,
-                (edOrg, instance) => new EducationOrganizationModel
-                {
-                    EducationOrganizationId = edOrg.EducationOrganizationId,
-                    NameOfInstitution = edOrg.NameOfInstitution,
-                    ShortNameOfInstitution = edOrg.ShortNameOfInstitution,
-                    Discriminator = edOrg.Discriminator,
-                    ParentId = edOrg.ParentId,
-                    InstanceId = edOrg.InstanceId,
-                    InstanceName = instance.Name,
-                    OdsDatabaseName = edOrg.OdsDatabaseName,
-                    LastRefreshed = edOrg.LastRefreshed,
-                    LastModifiedDate = edOrg.LastModifiedDate
-                })
-            .ToListAsync();
+        var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
+            commonQueryParams,
+            instanceId: null);
 
         return Results.Ok(educationOrganizations);
     }
 
     public static async Task<IResult> GetEducationOrganizationsByInstance(
-        [FromServices] AdminApiDbContext context,
-        [FromServices] IUsersContext usersContext,
+        [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
+        [AsParameters] CommonQueryParams commonQueryParams,
         int instanceId)
     {
-        var educationOrganizations = await context.EducationOrganizations
-            .Where(e => e.InstanceId == instanceId)
-            .Join(
-                usersContext.OdsInstances,
-                edOrg => edOrg.InstanceId,
-                instance => instance.OdsInstanceId,
-                (edOrg, instance) => new EducationOrganizationModel
-                {
-                    EducationOrganizationId = edOrg.EducationOrganizationId,
-                    NameOfInstitution = edOrg.NameOfInstitution,
-                    ShortNameOfInstitution = edOrg.ShortNameOfInstitution,
-                    Discriminator = edOrg.Discriminator,
-                    ParentId = edOrg.ParentId,
-                    InstanceId = edOrg.InstanceId,
-                    InstanceName = instance.Name,
-                    OdsDatabaseName = edOrg.OdsDatabaseName,
-                    LastRefreshed = edOrg.LastRefreshed,
-                    LastModifiedDate = edOrg.LastModifiedDate
-                })
-            .ToListAsync();
+        var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
+            commonQueryParams,
+            instanceId: instanceId);
 
         return Results.Ok(educationOrganizations);
     }
