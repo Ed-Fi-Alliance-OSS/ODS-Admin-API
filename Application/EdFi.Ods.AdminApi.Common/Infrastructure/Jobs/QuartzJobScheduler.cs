@@ -39,12 +39,10 @@ public static class QuartzJobScheduler
         ITrigger trigger;
         if (startImmediately)
         {
-            job.JobDataMap.Put(JobConstants.JobTypeKey, JobType.AdHoc);
             trigger = TriggerBuilder.Create().StartNow().Build();
         }
         else if (interval.HasValue)
         {
-            job.JobDataMap.Put(JobConstants.JobTypeKey, JobType.Scheduled);
             trigger = TriggerBuilder.Create()
                 .StartNow()
                 .WithSimpleSchedule(x => x.WithInterval(interval.Value).RepeatForever())

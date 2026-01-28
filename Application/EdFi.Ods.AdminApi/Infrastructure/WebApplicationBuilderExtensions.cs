@@ -584,6 +584,7 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
         webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
         webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
+        webApplicationBuilder.Services.AddTransient<ITenantSpecificDbContextProvider, TenantSpecificDbContextProvider>();
     }
 
     private enum HttpVerbOrder

@@ -4,17 +4,34 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 
-public class JobStatusService(AdminApiDbContext dbContext) : IJobStatusService
+public class JobStatusService(AdminApiDbContext dbContext,
+    ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+    IOptions<AppSettings> options) : IJobStatusService
 {
-    private readonly AdminApiDbContext _dbContext = dbContext;
+    private readonly ITenantSpecificDbContextProvider _tenantSpecificDbContextProvider = tenantSpecificDbContextProvider;
+    private readonly bool _isMultiTenancyEnabled = options.Value.MultiTenancy;
 
-    public async Task SetStatusAsync(string jobId, QuartzJobStatus status, string? errorMessage = null)
+    public async Task SetStatusAsync(string jobId, QuartzJobStatus status, string? tenantName, string? errorMessage = null)
     {
-        var jobStatus = await _dbContext.JobStatuses
+        AdminApiDbContext resolvedDbContext;
+
+        if (_isMultiTenancyEnabled && !string.IsNullOrEmpty(tenantName))
+        {
+            resolvedDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName);
+        }
+        else
+        {
+            resolvedDbContext = dbContext;
+        }
+
+        var jobStatus = await resolvedDbContext.JobStatuses
             .FirstOrDefaultAsync(j => j.JobId == jobId);
         if (jobStatus is null)
         {
@@ -24,13 +41,13 @@ public class JobStatusService(AdminApiDbContext dbContext) : IJobStatusService
                 Status = status.ToString(),
                 ErrorMessage = errorMessage
             };
-            _dbContext.JobStatuses.Add(jobStatus);
+            resolvedDbContext.JobStatuses.Add(jobStatus);
         }
         else
         {
             jobStatus.Status = status.ToString();
             jobStatus.ErrorMessage = errorMessage;
         }
-        await _dbContext.SaveChangesAsync();
+        await resolvedDbContext.SaveChangesAsync();
     }
 }
