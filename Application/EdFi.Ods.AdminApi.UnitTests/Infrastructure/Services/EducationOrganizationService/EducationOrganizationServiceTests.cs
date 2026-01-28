@@ -29,18 +29,17 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.EducationOrganizat
 [TestFixture]
 internal class EducationOrganizationServiceTests
 {
-    private ITenantsService _tenantsService = null!;
     private IOptions<AppSettings> _options = null!;
     private ITenantConfigurationProvider _tenantConfigurationProvider = null!;
     private ISymmetricStringEncryptionProvider _encryptionProvider = null!;
     private AppSettings _appSettings = null!;
     private string _encryptionKey = null!;
     private ILogger<EducationOrganizationServiceImpl> _logger = null!;
+    private ITenantSpecificDbContextProvider _tenantSpecificDbContextProvider = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _tenantsService = A.Fake<ITenantsService>();
         _options = A.Fake<IOptions<AppSettings>>();
         _tenantConfigurationProvider = A.Fake<ITenantConfigurationProvider>();
         _encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
@@ -55,6 +54,7 @@ internal class EducationOrganizationServiceTests
 
         A.CallTo(() => _options.Value).Returns(_appSettings);
         _logger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
+        _tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
     }
 
     [Test]
@@ -71,13 +71,12 @@ internal class EducationOrganizationServiceTests
 
         // Ensure the correct class is instantiated here.
         var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
             _options,
-            _tenantConfigurationProvider,
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
+            _tenantSpecificDbContextProvider,
+            _logger);
 
         await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
             .ContinueWith(t => t.Result.Message.ShouldBe("EncryptionKey can't be null."));
@@ -96,13 +95,12 @@ internal class EducationOrganizationServiceTests
             A.Fake<IConfiguration>());
 
         var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
             _options,
-            _tenantConfigurationProvider,
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
+            _tenantSpecificDbContextProvider,
+            _logger);
 
         await Should.ThrowAsync<Exception>(async () => await service.Execute(null));
     }
@@ -129,13 +127,12 @@ internal class EducationOrganizationServiceTests
         await usersContext.SaveChangesAsync();
 
         var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
             _options,
-            _tenantConfigurationProvider,
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
+            _tenantSpecificDbContextProvider,
+            _logger);
 
         string decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
@@ -152,50 +149,6 @@ internal class EducationOrganizationServiceTests
     {
         _appSettings.MultiTenancy = true;
 
-        var tenants = new List<TenantModel>
-        {
-            new() {
-                TenantName = "tenant1",
-                ConnectionStrings = new TenantModelConnectionStrings
-                {
-                    EdFiAdminConnectionString = "Data Source=.\\;Initial Catalog=EdFi_AdminTenant1;Integrated Security=True;Trusted_Connection=true;Encrypt=True;TrustServerCertificate=True",
-                    EdFiSecurityConnectionString = "Server=localhost;Database=EdFi_Security_Tenant1;TrustServerCertificate=True"
-                }
-            },
-            new() {
-                TenantName = "tenant2",
-                ConnectionStrings = new TenantModelConnectionStrings
-                {
-                    EdFiAdminConnectionString = "Data Source=.\\;Initial Catalog=EdFi_AdminTenant2;Integrated Security=True;Trusted_Connection=true;Encrypt=True;TrustServerCertificate=True",
-                    EdFiSecurityConnectionString = "Server=localhost;Database=EdFi_Security_Tenant2;TrustServerCertificate=True"
-                }
-            }
-        };
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).Returns(tenants);
-
-        var tenantConfigurations = new Dictionary<string, TenantConfiguration>
-        {
-            {
-                "tenant1", new TenantConfiguration
-                {
-                    TenantIdentifier = "tenant1",
-                    AdminConnectionString = "Data Source=.\\;Initial Catalog=EdFi_AdminTenant1;Integrated Security=True;Trusted_Connection=true;Encrypt=True;TrustServerCertificate=True",
-                    SecurityConnectionString = "Server=localhost;Database=EdFi_Security_Tenant1;TrustServerCertificate=True"
-                }
-            },
-            {
-                "tenant2", new TenantConfiguration
-                {
-                    TenantIdentifier = "tenant2",
-                    AdminConnectionString = "Data Source=.\\;Initial Catalog=EdFi_AdminTenant2;Integrated Security=True;Trusted_Connection=true;Encrypt=True;TrustServerCertificate=True",
-                    SecurityConnectionString = "Server=localhost;Database=EdFi_Security_Tenant2;TrustServerCertificate=True"
-                }
-            }
-        };
-
-        A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfigurations);
-
         var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_MultiTenant")
             .Options;
@@ -207,20 +160,17 @@ internal class EducationOrganizationServiceTests
 
         var processOdsInstanceCallCount = 0;
         var service = new TestableEducationOrganizationService(
-            _tenantsService,
             _options,
-            _tenantConfigurationProvider,
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
-            A.Fake<IConfiguration>(),
+            _tenantSpecificDbContextProvider,
             () => processOdsInstanceCallCount++,
             _logger);
 
         await service.Execute("tenant1");
 
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
-        A.CallTo(() => _tenantConfigurationProvider.Get()).MustHaveHappened();
+        A.CallTo(() => _tenantSpecificDbContextProvider.GetAdminApiDbContext("tenant1")).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
     }
 
@@ -229,15 +179,13 @@ internal class EducationOrganizationServiceTests
         private readonly Action _onProcessOdsInstance;
 
         public TestableEducationOrganizationService(
-            ITenantsService tenantsService,
             IOptions<AppSettings> options,
-            ITenantConfigurationProvider tenantConfigurationProvider,
             IUsersContext usersContext,
             AdminApiDbContext adminApiDbContext,
             ISymmetricStringEncryptionProvider encryptionProvider,
-            IConfiguration configuration,
+            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
             Action onProcessOdsInstance, ILogger<EducationOrganizationServiceImpl> logger)
-            : base(tenantsService, options, tenantConfigurationProvider, usersContext, adminApiDbContext, encryptionProvider, configuration, logger)
+            : base(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
         {
             _onProcessOdsInstance = onProcessOdsInstance;
         }
@@ -264,13 +212,12 @@ internal class EducationOrganizationServiceTests
             A.Fake<IConfiguration>());
 
         var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
-            _options,
-            _tenantConfigurationProvider,
-            usersContext,
-            adminApiDbContext,
-            _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
+              _options,
+              usersContext,
+              adminApiDbContext,
+              _encryptionProvider,
+              _tenantSpecificDbContextProvider,
+              _logger);
 
         var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null));
         exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\". Supported engines: SqlServer, and PostgreSql.");
@@ -300,13 +247,12 @@ internal class EducationOrganizationServiceTests
         await usersContext.SaveChangesAsync();
 
         var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
-            _options,
-            _tenantConfigurationProvider,
-            usersContext,
-            adminApiDbContext,
-            _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
+              _options,
+              usersContext,
+              adminApiDbContext,
+              _encryptionProvider,
+              _tenantSpecificDbContextProvider,
+              _logger);
 
         string decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
@@ -323,35 +269,6 @@ internal class EducationOrganizationServiceTests
     {
         _appSettings.MultiTenancy = true;
         _appSettings.DatabaseEngine = "PostgreSql";
-
-        var tenants = new List<TenantModel>
-        {
-            new() {
-                TenantName = "tenant1",
-                ConnectionStrings = new TenantModelConnectionStrings
-                {
-                    EdFiAdminConnectionString = "Host=localhost;Database=EdFi_Admin_Tenant1;",
-                    EdFiSecurityConnectionString = "Host=localhost;Database=EdFi_Security_Tenant1;"
-                }
-            }
-        };
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).Returns(tenants);
-
-        var tenantConfigurations = new Dictionary<string, TenantConfiguration>
-        {
-            {
-                "tenant1", new TenantConfiguration
-                {
-                    TenantIdentifier = "tenant1",
-                    AdminConnectionString = "Host=localhost;Database=EdFi_Admin_Tenant1;",
-                    SecurityConnectionString = "Host=localhost;Database=EdFi_Security_Tenant1;"
-                }
-            }
-        };
-
-        A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfigurations);
-
         var contextOptions = new DbContextOptionsBuilder<PostgresUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_MultiTenantPostgres")
             .Options;
@@ -364,94 +281,17 @@ internal class EducationOrganizationServiceTests
 
         var processOdsInstanceCallCount = 0;
         var service = new TestableEducationOrganizationService(
-            _tenantsService,
-            _options,
-            _tenantConfigurationProvider,
-            context,
-            adminApiDbContext,
-            _encryptionProvider,
-            A.Fake<IConfiguration>(),
-            () => processOdsInstanceCallCount++, _logger);
+        _options,
+        context,
+        adminApiDbContext,
+        _encryptionProvider,
+        _tenantSpecificDbContextProvider,
+        () => processOdsInstanceCallCount++,
+        _logger);
 
         await service.Execute("tenant1");
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _tenantSpecificDbContextProvider.GetAdminApiDbContext("tenant1")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _tenantSpecificDbContextProvider.GetUsersContext("tenant1")).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
-    }
-
-    [Test]
-    public async Task Execute_Should_Handle_Empty_Tenant_List()
-    {
-        _appSettings.MultiTenancy = true;
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).Returns(new List<TenantModel>());
-
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb_EmptyTenants")
-            .Options;
-
-        using var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_EmptyTenants_Admin").Options,
-            A.Fake<IConfiguration>());
-
-        var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
-            _options,
-            _tenantConfigurationProvider,
-            usersContext,
-            adminApiDbContext,
-            _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
-
-        await service.Execute(null);
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
-    }
-
-    [Test]
-    public async Task Execute_Should_Skip_Tenant_When_Configuration_Not_Found()
-    {
-        _appSettings.MultiTenancy = true;
-
-        var tenants = new List<TenantModel>
-        {
-            new TenantModel
-            {
-                TenantName = "tenant1",
-                ConnectionStrings = new TenantModelConnectionStrings
-                {
-                    EdFiAdminConnectionString = "Server=localhost;Database=EdFi_Admin_Tenant1;",
-                    EdFiSecurityConnectionString = "Server=localhost;Database=EdFi_Security_Tenant1;"
-                }
-            }
-        };
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).Returns(tenants);
-
-        var emptyTenantConfigurations = new Dictionary<string, TenantConfiguration>();
-        A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(emptyTenantConfigurations);
-
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
-            .UseInMemoryDatabase(databaseName: "TestDb_NoTenantConfig")
-            .Options;
-
-        using var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_NoTenantConfig_Admin").Options,
-            A.Fake<IConfiguration>());
-
-        var service = new EducationOrganizationServiceImpl(
-            _tenantsService,
-            _options,
-            _tenantConfigurationProvider,
-            usersContext,
-            adminApiDbContext,
-            _encryptionProvider,
-            A.Fake<IConfiguration>(), _logger);
-
-        await service.Execute(null);
-
-        A.CallTo(() => _tenantsService.GetTenantsAsync(false)).MustHaveHappenedOnceExactly();
     }
 }

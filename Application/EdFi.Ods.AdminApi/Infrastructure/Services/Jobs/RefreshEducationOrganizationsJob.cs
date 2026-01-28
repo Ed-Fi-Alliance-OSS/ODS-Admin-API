@@ -7,7 +7,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Extensions;
 using Quartz;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
@@ -27,7 +26,6 @@ public class RefreshEducationOrganizationsJob(
         if (multiTenancyEnabled && context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey))
         {
             var tenantName = context.MergedJobDataMap.GetString(JobConstants.TenantNameKey);
-            var jobType = context.MergedJobDataMap.GetString(JobConstants.JobTypeKey);
 
             if (!string.IsNullOrEmpty(tenantName))
             {
@@ -38,13 +36,10 @@ public class RefreshEducationOrganizationsJob(
                 );
                 await _edOrgService.Execute(tenantName);
             }
-            else if (!string.IsNullOrEmpty(jobType) && jobType.Equals(JobType.Scheduled.GetDisplayName()))
+            else
             {
-                logger.LogInformation(
-                    "Starting scheduled RefreshEducationOrganizationsJob with JobId: {JobId}",
-                    jobId
-                );
-                await _edOrgService.Execute(null);
+                logger.LogError(
+                   "Tenant name should be provided in the job data map for multi-tenant execution of RefreshEducationOrganizationsJob. JobId: {JobId}", jobId);
             }
         }
         else
