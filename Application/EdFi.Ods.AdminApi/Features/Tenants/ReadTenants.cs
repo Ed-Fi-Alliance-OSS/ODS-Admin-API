@@ -3,11 +3,15 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -25,6 +29,10 @@ public class ReadTenants : IFeature
 
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}", GetTenantsByTenantIdAsync)
+            .BuildForVersions(AdminApiVersions.V2);
+
+        AdminApiEndpointBuilder
+            .MapGet(endpoints, "/tenants/{tenantName}/details", GetTenantDetailsByNameAsync)
             .BuildForVersions(AdminApiVersions.V2);
     }
 
@@ -113,6 +121,37 @@ public class ReadTenants : IFeature
             }
         );
     }
+
+    public static async Task<IResult> GetTenantDetailsByNameAsync(
+        [FromServices] ITenantsService tenantsService,
+        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IContextProvider<TenantConfiguration> tenantConfigurationContextProvider,
+        IMapper mapper,
+        IMemoryCache memoryCache,
+        string tenantName,
+        IOptions<AppSettings> options
+    )
+    {
+        var tenant = await tenantsService.GetTenantDetailsByNameAsync(
+            getOdsInstancesQuery,
+            getEducationOrganizationQuery,
+            tenantConfigurationContextProvider,
+            mapper,
+            tenantName);
+
+        if (tenant == null)
+            return Results.NotFound();
+
+        return Results.Ok(
+            new TenantDetailsResponse
+            {
+                Id = tenantName,
+                Name = tenant.TenantName,
+                OdsInstances = tenant.OdsInstances
+            }
+        );
+    }
 }
 
 public class TenantsResponse
@@ -126,4 +165,30 @@ public class EdfiConnectionString
 {
     public string? host { get; set; }
     public string? database { get; set; }
+}
+
+public class TenantDetailsResponse
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
+}
+
+public class OdsInstanceDto
+{
+    public int? Id { get; set; }
+    public string? Name { get; set; }
+    public string? InstanceType { get; set; }
+    public List<EducationOrganizationDto>? EdOrgs { get; set; }
+}
+
+public class EducationOrganizationDto
+{
+    public int InstanceId { get; set; }
+    public string? InstanceName { get; set; }
+    public int EducationOrganizationId { get; set; }
+    public string? NameOfInstitution { get; set; }
+    public string? ShortNameOfInstitution { get; set; }
+    public string? Discriminator { get; set; }
+    public int? ParentId { get; set; }
 }

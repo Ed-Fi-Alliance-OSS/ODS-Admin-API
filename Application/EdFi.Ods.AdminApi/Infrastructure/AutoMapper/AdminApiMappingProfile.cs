@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Features.Actions;
 using EdFi.Ods.AdminApi.Features.ApiClients;
 using EdFi.Ods.AdminApi.Features.Applications;
@@ -14,6 +15,7 @@ using EdFi.Ods.AdminApi.Features.OdsInstanceDerivative;
 using EdFi.Ods.AdminApi.Features.ODSInstances;
 using EdFi.Ods.AdminApi.Features.Profiles;
 using EdFi.Ods.AdminApi.Features.ResourceClaimActions;
+using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Features.Vendors;
 using EdFi.Ods.AdminApi.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
@@ -133,6 +135,21 @@ public class AdminApiMappingProfile : Profile
         CreateMap<OdsInstance, OdsInstanceModel>()
             .ForMember(dst => dst.OdsInstanceId, opt => opt.MapFrom(src => src.OdsInstanceId))
             .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.Name));
+
+        CreateMap<OdsInstance, TenantOdsInstanceModel>()
+            .ForMember(dst => dst.OdsInstanceId, opt => opt.MapFrom(src => src.OdsInstanceId))
+            .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dst => dst.InstanceType, opt => opt.MapFrom(src => src.InstanceType))
+            .ForMember(dst => dst.EducationOrganizations, opt => opt.Ignore());
+
+        CreateMap<EducationOrganization, TenantEducationOrganizationModel>()
+            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
+            .ForMember(dst => dst.InstanceName, opt => opt.MapFrom(src => src.InstanceName))
+            .ForMember(dst => dst.EducationOrganizationId, opt => opt.MapFrom(src => src.EducationOrganizationId))
+            .ForMember(dst => dst.NameOfInstitution, opt => opt.MapFrom(src => src.NameOfInstitution))
+            .ForMember(dst => dst.ShortNameOfInstitution, opt => opt.MapFrom(src => src.ShortNameOfInstitution ?? string.Empty))
+            .ForMember(dst => dst.Discriminator, opt => opt.MapFrom(src => src.Discriminator))
+            .ForMember(dst => dst.ParentId, opt => opt.MapFrom(src => src.ParentId.HasValue ? src.ParentId.Value : 0));
 
         CreateMap<EdFi.Security.DataAccess.Models.Action, ActionModel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.ActionId))

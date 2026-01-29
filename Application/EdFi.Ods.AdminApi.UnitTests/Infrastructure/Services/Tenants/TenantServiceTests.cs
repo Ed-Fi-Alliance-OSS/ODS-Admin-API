@@ -6,9 +6,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using Microsoft.Extensions.Caching.Memory;
@@ -24,12 +26,18 @@ internal class TenantServiceTests
     private IOptionsSnapshot<AppSettingsFile> _options = null!;
     private IMemoryCache _memoryCache = null!;
     private AppSettingsFile _appSettings = null!;
+    private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
+    private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
+    private IMapper _mapper = null!;
 
     [SetUp]
     public void SetUp()
     {
         _options = A.Fake<IOptionsSnapshot<AppSettingsFile>>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _mapper = A.Fake<IMapper>();
+        _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
+        _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
         _appSettings = new AppSettingsFile
         {
             AppSettings = new AppSettings
@@ -154,5 +162,26 @@ internal class TenantServiceTests
 
         tenants.Count.ShouldBe(2);
         tenants.Any(t => t.TenantName == "tenantA").ShouldBeTrue();
+    }
+
+    [Test]
+    public async Task GetTenantByTenantDetailsByNameAsync_Should_Return_Correct_Tenant()
+    {
+        var service = new TenantService(_options, _memoryCache);
+
+        var tenant = await service.GetTenantDetailsByNameAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, "tenantA");
+
+        tenant.ShouldNotBeNull();
+        tenant!.TenantName.ShouldBe("tenantA");
+    }
+
+    [Test]
+    public async Task GetTenantByTenantDetailsByNameAsync_Should_Return_Null_If_Not_Found()
+    {
+        var service = new TenantService(_options, _memoryCache);
+
+        var tenant = await service.GetTenantDetailsByNameAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, "notfound");
+
+        tenant.ShouldBeNull();
     }
 }
