@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
@@ -32,6 +33,7 @@ internal class EducationOrganizationServiceTests
     private IOptions<AppSettings> _options = null!;
     private ITenantConfigurationProvider _tenantConfigurationProvider = null!;
     private ISymmetricStringEncryptionProvider _encryptionProvider = null!;
+    private IConfiguration _configuration;
     private AppSettings _appSettings = null!;
     private string _encryptionKey = null!;
     private ILogger<EducationOrganizationServiceImpl> _logger = null!;
@@ -43,6 +45,12 @@ internal class EducationOrganizationServiceTests
         _options = A.Fake<IOptions<AppSettings>>();
         _tenantConfigurationProvider = A.Fake<ITenantConfigurationProvider>();
         _encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
+        _configuration = new ConfigurationBuilder()
+           .AddInMemoryCollection(new Dictionary<string, string>
+           {
+                        { "AppSettings:DatabaseEngine", "SqlServer" }
+           })
+           .Build();
 
         _encryptionKey = Convert.ToBase64String(new byte[32]);
         _appSettings = new AppSettings
@@ -75,10 +83,11 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
+            _configuration,
             _tenantSpecificDbContextProvider,
             _logger);
 
-        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null))
+        await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null, null))
             .ContinueWith(t => t.Result.Message.ShouldBe("EncryptionKey can't be null."));
     }
 
@@ -99,10 +108,11 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
+            _configuration,
             _tenantSpecificDbContextProvider,
             _logger);
 
-        await Should.ThrowAsync<Exception>(async () => await service.Execute(null));
+        await Should.ThrowAsync<Exception>(async () => await service.Execute(null, null));
     }
 
     [Test]
@@ -131,6 +141,7 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
+            _configuration,
             _tenantSpecificDbContextProvider,
             _logger);
 
@@ -141,7 +152,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+        Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -164,11 +175,12 @@ internal class EducationOrganizationServiceTests
             usersContext,
             adminApiDbContext,
             _encryptionProvider,
+            _configuration,
             _tenantSpecificDbContextProvider,
             () => processOdsInstanceCallCount++,
             _logger);
 
-        await service.Execute("tenant1");
+        await service.Execute("tenant1", null);
 
         A.CallTo(() => _tenantSpecificDbContextProvider.GetAdminApiDbContext("tenant1")).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
@@ -183,14 +195,15 @@ internal class EducationOrganizationServiceTests
             IUsersContext usersContext,
             AdminApiDbContext adminApiDbContext,
             ISymmetricStringEncryptionProvider encryptionProvider,
+            IConfiguration configuration,
             ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
             Action onProcessOdsInstance, ILogger<EducationOrganizationServiceImpl> logger)
-            : base(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
+            : base(options, usersContext, adminApiDbContext, encryptionProvider, configuration, tenantSpecificDbContextProvider, logger)
         {
             _onProcessOdsInstance = onProcessOdsInstance;
         }
 
-        public override Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine)
+        public override Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
         {
             _onProcessOdsInstance();
             return Task.CompletedTask;
@@ -216,10 +229,11 @@ internal class EducationOrganizationServiceTests
               usersContext,
               adminApiDbContext,
               _encryptionProvider,
+              _configuration,
               _tenantSpecificDbContextProvider,
               _logger);
 
-        var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null));
+        var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null, null));
         exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\". Supported engines: SqlServer, and PostgreSql.");
     }
 
@@ -251,6 +265,7 @@ internal class EducationOrganizationServiceTests
               usersContext,
               adminApiDbContext,
               _encryptionProvider,
+              _configuration,
               _tenantSpecificDbContextProvider,
               _logger);
 
@@ -261,7 +276,7 @@ internal class EducationOrganizationServiceTests
             out decryptedConnectionString))
             .Returns(false);
 
-        Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+        Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -285,11 +300,12 @@ internal class EducationOrganizationServiceTests
         context,
         adminApiDbContext,
         _encryptionProvider,
+        _configuration,
         _tenantSpecificDbContextProvider,
         () => processOdsInstanceCallCount++,
         _logger);
 
-        await service.Execute("tenant1");
+        await service.Execute("tenant1", null);
         A.CallTo(() => _tenantSpecificDbContextProvider.GetAdminApiDbContext("tenant1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _tenantSpecificDbContextProvider.GetUsersContext("tenant1")).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
