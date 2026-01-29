@@ -41,7 +41,7 @@ RUN apk add --no-cache \
         gettext=0.22.5-r0 \
         icu=74.2-r1 \
         musl=1.2.5-r9 \
-        openssl=3.3.5-r0 \
+        openssl=3.3.6-r0 \
         postgresql15-client=15.13-r0 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
