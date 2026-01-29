@@ -1,0 +1,102 @@
+meta {
+  name: Applications - Without Offset and Limit
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{API_URL}}/v2/applications
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Applications: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const results = res.getBody();
+  
+  test("GET Applications: Response result includes applications", function () {
+      expect(results.length).to.be.greaterThan(0);
+  
+      const indexOfApplication = results.map(
+          function(application) { return application.id; }
+      ).indexOf(bru.getVar("CreatedApplicationId"));
+  
+      const result = results[indexOfApplication];
+      expect(result.applicationName).to.equal("Test Application");
+      expect(result.claimSetName).to.equal("Ed-Fi Sandbox");
+      expect(result.educationOrganizationIds.length).to.equal(1);
+      expect(result.profileIds.length).to.equal(0);
+      expect(result.odsInstanceIds.length).to.equal(1);
+  });
+  
+  test("GET Applications: Response results do not include key or secret", function () {
+      results.forEach(function(result, i) {
+          expect(result).to.not.have.property("key");
+          expect(result).to.not.have.property("secret");
+      });
+  });
+
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetApplicationsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "applicationName": {
+            "type": "string"
+          },
+          "claimSetName": {
+            "type": "string"
+          },
+          "educationOrganizationIds": {
+             "type": "array",
+             "items": {}
+          },
+          "vendorId": {
+            "type": "integer"
+          },
+          "profileIds": {
+            "type": "array",
+            "items": {}
+          },
+          "odsInstanceIds": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "id",
+          "applicationName",
+          "claimSetName",
+          "educationOrganizationIds",
+          "vendorId",
+          "profileIds",
+          "odsInstanceIds"
+        ]
+      }
+    ]
+  }
+
+  test("GET Applications: Validation Schema Response", () => {
+      const valid = ajv.validate(GetApplicationsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+
+}
+
+settings {
+  encodeUrl: true
+}

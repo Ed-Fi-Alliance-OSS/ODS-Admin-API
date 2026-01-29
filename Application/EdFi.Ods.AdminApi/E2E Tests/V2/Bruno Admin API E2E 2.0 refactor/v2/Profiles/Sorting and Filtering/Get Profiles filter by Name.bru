@@ -1,0 +1,38 @@
+meta {
+  name: Get Profiles filter by Name
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v2/profiles?offset={{offset}}&limit={{limit}}&name={{FILTEPROFILENAME}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  name: {{FILTEPROFILENAME}}
+}
+
+script:post-response {
+  test("GET Profiles: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Profiles: Response result includes profile", function () {
+      const results = res.getBody();
+      expect(results).to.have.lengthOf(1);
+  });
+  
+  test("GET Profiles: Response result contains requested profile", function () {
+      const results = res.getBody();
+      expect(results[0].name).to.eql(String(bru.getEnvVar("FILTEPROFILENAME")));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

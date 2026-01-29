@@ -1,0 +1,37 @@
+meta {
+  name: Token - Invalid Grant Type
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{API_URL}}/connect/token
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  client_id: {{RegisteredClientId}}
+  client_secret: {{RegisteredClientSecret}}
+  grant_type: authorization_code
+  scope: edfi_admin_api/full_access
+}
+
+script:post-response {
+  test("POST Token Invalid Grant Type: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(401);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST Token Invalid Grant Type: Response includes error message", function () {
+      expect(response).to.have.property("error");
+      expect(response).to.have.property("error_description");
+      expect(response["error_description"]).to.contain("Access Denied. Please review your information and try again.");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,48 @@
+meta {
+  name: Applications - Not Found
+  type: http
+  seq: 27
+}
+
+put {
+  url: {{API_URL}}/v2/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "applicationId": {{CreatedApplicationId}},
+    "applicationName": "Test Application",
+    "vendorId": {{ApplicationVendorId}},
+    "claimSetName": "Ed-Fi Sandbox",
+    "profileIds": [],
+    "educationOrganizationIds": [ 255901 ],
+    "odsInstanceIds": [ {{ODSInstanceId}} ]
+  }
+  
+}
+
+script:post-response {
+  test("PUT Application NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("PUT Application NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT Application NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("application");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

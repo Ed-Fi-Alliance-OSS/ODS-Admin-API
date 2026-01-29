@@ -1,0 +1,51 @@
+meta {
+  name: Applications - Invalid OdsInstance
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_URL}}/v2/applications/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "applicationName": "Test Application",
+    "vendorId": {{ApplicationVendorId}},
+    "claimSetName": "Ed-Fi Sandbox",
+    "profileIds": [ ],
+    "educationOrganizationIds": [ 255901 ],
+    "odsInstanceIds": [ 99999 ]
+  }
+  
+}
+
+script:post-response {
+  test("POST Applications Invalid ODSInstance: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  const errors = res.getBody().errors;
+  
+  test("POST Applications Invalid ODSInstance: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST Applications Invalid ODSInstance: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST Applications Invalid ODSInstance: Response errors include messages by property", function () {
+      expect(response.errors.OdsInstanceIds.length).to.equal(1);
+      expect(response.errors.OdsInstanceIds[0]).to.contain("not found");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

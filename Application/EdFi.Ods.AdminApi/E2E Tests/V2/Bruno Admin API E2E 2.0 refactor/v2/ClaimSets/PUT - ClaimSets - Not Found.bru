@@ -1,0 +1,39 @@
+meta {
+  name: ClaimSets - Not Found
+  type: http
+  seq: 57
+}
+
+put {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Edited-ClaimSet"
+  }
+  
+}
+
+script:post-response {
+  test("PUT ClaimSet NotFound: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT ClaimSet NotFound: Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT ClaimSet NotFound: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

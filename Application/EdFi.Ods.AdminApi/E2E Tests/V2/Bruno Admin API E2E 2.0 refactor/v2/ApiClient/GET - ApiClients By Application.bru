@@ -1,0 +1,123 @@
+meta {
+  name: ApiClients By Application
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v2/apiclients?applicationid={{CreatedApplicationId}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  applicationid: {{CreatedApplicationId}}
+}
+
+script:post-response {
+  test("GET ApiClients: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const results = res.getBody();
+  
+  if (Array.isArray(results) && results.length >= 2) {
+      const id1 = results[0].id;
+      const id2 = results[1].id;
+  
+      const csv = `${id1},${id2}`;
+      bru.setVar("FirstTwoApiClientIdsCSV", csv);
+  }
+  
+  test("GET ApiClients: Response result includes api clients", function () {
+      expect(results.length).to.be.greaterThan(0);
+  
+      const indexOfApiClient = results.map(
+          function(apiclient) { return apiclient.id; }
+      ).indexOf(parseInt(bru.getVar("CreatedApiClientId"), 10));
+  
+      const result = results[indexOfApiClient];
+      expect(result.name).to.equal("Test ApiClient");
+      expect(result.isApproved).to.equal(true);
+      expect(result.applicationId).to.equal(parseInt(bru.getVar("CreatedApplicationId"), 10));
+      expect(result.odsInstanceIds.length).to.equal(1);
+  });
+  
+  test("GET ApiClients: Response results do not include secret", function () {
+      results.forEach(function(result, i) {
+          expect(result).to.not.have.property("secret");
+      });
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetApiClientsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isApproved": {
+            "type": "boolean"
+          },
+          "useSandbox": {
+            "type": "boolean"
+          },
+          "applicationId": {
+            "type": "integer"
+          },
+          "sandboxType": {
+            "type": "integer"
+          },
+          "keyStatus": {
+            "type": "string"
+          },
+          "educationOrganizationIds": {
+             "type": "array",
+             "items": {}
+          },
+          "odsInstanceIds": {
+             "type": "array",
+             "items": {}
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "name",
+          "isApproved",
+          "useSandbox",
+          "applicationId",
+          "sandboxType",
+          "keyStatus",
+          "educationOrganizationIds",
+          "odsInstanceIds"
+        ]
+      }
+    ]
+  }
+  
+  test("GET ApiClients: Validation Schema Response", () => {
+      const valid = ajv.validate(GetApiClientsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

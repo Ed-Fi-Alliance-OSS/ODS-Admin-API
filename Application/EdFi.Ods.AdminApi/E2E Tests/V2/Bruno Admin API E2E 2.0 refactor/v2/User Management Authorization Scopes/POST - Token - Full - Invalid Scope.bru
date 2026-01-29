@@ -1,0 +1,57 @@
+meta {
+  name: Token - Full - Invalid Scope
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/connect/token
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  client_id: {{RegisteredClientId}}
+  client_secret: {{RegisteredClientSecret}}
+  grant_type: client_credentials
+  scope: invalid_scope
+}
+
+script:pre-request {
+  let header = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+  };
+}
+
+script:post-response {
+  test("POST Token: Status code is 400", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  test("POST Token Invalid scope: Response with content type error", function () {
+      let headers = res.getHeaders();  
+      
+      expect(headers["content-type"]).to.include("application/problem+json");
+  });
+  
+  test("POST Token: Response includes error properties", function () {
+      let jsonData = res.getBody();
+      expect(jsonData).to.have.property("error");
+      expect(jsonData).to.have.property("error_description");
+  });
+  
+  test("Validate error response", function () {
+      let jsonData = res.getBody();
+      
+      // Check status code
+      expect(res.getStatus()).to.equal(400);
+      
+      // Validate response structure
+      expect(jsonData).to.have.property("error", "invalid_scope");
+      expect(jsonData).to.have.property("error_description", "The request is missing required scope claims or has invalid scope values");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

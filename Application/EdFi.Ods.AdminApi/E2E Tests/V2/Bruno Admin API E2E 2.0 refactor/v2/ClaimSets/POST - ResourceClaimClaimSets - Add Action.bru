@@ -1,0 +1,38 @@
+meta {
+  name: ResourceClaimClaimSets - Add Action
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaimId": 4,
+    "resourceClaimActions": [
+      {
+        "name": "read",
+        "enabled": true
+      },
+      {
+        "name": "create",
+        "enabled": true
+      }
+    ]
+  }
+}
+
+script:post-response {
+  test("POST ResourceClaimAction: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

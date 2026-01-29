@@ -1,0 +1,73 @@
+meta {
+  name: Vendors by ID
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{API_URL}}/v2/vendors/{{CreatedVendorId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Vendor ID: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody();
+  
+  test("GET Vendor ID: Response result matches vendor", function () {
+      const vendorId = parseInt(bru.getVar("CreatedVendorId"));
+      
+      expect(result.id).to.equal(vendorId);
+      expect(result.company).to.equal("Test Company");
+      expect(result.namespacePrefixes).to.equal("uri://ed-fi.org");
+      expect(result.contactName).to.equal("Test User");
+      expect(result.contactEmailAddress).to.equal("test@test-ed-fi.org");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetVendorIdSchema = {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "company": {
+        "type": "string"
+      },
+      "namespacePrefixes": {
+        "type": "string"
+      },
+      "contactName": {
+        "type": "string"
+      },
+      "contactEmailAddress": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "company",
+      "namespacePrefixes",
+      "contactName",
+      "contactEmailAddress"
+    ]
+  }
+  
+  test("GET VendorsID: Validation Schema Response", () => {
+      const valid = ajv.validate(GetVendorIdSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

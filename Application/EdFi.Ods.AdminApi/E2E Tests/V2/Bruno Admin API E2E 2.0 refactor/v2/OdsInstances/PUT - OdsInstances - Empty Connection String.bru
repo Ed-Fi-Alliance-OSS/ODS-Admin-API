@@ -1,0 +1,81 @@
+meta {
+  name: OdsInstances - Empty Connection String
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Updated-Test-OdsInstance-{{OdsInstanceGUID}}-Empty",
+      "instanceType": "Updated-Test-OdsInstanceType",
+      "connectionString": ""
+  }
+}
+
+script:post-response {
+  test("PUT OdsInstance connectionString empty: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  console.log("🔧 Setting post environment to ignore SSL certificates...");
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const createdOdsId = bru.getVar("CreatedOdsInstanceId");
+    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances/${createdOdsId}`, axiosConfig);
+
+    if (odsResponse.status === 200) {
+      console.log("✅ OdsInstance List loaded");
+      const updatedOdsInstanceJson = odsResponse.data;
+      test("PUT OdsInstance connectionString empty: Response includes updated odsInstance", function () {
+        expect(updatedOdsInstanceJson.name).to.equal(`Updated-Test-OdsInstance-${bru.getVar("OdsInstanceGUID")}-Empty`);
+        expect(updatedOdsInstanceJson.instanceType).to.not.be.empty;
+       });
+    } else {
+      console.log("❌ Failed to get odsInstances");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    }    
+  } catch (error) {
+    console.log("Error in post-request setup:", error.message);
+  }    
+}
+
+settings {
+  encodeUrl: true
+}

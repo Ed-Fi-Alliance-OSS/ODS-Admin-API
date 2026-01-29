@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Admin API E2E 2.0",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

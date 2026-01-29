@@ -1,0 +1,75 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/connect/register
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  ClientId: {{RegisteredClientId}}
+  ClientSecret: {{RegisteredClientSecret}}
+  DisplayName: Postman Test
+}
+
+script:pre-request {
+  
+  bru.setVar("RegisteredClientId", bru.interpolate('{{$guid}}'));
+  bru.setVar("RegisteredClientSecret", bru.interpolate('TKN{{$guid}}'));
+  
+}
+
+script:post-response {
+  test("POST Register: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("POST Register: Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+  });
+  
+  test("POST Register: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("client");
+      expect(response.title.toLowerCase()).to.contain("registered");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const PostRegisterSchema = {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "status": {
+        "type": "integer"
+      }
+    },
+    "required": [
+      "title",
+      "status"
+    ]
+  }
+  
+  test("POST Register: Validation Schema Response", () => {
+      const valid = ajv.validate(PostRegisterSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

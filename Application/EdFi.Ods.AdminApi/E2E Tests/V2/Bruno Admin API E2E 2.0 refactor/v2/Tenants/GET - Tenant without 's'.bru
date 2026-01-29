@@ -1,0 +1,22 @@
+meta {
+  name: Tenant without 's'
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{API_URL}}/v2/tenant
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Tenants: Status code is Invalid", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

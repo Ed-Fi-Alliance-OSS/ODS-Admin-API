@@ -1,0 +1,107 @@
+meta {
+  name: OdsInstanceContexts - Invalid Combined Key
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{API_URL}}/v2/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "contextKey": "ckey2",
+    "contextValue": "cvalue"
+  }
+}
+
+script:pre-request {
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const odsInstanceContextsResponse = await axios.post(`${API_URL}/v2/odsInstanceContexts`, {
+      "odsInstanceId": `${bru.getVar("ODSInstanceId")}`,
+      "contextKey": "ckey2",
+      "contextValue": "cvalue2"
+    }, axiosConfig);
+
+    if (odsInstanceContextsResponse.status === 201) {
+      console.log("✅ odsInstanceContexts created successfully");
+      let headers = odsInstanceContextsResponse.headers; 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location;
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("OtherOdsInstanceContextId", id);
+          }
+      }
+    } else {
+      console.log("❌ Failed to create odsInstanceContexts");
+      console.log("Status:", odsInstanceContextsResponse.status);
+      console.log("Response data:", JSON.stringify(odsInstanceContextsResponse.data, null, 2));
+      throw new Error(`Failed to create odsInstanceContexts - Status: ${odsInstanceContextsResponse.status}, Data: ${JSON.stringify(odsInstanceContextsResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+
+}
+
+script:post-response {
+  test("PUT OdsInstanceContexts Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+   const response = res.getBody();
+   
+  test("PUT OdsInstanceContexts Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  
+  test("PUT ODS Instance Contexts Invalid ODSInstance: Response errors combined key validation", function () {
+       expect(response.title).to.contain("Validation failed");
+       expect(response.errors).to.be.an("object").and.not.to.be.empty;
+       expect(response.errors[""]).to.be.an("array").that.includes("The combined key ODS instance id and context key must be unique.");
+   });
+}
+
+settings {
+  encodeUrl: true
+}

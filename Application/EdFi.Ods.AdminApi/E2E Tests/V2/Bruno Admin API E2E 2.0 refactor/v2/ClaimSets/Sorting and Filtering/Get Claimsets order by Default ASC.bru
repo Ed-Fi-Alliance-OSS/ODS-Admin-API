@@ -1,0 +1,41 @@
+meta {
+  name: Get Claimsets order by Default ASC
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/claimSets?offset={{offset}}&limit={{limit}}&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  direction: ASC
+}
+
+script:post-response {
+  var _ = require('lodash');
+  
+  test("GET Claimsets: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Claimsets: Response result includes claimsets", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET Claimsets: Response result is ordered by Name asc", function () {
+      const results = res.getBody();
+      var expectedSortedOrder = _.orderBy(results, [claimset => claimset.name],['asc']);
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

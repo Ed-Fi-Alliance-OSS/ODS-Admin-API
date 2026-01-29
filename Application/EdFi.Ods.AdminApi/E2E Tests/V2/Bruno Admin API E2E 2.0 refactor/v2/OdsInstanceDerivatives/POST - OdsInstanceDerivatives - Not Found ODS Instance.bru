@@ -1,0 +1,42 @@
+meta {
+  name: OdsInstanceDerivatives - Not Found ODS Instance
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": 9000,
+    "derivativeType": "ReadReplica",
+    "connectionString": ""
+  }
+}
+
+script:post-response {
+  test("POST ODS Instance Derivatives Invalid: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ODS Instance Derivatives Invalid: Response matches title property", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  
+  test("POST ODS Instance Derivatives Invalid ODSInstance: Response errors include messages by property", function () {
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstance");
+      expect(response.title).to.contain("It may have been recently deleted");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,43 @@
+meta {
+  name: OdsInstanceDerivatives - Not Found
+  type: http
+  seq: 18
+}
+
+put {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/{{NotExistOdsInstancesDerivativeId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "derivativeType": "Snapshot",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("PUT OdsInstanceDerivatives NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("PUT OdsInstanceDerivatives NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT OdsInstanceDerivatives NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstanceDerivative");
+      expect(response.title).to.contain(bru.getEnvVar("NotExistOdsInstancesDerivativeId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

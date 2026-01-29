@@ -1,0 +1,22 @@
+meta {
+  name: OdsInstanceContexts
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{API_URL}}/v2/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE OdsInstanceContexts: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,75 @@
+meta {
+  name: ResourceClaimsActions - Without Limit and Offset
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{API_URL}}/v2/resourceClaimActions
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ResourceClaims: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetResourceClaimsActionsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "resourceClaimId": {
+            "type": "integer"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "claimName": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }]
+          }
+        },
+        "required": [
+          "resourceClaimId",
+          "resourceName",
+          "claimName",
+          "actions"
+        ]
+      }
+    ]
+  }
+  
+  test("GET ResourceClaimsActions: Validation Schema Response", () => {
+      const valid = ajv.validate(GetResourceClaimsActionsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

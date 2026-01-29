@@ -1,0 +1,22 @@
+meta {
+  name: OdsInstances
+  type: http
+  seq: 21
+}
+
+delete {
+  url: {{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE OdsInstances: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

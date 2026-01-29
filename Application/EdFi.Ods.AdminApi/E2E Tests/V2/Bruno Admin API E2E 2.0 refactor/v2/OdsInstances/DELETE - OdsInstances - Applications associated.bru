@@ -1,0 +1,38 @@
+meta {
+  name: OdsInstances - Applications associated
+  type: http
+  seq: 23
+}
+
+delete {
+  url: {{API_URL}}/v2/odsInstances/{{ODSInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE OdsInstance Applications associated: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("DELETE OdsInstance Applications associated: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("DELETE OdsInstance Applications associated: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("DELETE OdsInstance Applications associated: Response errors include messages by property", function () {
+      expect(response.errors.Id[0]).to.contain("Can not be deleted");
+      expect(response.errors.Id[0]).to.contain("Applications"); 
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

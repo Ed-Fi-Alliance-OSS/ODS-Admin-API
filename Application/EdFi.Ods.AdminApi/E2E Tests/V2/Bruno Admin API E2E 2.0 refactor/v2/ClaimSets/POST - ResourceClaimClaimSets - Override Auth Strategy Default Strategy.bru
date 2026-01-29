@@ -1,0 +1,31 @@
+meta {
+  name: ResourceClaimClaimSets - Override Auth Strategy Default Strategy
+  type: http
+  seq: 29
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4/overrideAuthorizationStrategy
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "actionName": "create",
+    "authorizationStrategies": [
+      "RelationshipsWithStudentsOnly", "NoFurtherAuthorizationRequired"
+    ]
+  }
+  
+}
+
+script:post-response {
+  test("POST OverrideAuthStrategy: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,21 @@
+meta {
+  name: ResourceClaimClaimSets - Reset Authorization Strategies Not Found
+  type: http
+  seq: 36
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/40000/resetAuthorizationStrategies
+  body: json
+  auth: inherit
+}
+
+script:post-response {
+  test("POST ResetAuthorizationStrategies: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

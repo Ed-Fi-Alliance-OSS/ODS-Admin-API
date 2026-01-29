@@ -1,0 +1,73 @@
+meta {
+  name: Tenants
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/tenants
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Tenants: Status code is Found", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetTenantsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "tenantName": {
+            "type": "string"
+          },
+          "adminConnectionString": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string"
+              },
+              "database": {
+                "type": "string"
+              }
+            },
+          },
+          "securityConnectionString": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string"
+              },
+              "database": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "tenantName"
+        ]
+      }
+    ]
+  }
+  
+  test("GET Tenants: Validation Schema Response", () => {
+      const valid = ajv.validate(GetTenantsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

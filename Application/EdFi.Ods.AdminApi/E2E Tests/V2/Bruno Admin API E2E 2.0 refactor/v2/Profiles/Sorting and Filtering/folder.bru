@@ -1,0 +1,142 @@
+meta {
+  name: Admin API E2E 2.0 - Sorting and Filtering - ODS Instances
+  seq: 24
+}
+
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{TOKEN}}
+}
+
+script:pre-request {
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    let totalToCreate = bru.getEnvVar("PROFILECOUNT");
+    var profilesToDelete = [];
+
+    for (let i = 0; i < totalToCreate; i++) {
+        const timestamp = Date.now();
+        bru.setEnvVar("FILTEPROFILENAME", timestamp);
+       
+
+        const profileResponse = await axios.post(`${API_URL}/v2/profiles`, {
+             "name": `${timestamp}`, 
+             "definition": `<Profile name=\"${timestamp}\"><Resource name=\"Resource1\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"Collection1\" memberSelection=\"IncludeOnly\"><Property name=\"Property1\" /><Property name=\"Property2\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"Collection2\" memberSelection=\"IncludeOnly\"><Property name=\"Property1\" /><Property name=\"Property2\" /></Collection></WriteContentType></Resource></Profile>`
+        }, axiosConfig);
+
+        if (profileResponse.status === 201) {
+          console.log(`✅ Profile ${i} Created Successfully`);
+          let location = profileResponse.headers.get('Location');
+          let matches = location.match(/(\d+)/);
+          let profileId = parseInt(matches[0], 10);
+          profilesToDelete.push(profileId);
+        } else {
+          console.log(`❌ Failed to post profile ${i}`);
+          console.log("Status:", profileResponse.status);
+          console.log("Response data:", JSON.stringify(profileResponse.data, null, 2));
+          throw new Error(`Failed to post profile - Status: ${profileResponse.status}, Data: ${JSON.stringify(profileResponse.data)}`);
+        } 
+
+    }
+
+    bru.setEnvVar("PROFILESTODELETE", profilesToDelete);
+
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+
+}
+
+script:post-response {
+  (async () => {
+    console.log("🔧 Setting post environment to ignore SSL certificates...");
+  
+    // Safely set Node.js environment variable if available (CLI only)
+    try {
+      if (typeof process !== 'undefined' && process.env) {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+      }
+    } catch (e) {
+      // Ignore in UI environment
+    }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+
+    async function deleteProfileById(id) {
+        const profileResponse = await axios.delete(`${API_URL}/v2/profiles/${id}`, axiosConfig);
+
+        if (profileResponse.status === 200) {
+          console.log(`✅ Profile ${id} deleted successfully`);
+        } else {
+          console.log("❌ Failed to delete profile");
+          console.log("Status:", profileResponse.status);
+          console.log("Response data:", JSON.stringify(profileResponse.data, null, 2));
+          throw new Error(`Failed to delete profile - Status: ${profileResponse.status}, Data: ${JSON.stringify(profileResponse.data)}`);
+        }
+    }
+
+    let profileToDelete = bru.getEnvVar("PROFILESTODELETE") || [];
+    for (let l = 0; l < profileToDelete.length; l++) {
+        await deleteProfileById(profileToDelete[l]);
+    }
+
+  } catch (error) {
+    console.log("Error in post-request setup:", error.message);
+  }
+  })();
+}

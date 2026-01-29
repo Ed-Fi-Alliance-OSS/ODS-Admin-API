@@ -1,0 +1,44 @@
+meta {
+  name: ClaimSets
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Test ClaimSet {{ClaimSetGUID}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("ClaimSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("POST ClaimSets: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST ClaimSets: Response includes location in header", function () {
+      let headers = res.getHeaders(); 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location || headers["location"];
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("CreatedClaimSetId", id);
+          }
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

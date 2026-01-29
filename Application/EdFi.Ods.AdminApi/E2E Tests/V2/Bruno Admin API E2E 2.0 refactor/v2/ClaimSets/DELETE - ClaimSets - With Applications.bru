@@ -1,0 +1,170 @@
+meta {
+  name: ClaimSets - With Applications
+  type: http
+  seq: 54
+}
+
+delete {
+  url: {{API_URL}}/v2/claimSets/{{OtherExistingClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+      "company": "Other Company",
+      "namespacePrefixes": "uri://ed-fi.org",
+      "contactName": "Other Application User",
+      "contactEmailAddress": "otherapplication@example.com"
+    }, axiosConfig);
+
+    if (vendorResponse.status === 201) {
+      console.log("✅ Vendor created successfully");
+      let headers = vendorResponse.headers; 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location;
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("OtherApplicationVendorId", id);
+          }
+      }
+    } else {
+      console.log("❌ Failed to create vendor");
+      console.log("Status:", vendorResponse.status);
+      console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
+      throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }
+
+    let offsetVar = bru.getEnvVar("offset");
+    let limitVar = bru.getEnvVar("limit");
+    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+
+    if (odsResponse.status === 200) {
+      console.log("✅ OdsInstance List loaded");
+      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
+    } else {
+      console.log("❌ Failed to get odsInstances");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    }
+
+    const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+          "applicationName": "Other Vendor Application",
+          "vendorId": bru.getVar("OtherApplicationVendorId"),
+          "claimSetName": "Ed-Fi Sandbox",
+          "profileIds": [],
+          "educationOrganizationIds": [255901],
+          "odsInstanceIds": [bru.getVar("ODSInstanceId")]
+    }, axiosConfig);
+
+    if (applicationResponse.status === 201) {
+      console.log("✅ Application created successfully");
+      let headers = applicationResponse.headers; 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location;
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const appId = locationStr.split("/").pop();
+          if(appId) {
+              bru.setVar("OtherApplicationId", appId);
+          }
+      }
+    } else {
+      console.log("❌ Failed to create application");
+      console.log("Status:", applicationResponse.status);
+      console.log("Response data:", JSON.stringify(applicationResponse.data, null, 2));
+      throw new Error(`Failed to create application - Status: ${applicationResponse.status}, Data: ${JSON.stringify(applicationResponse.data)}`);
+    }
+
+     let applicationId = bru.getVar("OtherApplicationId");
+     const applicationUpdatedResponse = await axios.put(`${API_URL}/v2/applications/${applicationId}`, {
+            "applicationName": "ClaimSet Test Vendor Application",
+            "vendorId": bru.getVar("OtherApplicationVendorId"),
+            "claimSetName": `Other Test ClaimSet ${bru.getVar("OtherClaimSetGUID")}`,
+            "profileIds": [],
+            "educationOrganizationIds": [255901],
+            "odsInstanceIds": [bru.getVar("ODSInstanceId")]
+    }, axiosConfig);
+
+    if (applicationUpdatedResponse.status === 200) {
+      console.log("✅ Application updated successfully");
+    } else {
+      console.log("❌ Failed to update application");
+      console.log("Status:", applicationUpdatedResponse.status);
+      console.log("Response data:", JSON.stringify(applicationUpdatedResponse.data, null, 2));
+      throw new Error(`Failed to update application - Status: ${applicationUpdatedResponse.status}, Data: ${JSON.stringify(applicationUpdatedResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+
+}
+
+script:post-response {
+  test("DEL ClaimSets With Application: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("DEL ClaimSets With Application: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("DEL ClaimSets With Application: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("DEL ClaimSets With Application: Response errors include messages by property", function () {
+      expect(response.errors["id"].length).to.equal(1);
+      ["Cannot delete", "associated application"].forEach((substring) => {
+          expect(response.errors.id[0]).to.contain(substring);
+      });
+  });
+  
+  bru.deleteVar("OtherApplicationId");
+  bru.deleteVar("OtherApplicationVendorId");
+  
+}
+
+settings {
+  encodeUrl: true
+}

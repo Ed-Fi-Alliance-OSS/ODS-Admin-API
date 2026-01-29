@@ -1,0 +1,41 @@
+meta {
+  name: OdsInstanceDerivatives - Invalid ConnectionString
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "derivativeType": "Snapshot",
+    "connectionString": "invalid-connection-string"
+  }
+}
+
+script:post-response {
+  test("POST ODS Instance Derivatives Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ODS Instance Derivatives Invalid: ConnectionString included", function () {
+      expect(response.errors).to.have.property('ConnectionString');
+  });
+  
+  test("POST ODS Instance Derivatives Invalid: ConnectionString value allowed", function () {
+       expect(response.errors.ConnectionString[0]).to.contain("The connection string is not valid.");
+  });
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

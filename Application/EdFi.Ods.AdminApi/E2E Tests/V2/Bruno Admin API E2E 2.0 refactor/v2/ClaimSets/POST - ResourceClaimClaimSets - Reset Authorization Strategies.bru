@@ -1,0 +1,21 @@
+meta {
+  name: ResourceClaimClaimSets - Reset Authorization Strategies
+  type: http
+  seq: 34
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4/resetAuthorizationStrategies
+  body: json
+  auth: inherit
+}
+
+script:post-response {
+  test("POST ResetAuthorizationStrategies: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

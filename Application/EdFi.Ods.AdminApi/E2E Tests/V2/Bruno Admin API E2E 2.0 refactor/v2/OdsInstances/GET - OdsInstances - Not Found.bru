@@ -1,0 +1,35 @@
+meta {
+  name: OdsInstances - Not Found
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances/0
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstances NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("GET OdsInstances NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET OdsInstances NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstance");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

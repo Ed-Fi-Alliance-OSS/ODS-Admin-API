@@ -1,0 +1,50 @@
+meta {
+  name: ResourceClaimClaimSets - Override Auth Strategy Validation Errors
+  type: http
+  seq: 33
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4000/overrideAuthorizationStrategy
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "actionName": "NotExist",
+    "authorizationStrategies": ["RelationshipsWithStudentsOnlys"]
+  }
+  
+}
+
+script:post-response {
+  test("POST OverrideAuthStrategy Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST OverrideAuthStrategy Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST OverrideAuthStrategy Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST OverrideAuthStrategy Invalid: Response errors include messages by property", function () {
+      expect(response.errors.ResourceClaim.length).to.equal(1);
+      expect(response.errors.ResourceClaim[0]).to.contain("doesn't exist");
+      expect(response.errors.AuthorizationStrategies.length).to.equal(1);
+      expect(response.errors.AuthorizationStrategies[0]).to.contain("doesn't exist");
+      expect(response.errors.ActionName.length).to.equal(1);
+      expect(response.errors.ActionName[0]).to.contain("doesn't exist");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}
