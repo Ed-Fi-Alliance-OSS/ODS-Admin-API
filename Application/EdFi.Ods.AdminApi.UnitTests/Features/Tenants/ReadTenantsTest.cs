@@ -5,10 +5,12 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using EdFi.Common.Configuration;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
@@ -22,12 +24,27 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Tenants;
 [TestFixture]
 public class ReadTenantsTest
 {
+    private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
+    private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
+    private IMapper _mapper = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _mapper = A.Fake<IMapper>();
+        _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
+        _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
+    }
+
     [Test]
     public async Task GetTenantsByTenantIdAsync_ReturnsOk_WhenTenantExists()
     {
         var tenantsService = A.Fake<ITenantsService>();
         var memoryCache = A.Fake<IMemoryCache>();
         var options = A.Fake<IOptions<AppSettings>>();
+        var getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
+        var getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
+        var mapper = A.Fake<IMapper>();
         var tenantName = "tenant1";
 
         var tenant = new TenantModel
@@ -127,5 +144,58 @@ public class ReadTenantsTest
         {
             await ReadTenants.GetTenantsAsync(tenantsService, memoryCache, options);
         });
+    }
+
+    [Test]
+    public async Task GetTenantDetailsByNameAsync_ReturnsOk_WhenTenantExists()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        var tenantName = "tenant1";
+
+        var educationOrganization = new TenantEducationOrganizationModel()
+        {
+            InstanceId = 1,
+            InstanceName = "instance name 1",
+            NameOfInstitution = "name of institution 1",
+            ShortNameOfInstitution = "short name of institution 1",
+            Discriminator = "discriminator 1"
+        };
+
+        var odsInstance = new TenantOdsInstanceModel()
+        {
+            OdsInstanceId = 1,
+            EducationOrganizations = [educationOrganization]
+        };
+
+        var tenantDetailModel = new TenantDetailModel()
+        {
+            TenantName = tenantName,
+            OdsInstances = [odsInstance]
+        };
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres" });
+        A.CallTo(() => tenantsService.GetTenantDetailsByNameAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName)).Returns(tenantDetailModel);
+
+        var result = await ReadTenants.GetTenantDetailsByNameAsync(tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, tenantName, options);
+
+        result.ShouldNotBeNull();
+    }
+
+    [Test]
+    public async Task GetTenantDetailsByNameAsync_ReturnsNotFound_WhenTenantDoesNotExist()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        var tenantName = "missingTenant";
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres" });
+        A.CallTo(() => tenantsService.GetTenantByTenantIdAsync(tenantName)).Returns((TenantModel)null);
+
+        var result = await ReadTenants.GetTenantDetailsByNameAsync(tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, tenantName, options);
+
+        result.ShouldNotBeNull();
     }
 }

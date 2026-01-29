@@ -3,13 +3,20 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.Common.Constants;
+using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using log4net;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 
@@ -18,6 +25,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
+    Task<TenantDetailModel?> GetTenantDetailsByNameAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IContextProvider<TenantConfiguration> tenantConfigurationContextProvider, IMapper mapper, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -99,6 +107,38 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
         var tenants = await GetTenantsAsync();
         var tenant = tenants.FirstOrDefault(p => p.TenantName.Equals(tenantName, StringComparison.OrdinalIgnoreCase));
         return tenant;
+    }
+
+    public async Task<TenantDetailModel?> GetTenantDetailsByNameAsync(
+        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IContextProvider<TenantConfiguration> tenantConfigurationContextProvider,
+        IMapper mapper,
+        string tenantName)
+    {
+        var tenant = await GetTenantByTenantIdAsync(tenantName);
+
+        if (tenant is not null)
+        {
+            var tenantDetails = new TenantDetailModel() { TenantName = tenantName };
+
+            var databaseEngine = DatabaseEngineEnum.Parse(_appSettings.AppSettings.DatabaseEngine ?? throw new NotFoundException<string>(nameof(AppSettings), nameof(AppSettings.DatabaseEngine)));
+
+            var odsInstances = getOdsInstancesQuery.Execute(databaseEngine, tenant.ConnectionStrings.EdFiAdminConnectionString);
+
+            tenantDetails.OdsInstances = mapper.Map<List<TenantOdsInstanceModel>>(odsInstances);
+
+
+            foreach (var odsInstance in tenantDetails.OdsInstances)
+            {
+                var edOrgs = getEducationOrganizationQuery.Execute(databaseEngine, tenant.ConnectionStrings.EdFiAdminConnectionString, odsInstance.OdsInstanceId);
+                odsInstance.EducationOrganizations = mapper.Map<List<TenantEducationOrganizationModel>>(edOrgs);
+            }
+
+            return tenantDetails;
+        }
+
+        return null;
     }
 
     private async Task<List<TenantModel>> GetTenantsFromCacheAsync()
