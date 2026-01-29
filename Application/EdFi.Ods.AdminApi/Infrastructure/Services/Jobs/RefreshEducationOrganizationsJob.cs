@@ -36,7 +36,7 @@ public class RefreshEducationOrganizationsJob(
                     tenantName,
                     jobId
                 );
-                await _edOrgService.Execute(tenantName);
+                await _edOrgService.Execute(tenantName, null);
             }
             else if (!string.IsNullOrEmpty(jobType) && jobType.Equals(JobType.Scheduled.GetDisplayName()))
             {
@@ -44,7 +44,7 @@ public class RefreshEducationOrganizationsJob(
                     "Starting scheduled RefreshEducationOrganizationsJob with JobId: {JobId}",
                     jobId
                 );
-                await _edOrgService.Execute(null);
+                await _edOrgService.Execute(null, null);
             }
         }
         else
@@ -53,7 +53,7 @@ public class RefreshEducationOrganizationsJob(
                 "Starting scheduled RefreshEducationOrganizationsJob with JobId: {JobId}",
                 jobId
             );
-            await _edOrgService.Execute(null);
+            await _edOrgService.Execute(null, null);
         }
     }
 }
