@@ -20,10 +20,10 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
-using EdFi.Ods.AdminApi.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
+using EdFi.Ods.AdminApi.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
@@ -225,6 +225,7 @@ public static class WebApplicationBuilderExtensions
             IEducationOrganizationService,
             EducationOrganizationService
         >();
+        webApplicationBuilder.Services.AddHostedService<DefaultTenantContextInitializer>();
     }
 
     public static void AddLoggingServices(this WebApplicationBuilder webApplicationBuilder)
@@ -427,13 +428,12 @@ public static class WebApplicationBuilderExtensions
 
             if (multiTenancyEnabled)
             {
-                var tenants = serviceProvider.GetRequiredService<ITenantConfigurationProvider>().Get();
-
-                var defaultTenant = tenants.FirstOrDefault().Value;
-
-                if (defaultTenant != null && !string.IsNullOrEmpty(defaultTenant.AdminConnectionString))
+                var tenant = serviceProvider
+                    .GetRequiredService<IContextProvider<TenantConfiguration>>()
+                    .Get();
+                if (tenant != null && !string.IsNullOrEmpty(tenant.AdminConnectionString))
                 {
-                    adminConnectionString = defaultTenant.AdminConnectionString;
+                    adminConnectionString = tenant.AdminConnectionString;
                 }
                 else
                 {
