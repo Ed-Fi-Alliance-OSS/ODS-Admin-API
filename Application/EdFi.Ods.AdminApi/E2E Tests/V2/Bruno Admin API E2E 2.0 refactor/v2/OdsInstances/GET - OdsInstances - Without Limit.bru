@@ -1,0 +1,70 @@
+meta {
+  name: OdsInstances - Without Limit
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances?offset={{offset}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+}
+
+script:post-response {
+  test("GET OdsInstances: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET OdsInstances: Response matches success format", function () {
+      expect(response[0]).to.have.property("id");
+      expect(response[0]).to.have.property("name");
+      expect(response[0]).to.have.property("instanceType");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetOdsInstancesSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "instanceType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "instanceType"
+        ]
+      }
+    ]
+  }
+  
+  test("GET OdsInstances: Validation Schema Response", () => {
+      const valid = ajv.validate(GetOdsInstancesSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

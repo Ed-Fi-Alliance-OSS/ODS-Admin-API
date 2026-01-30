@@ -1,0 +1,21 @@
+meta {
+  name: Tenants by Tenant Name Not Found
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v2/tenants/notexistingtenantname
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Tenants: Status code is Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

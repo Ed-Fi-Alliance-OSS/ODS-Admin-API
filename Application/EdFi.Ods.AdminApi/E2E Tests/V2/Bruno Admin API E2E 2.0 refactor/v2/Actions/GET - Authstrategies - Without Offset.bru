@@ -1,0 +1,72 @@
+meta {
+  name: Authstrategies - Without Offset
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{API_URL}}/v2/actions?limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET Actions: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET Actions: Response matches success format", function () {
+      if (response && response.length > 0) {
+          expect(response[0]).to.have.property("id");
+          expect(response[0]).to.have.property("name");
+          expect(response[0]).to.have.property("uri");
+      }
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetActionsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "uri"
+        ]
+      }
+    ]
+  }
+  
+  test("GET Actions: Validation Schema Response", () => {
+      const valid = ajv.validate(GetActionsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

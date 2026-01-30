@@ -1,0 +1,38 @@
+meta {
+  name: Get Vendors filter by ContactEmailAddress
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{API_URL}}/v2/vendors?offset={{offset}}&limit={{limit}}&contactEmailAddress={{FILTERCONTACTEMAILADDRESS}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  contactEmailAddress: {{FILTERCONTACTEMAILADDRESS}}
+}
+
+script:post-response {
+  test("GET Vendors: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Vendors: Response result includes vendor", function () {
+      const results = res.getBody();
+      expect(results).to.have.lengthOf(1);
+  });
+  
+  test("GET Vendors: Response result contains requested vendor", function () {
+      const results = res.getBody();
+      expect(results[0].contactEmailAddress).to.eql(bru.getEnvVar("FILTERCONTACTEMAILADDRESS"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,191 @@
+meta {
+  name: ClaimSets by ID after overriding Authorization Strategy
+  type: http
+  seq: 30
+}
+
+get {
+  url: {{API_URL}}/v2/claimsets/{{CreatedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ClaimSetsId after overriding Authorization Strategy: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody();
+  
+  test("GET ClaimSetsId after overriding Authorization Strategy: Response result matches claimset", function () {
+      const claimSetId = bru.getVar("CreatedClaimSetId");
+      
+      expect(result.id).to.equal(parseInt(claimSetId));
+      expect(result.name).to.equal(`Test ClaimSet ${bru.getVar("ClaimSetGUID")}`);
+      expect(result._isSystemReserved).to.equal(false);
+      expect(result._applications).to.be.empty;
+      expect(result.resourceClaims).to.not.be.empty;
+  
+      const educationOrganizationsResourceClaim = result.resourceClaims.find(r => r.name === "educationOrganizations")
+      expect(educationOrganizationsResourceClaim).to.be.an("object", "The educationOrganizations resource claim was not found.")
+      expect(educationOrganizationsResourceClaim.authorizationStrategyOverridesForCRUD).to.not.be.empty;
+      const overrideAuthCreate = educationOrganizationsResourceClaim.authorizationStrategyOverridesForCRUD.find(r => r.actionName === "Create")
+      expect(overrideAuthCreate).to.be.an("object", "The Create authorization override was not found.")
+      //validates that default wasn't added
+      expect(overrideAuthCreate.authorizationStrategies.length).to.equal(1);
+      const relationshipsWithStudentsOnlyStrategy = overrideAuthCreate.authorizationStrategies.find(r => r.authStrategyName === "RelationshipsWithStudentsOnly")
+      expect(relationshipsWithStudentsOnlyStrategy).to.be.an("object", "The RelationshipsWithStudentsOnly strategy name was not found.")
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetClaimSetsIdSchema = {
+    "type": "object",
+    "properties": {
+      "resourceClaims": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+               "actions": {
+               "type": "array",
+               "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "enabled": {
+                        "type": "boolean"
+                      }
+                  } 
+                  } ]
+              },
+              "_defaultAuthorizationStrategiesForCRUD": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "actionId": {
+                        "type": "integer"
+                      },
+                      "actionName": {
+                        "type": "string"
+                      },
+                      "authorizationStrategies": {
+                        "type": "array",
+                        "items": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                  "authStrategyId": {
+                                  "type": "integer"
+                                  },
+                                  "authStrategyName": {
+                                  "type": "string"
+                                  },
+                                  "isInheritedFromParent": {
+                                  "type": "boolean"
+                                  }                      
+  
+                              }
+                            }
+                        ]
+                      }                    
+                    }
+                  }
+                ]
+              },
+              "authorizationStrategyOverridesForCRUD": {
+                "type": "array",
+                 "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "actionId": {
+                        "type": "integer"
+                      },
+                      "actionName": {
+                        "type": "string"
+                      },
+                      "authorizationStrategies": {
+                        "type": "array",
+                        "items": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                  "authStrategyId": {
+                                  "type": "integer"
+                                  },
+                                  "authStrategyName": {
+                                  "type": "string"
+                                  },
+                                  "isInheritedFromParent": {
+                                  "type": "boolean"
+                                  }
+                              }
+                            }
+                        ]
+                      }                    
+                    }
+                  }
+                ]
+              },
+              "children": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "required": [
+              "name",
+              "actions",
+              "_defaultAuthorizationStrategiesForCRUD",
+              "authorizationStrategyOverridesForCRUD",
+              "children"
+            ]
+          }
+        ]
+      },
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "_isSystemReserved": {
+        "type": "boolean"
+      },
+      "_applications": {
+        "type": "array",
+        "items": {}
+      }
+    },
+    "required": [
+      "resourceClaims",
+      "id",
+      "name",
+      "_isSystemReserved",
+      "_applications"
+    ]
+  }
+  
+  test("GET ClaimSetId after overriding Authorization Strategy: Validation Schema Response", () => {
+      const valid = ajv.validate(GetClaimSetsIdSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

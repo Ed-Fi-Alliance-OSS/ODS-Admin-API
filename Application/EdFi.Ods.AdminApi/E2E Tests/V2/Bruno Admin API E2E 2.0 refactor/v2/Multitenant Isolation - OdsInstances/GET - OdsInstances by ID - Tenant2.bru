@@ -1,0 +1,153 @@
+meta {
+  name: OdsInstances by ID - Tenant2
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}
+  body: none
+  auth: bearer
+}
+
+headers {
+  Tenant: tenant2
+}
+
+auth:bearer {
+  token: {{TOKEN_TENANT2}}
+}
+
+script:pre-request {
+    
+  if (bru.getEnvVar("isMultitenant") == "true") {
+      function generateClientSecret() {
+          const minLength = 32;
+          const maxLength = 128;
+          let result = '';
+          const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          const specialCharacters = '!@#$%^&*()_+{}:"<>?|[];\',./`~';
+          const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
+  
+          result += randomChar('abcdefghijklmnopqrstuvwxyz');
+          result += randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+          result += randomChar('0123456789');
+          result += randomChar(specialCharacters);
+  
+          for (let i = result.length; i < length; i++) {
+              const charactersPlusSpecial = characters + specialCharacters;
+              result += charactersPlusSpecial.charAt(Math.floor(Math.random() * charactersPlusSpecial.length));
+          }
+  
+          return shuffleString(result);
+      }
+  
+      function randomChar(str) {
+          return str.charAt(Math.floor(Math.random() * str.length));
+      }
+  
+      function shuffleString(str) {
+          const array = str.split('');
+          for (let i = array.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array.join('');
+      }
+  
+      let guid = bru.interpolate('{{$guid}}');
+      let client_secret =  generateClientSecret();
+
+      console.log("🔧 Setting pre environment to ignore SSL certificates...");
+      
+      // Safely set Node.js environment variable if available (CLI only)
+      try {
+        if (typeof process !== 'undefined' && process.env) {
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+        }
+      } catch (e) {
+        // Ignore in UI environment
+      }
+
+      const axios = require('axios');
+      const API_URL = bru.getEnvVar("API_URL");
+
+      // Configure axios to handle SSL and network issues
+      const axiosConfig = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        validateStatus: function (status) {
+          return status < 500;
+        },
+        timeout: 30000
+      };
+  
+      if (bru.getEnvVar("isMultitenant") == "true") {
+          axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant2")}`;
+          req.setHeader("Tenant", "tenant2");
+      }
+      console.log("HEADERS", axiosConfig.headers)
+      try {
+        const registerResponse = await axios.post(`${API_URL}/connect/register`, {
+              "ClientId": guid,
+              "ClientSecret": client_secret,
+              "DisplayName": guid
+        }, axiosConfig);
+
+        if (registerResponse.data.status === 200) {
+          console.log("✅ Register created successfully");
+          const clientResponse = await axios.post(`${API_URL}/connect/token`, {
+                  "client_id": guid,
+                  "client_secret": client_secret,
+                  "grant_type": "client_credentials",
+                  "scope": "edfi_admin_api/full_access"
+          }, axiosConfig);
+
+          if (clientResponse.status === 200) {
+            console.log("✅ Get Token successfully");            
+            bru.setEnvVar("TOKEN_TENANT2", clientResponse.data.access_token);
+          } else {
+          console.log("❌ Failed to get token");
+          console.log("Status:", clientResponse.status);
+          console.log("Response data:", JSON.stringify(clientResponse.data, null, 2));
+          throw new Error(`Failed to get token - Status: ${clientResponse.status}, Data: ${JSON.stringify(clientResponse.data)}`);
+        }
+        } else {
+          console.log("❌ Failed to register client");
+          console.log("Status:", registerResponse.status);
+          console.log("Response data:", JSON.stringify(registerResponse.data, null, 2));
+          throw new Error(`Failed to register client - Status: ${registerResponse.status}, Data: ${JSON.stringify(registerResponse.data)}`);
+        }
+      
+      } catch (error) {
+        console.log("Error in pre-request setup:", error.message);
+      }
+
+  }
+}
+
+script:post-response {
+  if (bru.getEnvVar("isMultitenant") == "true") {
+      test("GET OdsInstances NotFound: Status code is Not Found", function () {
+          expect(res.getStatus()).to.equal(404);
+      });
+  
+      test("GET OdsInstances NotFound: Response matches error format", function () {
+          const response = res.getBody();
+  
+          expect(response).to.have.property("title");
+      });
+  
+      test("GET OdsInstances NotFound: Response title is helpful and accurate", function () {
+          const response = res.getBody();
+  
+          expect(response.title).to.contain("Not found");
+          expect(response.title).to.contain("odsInstance");
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

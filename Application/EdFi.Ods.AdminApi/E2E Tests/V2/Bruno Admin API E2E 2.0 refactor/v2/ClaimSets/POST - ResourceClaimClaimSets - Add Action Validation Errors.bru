@@ -1,0 +1,55 @@
+meta {
+  name: ResourceClaimClaimSets - Add Action Validation Errors
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaimId": 4000,
+    "resourceClaimActions": [
+      {
+        "name": "read",
+        "enabled": false
+      },
+      {
+        "name": "create",
+        "enabled": false
+      }
+    ]
+  }
+}
+
+script:post-response {
+  test("POST ResourceClaimAction Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ResourceClaimAction Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST ResourceClaimAction Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST ResourceClaimAction Invalid: Response errors include messages by property", function () {
+      expect(response.errors.ResourceClaimActions.length).to.equal(2);
+      expect(response.errors.ResourceClaimActions[0]).to.contain("which is not in the system");
+      expect(response.errors.ResourceClaimActions[1]).to.contain("have at least one action");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

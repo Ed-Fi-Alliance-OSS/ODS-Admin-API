@@ -1,0 +1,56 @@
+meta {
+  name: Landing Page
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}
+  body: json
+  auth: none
+}
+
+script:post-response {
+  test("GET Landing: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET Landing: Response includes expected properties", function () {
+      expect(response).to.have.property("version");
+      expect(response).to.have.property("build");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetSchemaLanding =  {
+    "type": "object",
+    "properties": {
+      "version": {
+        "type": "string"
+      },
+      "build": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "version",
+      "build"
+    ]
+  }
+  
+  test("GET Landing: Validation Schema Response", () => {
+      const valid = ajv.validate(GetSchemaLanding, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,94 @@
+meta {
+  name: Resourceclaims by ID
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v2/resourceClaims/1
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ResourceClaimsId: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET ResourceClaimsId: Response matches success format", function () {
+      expect(response).to.have.property("id");
+      expect(response).to.have.property("name");
+      expect(response).to.have.property("parentId");
+      expect(response).to.have.property("parentName");
+      expect(response).to.have.property("children");
+  });
+  
+  const GetResourceClaimsIdSchema = {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "parentId": {
+        "type": "integer"
+      },
+      "parentName": {
+        "type": "null"
+      },
+      "children": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "parentId": {
+                "type": "integer"
+              },
+              "parentName": {
+                "type": "string"
+              },
+              "children": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "parentId",
+              "parentName",
+              "children"
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "parentId",
+      "parentName",
+      "children"
+    ]
+  }
+  
+  test("GET ResourceClaimsId: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetResourceClaimsIdSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,42 @@
+meta {
+  name: Get Vendors order by ContactEmailAddress Asc
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v2/vendors?offset={{offset}}&limit={{limit}}&orderBy=ContactEmailAddress&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  orderBy: ContactEmailAddress
+  direction: ASC
+}
+
+script:post-response {
+  var _ = require('lodash');
+  
+  test("GET Vendors: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Vendors: Response result includes vendors", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET Vendors: Response result is ordered by contactEmailAddress asc", function () {
+      const results = res.getBody();
+      var expectedSortedOrder = _.orderBy(results, [vendor => vendor.contactEmailAddress],['asc']);
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

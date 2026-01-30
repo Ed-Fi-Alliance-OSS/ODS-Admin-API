@@ -1,0 +1,52 @@
+meta {
+  name: Applications - Invalid OdsInstance
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{API_URL}}/v2/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": {{CreatedApplicationId}},
+    "applicationName": "Updated Application Name",
+    "vendorId": {{OtherApplicationVendorId}},
+    "claimSetName": "Ed-Fi ODS Admin App",
+    "profileIds": [],
+    "educationOrganizationIds": [1234],
+    "odsInstanceIds": [ 9999 ]
+  }
+  
+}
+
+script:post-response {
+  test("PUT Application Invalid OdsInstance: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  const errors = res.getBody().errors;
+  
+  test("PUT Application Invalid OdsInstance: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT Application Invalid OdsInstance: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT Application Invalid OdsInstance: Response errors include messages by property", function () {
+      expect(response.errors.OdsInstanceIds.length).to.equal(1);
+      expect(response.errors.OdsInstanceIds[0]).to.contain("not found");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

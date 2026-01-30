@@ -1,0 +1,63 @@
+meta {
+  name: OdsInstanceDerivatives by ID
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstanceDerivativesById: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET OdsInstanceDerivativesId: Response result matches OdsInstancesDerivative", function () {
+      const result = res.getBody();
+      expect(result.derivativeType).to.not.be.empty;
+      expect(result.odsInstanceId).to.not.equal(0);
+  });
+  
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetOdsInstanceDerivativesSchema = {
+    "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "derivativeType": {
+            "type": "string"
+          },
+          "connectionString": {
+            "type": "string"
+          },
+          "odsInstanceId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "derivativeType",
+          "odsInstanceId"     
+        ]
+  }
+  
+  test("GET OdsInstancesDerivative: Validation Schema Response", () => {
+      const valid = ajv.validate(GetOdsInstanceDerivativesSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

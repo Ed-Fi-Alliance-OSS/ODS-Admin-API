@@ -1,0 +1,47 @@
+meta {
+  name: Profiles - Invalid
+  type: http
+  seq: 18
+}
+
+put {
+  url: {{API_URL}}/v2/profiles/{{CreatedProfileId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "Name": "",
+      "Definition": "<Profile name=\"Updated-Test-Profile\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
+  }
+}
+
+script:post-response {
+  test("POST Profiles Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST Profiles Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST Profiles Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST Profiles Invalid: Response errors include messages by property", function () {
+      expect(response.errors["Name"].length).to.equal(1);
+  });
+  
+  test("POST Profiles Invalid: Response errors include messages with wrong element name", function () {
+      expect(response.errors["Name"][0].toLowerCase()).to.contain("'name' must not be empty");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

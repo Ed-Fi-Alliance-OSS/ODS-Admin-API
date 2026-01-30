@@ -1,0 +1,43 @@
+meta {
+  name: Get Profiles order by Id Asc
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{API_URL}}/v2/profiles?offset={{offset}}&limit={{limit}}&orderBy=Id&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  orderBy: Id
+  direction: ASC
+}
+
+script:post-response {
+  var _ = require('lodash');
+  
+  test("GET Profiles: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Profiles: Response result includes profiles", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET Profiles: Response result is ordered by Id asc", function () {
+      const results = res.getBody();
+      var expectedSortedOrder = _.orderBy(results, [profile => profile.id],['asc']);
+      
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

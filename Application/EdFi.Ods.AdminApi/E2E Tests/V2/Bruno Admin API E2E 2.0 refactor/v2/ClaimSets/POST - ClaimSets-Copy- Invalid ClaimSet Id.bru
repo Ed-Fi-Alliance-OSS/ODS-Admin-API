@@ -1,0 +1,51 @@
+meta {
+  name: ClaimSets/Copy- Invalid ClaimSet Id
+  type: http
+  seq: 44
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/copy
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Claim set does not exists",
+      "originalid": {{NotExistClaimSetId}}
+  }
+}
+
+script:pre-request {
+  function randomIntFromInterval(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+  
+  const rndInt = randomIntFromInterval(450, 783)
+  bru.setVar("NotExistClaimSetId", bru.interpolate(rndInt));
+  
+}
+
+script:post-response {
+  test("POST ClaimSet NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("POST ClaimSet NotFound: Response matches error format", function () {
+      const response = res.getBody();
+      expect(response).to.have.property("title");
+  });
+  
+  test("POST ClaimSet NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+      expect(response.title).to.contains("Not found");
+      expect(response.title).to.contains("claimset");    
+  });
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

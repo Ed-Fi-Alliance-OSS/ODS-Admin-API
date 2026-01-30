@@ -1,0 +1,42 @@
+meta {
+  name: Get Vendors order by NamespacePrefix Asc
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{API_URL}}/v2/vendors?offset={{offset}}&limit={{limit}}&orderBy=namespacePrefixes&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  orderBy: namespacePrefixes
+  direction: ASC
+}
+
+script:post-response {
+  var _ = require('lodash');
+  
+  test("GET Vendors: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Vendors: Response result includes vendors", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET Vendors: Response result is ordered by NamespacePrefixes asc", function () {
+      const results = res.getBody();
+      var expectedSortedOrder = _.orderBy(results, [vendor => vendor.namespacePrefixes],['asc']);
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

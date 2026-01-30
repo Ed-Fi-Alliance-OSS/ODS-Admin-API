@@ -1,0 +1,36 @@
+meta {
+  name: Vendors with Invalid Application - Not Found
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{API_URL}}/v2/vendors/0/applications
+  body: json
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Vendors NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("GET Vendors NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET Vendors NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("vendor");
+      expect(response.title).to.contain("0");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

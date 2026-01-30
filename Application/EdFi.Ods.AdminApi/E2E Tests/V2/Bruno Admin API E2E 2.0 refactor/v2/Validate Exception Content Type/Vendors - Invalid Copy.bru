@@ -1,0 +1,42 @@
+meta {
+  name: Vendors - Invalid Copy
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v2/vendors?offset={{offset}}&limit={{limit}}&orderBy=id&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  orderBy: id
+  direction: ASC
+}
+
+body:json {
+  {
+      "company": "",
+      "namespacePrefixes": "",
+      "contactName": "",
+      "contactEmailAddress": ""
+  }
+}
+
+script:post-response {  
+  test("POST Vendors Invalid: Response with content type error", function () {
+      expect(res.getHeader("content-type")).to.include("application/problem+json");
+  });
+  
+  test("POST Vendors Invalid: Response with content type error", function () {
+      expect(res.getHeader("content-type")).to.not.include("application/json");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

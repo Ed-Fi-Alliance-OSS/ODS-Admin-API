@@ -1,0 +1,58 @@
+meta {
+  name: Profile by ID
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{API_URL}}/v2/profiles/{{CreatedProfileId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ProfileById: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET ProfileById: Response result matches profile", function () {
+      const result = res.getBody();
+      expect(result.name).to.contains(`Test-Profile`);
+      expect(result.definition).to.not.be.empty;   
+  });
+  
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetProfileIdSchema = {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "definition": {
+        "type": "string"
+      },
+      "applications": {
+        "type": "array",
+        "items": {}
+      }
+    }
+  }
+  
+  test("GET ProfileById: Validation Schema Response", () => {
+      const valid = ajv.validate(GetProfileIdSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

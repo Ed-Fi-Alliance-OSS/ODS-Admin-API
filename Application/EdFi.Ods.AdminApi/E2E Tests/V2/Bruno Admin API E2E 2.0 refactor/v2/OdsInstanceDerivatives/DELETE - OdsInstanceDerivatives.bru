@@ -1,0 +1,22 @@
+meta {
+  name: OdsInstanceDerivatives
+  type: http
+  seq: 26
+}
+
+delete {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE OdsInstanceDerivatives: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}
