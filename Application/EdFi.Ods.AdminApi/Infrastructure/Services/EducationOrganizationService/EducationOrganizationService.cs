@@ -8,10 +8,8 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +23,11 @@ public interface IEducationOrganizationService
 }
 
 public class EducationOrganizationService(
-    ITenantsService tenantsService,
     IOptions<AppSettings> options,
-    ITenantConfigurationProvider tenantConfigurationProvider,
     IUsersContext usersContext,
     AdminApiDbContext adminApiDbContext,
     ISymmetricStringEncryptionProvider encryptionProvider,
-    IConfiguration configuration,
+    ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
     ILogger<EducationOrganizationService> logger
         ) : IEducationOrganizationService
 {
@@ -66,64 +62,18 @@ public class EducationOrganizationService(
 
         if (multiTenancyEnabled)
         {
-            var tenants = await GetTenantsAsync();
-            var tenantConfigurations = tenantConfigurationProvider.Get();
-
-            var tenantsWithConfigurations = tenants
-                .Where(tenant => tenant.TenantName is not null &&
-                                 tenantConfigurations.TryGetValue(tenant.TenantName, out var config) &&
-                                 config is not null)
-                .Select(tenant => tenantConfigurations[tenant.TenantName!])
-                .ToList();
-
-            if (!string.IsNullOrEmpty(tenantName))
+            if (string.IsNullOrEmpty(tenantName))
             {
-                tenantsWithConfigurations = [.. tenantsWithConfigurations.Where(tc => !string.IsNullOrEmpty(tc.TenantIdentifier)
-                && tc.TenantIdentifier.Equals(tenantName, StringComparison.OrdinalIgnoreCase))];
+                logger.LogError("Tenant name must be provided when multi-tenancy is enabled.");
+                return;
             }
-
-            foreach (var tenantConfiguration in tenantsWithConfigurations)
-            {
-                await ProcessTenantConfiguration(tenantConfiguration, encryptionKey, databaseEngine);
-            }
+            var tenantSpecificAdminApiDbContext = tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName!);
+            var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
+            await ProcessOdsInstance(tenantSpecificUsersContext, tenantSpecificAdminApiDbContext, encryptionKey, databaseEngine);
         }
         else
         {
             await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
-        }
-    }
-
-    private async Task ProcessTenantConfiguration(TenantConfiguration tenantConfiguration, string encryptionKey, string databaseEngine)
-    {
-        if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
-        {
-            var usersOptionsBuilder = new DbContextOptionsBuilder<SqlServerUsersContext>();
-            usersOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-            usersContext = new SqlServerUsersContext(usersOptionsBuilder.Options);
-
-            var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
-            adminApiOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, configuration);
-
-            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
-        }
-        else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
-        {
-            var usersOptionsBuilder = new DbContextOptionsBuilder<PostgresUsersContext>();
-            usersOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
-            usersOptionsBuilder.UseLowerCaseNamingConvention();
-            usersContext = new PostgresUsersContext(usersOptionsBuilder.Options);
-
-            var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
-            adminApiOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
-            adminApiOptionsBuilder.UseLowerCaseNamingConvention();
-            adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, configuration);
-
-            await ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine);
-        }
-        else
-        {
-            throw new NotSupportedException($"Database engine '{databaseEngine}' is not supported.");
         }
     }
 
@@ -283,12 +233,6 @@ public class EducationOrganizationService(
         return results;
     }
 
-    private async Task<List<TenantModel>> GetTenantsAsync()
-    {
-        var tenants = await tenantsService.GetTenantsAsync();
-
-        return tenants ?? new List<TenantModel>();
-    }
 }
 
 public class EducationOrganizationResult
