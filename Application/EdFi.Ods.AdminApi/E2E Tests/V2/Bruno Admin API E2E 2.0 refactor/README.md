@@ -1,6 +1,7 @@
 # Admin API E2E Testing with Bruno
 
-This repository contains end-to-end tests for the Admin API using Bruno test runner. The test suite supports both single-tenant and multi-tenant configurations with PostgreSQL and SQL Server databases.
+This repository contains end-to-end tests for the Admin API using Bruno test runner. 
+The test suite supports both single-tenant and multi-tenant configurations with PostgreSQL and SQL Server databases.
 
 ## 🚀 Quick Start
 
