@@ -190,31 +190,32 @@ internal class TenantServiceTests
             Discriminator = "School"
         };
 
-        var tenantDetailsModel = new TenantDetailModel
+        var tenantOdsInstanceModels = new List<TenantOdsInstanceModel>
         {
-            TenantName = tenantName,
-            OdsInstances = [
-                new TenantOdsInstanceModel {
-                    OdsInstanceId = 101,
-                    Name = "Test Instance",
-                    EducationOrganizations =
-                    [
-                        new()
-                        {
-                            InstanceId = 101,
-                            InstanceName = "Test Instance",
-                            EducationOrganizationId = 1001,
-                            NameOfInstitution = "Test School",
-                            ShortNameOfInstitution = "Test",
-                            Discriminator = "School"
-                        }
-                    ]
-                }]
+            new()
+            {
+                OdsInstanceId = 101,
+                Name = "Test Instance"
+            }
         };
 
+        var tenantEducationOrganizationModels = new List<TenantEducationOrganizationModel>
+        {
+            new()
+            {
+                InstanceId = 101,
+                InstanceName = "Test Instance",
+                EducationOrganizationId = 100,
+                NameOfInstitution = "Test School",
+                ShortNameOfInstitution = "Test",
+                Discriminator = "School"
+            }
+        };
 
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
-        A.CallTo(() => _getEducationOrganizationQuery.Execute()).Returns([educationOrganization]);
+        A.CallTo(() => _getEducationOrganizationQuery.Execute(101)).Returns([educationOrganization]);
+        A.CallTo(() => _mapper.Map<List<TenantOdsInstanceModel>>(A<List<OdsInstance>>._)).Returns(tenantOdsInstanceModels);
+        A.CallTo(() => _mapper.Map<List<TenantEducationOrganizationModel>>(A<List<EducationOrganization>>._)).Returns(tenantEducationOrganizationModels);
 
         var tenant = await service.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName);
 
