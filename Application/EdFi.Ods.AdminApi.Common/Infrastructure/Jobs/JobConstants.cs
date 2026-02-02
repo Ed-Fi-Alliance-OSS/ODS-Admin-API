@@ -9,5 +9,6 @@ public class JobConstants
 {
     public const string JobTypeKey = "JobType";
     public const string TenantNameKey = "TenantName";
+    public const string OdsInstanceIdKey = "OdsInstanceId";
     public const string RefreshEducationOrganizationsJobName = "RefreshEducationOrganizationsJob";
 }

@@ -6,11 +6,11 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
-using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Quartz;
 
 namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 
@@ -40,13 +40,23 @@ public class RefreshEducationOrganizations : IFeature
     }
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
-        [FromServices] IEducationOrganizationService educationOrganizationService,
+        [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider)
     {
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
-        await educationOrganizationService.Execute(tenantIdentifier, instanceId: null);
+        var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
+            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
+            .Build();
+
+        var trigger = TriggerBuilder.Create()
+            .StartNow()
+            .Build();
+
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.ScheduleJob(job, trigger);
 
         return Results.Accepted(null, new
         {
@@ -55,17 +65,24 @@ public class RefreshEducationOrganizations : IFeature
     }
 
     public static async Task<IResult> RefreshEducationOrganizationsByInstance(
-        [FromServices] IEducationOrganizationService educationOrganizationService,
-        [FromServices] IGetOdsInstanceQuery getOdsInstanceQuery,
+        [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         int instanceId)
     {
-        getOdsInstanceQuery.Execute(instanceId);
-
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
-        await educationOrganizationService.Execute(tenantIdentifier, instanceId);
+        var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
+            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
+            .UsingJobData(JobConstants.OdsInstanceIdKey, instanceId)
+            .Build();
+        var trigger = TriggerBuilder.Create()
+            .StartNow()
+            .Build();
+
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.ScheduleJob(job, trigger);
 
         return Results.Accepted(null, new
         {
