@@ -9,7 +9,7 @@ The test suite supports both single-tenant and multi-tenant configurations with 
 
 - **Bruno CLI**: Install the Bruno command line interface
   ```bash
-  npm install -g @usebruno/cli@1.3.0
+  npm install -g @usebruno/cli
   ```
 
 - **Bruno Desktop (Optional)**: For running tests via UI
