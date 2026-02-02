@@ -6,8 +6,10 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Quartz;
@@ -66,9 +68,15 @@ public class RefreshEducationOrganizations : IFeature
 
     public static async Task<IResult> RefreshEducationOrganizationsByInstance(
         [FromServices] ISchedulerFactory schedulerFactory,
+        [FromServices] IGetOdsInstanceQuery getOdsInstanceByIdQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         int instanceId)
     {
+        var odsInstance = getOdsInstanceByIdQuery.Execute(instanceId);
+        if (odsInstance == null)
+        {
+            throw new NotFoundException<int>("OdsInstance", instanceId);
+        }
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
