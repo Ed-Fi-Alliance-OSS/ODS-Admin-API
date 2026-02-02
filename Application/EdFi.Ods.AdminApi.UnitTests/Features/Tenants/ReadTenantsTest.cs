@@ -13,6 +13,7 @@ using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -147,12 +148,12 @@ public class ReadTenantsTest
     }
 
     [Test]
-    public async Task GetTenantDetailsByNameAsync_ReturnsOk_WhenTenantExists()
+    public async Task GetTenantDetailsAsync_ReturnsOk_WhenTenantExists()
     {
         var tenantsService = A.Fake<ITenantsService>();
         var memoryCache = A.Fake<IMemoryCache>();
         var options = A.Fake<IOptions<AppSettings>>();
-        var tenantName = "tenant1";
+        var tenantHeader = "tenant1";
 
         var educationOrganization = new TenantEducationOrganizationModel()
         {
@@ -171,31 +172,31 @@ public class ReadTenantsTest
 
         var tenantDetailModel = new TenantDetailModel()
         {
-            TenantName = tenantName,
+            TenantName = tenantHeader,
             OdsInstances = [odsInstance]
         };
 
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres" });
-        A.CallTo(() => tenantsService.GetTenantDetailsByNameAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantHeader)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantDetailsByNameAsync(tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, tenantName, options);
+        var result = await ReadTenants.GetTenantDetailsAsync(tenantsService, tenantHeader, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
 
         result.ShouldNotBeNull();
     }
 
     [Test]
-    public async Task GetTenantDetailsByNameAsync_ReturnsNotFound_WhenTenantDoesNotExist()
+    public void GetTenantDetailsAsync_ThrowsValidationException_WhenTenantHeaderIsNull()
     {
         var tenantsService = A.Fake<ITenantsService>();
         var memoryCache = A.Fake<IMemoryCache>();
         var options = A.Fake<IOptions<AppSettings>>();
-        var tenantName = "missingTenant";
+        string tenantHeader = null;
 
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres" });
-        A.CallTo(() => tenantsService.GetTenantByTenantIdAsync(tenantName)).Returns((TenantModel)null);
 
-        var result = await ReadTenants.GetTenantDetailsByNameAsync(tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, tenantName, options);
-
-        result.ShouldNotBeNull();
+        Should.ThrowAsync<ValidationException>(async () =>
+        {
+            await ReadTenants.GetTenantDetailsAsync(tenantsService, tenantHeader, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
+        });
     }
 }

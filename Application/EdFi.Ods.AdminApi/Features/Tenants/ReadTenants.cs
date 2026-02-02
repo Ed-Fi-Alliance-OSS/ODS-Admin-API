@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
@@ -13,6 +14,8 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -32,7 +35,7 @@ public class ReadTenants : IFeature
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/tenants/{tenantName}/details", GetTenantDetailsByNameAsync)
+            .MapGet(endpoints, "/tenants/details", GetTenantDetailsAsync)
             .BuildForVersions(AdminApiVersions.V2);
     }
 
@@ -122,21 +125,22 @@ public class ReadTenants : IFeature
         );
     }
 
-    public static async Task<IResult> GetTenantDetailsByNameAsync(
+    public static async Task<IResult> GetTenantDetailsAsync(
         [FromServices] ITenantsService tenantsService,
+        [FromHeader(Name = "tenant")] string tenantName,
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IContextProvider<TenantConfiguration> tenantConfigurationContextProvider,
         IMapper mapper,
         IMemoryCache memoryCache,
-        string tenantName,
         IOptions<AppSettings> options
     )
     {
-        var tenant = await tenantsService.GetTenantDetailsByNameAsync(
+        if (tenantName is null)
+            throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
+
+        var tenant = await tenantsService.GetTenantDetailsAsync(
             getOdsInstancesQuery,
             getEducationOrganizationQuery,
-            tenantConfigurationContextProvider,
             mapper,
             tenantName);
 

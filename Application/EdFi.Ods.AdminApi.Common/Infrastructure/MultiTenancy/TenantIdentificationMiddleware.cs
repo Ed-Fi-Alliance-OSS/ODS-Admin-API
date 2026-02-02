@@ -10,6 +10,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using EdFi.Ods.AdminApi.Common.Constants;
 
 namespace EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 
@@ -28,7 +29,6 @@ public partial class TenantResolverMiddleware(
     {
         var apiMode = _options.Value.AdminApiMode?.ToLower() ?? "v2";
         var multiTenancyEnabled = _options.Value.MultiTenancy;
-        var validationErrorMessage = "Please provide valid tenant id. Tenant id can only contain alphanumeric and -";
 
         // Check if this is a V1 endpoint
         if (IsV1Mode(apiMode))
@@ -50,12 +50,12 @@ public partial class TenantResolverMiddleware(
                     }
                     else
                     {
-                        ThrowTenantValidationError($"Tenant not found with provided tenant id: {tenantIdentifier}");
+                        ThrowTenantValidationError($"{ErrorMessagesConstants.Tenant_InvalidId}: {tenantIdentifier}");
                     }
                 }
                 else
                 {
-                    ThrowTenantValidationError(validationErrorMessage);
+                    ThrowTenantValidationError(ErrorMessagesConstants.Tenant_InvalidFormat);
                 }
             }
             else if (_swaggerOptions.Value.EnableSwagger && RequestFromSwagger())
@@ -70,12 +70,12 @@ public partial class TenantResolverMiddleware(
                     }
                     else
                     {
-                        ThrowTenantValidationError("Please configure valid default tenant id");
+                        ThrowTenantValidationError(ErrorMessagesConstants.Tenant_InvalidDefault);
                     }
                 }
                 else
                 {
-                    ThrowTenantValidationError(validationErrorMessage);
+                    ThrowTenantValidationError(ErrorMessagesConstants.Tenant_InvalidFormat);
                 }
             }
             else
@@ -84,7 +84,7 @@ public partial class TenantResolverMiddleware(
                 context.Request.Method != "GET" &&
                 !context.Request.Path.Value.Contains("health", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    ThrowTenantValidationError("Tenant header is missing (adminconsole)");
+                    ThrowTenantValidationError($"{ErrorMessagesConstants.Tenant_MissingHeader} (adminconsole)");
                 }
             }
         }
