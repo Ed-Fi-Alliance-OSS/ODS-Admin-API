@@ -382,16 +382,17 @@
                   "script": {
                     "exec": [
                       "if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-                      "    pm.test(\"GET Tenants by Tenant Id: Status code is Found\", function () {",
+                      "    pm.test(\"GET Tenants Details: Status code is Found\", function () {",
                       "        pm.response.to.have.status(200);",
                       "    });",
                       "",
-                      "    const response = pm.response.json();",
                       "    const result = pm.response.json();",
                       "",
-                      "    pm.test(\"GET Tenant Name: Response result matches tenant\", function () {",
-                      "        pm.expect(result.id).to.equal(\"tenant1\");",
-                      "        pm.expect(result.name).to.equal(\"tenant1\");",
+                      "    pm.test(\"GET Tenant Details: Response result matches tenant\", function () {",
+                      "        var tenantName = pm.environment.get(\"tenant1\");",
+                      "",
+                      "        pm.expect(result.id).to.equal(tenantName);",
+                      "        pm.expect(result.name).to.equal(tenantName);",
                       "        pm.expect(result.odsInstances).to.be.an('array');",
                       "        pm.expect(result.odsInstances).to.not.be.empty;",
                       "        pm.expect(result.odsInstances[0].educationOrganizations).to.be.an('array');",
@@ -471,16 +472,21 @@
               ],
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "tenant",
+                    "value": "{{tenant1}}",
+                    "type": "text"
+                  }
+                ],
                 "url": {
-                  "raw": "{{API_URL}}/v2/tenants/tenant1/details",
+                  "raw": "{{API_URL}}/v2/tenants/details",
                   "host": [
                     "{{API_URL}}"
                   ],
                   "path": [
                     "v2",
                     "tenants",
-                    "tenant1",
                     "details"
                   ]
                 }
@@ -495,11 +501,10 @@
                   "script": {
                     "exec": [
                       "if (pm.variables.get(\"isMultitenant\") == \"false\") {",
-                      "    pm.test(\"GET Tenants by Tenant Id: Status code is Found\", function () {",
+                      "    pm.test(\"GET Tenants Details: Status code is Found\", function () {",
                       "        pm.response.to.have.status(200);",
                       "    });",
                       "",
-                      "    const response = pm.response.json();",
                       "    const result = pm.response.json();",
                       "",
                       "    pm.test(\"GET Tenant Name: Response result matches tenant\", function () {",
@@ -581,16 +586,21 @@
               ],
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "tenant",
+                    "value": "default",
+                    "type": "text"
+                  }
+                ],
                 "url": {
-                  "raw": "{{API_URL}}/v2/tenants/default/details",
+                  "raw": "{{API_URL}}/v2/tenants/details",
                   "host": [
                     "{{API_URL}}"
                   ],
                   "path": [
                     "v2",
                     "tenants",
-                    "default",
                     "details"
                   ]
                 }
