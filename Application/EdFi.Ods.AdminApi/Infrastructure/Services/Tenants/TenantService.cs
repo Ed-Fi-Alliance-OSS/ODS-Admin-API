@@ -25,7 +25,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantDetailsByNameAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IContextProvider<TenantConfiguration> tenantConfigurationContextProvider, IMapper mapper, string tenantName);
+    Task<TenantDetailModel?> GetTenantDetailsAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IMapper mapper, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -109,12 +109,11 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
         return tenant;
     }
 
-    public async Task<TenantDetailModel?> GetTenantDetailsByNameAsync(
-        IGetOdsInstancesQuery getOdsInstancesQuery,
-        IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IContextProvider<TenantConfiguration> tenantConfigurationContextProvider,
-        IMapper mapper,
-        string tenantName)
+    public async Task<TenantDetailModel?> GetTenantDetailsAsync(
+    IGetOdsInstancesQuery getOdsInstancesQuery,
+    IGetEducationOrganizationQuery getEducationOrganizationQuery,
+    IMapper mapper,
+    string tenantName)
     {
         var tenant = await GetTenantByTenantIdAsync(tenantName);
 
@@ -122,16 +121,13 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
         {
             var tenantDetails = new TenantDetailModel() { TenantName = tenantName };
 
-            var databaseEngine = DatabaseEngineEnum.Parse(_appSettings.AppSettings.DatabaseEngine ?? throw new NotFoundException<string>(nameof(AppSettings), nameof(AppSettings.DatabaseEngine)));
-
-            var odsInstances = getOdsInstancesQuery.Execute(databaseEngine, tenant.ConnectionStrings.EdFiAdminConnectionString);
+            var odsInstances = getOdsInstancesQuery.Execute();
 
             tenantDetails.OdsInstances = mapper.Map<List<TenantOdsInstanceModel>>(odsInstances);
 
-
             foreach (var odsInstance in tenantDetails.OdsInstances)
             {
-                var edOrgs = getEducationOrganizationQuery.Execute(databaseEngine, tenant.ConnectionStrings.EdFiAdminConnectionString, odsInstance.OdsInstanceId);
+                var edOrgs = getEducationOrganizationQuery.Execute(odsInstance.OdsInstanceId);
                 odsInstance.EducationOrganizations = mapper.Map<List<TenantEducationOrganizationModel>>(edOrgs);
             }
 
