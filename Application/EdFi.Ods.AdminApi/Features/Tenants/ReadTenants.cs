@@ -5,12 +5,11 @@
 
 using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Constants;
+using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
-using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
@@ -126,8 +125,8 @@ public class ReadTenants : IFeature
     }
 
     public static async Task<IResult> GetTenantDetailsAsync(
+        HttpRequest request,
         [FromServices] ITenantsService tenantsService,
-        [FromHeader(Name = "tenant")] string tenantName,
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
         IMapper mapper,
@@ -135,16 +134,16 @@ public class ReadTenants : IFeature
         IOptions<AppSettings> options
     )
     {
-        if (tenantName is null)
+        var tenantName = request.Headers["tenant"].FirstOrDefault();
+
+        if (options.Value.MultiTenancy && tenantName is null)
             throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
 
-        var tenant = await tenantsService.GetTenantDetailsAsync(
-            getOdsInstancesQuery,
-            getEducationOrganizationQuery,
-            mapper,
-            tenantName);
+        tenantName ??= Constants.DefaultTenantName;
 
-        if (tenant == null)
+        var tenant = await tenantsService.GetTenantDetailsAsync(getOdsInstancesQuery, getEducationOrganizationQuery, mapper, tenantName);
+
+        if (tenant is null)
             return Results.NotFound();
 
         return Results.Ok(
