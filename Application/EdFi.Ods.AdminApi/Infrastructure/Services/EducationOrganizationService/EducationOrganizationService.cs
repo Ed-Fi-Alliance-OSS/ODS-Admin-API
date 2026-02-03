@@ -87,9 +87,11 @@ public class EducationOrganizationService(
                 .ToListAsync()
             : await usersContext.OdsInstances.ToListAsync();
 
+        var adminConnectionString = adminApiDbContext.Database.GetConnectionString();
+
         // Process all OdsInstances in parallel using Task.WhenAll
         var tasks = odsInstances.Select(odsInstance =>
-            ProcessSingleOdsInstanceAsync(odsInstance, encryptionKey, databaseEngine, adminApiDbContext.Database.GetConnectionString())
+            ProcessSingleOdsInstanceAsync(odsInstance, encryptionKey, databaseEngine, adminConnectionString)
         );
 
         await Task.WhenAll(tasks);
