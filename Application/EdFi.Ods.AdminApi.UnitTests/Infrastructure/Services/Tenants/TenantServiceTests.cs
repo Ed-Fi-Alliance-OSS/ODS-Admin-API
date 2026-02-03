@@ -169,7 +169,7 @@ internal class TenantServiceTests
     }
 
     [Test]
-    public async Task GetTenantByTenantDetailsAsync_Should_Return_Correct_TenantDetails()
+    public async Task GetTenantDetailsAsync_Should_Return_Correct_TenantDetails()
     {
         var service = new TenantService(_options, _memoryCache);
         var tenantName = "tenantA";
@@ -236,7 +236,7 @@ internal class TenantServiceTests
     }
 
     [Test]
-    public async Task GetTenantByTenantDetailsAsync_Should_Return_Null_If_Not_Found()
+    public async Task GetTenantDetailsAsync_Should_Return_Null_If_Not_Found()
     {
         var service = new TenantService(_options, _memoryCache);
 

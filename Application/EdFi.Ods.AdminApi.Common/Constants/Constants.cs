@@ -24,7 +24,7 @@ public class ErrorMessagesConstants
     public const string Tenant_MissingHeader = "Tenant header is missing";
 
     /// <summary>
-    /// Tenant identifier has not a valid format.
+    /// Tenant identifier does not have a valid format.
     /// </summary>
     public const string Tenant_InvalidFormat = "Please provide valid tenant id. Tenant id can only contain alphanumeric and -";
 

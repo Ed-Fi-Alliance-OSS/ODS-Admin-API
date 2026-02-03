@@ -176,22 +176,3 @@ public class TenantDetailsResponse
     public string? Name { get; set; }
     public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
 }
-
-public class OdsInstanceDto
-{
-    public int? Id { get; set; }
-    public string? Name { get; set; }
-    public string? InstanceType { get; set; }
-    public List<EducationOrganizationDto>? EdOrgs { get; set; }
-}
-
-public class EducationOrganizationDto
-{
-    public int InstanceId { get; set; }
-    public string? InstanceName { get; set; }
-    public int EducationOrganizationId { get; set; }
-    public string? NameOfInstitution { get; set; }
-    public string? ShortNameOfInstitution { get; set; }
-    public string? Discriminator { get; set; }
-    public int? ParentId { get; set; }
-}

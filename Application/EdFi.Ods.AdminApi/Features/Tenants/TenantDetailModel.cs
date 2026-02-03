@@ -25,7 +25,6 @@ public class TenantDetailModel
     }
 }
 
-
 [SwaggerSchema]
 public class TenantOdsInstanceModel
 {
@@ -47,7 +46,6 @@ public class TenantOdsInstanceModel
 [SwaggerSchema]
 public class TenantEducationOrganizationModel
 {
-
     public int InstanceId { get; set; }
     public string InstanceName { get; set; }
     public long EducationOrganizationId { get; set; }
