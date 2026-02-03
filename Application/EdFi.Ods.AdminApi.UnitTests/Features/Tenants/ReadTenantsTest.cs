@@ -17,6 +17,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using NUnit.Framework;
 using Shouldly;
 
@@ -176,10 +177,12 @@ public class ReadTenantsTest
             OdsInstances = [odsInstance]
         };
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres" });
+        var request = A.Fake<HttpRequest>();
+        A.CallTo(() => request.Headers["tenant"]).Returns(new StringValues(tenantHeader));
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => tenantsService.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantHeader)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantDetailsAsync(tenantsService, tenantHeader, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
+        var result = await ReadTenants.GetTenantDetailsAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
 
         result.ShouldNotBeNull();
     }
@@ -190,13 +193,14 @@ public class ReadTenantsTest
         var tenantsService = A.Fake<ITenantsService>();
         var memoryCache = A.Fake<IMemoryCache>();
         var options = A.Fake<IOptions<AppSettings>>();
-        string tenantHeader = null;
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres" });
+        var request = A.Fake<HttpRequest>();
+        A.CallTo(() => request.Headers["tenant"]).Returns(StringValues.Empty);
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantDetailsAsync(tenantsService, tenantHeader, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
+            await ReadTenants.GetTenantDetailsAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
         });
     }
 }
