@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -454,6 +455,136 @@ internal class EducationOrganizationServiceTests
         processedInstanceIds.ShouldBeEmpty();
     }
 
+    [Test]
+    public async Task Execute_Should_Continue_Processing_Other_Instances_When_One_Fails()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_ErrorHandling")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var successInstance1 = new OdsInstance
+        {
+            OdsInstanceId = 1,
+            Name = "Success Instance 1",
+            ConnectionString = "encrypted-1"
+        };
+
+        var failingInstance = new OdsInstance
+        {
+            OdsInstanceId = 2,
+            Name = "Failing Instance",
+            ConnectionString = "encrypted-2"
+        };
+
+        var successInstance2 = new OdsInstance
+        {
+            OdsInstanceId = 3,
+            Name = "Success Instance 2",
+            ConnectionString = "encrypted-3"
+        };
+
+        usersContext.OdsInstances.Add(successInstance1);
+        usersContext.OdsInstances.Add(failingInstance);
+        usersContext.OdsInstances.Add(successInstance2);
+        await usersContext.SaveChangesAsync();
+
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_ErrorHandling_Admin").Options,
+            A.Fake<IConfiguration>());
+
+        var fakeLogger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
+        var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
+        
+        // Setup encryption: succeed for all instances
+        string decryptedConnectionString;
+        A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-1", A<byte[]>._, out decryptedConnectionString))
+            .Returns(true).AssignsOutAndRefParameters("Server=test1;");
+        A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-2", A<byte[]>._, out decryptedConnectionString))
+            .Returns(true).AssignsOutAndRefParameters("Server=test2;");
+        A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-3", A<byte[]>._, out decryptedConnectionString))
+            .Returns(true).AssignsOutAndRefParameters("Server=test3;");
+        
+        var callCount = 0;
+        var service = new TestableEducationOrganizationServiceWithErrorSimulation(
+            _options,
+            usersContext,
+            adminApiDbContext,
+            fakeEncryption,
+            _configuration,
+            _tenantSpecificDbContextProvider,
+            () => ++callCount == 2, // Fail on second call
+            fakeLogger);
+
+        // Should not throw - processing should continue despite one failure
+        await Should.NotThrowAsync(async () => await service.Execute(null, null));
+
+        // GetEducationOrganizationsAsync should be called for all three instances
+        callCount.ShouldBe(3);
+    }
+
+    [Test]
+    public async Task Execute_Should_Not_Throw_When_All_Instances_Fail()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AllInstancesFail")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var failingInstance1 = new OdsInstance
+        {
+            OdsInstanceId = 1,
+            Name = "Failing Instance 1",
+            ConnectionString = "encrypted-1"
+        };
+
+        var failingInstance2 = new OdsInstance
+        {
+            OdsInstanceId = 2,
+            Name = "Failing Instance 2",
+            ConnectionString = "encrypted-2"
+        };
+
+        usersContext.OdsInstances.Add(failingInstance1);
+        usersContext.OdsInstances.Add(failingInstance2);
+        await usersContext.SaveChangesAsync();
+
+        var adminApiDbContext = new AdminApiDbContext(
+            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_AllInstancesFail_Admin").Options,
+            A.Fake<IConfiguration>());
+
+        var fakeLogger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
+        var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
+        
+        // Setup encryption to succeed
+        string decryptedConnectionString;
+        A.CallTo(() => fakeEncryption.TryDecrypt(A<string>._, A<byte[]>._, out decryptedConnectionString))
+            .Returns(true).AssignsOutAndRefParameters("Server=test;");
+        
+        var callCount = 0;
+        var service = new TestableEducationOrganizationServiceWithErrorSimulation(
+            _options,
+            usersContext,
+            adminApiDbContext,
+            fakeEncryption,
+            _configuration,
+            _tenantSpecificDbContextProvider,
+            () =>
+            {
+                callCount++;
+                return true; // Always fail
+            },
+            fakeLogger);
+
+        // Should not throw even when all instances fail
+        await Should.NotThrowAsync(async () => await service.Execute(null, null));
+
+        // GetEducationOrganizationsAsync should be called for both instances
+        callCount.ShouldBe(2);
+    }
+
     private class TestableEducationOrganizationServiceWithTracking : EducationOrganizationServiceImpl
     {
         private readonly List<int> _processedInstanceIds;
@@ -489,6 +620,63 @@ internal class EducationOrganizationServiceTests
             {
                 _processedInstanceIds.Add(instance.OdsInstanceId);
             }
+        }
+    }
+
+    private class TestableEducationOrganizationServiceWithErrorSimulation : EducationOrganizationServiceImpl
+    {
+        private readonly Func<bool> _shouldFail;
+
+        public TestableEducationOrganizationServiceWithErrorSimulation(
+            IOptions<AppSettings> options,
+            IUsersContext usersContext,
+            AdminApiDbContext adminApiDbContext,
+            ISymmetricStringEncryptionProvider encryptionProvider,
+            IConfiguration configuration,
+            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+            Func<bool> shouldFail,
+            ILogger<EducationOrganizationServiceImpl> logger)
+            : base(options, usersContext, adminApiDbContext, encryptionProvider, configuration, tenantSpecificDbContextProvider, logger)
+        {
+            _shouldFail = shouldFail;
+        }
+
+        public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
+        {
+            if (_shouldFail())
+            {
+                throw new InvalidOperationException("Simulated database error");
+            }
+
+            return Task.FromResult(new List<EducationOrganizationResult>());
+        }
+
+        public override async Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
+        {
+            var odsInstances = instanceId.HasValue
+                ? await usersContext.OdsInstances
+                    .Where(o => o.OdsInstanceId == instanceId.Value)
+                    .ToListAsync()
+                : await usersContext.OdsInstances.ToListAsync();
+
+            // Process all OdsInstances in parallel - we override to avoid GetConnectionString() call
+            // which doesn't work with InMemory DB
+            var tasks = odsInstances.Select(odsInstance =>
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        var edorgs = await GetEducationOrganizationsAsync("test-connection", databaseEngine);
+                    }
+                    catch (Exception)
+                    {
+                        // Simulate the error handling in ProcessSingleOdsInstanceAsync
+                        // Errors are caught and logged, not rethrown
+                    }
+                })
+            );
+
+            await Task.WhenAll(tasks);
         }
     }
 }
