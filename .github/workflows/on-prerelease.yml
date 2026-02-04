@@ -289,9 +289,11 @@ jobs:
           name: ${{ env.PACKAGE_NAME }}-NuGet
 
       - name: Install-credential-handler
-        run: iex "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }"
+        shell: bash
+        run: wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
 
       - name: Push Package to Azure Artifacts
+        shell: pwsh
         run: |
           $artifact = (Get-ChildItem -Path $_ -Name -Include *.nupkg)
           $arguments = @{
