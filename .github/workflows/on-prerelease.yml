@@ -289,7 +289,7 @@ jobs:
           name: ${{ env.PACKAGE_NAME }}-NuGet
 
       - name: Install-credential-handler
-        run: iex "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+        run: iex "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }"
 
       - name: Push Package to Azure Artifacts
         run: |
