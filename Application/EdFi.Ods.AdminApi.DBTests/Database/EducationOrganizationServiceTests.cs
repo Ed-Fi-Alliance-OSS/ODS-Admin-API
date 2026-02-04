@@ -96,7 +96,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _logger
             );
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
     }
 
@@ -139,7 +139,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _logger
             );
 
-            Should.NotThrow(() => service.Execute(tenantName).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(tenantName, null).GetAwaiter().GetResult());
         });
     }
 
@@ -274,7 +274,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                  new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
                 _logger);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var updatedEdOrg = _adminApiDbContext.EducationOrganizations
                 .FirstOrDefault(e => e.EducationOrganizationId == existingEdOrg.EducationOrganizationId);
@@ -330,7 +330,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
               _logger);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             // After execution, since the hardcoded data doesn't include EducationOrganizationId 999999,
             // the service should have removed our test EdOrg
@@ -358,7 +358,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _logger);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
-                service.Execute(null).GetAwaiter().GetResult());
+                service.Execute(null, null).GetAwaiter().GetResult());
 
             exception.Message.ShouldBe("EncryptionKey can't be null.");
         });
@@ -379,7 +379,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
                _logger);
 
-            Should.Throw<Exception>(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.Throw<Exception>(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
     }
 
@@ -399,7 +399,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _logger);
 
             var exception = Should.Throw<NotSupportedException>(() =>
-                service.Execute(null).GetAwaiter().GetResult());
+                service.Execute(null, null).GetAwaiter().GetResult());
 
             exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\"");
         });
@@ -436,7 +436,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
                mockLogger.Object);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var error = $"Failed to decrypt connection string for ODS Instance ID {odsInstance.OdsInstanceId}. Skipping education organization synchronization for this instance.";
 
@@ -487,7 +487,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
               _logger);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             // Verify both instances were processed
             var instances = _usersContext.OdsInstances.ToList();

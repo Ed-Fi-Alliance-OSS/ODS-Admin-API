@@ -69,6 +69,29 @@ public abstract class AdminApiDbContextTestBase
         return result;
     }
 
+    protected static async Task Transaction(System.Func<AdminApiDbContext, Task> action)
+    {
+        using var context = new AdminApiDbContext(
+            GetAdminApiDbContextOptions(ConnectionString),
+            Testing.Configuration());
+        using var transaction = await context.Database.BeginTransactionAsync();
+        await action(context);
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+
+    protected static async Task<TResult> Transaction<TResult>(System.Func<AdminApiDbContext, Task<TResult>> query)
+    {
+        using var context = new AdminApiDbContext(
+            GetAdminApiDbContextOptions(ConnectionString),
+            Testing.Configuration());
+        using var transaction = await context.Database.BeginTransactionAsync();
+        var result = await query(context);
+        await context.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return result;
+    }
+
     public static DbContextOptions<AdminApiDbContext> GetAdminApiDbContextOptions(string connectionString)
     {
         var builder = new DbContextOptionsBuilder<AdminApiDbContext>();

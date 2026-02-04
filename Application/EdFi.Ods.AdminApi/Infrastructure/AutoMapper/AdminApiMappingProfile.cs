@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Features.ApiClients;
 using EdFi.Ods.AdminApi.Features.Applications;
 using EdFi.Ods.AdminApi.Features.AuthorizationStrategies;
 using EdFi.Ods.AdminApi.Features.ClaimSets;
+using EdFi.Ods.AdminApi.Features.EducationOrganizations;
 using EdFi.Ods.AdminApi.Features.OdsInstanceContext;
 using EdFi.Ods.AdminApi.Features.OdsInstanceDerivative;
 using EdFi.Ods.AdminApi.Features.ODSInstances;
@@ -208,5 +209,7 @@ public class AdminApiMappingProfile : Profile
             {
                 opt.ConvertUsing<OdsInstanceIdsForApiClientConverter, int>(src => src.ApiClientId);
             });
+
+        CreateMap<EducationOrganization, EducationOrganizationModel>();
     }
 }
