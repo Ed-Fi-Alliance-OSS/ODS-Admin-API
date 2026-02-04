@@ -1,0 +1,145 @@
+meta {
+  name: ClaimSets - Import - Wrong resource name
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/import
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaims": [
+      {     
+        "name": "educationStandards-123",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],      
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {     
+        "name": "academicSubjectDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }  
+     
+        ],
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {
+        "name": "gradeLevelDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],
+       
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {      
+        "name": "publicationStatusDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],     
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      }
+    ],
+    "name": "Wrong Resouce name {{WrongNameClaimSetGUID}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("WrongNameClaimSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("POST ClaimSets - Import: Wrong resouce name Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ClaimSets - Import: Wrong resouce name Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST ClaimSets - Import: Wrong resouce name: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST ClaimSets - Import: Wrong resouce name:  Response errors include messages by property and resource", function () {
+      expect(response.errors.ResourceClaims.length).to.equal(1);
+      ["not in the system", "educationStandards-123"].forEach((substring) => {
+          expect(response.errors.ResourceClaims[0]).to.contain(substring);
+      });   
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,57 @@
+meta {
+  name: ResourceClaimClaimSets - Modify Action ClaimSet not found
+  type: http
+  seq: 27
+}
+
+put {
+  url: {{API_URL}}/v2/claimSets/90000/resourceClaimActions/4
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaimId": 4,
+    "resourceClaimActions": [
+      {
+        "name": "read",
+        "enabled": true
+      },
+      {
+        "name": "create",
+        "enabled": true
+      },
+      {
+        "name": "update",
+        "enabled": false
+      },
+      {
+        "name": "delete",
+        "enabled": false
+      }   
+    ]
+  }
+}
+
+script:post-response {
+  test("PUT ResourceClaimAction Not Found: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT ResourceClaimAction Not Found: Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT ResourceClaimAction Invalid: Response errors include messages by property", function () {
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("claimset");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

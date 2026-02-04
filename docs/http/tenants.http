@@ -39,6 +39,12 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: tenant1
 
+### Get tenant details V2
+GET {{adminapi_url}}/v2/tenants/details
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: tenant1
+
 ### Create tenant
 POST {{adminapi_url}}/v2/tenants
 Content-Type: application/json

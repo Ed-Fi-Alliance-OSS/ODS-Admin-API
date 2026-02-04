@@ -6,13 +6,17 @@
 using System.Net;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using log4net;
 using log4net.Config;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +86,66 @@ if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
 {
     app.UseSwagger();
     app.DefineSwaggerUIWithApiVersions(AdminApiVersions.GetAllVersionStrings());
+}
+
+var edOrgsRefreshIntervalInMins = app.Configuration.GetValue<string>(
+    "AppSettings:EdOrgsRefreshIntervalInMins"
+);
+var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
+    "AppSettings:MultiTenancy"
+);
+
+if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
+{
+    if (isMultiTenancyEnabled)
+    {
+        using var scope = app.Services.CreateScope();
+        var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+        await tenantService.InitializeTenantsAsync();
+
+        var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+        var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
+        var scheduler = await schedulerFactory.GetScheduler();
+
+        var tenantNames = tenants.Select(tenant => tenant.TenantName);
+
+        foreach (var tenantName in tenantNames)
+        {
+            var jobData = new Dictionary<string, object>
+            {
+                [JobConstants.TenantNameKey] = tenantName
+            };
+
+            var jobKey = new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}_{tenantName}");
+
+            await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
+                scheduler,
+                jobKey: jobKey,
+                jobData: jobData,
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(refreshInterval)
+            );
+        }
+    }
+    else
+    {
+        var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
+        var scheduler = await schedulerFactory.GetScheduler();
+
+        await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
+            scheduler,
+            jobKey: new JobKey(JobConstants.RefreshEducationOrganizationsJobName),
+            jobData: new Dictionary<string, object>(),
+            startImmediately: false,
+            interval: TimeSpan.FromMinutes(refreshInterval)
+        );
+    }
+
+}
+else
+{
+    _logger.Error("Invalid value for EdOrgsRefreshIntervalInMins. Please ensure it is a valid number.");
 }
 
 await app.RunAsync();

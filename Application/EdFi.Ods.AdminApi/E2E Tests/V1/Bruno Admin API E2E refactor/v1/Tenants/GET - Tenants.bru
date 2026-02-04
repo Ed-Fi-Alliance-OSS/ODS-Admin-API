@@ -1,0 +1,71 @@
+meta {
+  name: Tenants
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v1/tenants
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Tenants: Status code is Found", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody();
+  
+  test("GET Tenant Name: Response result matches tenant", function () {
+      expect(result.tenantName).to.equal("default");
+      expect(result.adminConnectionString.host).to.not.equal(null);
+      expect(result.adminConnectionString.database).to.not.equal(null);
+      expect(result.securityConnectionString.host).to.not.equal(null);
+      expect(result.securityConnectionString.database).to.not.equal(null);
+  });
+  
+  const GetTenantsSchema = {
+      "type": "object",
+      "properties": {
+      "tenantName": {
+          "type": "string"
+      },
+      "adminConnectionString": {
+          "type": "object",
+          "properties": {
+          "host": {
+              "type": "string"
+          },
+          "database": {
+              "type": "string"
+          }
+          },
+      },
+      "securityConnectionString": {
+          "type": "object",
+          "properties": {
+          "host": {
+              "type": "string"
+          },
+          "database": {
+              "type": "string"
+          }
+          }
+      }
+      },
+      "required": [
+      "tenantName"
+      ]
+  }
+  
+  test("GET Tenants: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetTenantsSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -13,6 +13,41 @@ public class Constants
     public const string DefaultTenantName = "default";
 }
 
+public class ErrorMessagesConstants
+{
+    /// <summary>
+    /// Tenant identifier was not provided in the request header.
+    /// </summary>
+    /// <remarks>
+    /// Use for BadRequest error messages (recommended).
+    /// </remarks>
+    public const string Tenant_MissingHeader = "Tenant header is missing";
+
+    /// <summary>
+    /// Tenant identifier does not have a valid format.
+    /// </summary>
+    public const string Tenant_InvalidFormat = "Please provide valid tenant id. Tenant id can only contain alphanumeric and -";
+
+    /// <summary>
+    /// Tenant default configuration is invalid.
+    /// </summary>
+    /// <remarks>
+    /// Mainly when the request was made from Swagger.
+    /// </remarks>
+    public const string Tenant_InvalidDefault = "Please configure valid default tenant id";
+
+    /// <summary>
+    /// Tenant identifier was not found
+    /// </summary>
+    /// <remarks>
+    /// Follow the example below to include the invalid "tenantIdentifier".
+    /// <code>
+    /// var message = $"{ErrorMessagesConstants.Tenant_InvalidId}: {tenantIdentifier}";
+    /// </code>
+    /// </remarks>
+    public const string Tenant_InvalidId = "Tenant not found with provided tenant id";
+}
+
 public enum AdminApiMode
 {
     V2,

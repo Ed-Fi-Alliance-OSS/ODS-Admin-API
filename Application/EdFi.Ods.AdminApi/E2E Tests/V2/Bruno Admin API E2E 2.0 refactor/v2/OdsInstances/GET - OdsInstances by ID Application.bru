@@ -1,0 +1,189 @@
+meta {
+  name: OdsInstances by ID Application
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances/{{ODSInstanceId}}/applications
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    let offsetVar = bru.getEnvVar("offset");
+    let limitVar = bru.getEnvVar("limit");
+    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances?offset=${offsetVar}&limit=${limitVar}&direction=Ascending`, axiosConfig);
+
+    if (odsResponse.status === 200) {
+      console.log("✅ OdsInstance List loaded");
+      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
+    } else {
+      console.log("❌ Failed to get odsInstances");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    } 
+
+    const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+      "company": "Other Company",
+      "namespacePrefixes": "uri://ed-fi.org",
+      "contactName": "Other Application User",
+      "contactEmailAddress": "otherapplication@example.com"
+    }, axiosConfig);
+
+    if (vendorResponse.status === 201) {
+      console.log("✅ Vendor created successfully");
+      let headers = vendorResponse.headers; 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location;
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("OtherApplicationVendorId", id);
+          }
+      }
+    } else {
+      console.log("❌ Failed to create vendor");
+      console.log("Status:", vendorResponse.status);
+      console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
+      throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }
+
+    const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+        "applicationName": "Other Vendor Application",
+        "vendorId": bru.getVar("OtherApplicationVendorId"),
+        "claimSetName": "Ed-Fi Sandbox",
+        "profileIds": [],
+        "educationOrganizationIds": [ 255901 ],
+        "odsInstanceIds": [bru.getVar("ODSInstanceId")],
+        "enabled" : true
+    }, axiosConfig);
+
+    if (applicationResponse.status === 201) {
+      console.log("✅ Application created successfully");
+      let headers = applicationResponse.headers; 
+      expect(headers).to.have.property("location");
+    } else {
+      console.log("❌ Failed to create application");
+      console.log("Status:", applicationResponse.status);
+      console.log("Response data:", JSON.stringify(applicationResponse.data, null, 2));
+      throw new Error(`Failed to create application - Status: ${applicationResponse.status}, Data: ${JSON.stringify(applicationResponse.data)}`);
+    }
+
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+
+}
+
+script:post-response {
+  test("GET OdsInstancesIDApplication: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET OdsInstancesIDApplication: Response matches success format", function () {
+      expect(response[0]).to.have.property("id");
+      expect(response[0]).to.have.property("applicationName");
+      expect(response[0]).to.have.property("claimSetName");
+      expect(response[0]).to.have.property("educationOrganizationIds");
+      expect(response[0]).to.have.property("vendorId");
+      expect(response[0]).to.have.property("profileIds");
+      expect(response[0]).to.have.property("odsInstanceIds");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetOdsInstancesIdApplication = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "applicationName": {
+            "type": "string"
+          },
+          "claimSetName": {
+            "type": "string"
+          },
+          "educationOrganizationIds": {
+            "type": "array",
+            "items": {}
+          },
+          "vendorId": {
+            "type": "integer"
+          },
+          "profileIds": {
+            "type": "array",
+            "items": {}
+          },
+          "odsInstanceIds": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "id",
+          "applicationName",
+          "claimSetName",
+          "educationOrganizationIds",
+          "vendorId",
+          "profileIds",
+          "odsInstanceIds"
+        ]
+      }
+    ]
+  }
+  
+  test("GET OdsInstancesIdApplication: Validation Schema Response", () => {
+      const valid = ajv.validate(GetOdsInstancesIdApplication, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

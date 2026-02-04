@@ -1,0 +1,42 @@
+meta {
+  name: Profiles
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v2/profiles/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "Name": "Bruno-Test-Profile",
+      "Definition": "<Profile name=\"Bruno-Test-Profile\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
+  }
+}
+
+script:post-response {
+  test("POST Profiles: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST Profiles: Response includes location in header", function () {
+      let headers = res.headers; 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location;
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const appId = locationStr.split("/").pop();
+          if(appId) {
+              bru.setVar("CreatedProfileId", appId);
+          }
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

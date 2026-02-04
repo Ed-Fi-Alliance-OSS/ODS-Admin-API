@@ -1,0 +1,36 @@
+meta {
+  name: Vendors -  Not Found
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{API_URL}}/v2/vendors/{{CreatedVendorId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Vendors NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("GET Vendors NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET Vendors NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("vendor");
+      expect(response.title).to.contain(bru.getVar("CreatedVendorId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

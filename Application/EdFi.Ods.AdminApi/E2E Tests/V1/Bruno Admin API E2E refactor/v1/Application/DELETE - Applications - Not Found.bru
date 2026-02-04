@@ -1,0 +1,40 @@
+meta {
+  name: Applications - Not Found
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{API_URL}}/v1/applications/{{CreatedApplicationId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("application");
+      expect(response.title).to.contain(bru.getVar("CreatedApplicationId"));
+  });
+  
+  bru.deleteVar("ApplicationVendorId");
+  bru.deleteVar("OdsInstanceId");
+  bru.deleteVar("CreatedApplicationId");
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Get Claimsets filter by Name
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v2/claimSets?offset={{offset}}&limit={{limit}}&name={{FILTERCLAIMSETSNAME}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  name: {{FILTERCLAIMSETSNAME}}
+}
+
+script:post-response {
+  test("GET Claimsets: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Claimsets: Response result includes claimset", function () {
+      const results = res.getBody();
+      expect(results).to.have.lengthOf(1);
+  });
+  
+  test("GET Claimsets: Response result contains requested claimset", function () {
+      const results = res.getBody();
+      expect(results[0].name).to.eql(bru.getEnvVar("FILTERCLAIMSETSNAME"));
+  });
+}
+
+settings {
+  encodeUrl: true
+}

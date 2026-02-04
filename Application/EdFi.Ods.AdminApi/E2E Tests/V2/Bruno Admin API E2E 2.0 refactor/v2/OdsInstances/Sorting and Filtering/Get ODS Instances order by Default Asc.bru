@@ -1,0 +1,41 @@
+meta {
+  name: Get ODS Instances order by Default Asc
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances?offset={{offset}}&limit={{limit}}&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  direction: ASC
+}
+
+script:post-response {
+  var _ = require('lodash');
+  
+  test("GET ODS Instances: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET ODS Instances: Response result includes ODS Instances", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET ODS Instances: Response result is ordered by Name asc", function () {
+      const results = res.getBody();
+      var expectedSortedOrder = _.orderBy(results, [dt => dt.name],['asc'])    
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

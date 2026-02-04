@@ -1,0 +1,111 @@
+meta {
+  name: ClaimSets
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/v1/claimsets/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Test ClaimSet {{ClaimSetGUID}}",
+      "resourceClaims": [
+        {
+          "name": "educationStandards",
+          "create": true,
+          "read": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": [
+            {
+              "name": "learningObjective",
+              "create": true,
+              "read": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "academicSubjectDescriptor",
+          "create": true,
+          "read": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": []
+        }      
+      ]
+  }
+  
+}
+
+script:pre-request {
+  bru.setVar("ClaimSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(201);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("claimset");
+      expect(response.title.toLowerCase()).to.contain("created");
+  });
+  
+  test("Response includes location in header", function () {
+      expect(res.getHeaders()).to.have.property("Location".toLowerCase());
+  //     pm.response.to.be.header("Location", `/claimsets/${result.id}`);
+  });
+  
+  test("Response result includes claimSet key and secret", function () {
+      expect(result).to.have.property("id");
+  });
+  
+  if(result.id) {
+      bru.setVar("CreatedClaimSetId", result.id);
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

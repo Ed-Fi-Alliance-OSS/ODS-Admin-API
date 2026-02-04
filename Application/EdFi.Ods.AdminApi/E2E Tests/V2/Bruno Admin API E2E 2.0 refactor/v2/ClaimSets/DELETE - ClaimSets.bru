@@ -1,0 +1,56 @@
+meta {
+  name: ClaimSets
+  type: http
+  seq: 52
+}
+
+delete {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE ClaimSets: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("DELETE ClaimSets: Response matches success format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("DELETE ClaimSets: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("claimset");
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const DeleteClaimSetsSchema = {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title"
+    ]
+  }
+  
+  test("DELETE ClaimSet: JSON Schema Validation", () => {
+      const valid = ajv.validate(DeleteClaimSetsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,43 @@
+meta {
+  name: Profiles - Not Found
+  type: http
+  seq: 17
+}
+
+put {
+  url: {{API_URL}}/v2/profiles/{{NotExistProfileId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "Name": "Not-Found",
+      "Definition": "<Profile name=\"Not-Found\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
+  }
+}
+
+script:post-response {
+  test("GET Profile NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("GET Profile NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET Profile NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("profile");
+      expect(response.title).to.contain(bru.getVar("NotExistProfileId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

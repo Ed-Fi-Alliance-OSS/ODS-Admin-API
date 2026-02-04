@@ -1,0 +1,29 @@
+meta {
+  name: Landing Page
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}
+  body: json
+  auth: none
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  test("Response includes expected properties", function () {
+      expect(response).to.have.property("version");
+      expect(response).to.have.property("build");
+  });
+
+}
+
+settings {
+  encodeUrl: true
+}

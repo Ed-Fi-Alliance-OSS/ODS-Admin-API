@@ -1,0 +1,44 @@
+meta {
+  name: OdsInstanceDerivatives - Invalid ODS Instance Id
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": 0,
+    "derivativeType": "ReadReplica",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("PUT OdsInstanceDerivatives Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT OdsInstanceDerivatives Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT OdsInstanceDerivatives Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT OdsInstanceDerivatives Invalid: Invalid OdsInstanceId", function () {
+     expect(response.errors.OdsInstanceId[0]).to.contain("valid ods instance id");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

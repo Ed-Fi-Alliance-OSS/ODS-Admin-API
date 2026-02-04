@@ -1,0 +1,41 @@
+meta {
+  name: OdsInstanceDerivatives - Invalid
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "derivativeType": "",
+    "connectionString": ""
+  }
+}
+
+script:post-response {
+  test("POST ODS Instance Derivatives Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ODS Instance Derivatives Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST ODS Instance Derivatives Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

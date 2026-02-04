@@ -1,0 +1,82 @@
+meta {
+  name: ApiClients
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{API_URL}}/v2/apiclients/{{CreatedApiClientId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Updated Test ApiClient",
+    "isApproved": false,
+    "applicationId": {{CreatedApplicationId}},
+    "odsInstanceIds": [
+      {{ODSInstanceId}}
+    ]
+  }
+  
+}
+
+script:post-response {
+  test("PUT Application: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  console.log("🔍 Verifying updated API client...");
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/v2/apiclients/${bru.getVar("CreatedApiClientId")}`, axiosConfig);
+    
+    if (response.status === 200 && response.data) {
+      const updated = response.data;
+      console.log("✅ API client retrieved successfully");
+      
+      test("PUT ApiClient: Response result includes updated api client", function () {
+          expect(updated.name).to.equal("Updated Test ApiClient");
+          expect(updated.isApproved).to.equal(false);
+          expect(updated.applicationId).to.equal(parseInt(bru.getVar("CreatedApplicationId"), 10));
+          expect(updated.odsInstanceIds.length).to.equal(1);
+      });
+  
+      test("PUT ApiClient: Response result does not include application key and secret", function () {
+          expect(updated).to.not.have.property("secret");
+      });
+    } else {
+      console.log("❌ Failed to retrieve updated API client:");
+      console.log("Status:", response.status);
+      console.log("Response data:", JSON.stringify(response.data, null, 2));
+    }
+  } catch (error) {
+    console.log("Error retrieving updated API client:", error.message);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

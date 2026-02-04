@@ -1,0 +1,34 @@
+meta {
+  name: Vendors
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{API_URL}}/v1/vendors/{{CreatedVendorId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("vendor");
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

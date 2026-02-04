@@ -1,0 +1,36 @@
+meta {
+  name: Applications - Not Found
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{API_URL}}/v2/applications/{{CreatedApplicationId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Application NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+
+  test("GET Application NotFound: Response matches error format", function () {
+      
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET Application NotFound: Response title is helpful and accurate", function () {
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("application");
+      expect(response.title).to.contain(bru.getVar("CreatedApplicationId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

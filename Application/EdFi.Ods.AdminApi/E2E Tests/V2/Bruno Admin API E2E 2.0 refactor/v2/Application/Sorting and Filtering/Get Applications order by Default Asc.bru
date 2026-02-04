@@ -1,0 +1,41 @@
+meta {
+  name: Get Applications order by Default Asc
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/applications?offset={{offset}}&limit={{limit}}&direction=ASC
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  direction: ASC
+}
+
+script:post-response {
+  var _ = require('lodash');
+  
+  test("GET Applications: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Applications: Response result includes applications", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET Applications: Response result is ordered by ApplicationName asc", function () {
+      const results = res.getBody();
+      var expectedSortedOrder = _.orderBy(results, [application => application.applicationName],['asc']);
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,60 @@
+meta {
+  name: OdsInstanceContexts - Without Offset and Limit
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{API_URL}}/v2/OdsInstanceContexts/
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstanceContexts: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET OdsInstanceContexts: Response result includes OdsInstancesContext", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  const GetOdsInstanceContextsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "contextKey": {
+            "type": "string"
+          },
+          "contextValue": {
+            "type": "string"
+          },
+          "odsInstanceId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "contextKey",
+          "contextValue",
+          "odsInstanceId"     
+        ]
+      }
+    ]
+  }
+  
+  test("GET OdsInstanceContexts: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetOdsInstanceContextsSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

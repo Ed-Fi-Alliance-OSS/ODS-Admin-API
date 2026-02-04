@@ -1,0 +1,36 @@
+meta {
+  name: ClaimSets - Not Found
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("claimset");
+      expect(response.title).to.contain(bru.getVar("CreatedClaimSetId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

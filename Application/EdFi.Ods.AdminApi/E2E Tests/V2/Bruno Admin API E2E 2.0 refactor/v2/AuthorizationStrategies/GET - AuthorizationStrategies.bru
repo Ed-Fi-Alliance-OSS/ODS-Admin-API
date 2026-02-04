@@ -1,0 +1,68 @@
+meta {
+  name: AuthorizationStrategies
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/authorizationStrategies
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET AuthorizationStrategies: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET AuthorizationStrategies: Response matches success format", function () {
+      if (response && response.length > 0) {
+          expect(response[0]).to.have.property("id");
+          expect(response[0]).to.have.property("name");
+          expect(response[0]).to.have.property("displayName");
+      }
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetAuthStrategiesSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "displayName"
+        ]
+      }
+    ]
+  }
+  
+  test("GET AuthorizationStrategies: Validation Schema Response", () => {
+      const valid = ajv.validate(GetAuthStrategiesSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

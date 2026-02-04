@@ -1,0 +1,63 @@
+meta {
+  name: Applications
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v1/applications/
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const results = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response result includes applications", function () {
+      expect(results.length).to.be.greaterThan(0);
+  
+      const createdApplicationId = bru.getVar("CreatedApplicationId");
+      const indexOfApplication = results.map(
+          function(application) { return application.applicationId; }
+      ).indexOf(createdApplicationId);
+  
+      // Check if the application was found in the results
+      expect(indexOfApplication).to.not.equal(-1, `Application with ID ${createdApplicationId} not found in results`);
+      
+      const result = results[indexOfApplication];
+      expect(result).to.not.be.undefined;
+      expect(result.applicationName).to.contains("Application");
+      expect(result.claimSetName).to.equal("Ed-Fi Sandbox");
+      expect(result.educationOrganizationIds).to.have.length(1);
+      expect(result.educationOrganizationIds[0]).to.equal(255901);
+      expect(result.profileName).to.equal(null);
+      expect(result.odsInstanceId).to.equal(bru.getVar("OdsInstanceId"));
+      expect(result.odsInstanceName).to.contains("Test Ods Instance");
+      expect(result.profiles).to.have.length(0);
+      expect(result.vendorId).to.not.equal(null);
+      expect(result.vendorId).to.be.greaterThan(0);
+  });
+  
+  test("Response results do not include key or secret", function () {
+      results.forEach(function(result, i) {
+          expect(result).to.not.have.property("key");
+          expect(result).to.not.have.property("secret");
+      });
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

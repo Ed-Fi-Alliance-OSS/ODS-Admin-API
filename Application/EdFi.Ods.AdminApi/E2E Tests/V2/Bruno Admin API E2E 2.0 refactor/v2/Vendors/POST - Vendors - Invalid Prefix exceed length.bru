@@ -1,0 +1,46 @@
+meta {
+  name: Vendors - Invalid Prefix exceed length
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v2/vendors
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "company": "Test Company",
+      "namespacePrefixes": "uri://abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl.org",
+      "contactName": "Test User",
+      "contactEmailAddress": "test@test-ed-fi.org"
+  }
+}
+
+script:post-response {
+  test("POST Vendors Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST Vendors Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST Vendors Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST Vendors Invalid: Response errors include messages by property", function () {
+      expect(response.errors["NamespacePrefixes"].length).to.equal(1);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

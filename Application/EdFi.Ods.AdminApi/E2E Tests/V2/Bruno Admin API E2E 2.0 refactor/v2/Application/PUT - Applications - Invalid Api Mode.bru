@@ -1,0 +1,45 @@
+meta {
+  name: Applications - Invalid Api Mode
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{API_URL}}/v1/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": {{CreatedApplicationId}},
+    "applicationName": "Updated Application Name",
+    "vendorId": {{OtherApplicationVendorId}},
+    "claimSetName": "Ed-Fi ODS Admin App",
+    "profileIds": [],
+    "educationOrganizationIds": [1234],
+    "odsInstanceIds": [ {{ODSInstanceId}} ],
+    "enabled": false
+  }
+  
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("message");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.message.toLowerCase()).to.contain("wrong api version for this instance mode.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

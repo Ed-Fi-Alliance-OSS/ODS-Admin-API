@@ -1,0 +1,95 @@
+meta {
+  name: ResourceClaimActionAuthStrategies - Without Limit
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{API_URL}}/v2/resourceClaimActionAuthStrategies?offset={{offset}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+}
+
+script:post-response {
+  test("GET ResourceClaimActionAuthStrategies: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  const GetResourceClaimActionAuthStrategiesActionsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "resourceClaimId": {
+            "type": "integer"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "claimName" : {
+            "type": "string"
+          },
+          "authorizationStrategiesForActions": {
+            "type": "array",
+            "items": [
+            {
+              "type": "object",
+              "properties": {
+                "actionId": {
+                  "type": "integer"
+                },
+                "actionName": {
+                  "type": "string"
+                },
+                "authorizationStrategies": {
+                  "type": "array",
+                  "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "authStrategyId": {
+                        "type": "integer"
+                      },
+                      "authStrategyName": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "authStrategyId",
+                      "authStrategyName"
+                    ]
+                  }]
+                }
+              },
+              "required": [
+                  "actionId",
+                  "actionName"
+              ]
+            }]
+          }
+        },
+        "required": [
+          "resourceClaimId",
+          "resourceName",
+          "claimName"
+        ]
+      }
+    ]
+  }
+  
+  test("GET ResourceClaimActionAuthStrategies: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetResourceClaimActionAuthStrategiesActionsSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

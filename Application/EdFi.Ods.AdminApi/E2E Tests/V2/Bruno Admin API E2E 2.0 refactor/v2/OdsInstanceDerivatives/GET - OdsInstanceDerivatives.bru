@@ -1,0 +1,73 @@
+meta {
+  name: OdsInstanceDerivatives
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/?offset={{offset}}&limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET OdsInstanceDerivatives: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+
+  test("GET OdsInstanceDerivatives: Response result includes OdsInstancesDerivative", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetOdsInstanceDerivativesSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "derivativeType": {
+            "type": "string"
+          },
+          "connectionString": {
+            "type": "string"
+          },
+          "odsInstanceId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "derivativeType",
+          "odsInstanceId"     
+        ]
+      }
+    ]
+  }
+  
+  test("GET OdsInstanceDerivatives: Validation Schema Response", () => {
+      const valid = ajv.validate(GetOdsInstanceDerivativesSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

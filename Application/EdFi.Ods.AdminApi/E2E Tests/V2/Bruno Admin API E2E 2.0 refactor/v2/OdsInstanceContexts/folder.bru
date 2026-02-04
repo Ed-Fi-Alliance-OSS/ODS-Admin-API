@@ -1,0 +1,17 @@
+meta {
+  name: OdsInstanceContexts
+  seq: 1
+}
+
+auth {
+  mode: inherit
+}
+
+script:pre-request {
+  function randomIntFromInterval(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+  
+  const rndInt = randomIntFromInterval(450, 783)
+  bru.setVar("NotExistProfileId", bru.interpolate(rndInt));
+}

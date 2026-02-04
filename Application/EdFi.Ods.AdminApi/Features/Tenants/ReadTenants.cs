@@ -3,12 +3,18 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using AutoMapper;
+using EdFi.Ods.AdminApi.Common.Constants;
+using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -25,6 +31,10 @@ public class ReadTenants : IFeature
 
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}", GetTenantsByTenantIdAsync)
+            .BuildForVersions(AdminApiVersions.V2);
+
+        AdminApiEndpointBuilder
+            .MapGet(endpoints, "/tenants/details", GetTenantDetailsAsync)
             .BuildForVersions(AdminApiVersions.V2);
     }
 
@@ -113,6 +123,38 @@ public class ReadTenants : IFeature
             }
         );
     }
+
+    public static async Task<IResult> GetTenantDetailsAsync(
+        HttpRequest request,
+        [FromServices] ITenantsService tenantsService,
+        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IMapper mapper,
+        IMemoryCache memoryCache,
+        IOptions<AppSettings> options
+    )
+    {
+        var tenantName = request.Headers["tenant"].FirstOrDefault();
+
+        if (options.Value.MultiTenancy && tenantName is null)
+            throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
+
+        tenantName ??= Constants.DefaultTenantName;
+
+        var tenant = await tenantsService.GetTenantDetailsAsync(getOdsInstancesQuery, getEducationOrganizationQuery, mapper, tenantName);
+
+        if (tenant is null)
+            return Results.NotFound();
+
+        return Results.Ok(
+            new TenantDetailsResponse
+            {
+                Id = tenantName,
+                Name = tenant.TenantName,
+                OdsInstances = tenant.OdsInstances
+            }
+        );
+    }
 }
 
 public class TenantsResponse
@@ -126,4 +168,11 @@ public class EdfiConnectionString
 {
     public string? host { get; set; }
     public string? database { get; set; }
+}
+
+public class TenantDetailsResponse
+{
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
 }

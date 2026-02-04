@@ -1,0 +1,86 @@
+meta {
+  name: ClaimSets - Full Access
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{API_URL}}/v2/claimSets?offset={{offset}}&limit={{limit}}
+  body: none
+  auth: bearer
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+}
+
+auth:bearer {
+  token: {{FULL_ACCESS_TOKEN}}
+}
+
+script:pre-request {
+  let header = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+  };
+
+}
+
+script:post-response {
+  test("GET ClaimSets: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const results = res.getBody();
+  
+  test("GET ClaimSets: Response result includes claimsets", function () {
+      expect(results.length).to.be.greaterThan(0);
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetClaimSetsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "_isSystemReserved": {
+            "type": "boolean"
+          },
+          "_applications": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "_isSystemReserved",
+          "_applications"
+        ]
+      }
+    ]
+  }
+  
+  test("GET ClaimSet: Validation Schema Response", () => {
+      const valid = ajv.validate(GetClaimSetsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

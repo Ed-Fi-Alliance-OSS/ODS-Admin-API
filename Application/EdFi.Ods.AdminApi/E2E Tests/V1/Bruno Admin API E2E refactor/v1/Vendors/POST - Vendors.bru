@@ -1,0 +1,61 @@
+meta {
+  name: Vendors
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/v1/vendors
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "company": "Test Company",
+      "namespacePrefixes": "uri://ed-fi.org",
+      "contactName": "Test User",
+      "contactEmailAddress": "test@test-ed-fi.org"
+  }
+}
+
+script:post-response {
+  test("Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(201);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("vendor");
+      expect(response.title.toLowerCase()).to.contain("created");
+  });
+  
+  test("Response includes location in header", function () {
+      expect(res.getHeaders()).to.have.property("Location".toLowerCase());
+  //     pm.response.to.be.header("Location", `/vendors/${result.vendorId}`);
+  });
+  
+  test("Response result includes vendor info", function () {
+      expect(result.company).to.equal("Test Company");
+      expect(result.namespacePrefixes).to.equal("uri://ed-fi.org");
+      expect(result.contactName).to.equal("Test User");
+      expect(result.contactEmailAddress).to.equal("test@test-ed-fi.org");
+  });
+  
+  if(result.vendorId) {
+      bru.setVar("CreatedVendorId", result.vendorId);
+  }
+}
+
+settings {
+  encodeUrl: true
+}
+

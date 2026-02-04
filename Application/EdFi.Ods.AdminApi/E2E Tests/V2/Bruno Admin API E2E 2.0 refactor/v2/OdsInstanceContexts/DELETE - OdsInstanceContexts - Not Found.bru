@@ -1,0 +1,35 @@
+meta {
+  name: OdsInstanceContexts - Not Found_1
+  type: http
+  seq: 23
+}
+
+delete {
+  url: {{API_URL}}/v2/OdsInstanceContexts/{{NotExistOdsInstancesContextId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE OdsInstanceContexts NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("DELETE OdsInstanceContexts NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("DELETE OdsInstanceContexts NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstanceContext");
+      expect(response.title).to.contain(bru.getEnvVar("NotExistOdsInstancesContextId"));
+  });
+}
+
+settings {
+  encodeUrl: true
+}

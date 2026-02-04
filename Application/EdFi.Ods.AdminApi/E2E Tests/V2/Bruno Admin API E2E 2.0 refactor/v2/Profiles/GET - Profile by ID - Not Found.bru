@@ -1,0 +1,35 @@
+meta {
+  name: Profile by ID - Not Found
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{API_URL}}/v2/profiles/{{NotExistProfileId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Profile NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("GET Profile NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET Profile NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("profile");
+      expect(response.title).to.contain(bru.getVar("NotExistProfileId"));
+  });
+}
+
+settings {
+  encodeUrl: true
+}

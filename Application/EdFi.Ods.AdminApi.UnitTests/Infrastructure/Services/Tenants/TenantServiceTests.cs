@@ -6,15 +6,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenants;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Models;
 using FakeItEasy;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
+using OdsInstance = EdFi.Admin.DataAccess.Models.OdsInstance;
 
 namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.Tenants;
 
@@ -24,12 +30,18 @@ internal class TenantServiceTests
     private IOptionsSnapshot<AppSettingsFile> _options = null!;
     private IMemoryCache _memoryCache = null!;
     private AppSettingsFile _appSettings = null!;
+    private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
+    private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
+    private IMapper _mapper = null!;
 
     [SetUp]
     public void SetUp()
     {
         _options = A.Fake<IOptionsSnapshot<AppSettingsFile>>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _mapper = A.Fake<IMapper>();
+        _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
+        _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
         _appSettings = new AppSettingsFile
         {
             AppSettings = new AppSettings
@@ -154,5 +166,82 @@ internal class TenantServiceTests
 
         tenants.Count.ShouldBe(2);
         tenants.Any(t => t.TenantName == "tenantA").ShouldBeTrue();
+    }
+
+    [Test]
+    public async Task GetTenantDetailsAsync_Should_Return_Correct_TenantDetails()
+    {
+        var service = new TenantService(_options, _memoryCache);
+        var tenantName = "tenantA";
+
+        var odsInstance = new OdsInstance
+        {
+            OdsInstanceId = 101,
+            Name = "Test Instance"
+        };
+
+        var educationOrganization = new EducationOrganization
+        {
+            InstanceId = 101,
+            InstanceName = "Test Instance",
+            EducationOrganizationId = 100,
+            NameOfInstitution = "Test School",
+            ShortNameOfInstitution = "Test",
+            Discriminator = "School"
+        };
+
+        var tenantOdsInstanceModels = new List<TenantOdsInstanceModel>
+        {
+            new()
+            {
+                OdsInstanceId = 101,
+                Name = "Test Instance"
+            }
+        };
+
+        var tenantEducationOrganizationModels = new List<TenantEducationOrganizationModel>
+        {
+            new()
+            {
+                InstanceId = 101,
+                InstanceName = "Test Instance",
+                EducationOrganizationId = 100,
+                NameOfInstitution = "Test School",
+                ShortNameOfInstitution = "Test",
+                Discriminator = "School"
+            }
+        };
+
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
+        A.CallTo(() => _getEducationOrganizationQuery.Execute(101)).Returns([educationOrganization]);
+        A.CallTo(() => _mapper.Map<List<TenantOdsInstanceModel>>(A<List<OdsInstance>>._)).Returns(tenantOdsInstanceModels);
+        A.CallTo(() => _mapper.Map<List<TenantEducationOrganizationModel>>(A<List<EducationOrganization>>._)).Returns(tenantEducationOrganizationModels);
+
+        var tenant = await service.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName);
+
+        tenant.ShouldNotBeNull();
+        tenant!.TenantName.ShouldBe(tenantName);
+        tenant.OdsInstances.ShouldNotBeNull();
+        tenant.OdsInstances!.Count.ShouldBe(1);
+        tenant.OdsInstances[0].OdsInstanceId.ShouldBe(odsInstance.OdsInstanceId);
+        tenant.OdsInstances[0].Name.ShouldBe(odsInstance.Name);
+        tenant.OdsInstances[0].EducationOrganizations.ShouldNotBeNull();
+        tenant.OdsInstances[0].EducationOrganizations!.Count.ShouldBe(1);
+        tenant.OdsInstances[0].EducationOrganizations[0].InstanceId.ShouldBe(educationOrganization.InstanceId);
+        tenant.OdsInstances[0].EducationOrganizations[0].InstanceName.ShouldBe(educationOrganization.InstanceName);
+        tenant.OdsInstances[0].EducationOrganizations[0].EducationOrganizationId.ShouldBe(educationOrganization.EducationOrganizationId);
+        tenant.OdsInstances[0].EducationOrganizations[0].NameOfInstitution.ShouldBe(educationOrganization.NameOfInstitution);
+        tenant.OdsInstances[0].EducationOrganizations[0].ShortNameOfInstitution.ShouldBe(educationOrganization.ShortNameOfInstitution);
+        tenant.OdsInstances[0].EducationOrganizations[0].Discriminator.ShouldBe(educationOrganization.Discriminator);
+    }
+
+    [Test]
+    public async Task GetTenantDetailsAsync_Should_Return_Null_If_Not_Found()
+    {
+        var service = new TenantService(_options, _memoryCache);
+
+        var tenant = await service.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, "notfound");
+
+        tenant.ShouldBeNull();
     }
 }
