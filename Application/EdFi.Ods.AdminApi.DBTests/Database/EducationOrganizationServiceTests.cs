@@ -92,11 +92,12 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _usersContext,
                 adminApiDbContext,
                 _encryptionProvider.Object,
+                _configuration,
                 tenantSpecificProvider,
                 _logger
             );
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
     }
 
@@ -135,11 +136,12 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _usersContext,
                 adminApiDbContext,
                 _encryptionProvider.Object,
+                _configuration,
                 tenantSpecificProvider,
                 _logger
             );
 
-            Should.NotThrow(() => service.Execute(tenantName).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(tenantName, null).GetAwaiter().GetResult());
         });
     }
 
@@ -188,9 +190,10 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         IUsersContext usersContext,
         AdminApiDbContext adminApiDbContext,
         ISymmetricStringEncryptionProvider encryptionProvider,
+        IConfiguration configuration,
         ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
         ILogger<EducationOrganizationService> logger
-        ) : EducationOrganizationService(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
+        ) : EducationOrganizationService(options, usersContext, adminApiDbContext, encryptionProvider, configuration, tenantSpecificDbContextProvider, logger)
     {
         public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
@@ -271,10 +274,11 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 _usersContext,
                 _adminApiDbContext,
                 _encryptionProvider.Object,
+                _configuration,
                  new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
                 _logger);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var updatedEdOrg = _adminApiDbContext.EducationOrganizations
                 .FirstOrDefault(e => e.EducationOrganizationId == existingEdOrg.EducationOrganizationId);
@@ -327,10 +331,11 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _usersContext,
               _adminApiDbContext,
               _encryptionProvider.Object,
+              _configuration,
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
               _logger);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             // After execution, since the hardcoded data doesn't include EducationOrganizationId 999999,
             // the service should have removed our test EdOrg
@@ -354,11 +359,12 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _usersContext,
               _adminApiDbContext,
               _encryptionProvider.Object,
+              _configuration,
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
               _logger);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
-                service.Execute(null).GetAwaiter().GetResult());
+                service.Execute(null, null).GetAwaiter().GetResult());
 
             exception.Message.ShouldBe("EncryptionKey can't be null.");
         });
@@ -376,10 +382,11 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                _usersContext,
                _adminApiDbContext,
                _encryptionProvider.Object,
+              _configuration,
                new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
                _logger);
 
-            Should.Throw<Exception>(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.Throw<Exception>(() => service.Execute(null, null).GetAwaiter().GetResult());
         });
     }
 
@@ -395,11 +402,12 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _usersContext,
               _adminApiDbContext,
               _encryptionProvider.Object,
+              _configuration,
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
               _logger);
 
             var exception = Should.Throw<NotSupportedException>(() =>
-                service.Execute(null).GetAwaiter().GetResult());
+                service.Execute(null, null).GetAwaiter().GetResult());
 
             exception.Message.ShouldContain("Not supported DatabaseEngine \"InvalidEngine\"");
         });
@@ -433,10 +441,11 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _usersContext,
               _adminApiDbContext,
               _encryptionProvider.Object,
+              _configuration,
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
                mockLogger.Object);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             var error = $"Failed to decrypt connection string for ODS Instance ID {odsInstance.OdsInstanceId}. Skipping education organization synchronization for this instance.";
 
@@ -484,14 +493,186 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               _usersContext,
               _adminApiDbContext,
               _encryptionProvider.Object,
+              _configuration,
               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
               _logger);
 
-            Should.NotThrow(() => service.Execute(null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
             // Verify both instances were processed
             var instances = _usersContext.OdsInstances.ToList();
             instances.Count.ShouldBeGreaterThanOrEqualTo(2);
         });
+    }
+
+    [Test]
+    public void Execute_Should_Process_Only_Specified_Instance_When_InstanceId_Provided()
+    {
+        var odsInstance1 = new OdsInstance
+        {
+            Name = "Test ODS Instance 1",
+            InstanceType = "Test",
+            ConnectionString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(ConnectionString))
+        };
+
+        var odsInstance2 = new OdsInstance
+        {
+            Name = "Test ODS Instance 2",
+            InstanceType = "Test",
+            ConnectionString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(ConnectionString))
+        };
+
+        Save(odsInstance1, odsInstance2);
+
+        var decryptedConnectionString = ConnectionString;
+        _encryptionProvider.Setup(x => x.TryDecrypt(
+            It.IsAny<string>(),
+            It.IsAny<byte[]>(),
+            out decryptedConnectionString))
+            .Returns(true);
+
+        AdminApiTransaction(_adminApiDbContext =>
+        {
+            var service = new TestableEducationOrganizationServiceWithInstanceTracking(
+              _options,
+              _usersContext,
+              _adminApiDbContext,
+              _encryptionProvider.Object,
+              _configuration,
+              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              _logger);
+
+            Should.NotThrow(() => service.Execute(null, odsInstance1.OdsInstanceId).GetAwaiter().GetResult());
+
+            // Verify only the specified instance was processed
+            service.ProcessedInstanceIds.Count.ShouldBe(1);
+            service.ProcessedInstanceIds.ShouldContain(odsInstance1.OdsInstanceId);
+            service.ProcessedInstanceIds.ShouldNotContain(odsInstance2.OdsInstanceId);
+        });
+    }
+
+    [Test]
+    public void Execute_Should_Process_All_Instances_When_InstanceId_Is_Null()
+    {
+        var odsInstance1 = new OdsInstance
+        {
+            Name = "Test ODS Instance 1",
+            InstanceType = "Test",
+            ConnectionString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(ConnectionString))
+        };
+
+        var odsInstance2 = new OdsInstance
+        {
+            Name = "Test ODS Instance 2",
+            InstanceType = "Test",
+            ConnectionString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(ConnectionString))
+        };
+
+        var odsInstance3 = new OdsInstance
+        {
+            Name = "Test ODS Instance 3",
+            InstanceType = "Test",
+            ConnectionString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(ConnectionString))
+        };
+
+        Save(odsInstance1, odsInstance2, odsInstance3);
+
+        var decryptedConnectionString = ConnectionString;
+        _encryptionProvider.Setup(x => x.TryDecrypt(
+            It.IsAny<string>(),
+            It.IsAny<byte[]>(),
+            out decryptedConnectionString))
+            .Returns(true);
+
+        AdminApiTransaction(_adminApiDbContext =>
+        {
+            var service = new TestableEducationOrganizationServiceWithInstanceTracking(
+              _options,
+              _usersContext,
+              _adminApiDbContext,
+              _encryptionProvider.Object,
+              _configuration,
+              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              _logger);
+
+            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
+
+            // Verify all instances were processed
+            service.ProcessedInstanceIds.Count.ShouldBe(3);
+            service.ProcessedInstanceIds.ShouldContain(odsInstance1.OdsInstanceId);
+            service.ProcessedInstanceIds.ShouldContain(odsInstance2.OdsInstanceId);
+            service.ProcessedInstanceIds.ShouldContain(odsInstance3.OdsInstanceId);
+        });
+    }
+
+    [Test]
+    public void Execute_Should_Process_Zero_Instances_When_InstanceId_Does_Not_Exist()
+    {
+        var odsInstance = new OdsInstance
+        {
+            Name = "Test ODS Instance",
+            InstanceType = "Test",
+            ConnectionString = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(ConnectionString))
+        };
+
+        Save(odsInstance);
+
+        var decryptedConnectionString = ConnectionString;
+        _encryptionProvider.Setup(x => x.TryDecrypt(
+            It.IsAny<string>(),
+            It.IsAny<byte[]>(),
+            out decryptedConnectionString))
+            .Returns(true);
+
+        AdminApiTransaction(_adminApiDbContext =>
+        {
+            var service = new TestableEducationOrganizationServiceWithInstanceTracking(
+              _options,
+              _usersContext,
+              _adminApiDbContext,
+              _encryptionProvider.Object,
+              _configuration,
+              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              _logger);
+
+            int nonExistentInstanceId = 999;
+            Should.NotThrow(() => service.Execute(null, nonExistentInstanceId).GetAwaiter().GetResult());
+
+            // Verify no instances were processed
+            service.ProcessedInstanceIds.ShouldBeEmpty();
+        });
+    }
+
+    private class TestableEducationOrganizationServiceWithInstanceTracking : TestableEducationOrganizationService
+    {
+        public List<int> ProcessedInstanceIds { get; } = new List<int>();
+
+        public TestableEducationOrganizationServiceWithInstanceTracking(
+            IOptions<AppSettings> options,
+            IUsersContext usersContext,
+            AdminApiDbContext adminApiDbContext,
+            ISymmetricStringEncryptionProvider encryptionProvider,
+            IConfiguration configuration,
+            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+            ILogger<EducationOrganizationService> logger)
+            : base(options, usersContext, adminApiDbContext, encryptionProvider, configuration, tenantSpecificDbContextProvider, logger)
+        {
+        }
+
+        public override async Task ProcessOdsInstance(IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
+        {
+            var odsInstances = instanceId.HasValue
+                ? await usersContext.OdsInstances
+                    .Where(o => o.OdsInstanceId == instanceId.Value)
+                    .ToListAsync()
+                : await usersContext.OdsInstances.ToListAsync();
+
+            foreach (var instance in odsInstances)
+            {
+                ProcessedInstanceIds.Add(instance.OdsInstanceId);
+            }
+
+            await base.ProcessOdsInstance(usersContext, adminApiDbContext, encryptionKey, databaseEngine, instanceId);
+        }
     }
 }
