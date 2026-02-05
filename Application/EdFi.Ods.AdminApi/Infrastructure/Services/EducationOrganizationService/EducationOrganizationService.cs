@@ -106,7 +106,7 @@ public class EducationOrganizationService(
             var edorgs = await GetEducationOrganizationsAsync(decryptedConnectionString, databaseEngine);
 
             // Create a completely isolated scope with its own DbContext instance for thread safety
-            using var scope = serviceScopeFactory.CreateScope();
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
             var scopedProvider = scope.ServiceProvider.GetRequiredService<ITenantSpecificDbContextProvider>();
             var taskAdminApiDbContext = scopedProvider.GetAdminApiDbContext(tenantName);
 

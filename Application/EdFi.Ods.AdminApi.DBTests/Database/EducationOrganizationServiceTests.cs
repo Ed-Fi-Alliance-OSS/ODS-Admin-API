@@ -205,7 +205,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         private readonly IUsersContext _tenantUsersContext =
             new SqlServerUsersContext(GetDbContextOptions());
 
-        public DummyTenantSpecificDbContextProvider(AdminApiDbContext tenantDbContext, string tenantName = "tenant1")
+        public DummyTenantSpecificDbContextProvider(AdminApiDbContext tenantDbContext, string tenantName = "default")
         {
             _tenantDbContext = tenantDbContext;
             _tenantName = tenantName;
@@ -382,7 +382,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
               serviceScopeFactory.Object,
               _logger);
 
-            Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
+            Should.NotThrow(() => service.Execute("default", null).GetAwaiter().GetResult());
 
             // After execution, since the hardcoded data doesn't include EducationOrganizationId 999999,
             // the service should have removed our test EdOrg
