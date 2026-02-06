@@ -46,6 +46,11 @@ public class ErrorMessagesConstants
     /// </code>
     /// </remarks>
     public const string Tenant_InvalidId = "Tenant not found with provided tenant id";
+
+    /// <summary>
+    /// Tenant identifier provided in the request header does not match the tenant identifier provided as a parameter in the request URL.
+    /// </summary>
+    public const string Tenant_ParameterMismatch = "Tenant Header and Tenant Parameter mismatch";
 }
 
 public enum AdminApiMode
