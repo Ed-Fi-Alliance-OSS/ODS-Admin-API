@@ -39,8 +39,8 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: tenant1
 
-### Get tenant details V2
-GET {{adminapi_url}}/v2/tenants/details
+### Get tenant EducationOrganizations V2 by name
+GET {{adminapi_url}}/v2/tenants/tenant1/edOrgsByInstances
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: tenant1

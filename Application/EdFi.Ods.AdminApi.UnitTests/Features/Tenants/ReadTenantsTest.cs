@@ -146,12 +146,12 @@ public class ReadTenantsTest
     }
 
     [Test]
-    public async Task GetTenantDetailsAsync_ReturnsOk_WhenTenantExists()
+    public async Task GetTenantEdOrgsByInstancesAsync_ReturnsOk_WhenTenantExists()
     {
         var tenantsService = A.Fake<ITenantsService>();
         var memoryCache = A.Fake<IMemoryCache>();
         var options = A.Fake<IOptions<AppSettings>>();
-        var tenantHeader = "tenant1";
+        string tenantName = "tenant1", tenantHeader = "tenant1";
 
         var educationOrganization = new TenantEducationOrganizationModel()
         {
@@ -170,26 +170,45 @@ public class ReadTenantsTest
 
         var tenantDetailModel = new TenantDetailModel()
         {
-            TenantName = tenantHeader,
+            TenantName = tenantName,
             OdsInstances = [odsInstance]
         };
 
         var request = A.Fake<HttpRequest>();
         A.CallTo(() => request.Headers["tenant"]).Returns(new StringValues(tenantHeader));
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
-        A.CallTo(() => tenantsService.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantHeader)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantDetailsAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options, tenantName);
 
         result.ShouldNotBeNull();
     }
 
     [Test]
-    public void GetTenantDetailsAsync_ThrowsValidationException_WhenTenantHeaderIsNull()
+    public void GetTenantEdOrgsByInstancesAsync_ThrowsValidationException_WhenTenantHeaderAndTenantNameAreDifferent()
     {
         var tenantsService = A.Fake<ITenantsService>();
         var memoryCache = A.Fake<IMemoryCache>();
         var options = A.Fake<IOptions<AppSettings>>();
+        string tenantName = "tenant1", tenantHeader = "tenant2";
+
+        var request = A.Fake<HttpRequest>();
+        A.CallTo(() => request.Headers["tenant"]).Returns(tenantHeader);
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
+
+        Should.ThrowAsync<ValidationException>(async () =>
+        {
+            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options, tenantName);
+        });
+    }
+
+    [Test]
+    public void GetTenantEdOrgsByInstancesAsync_ThrowsValidationException_WhenTenantHeaderIsEmpty()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        string tenantName = "tenant1";
 
         var request = A.Fake<HttpRequest>();
         A.CallTo(() => request.Headers["tenant"]).Returns(StringValues.Empty);
@@ -197,7 +216,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantDetailsAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options);
+            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, memoryCache, options, tenantName);
         });
     }
 }
