@@ -13,6 +13,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -86,13 +87,14 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         AdminApiTransaction(adminApiDbContext =>
         {
             var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, adminApiDbContext);
 
             var service = new TestableEducationOrganizationService(
                 _options,
                 _usersContext,
-                adminApiDbContext,
                 _encryptionProvider.Object,
                 tenantSpecificProvider,
+                serviceScopeFactory.Object,
                 _logger
             );
 
@@ -129,13 +131,14 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         {
             var tenantDbContext = new AdminApiDbContext(builder.Options, _configuration);
             var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(tenantDbContext, tenantName);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, tenantDbContext);
 
             var service = new TestableEducationOrganizationService(
                 _options,
                 _usersContext,
-                adminApiDbContext,
                 _encryptionProvider.Object,
                 tenantSpecificProvider,
+                serviceScopeFactory.Object,
                 _logger
             );
 
@@ -155,18 +158,45 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         transaction.Commit();
     }
 
-    private class DummyTenantSpecificDbContextProvider : ITenantSpecificDbContextProvider
+    private Mock<IServiceScopeFactory> CreateMockServiceScopeFactory(ITenantSpecificDbContextProvider tenantSpecificProvider, AdminApiDbContext adminApiDbContext)
     {
-        private readonly AdminApiDbContext _tenantDbContext;
-        private readonly string _tenantName;
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        var mockServiceProvider = new Mock<IServiceProvider>();
+
+        mockServiceProvider.Setup(x => x.GetService(typeof(ITenantSpecificDbContextProvider)))
+            .Returns(tenantSpecificProvider);
+        
+        // Create a new instance of AdminApiDbContext for the service scope
+        // to avoid disposing the test's context instance
+        mockServiceProvider.Setup(x => x.GetService(typeof(AdminApiDbContext)))
+            .Returns(() =>
+            {
+                var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+                adminApiOptionsBuilder.UseSqlServer(ConnectionString);
+                return new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+            });
+
+        var mockScope = new ServiceProviderAsyncDisposableWrapper(mockServiceProvider.Object);
+        mockServiceScopeFactory.Setup(x => x.CreateScope()).Returns(mockScope);
+
+        return mockServiceScopeFactory;
+    }
+
+    private class ServiceProviderAsyncDisposableWrapper(IServiceProvider serviceProvider) : IServiceScope
+    {
+        public IServiceProvider ServiceProvider { get; } = serviceProvider;
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private class DummyTenantSpecificDbContextProvider(AdminApiDbContext tenantDbContext, string tenantName = "default") : ITenantSpecificDbContextProvider
+    {
+        private readonly AdminApiDbContext _tenantDbContext = tenantDbContext;
+        private readonly string _tenantName = tenantName;
         private readonly IUsersContext _tenantUsersContext =
             new SqlServerUsersContext(GetDbContextOptions());
-
-        public DummyTenantSpecificDbContextProvider(AdminApiDbContext tenantDbContext, string tenantName = "tenant1")
-        {
-            _tenantDbContext = tenantDbContext;
-            _tenantName = tenantName;
-        }
 
         public AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
         {
@@ -186,11 +216,11 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     private class TestableEducationOrganizationService(
         IOptions<AppSettings> options,
         IUsersContext usersContext,
-        AdminApiDbContext adminApiDbContext,
         ISymmetricStringEncryptionProvider encryptionProvider,
         ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+        IServiceScopeFactory serviceScopeFactory,
         ILogger<EducationOrganizationService> logger
-        ) : EducationOrganizationService(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
+        ) : EducationOrganizationService(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
         public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
@@ -266,12 +296,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
                 _options,
                 _usersContext,
-                _adminApiDbContext,
                 _encryptionProvider.Object,
-                 new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+                tenantSpecificProvider,
+                serviceScopeFactory.Object,
                 _logger);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
@@ -322,16 +355,23 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
+        });
 
+        // Query the results using a fresh context to verify deletion
+        AdminApiTransaction(_adminApiDbContext =>
+        {
             // After execution, since the hardcoded data doesn't include EducationOrganizationId 999999,
             // the service should have removed our test EdOrg
             var deletedEdOrg = _adminApiDbContext.EducationOrganizations
@@ -349,12 +389,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             var exception = Should.Throw<InvalidOperationException>(() =>
@@ -371,12 +414,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
                _options,
                _usersContext,
-               _adminApiDbContext,
                _encryptionProvider.Object,
-               new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+               tenantSpecificProvider,
+               serviceScopeFactory.Object,
                _logger);
 
             Should.Throw<Exception>(() => service.Execute(null, null).GetAwaiter().GetResult());
@@ -390,12 +436,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             var exception = Should.Throw<NotSupportedException>(() =>
@@ -428,13 +477,16 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
-               mockLogger.Object);
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
+              mockLogger.Object);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
 
@@ -479,12 +531,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationService(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
@@ -523,12 +578,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationServiceWithInstanceTracking(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             Should.NotThrow(() => service.Execute(null, odsInstance1.OdsInstanceId).GetAwaiter().GetResult());
@@ -575,12 +633,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationServiceWithInstanceTracking(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             Should.NotThrow(() => service.Execute(null, null).GetAwaiter().GetResult());
@@ -614,12 +675,15 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         AdminApiTransaction(_adminApiDbContext =>
         {
+            var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(_adminApiDbContext);
+            var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, _adminApiDbContext);
+
             var service = new TestableEducationOrganizationServiceWithInstanceTracking(
               _options,
               _usersContext,
-              _adminApiDbContext,
               _encryptionProvider.Object,
-              new DummyTenantSpecificDbContextProvider(_adminApiDbContext),
+              tenantSpecificProvider,
+              serviceScopeFactory.Object,
               _logger);
 
             int nonExistentInstanceId = 999;
@@ -630,22 +694,17 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         });
     }
 
-    private class TestableEducationOrganizationServiceWithInstanceTracking : TestableEducationOrganizationService
+    private class TestableEducationOrganizationServiceWithInstanceTracking(
+        IOptions<AppSettings> options,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+        IServiceScopeFactory serviceScopeFactory,
+        ILogger<EducationOrganizationService> logger) : TestableEducationOrganizationService(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
-        public List<int> ProcessedInstanceIds { get; } = new List<int>();
+        public List<int> ProcessedInstanceIds { get; } = [];
 
-        public TestableEducationOrganizationServiceWithInstanceTracking(
-            IOptions<AppSettings> options,
-            IUsersContext usersContext,
-            AdminApiDbContext adminApiDbContext,
-            ISymmetricStringEncryptionProvider encryptionProvider,
-            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
-            ILogger<EducationOrganizationService> logger)
-            : base(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
-        {
-        }
-
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
+        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
         {
             var odsInstances = instanceId.HasValue
                 ? await usersContext.OdsInstances
@@ -658,7 +717,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 ProcessedInstanceIds.Add(instance.OdsInstanceId);
             }
 
-            await base.ProcessOdsInstanceAsync("default", usersContext, adminApiDbContext, encryptionKey, databaseEngine, instanceId);
+            await base.ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId);
         }
     }
 }

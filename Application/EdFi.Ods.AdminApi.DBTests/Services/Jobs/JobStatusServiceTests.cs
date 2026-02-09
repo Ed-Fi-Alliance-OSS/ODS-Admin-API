@@ -88,21 +88,14 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     }
 
     // Dummy provider for integration tests
-    private class DummyTenantSpecificDbContextProvider : ITenantSpecificDbContextProvider
+    private class DummyTenantSpecificDbContextProvider(
+        DbContextOptions<Infrastructure.AdminApiDbContext> defaultOptions,
+        string tenantName = null,
+        Infrastructure.AdminApiDbContext tenantDbContext = null) : ITenantSpecificDbContextProvider
     {
-        private readonly DbContextOptions<Infrastructure.AdminApiDbContext> _defaultOptions;
-        private readonly string? _tenantName;
-        private readonly Infrastructure.AdminApiDbContext? _tenantDbContext;
-
-        public DummyTenantSpecificDbContextProvider(
-            DbContextOptions<Infrastructure.AdminApiDbContext> defaultOptions,
-            string? tenantName = null,
-            Infrastructure.AdminApiDbContext? tenantDbContext = null)
-        {
-            _defaultOptions = defaultOptions;
-            _tenantName = tenantName;
-            _tenantDbContext = tenantDbContext;
-        }
+        private readonly DbContextOptions<Infrastructure.AdminApiDbContext> _defaultOptions = defaultOptions;
+        private readonly string _tenantName = tenantName;
+        private readonly Infrastructure.AdminApiDbContext _tenantDbContext = tenantDbContext;
 
         public Infrastructure.AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
         {

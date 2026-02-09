@@ -169,7 +169,7 @@ internal class TenantServiceTests
     }
 
     [Test]
-    public async Task GetTenantDetailsAsync_Should_Return_Correct_TenantDetails()
+    public async Task GetTenantEdOrgsByInstancesAsync_Should_Return_Correct_TenantDetails()
     {
         var service = new TenantService(_options, _memoryCache);
         var tenantName = "tenantA";
@@ -217,7 +217,7 @@ internal class TenantServiceTests
         A.CallTo(() => _mapper.Map<List<TenantOdsInstanceModel>>(A<List<OdsInstance>>._)).Returns(tenantOdsInstanceModels);
         A.CallTo(() => _mapper.Map<List<TenantEducationOrganizationModel>>(A<List<EducationOrganization>>._)).Returns(tenantEducationOrganizationModels);
 
-        var tenant = await service.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName);
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName);
 
         tenant.ShouldNotBeNull();
         tenant!.TenantName.ShouldBe(tenantName);
@@ -236,11 +236,11 @@ internal class TenantServiceTests
     }
 
     [Test]
-    public async Task GetTenantDetailsAsync_Should_Return_Null_If_Not_Found()
+    public async Task GetTenantEdOrgsByInstancesAsync_Should_Return_Null_If_Not_Found()
     {
         var service = new TenantService(_options, _memoryCache);
 
-        var tenant = await service.GetTenantDetailsAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, "notfound");
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, "notfound");
 
         tenant.ShouldBeNull();
     }

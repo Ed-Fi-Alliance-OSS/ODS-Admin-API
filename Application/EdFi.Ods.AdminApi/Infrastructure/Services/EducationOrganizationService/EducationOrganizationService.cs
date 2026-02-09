@@ -25,9 +25,9 @@ public interface IEducationOrganizationService
 public class EducationOrganizationService(
     IOptions<AppSettings> options,
     IUsersContext usersContext,
-    AdminApiDbContext adminApiDbContext,
     ISymmetricStringEncryptionProvider encryptionProvider,
     ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+    IServiceScopeFactory serviceScopeFactory,
     ILogger<EducationOrganizationService> logger
         ) : IEducationOrganizationService
 {
@@ -67,23 +67,28 @@ public class EducationOrganizationService(
                 logger.LogError("Tenant name must be provided when multi-tenancy is enabled.");
                 return;
             }
-            var tenantSpecificAdminApiDbContext = tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName!);
             var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
-            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, tenantSpecificAdminApiDbContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine);
         }
         else
         {
-            await ProcessOdsInstanceAsync("default", usersContext, adminApiDbContext, encryptionKey, databaseEngine, instanceId);
+            await ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId);
         }
     }
 
-    public virtual async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+    public virtual async Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
     {
         var odsInstances = instanceId.HasValue
             ? await usersContext.OdsInstances
                 .Where(o => o.OdsInstanceId == instanceId.Value)
                 .ToListAsync()
             : await usersContext.OdsInstances.ToListAsync();
+
+        if (instanceId.HasValue && odsInstances.Count == 0)
+        {
+            logger.LogWarning("An instanceId was provided ({InstanceId}) but no matching OdsInstance exists for tenant {TenantName}.", instanceId.Value, tenantName);
+            return;
+        }
 
         // Process all OdsInstances in parallel using Task.WhenAll
         var tasks = odsInstances.Select(odsInstance =>
@@ -93,19 +98,23 @@ public class EducationOrganizationService(
         await Task.WhenAll(tasks);
     }
 
-    private async Task RefreshEducationOrganizationsAsync(string tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance)
+    private async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance)
     {
         try
         {
             if (!encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString))
             {
                 logger.LogError("Failed to decrypt connection string for ODS Instance ID {OdsInstanceId}. Skipping education organization synchronization for this instance.", odsInstance.OdsInstanceId);
+                return;
             }
 
             var edorgs = await GetEducationOrganizationsAsync(decryptedConnectionString, databaseEngine);
 
-            // Create a new DbContext instance for this task to maintain thread safety
-            await using var taskAdminApiDbContext = tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName);
+            // Create a completely isolated scope with its own DbContext instance for thread safety
+            await using var scope = serviceScopeFactory.CreateAsyncScope();
+            await using var taskAdminApiDbContext = tenantName is null
+                ? scope.ServiceProvider.GetRequiredService<AdminApiDbContext>()
+                : scope.ServiceProvider.GetRequiredService<ITenantSpecificDbContextProvider>().GetAdminApiDbContext(tenantName);
 
             var existingEducationOrganizations = await taskAdminApiDbContext.EducationOrganizations
             .Where(e => e.InstanceId == odsInstance.OdsInstanceId)

@@ -9,16 +9,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -32,18 +31,17 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.EducationOrganizat
 internal class EducationOrganizationServiceTests
 {
     private IOptions<AppSettings> _options = null!;
-    private ITenantConfigurationProvider _tenantConfigurationProvider = null!;
     private ISymmetricStringEncryptionProvider _encryptionProvider = null!;
     private AppSettings _appSettings = null!;
     private string _encryptionKey = null!;
     private ILogger<EducationOrganizationServiceImpl> _logger = null!;
     private ITenantSpecificDbContextProvider _tenantSpecificDbContextProvider = null!;
+    private IServiceScopeFactory _serviceScopeFactory = null!;
 
     [SetUp]
     public void SetUp()
     {
         _options = A.Fake<IOptions<AppSettings>>();
-        _tenantConfigurationProvider = A.Fake<ITenantConfigurationProvider>();
         _encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
 
         _encryptionKey = Convert.ToBase64String(new byte[32]);
@@ -57,6 +55,7 @@ internal class EducationOrganizationServiceTests
         A.CallTo(() => _options.Value).Returns(_appSettings);
         _logger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
         _tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
+        _serviceScopeFactory = A.Fake<IServiceScopeFactory>();
     }
 
     [Test]
@@ -75,9 +74,9 @@ internal class EducationOrganizationServiceTests
         var service = new EducationOrganizationServiceImpl(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             _logger);
 
         await Should.ThrowAsync<InvalidOperationException>(async () => await service.Execute(null, null))
@@ -99,9 +98,9 @@ internal class EducationOrganizationServiceTests
         var service = new EducationOrganizationServiceImpl(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             _logger);
 
         await Should.ThrowAsync<Exception>(async () => await service.Execute(null, null));
@@ -131,9 +130,9 @@ internal class EducationOrganizationServiceTests
         var service = new EducationOrganizationServiceImpl(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             _logger);
 
         string decryptedConnectionString = null;
@@ -156,43 +155,38 @@ internal class EducationOrganizationServiceTests
             .Options;
 
         using var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_MultiTenant_Admin").Options,
-            A.Fake<IConfiguration>());
+        var tenantUsersContext = new SqlServerUsersContext(contextOptions);
+
+        A.CallTo(() => _tenantSpecificDbContextProvider.GetUsersContext("tenant1"))
+            .Returns(tenantUsersContext);
 
         var processOdsInstanceCallCount = 0;
         var service = new TestableEducationOrganizationService(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             () => processOdsInstanceCallCount++,
             _logger);
 
         await service.Execute("tenant1", null);
 
-        A.CallTo(() => _tenantSpecificDbContextProvider.GetAdminApiDbContext("tenant1")).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _tenantSpecificDbContextProvider.GetUsersContext("tenant1")).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
     }
 
-    private class TestableEducationOrganizationService : EducationOrganizationServiceImpl
+    private class TestableEducationOrganizationService(
+        IOptions<AppSettings> options,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+        IServiceScopeFactory serviceScopeFactory,
+        Action onProcessOdsInstance, ILogger<EducationOrganizationServiceImpl> logger) : EducationOrganizationServiceImpl(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
-        private readonly Action _onProcessOdsInstance;
+        private readonly Action _onProcessOdsInstance = onProcessOdsInstance;
 
-        public TestableEducationOrganizationService(
-            IOptions<AppSettings> options,
-            IUsersContext usersContext,
-            AdminApiDbContext adminApiDbContext,
-            ISymmetricStringEncryptionProvider encryptionProvider,
-            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
-            Action onProcessOdsInstance, ILogger<EducationOrganizationServiceImpl> logger)
-            : base(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
-        {
-            _onProcessOdsInstance = onProcessOdsInstance;
-        }
-
-        public override Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+        public override Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
         {
             _onProcessOdsInstance();
             return Task.CompletedTask;
@@ -216,9 +210,9 @@ internal class EducationOrganizationServiceTests
         var service = new EducationOrganizationServiceImpl(
               _options,
               usersContext,
-              adminApiDbContext,
               _encryptionProvider,
               _tenantSpecificDbContextProvider,
+              _serviceScopeFactory,
               _logger);
 
         var exception = await Should.ThrowAsync<NotSupportedException>(async () => await service.Execute(null, null));
@@ -235,9 +229,6 @@ internal class EducationOrganizationServiceTests
             .Options;
 
         using var usersContext = new PostgresUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_PostgreSql_Admin").Options,
-            A.Fake<IConfiguration>());
 
         var odsInstance = new OdsInstance
         {
@@ -251,9 +242,9 @@ internal class EducationOrganizationServiceTests
         var service = new EducationOrganizationServiceImpl(
               _options,
               usersContext,
-              adminApiDbContext,
               _encryptionProvider,
               _tenantSpecificDbContextProvider,
+              _serviceScopeFactory,
               _logger);
 
         string decryptedConnectionString = null;
@@ -276,23 +267,22 @@ internal class EducationOrganizationServiceTests
             .Options;
 
         using var context = new PostgresUsersContext(contextOptions);
+        var tenantUsersContext = new PostgresUsersContext(contextOptions);
 
-        var adminApiDbContext = new AdminApiDbContext(
-           new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_MultiTenantPostgres").Options,
-           A.Fake<IConfiguration>());
+        A.CallTo(() => _tenantSpecificDbContextProvider.GetUsersContext("tenant1"))
+            .Returns(tenantUsersContext);
 
         var processOdsInstanceCallCount = 0;
         var service = new TestableEducationOrganizationService(
         _options,
         context,
-        adminApiDbContext,
         _encryptionProvider,
         _tenantSpecificDbContextProvider,
+        _serviceScopeFactory,
         () => processOdsInstanceCallCount++,
         _logger);
 
         await service.Execute("tenant1", null);
-        A.CallTo(() => _tenantSpecificDbContextProvider.GetAdminApiDbContext("tenant1")).MustHaveHappenedOnceExactly();
         A.CallTo(() => _tenantSpecificDbContextProvider.GetUsersContext("tenant1")).MustHaveHappenedOnceExactly();
         processOdsInstanceCallCount.ShouldBe(1);
     }
@@ -324,21 +314,17 @@ internal class EducationOrganizationServiceTests
         usersContext.OdsInstances.Add(otherInstance);
         await usersContext.SaveChangesAsync();
 
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_FilterByInstanceId_Admin").Options,
-            A.Fake<IConfiguration>());
-
         var processedInstanceIds = new List<int>();
         var service = new TestableEducationOrganizationServiceWithTracking(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, adminApiDbContext, _encryptionKey, "SqlServer", instanceId: 1);
+        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer", instanceId: 1);
 
         processedInstanceIds.Count.ShouldBe(1);
         processedInstanceIds.ShouldContain(1);
@@ -380,21 +366,17 @@ internal class EducationOrganizationServiceTests
         usersContext.OdsInstances.Add(instance3);
         await usersContext.SaveChangesAsync();
 
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_ProcessAllInstances_Admin").Options,
-            A.Fake<IConfiguration>());
-
         var processedInstanceIds = new List<int>();
         var service = new TestableEducationOrganizationServiceWithTracking(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, adminApiDbContext, _encryptionKey, "SqlServer", instanceId: null);
+        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer", instanceId: null);
 
         processedInstanceIds.Count.ShouldBe(3);
         processedInstanceIds.ShouldContain(1);
@@ -421,21 +403,17 @@ internal class EducationOrganizationServiceTests
         usersContext.OdsInstances.Add(instance);
         await usersContext.SaveChangesAsync();
 
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_NonExistentInstanceId_Admin").Options,
-            A.Fake<IConfiguration>());
-
         var processedInstanceIds = new List<int>();
         var service = new TestableEducationOrganizationServiceWithTracking(
             _options,
             usersContext,
-            adminApiDbContext,
             _encryptionProvider,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, adminApiDbContext, _encryptionKey, "SqlServer", instanceId: 999);
+        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer", instanceId: 999);
 
         processedInstanceIds.ShouldBeEmpty();
     }
@@ -475,10 +453,6 @@ internal class EducationOrganizationServiceTests
         usersContext.OdsInstances.Add(successInstance2);
         await usersContext.SaveChangesAsync();
 
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_ErrorHandling_Admin").Options,
-            A.Fake<IConfiguration>());
-
         var fakeLogger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
 
@@ -495,9 +469,9 @@ internal class EducationOrganizationServiceTests
         var service = new TestableEducationOrganizationServiceWithErrorSimulation(
             _options,
             usersContext,
-            adminApiDbContext,
             fakeEncryption,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             () => ++callCount == 2, // Fail on second call
             fakeLogger);
 
@@ -535,10 +509,6 @@ internal class EducationOrganizationServiceTests
         usersContext.OdsInstances.Add(failingInstance2);
         await usersContext.SaveChangesAsync();
 
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_AllInstancesFail_Admin").Options,
-            A.Fake<IConfiguration>());
-
         var fakeLogger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
 
@@ -551,9 +521,9 @@ internal class EducationOrganizationServiceTests
         var service = new TestableEducationOrganizationServiceWithErrorSimulation(
             _options,
             usersContext,
-            adminApiDbContext,
             fakeEncryption,
             _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
             () =>
             {
                 callCount++;
@@ -568,29 +538,23 @@ internal class EducationOrganizationServiceTests
         callCount.ShouldBe(2);
     }
 
-    private class TestableEducationOrganizationServiceWithTracking : EducationOrganizationServiceImpl
+    private class TestableEducationOrganizationServiceWithTracking(
+        IOptions<AppSettings> options,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+        IServiceScopeFactory serviceScopeFactory,
+        List<int> processedInstanceIds,
+        ILogger<EducationOrganizationServiceImpl> logger) : EducationOrganizationServiceImpl(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
-        private readonly List<int> _processedInstanceIds;
-
-        public TestableEducationOrganizationServiceWithTracking(
-            IOptions<AppSettings> options,
-            IUsersContext usersContext,
-            AdminApiDbContext adminApiDbContext,
-            ISymmetricStringEncryptionProvider encryptionProvider,
-            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
-            List<int> processedInstanceIds,
-            ILogger<EducationOrganizationServiceImpl> logger)
-            : base(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
-        {
-            _processedInstanceIds = processedInstanceIds;
-        }
+        private readonly List<int> _processedInstanceIds = processedInstanceIds;
 
         public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
             return Task.FromResult(new List<EducationOrganizationResult>());
         }
 
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
         {
             var odsInstances = instanceId.HasValue
                 ? await usersContext.OdsInstances
@@ -605,22 +569,16 @@ internal class EducationOrganizationServiceTests
         }
     }
 
-    private class TestableEducationOrganizationServiceWithErrorSimulation : EducationOrganizationServiceImpl
+    private class TestableEducationOrganizationServiceWithErrorSimulation(
+        IOptions<AppSettings> options,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+        IServiceScopeFactory serviceScopeFactory,
+        Func<bool> shouldFail,
+        ILogger<EducationOrganizationServiceImpl> logger) : EducationOrganizationServiceImpl(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
-        private readonly Func<bool> _shouldFail;
-
-        public TestableEducationOrganizationServiceWithErrorSimulation(
-            IOptions<AppSettings> options,
-            IUsersContext usersContext,
-            AdminApiDbContext adminApiDbContext,
-            ISymmetricStringEncryptionProvider encryptionProvider,
-            ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
-            Func<bool> shouldFail,
-            ILogger<EducationOrganizationServiceImpl> logger)
-            : base(options, usersContext, adminApiDbContext, encryptionProvider, tenantSpecificDbContextProvider, logger)
-        {
-            _shouldFail = shouldFail;
-        }
+        private readonly Func<bool> _shouldFail = shouldFail;
 
         public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
@@ -632,7 +590,7 @@ internal class EducationOrganizationServiceTests
             return Task.FromResult(new List<EducationOrganizationResult>());
         }
 
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, AdminApiDbContext adminApiDbContext, string encryptionKey, string databaseEngine, int? instanceId)
+        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
         {
             var odsInstances = instanceId.HasValue
                 ? await usersContext.OdsInstances
@@ -647,7 +605,7 @@ internal class EducationOrganizationServiceTests
                 {
                     try
                     {
-                        var edorgs = await GetEducationOrganizationsAsync("test-connection", databaseEngine);
+                        _ = await GetEducationOrganizationsAsync("test-connection", databaseEngine);
                     }
                     catch (Exception)
                     {
