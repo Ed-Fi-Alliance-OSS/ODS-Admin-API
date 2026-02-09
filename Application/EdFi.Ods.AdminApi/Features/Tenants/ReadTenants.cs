@@ -5,7 +5,6 @@
 
 using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Constants;
-using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -18,6 +17,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 
 namespace EdFi.Ods.AdminApi.Features.Tenants;
 
@@ -132,18 +132,22 @@ public class ReadTenants : IFeature
         IMapper mapper,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,
+        IOptions<SwaggerSettings> _swaggerOptions,
         string tenantName
     )
     {
+        var tenantHeader = request.Headers["tenant"].FirstOrDefault();
+
         if (options.Value.MultiTenancy)
         {
-            var tenantHeader = request.Headers["tenant"].FirstOrDefault();
+            if (!IsRequestFromSwagger(request))
+            {
+                if (tenantHeader is null)
+                    throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
 
-            if (tenantHeader is null)
-                throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
-
-            if (!string.Equals(tenantName, tenantHeader, StringComparison.OrdinalIgnoreCase))
-                throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_ParameterMismatch)]);
+                if (!string.Equals(tenantName, tenantHeader, StringComparison.OrdinalIgnoreCase))
+                    throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_ParameterMismatch)]);
+            }
         }
         else if (!string.Equals(tenantName, Constants.DefaultTenantName, StringComparison.OrdinalIgnoreCase))
         {
@@ -163,6 +167,14 @@ public class ReadTenants : IFeature
                 OdsInstances = tenant.OdsInstances
             }
         );
+    }
+
+    private static bool IsRequestFromSwagger(HttpRequest request)
+    {
+        return (request.Path.Value != null &&
+            request.Path.Value.Contains("swagger", StringComparison.InvariantCultureIgnoreCase)) ||
+            request.Headers.Referer.FirstOrDefault(x => x != null && x.ToLower().Contains("swagger", StringComparison.InvariantCultureIgnoreCase)) != null;
+
     }
 }
 
