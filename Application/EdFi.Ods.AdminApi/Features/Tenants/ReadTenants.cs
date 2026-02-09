@@ -136,12 +136,12 @@ public class ReadTenants : IFeature
         string tenantName
     )
     {
-        var tenantHeader = request.Headers["tenant"].FirstOrDefault();
-
         if (options.Value.MultiTenancy)
         {
             if (!IsRequestFromSwagger(request))
             {
+                var tenantHeader = request.Headers["tenant"].FirstOrDefault();
+
                 if (tenantHeader is null)
                     throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
 
