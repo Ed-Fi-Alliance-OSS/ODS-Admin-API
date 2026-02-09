@@ -142,10 +142,10 @@ public class ReadTenants : IFeature
             if (tenantHeader is null)
                 throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_MissingHeader)]);
 
-            if (tenantName != tenantHeader)
+            if (!string.Equals(tenantName, tenantHeader, StringComparison.OrdinalIgnoreCase))
                 throw new ValidationException([new ValidationFailure("Tenant", ErrorMessagesConstants.Tenant_ParameterMismatch)]);
         }
-        else if (tenantName != Constants.DefaultTenantName)
+        else if (!string.Equals(tenantName, Constants.DefaultTenantName, StringComparison.OrdinalIgnoreCase))
         {
             throw new NotFoundException<string>("TenantName", tenantName);
         }

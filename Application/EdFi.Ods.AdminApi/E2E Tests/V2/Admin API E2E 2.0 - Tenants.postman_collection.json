@@ -532,13 +532,7 @@
               ],
               "request": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "tenant",
-                    "value": "{{tenant1}}",
-                    "type": "text"
-                  }
-                ],
+                "header": [],
                 "url": {
                   "raw": "{{API_URL}}/v2/tenants/tenant1/edOrgsByInstances",
                   "host": [
