@@ -375,29 +375,31 @@
               "response": []
             },
             {
-              "name": "Tenants Details by Tenant Name - Multitenant",
+              "name": "Tenants EdOrgs by Tenant Name - Multitenant",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "if (pm.variables.get(\"isMultitenant\") == \"true\") {",
-                      "    pm.test(\"GET Tenants Details: Status code is Found\", function () {",
+                      "    pm.test(\"GET Tenants EdOrgs: Status code is Found\", function () {",
                       "        pm.response.to.have.status(200);",
                       "    });",
                       "",
                       "    const result = pm.response.json();",
                       "",
-                      "    pm.test(\"GET Tenant Details: Response result matches tenant\", function () {",
+                      "    pm.test(\"GET Tenants EdOrgs: Response result matches tenant\", function () {",
                       "        var tenantName = pm.environment.get(\"tenant1\");",
-                      "",
-                      "        pm.expect(result.id).to.equal(tenantName);",
-                      "        pm.expect(result.name).to.equal(tenantName);",
+                      "        ",
+                      "        pm.expect(result.id).to.not.be.empty;",
+                      "        pm.expect(result.name).to.not.be.empty;",
+                      "        pm.expect(result.id.toLowerCase()).to.equal(tenantName.toLowerCase());",
+                      "        pm.expect(result.name.toLowerCase()).to.equal(tenantName.toLowerCase());",
                       "        pm.expect(result.odsInstances).to.be.an('array');",
                       "        pm.expect(result.odsInstances).to.not.be.empty;",
                       "    });",
                       "",
-                      "    const GetTenantDetailsByNameSchema = {",
+                      "    const GetTenantEdOrgsByNameSchema = {",
                       "        \"type\": \"object\",",
                       "        \"properties\": {",
                       "            \"id\": {",
@@ -452,8 +454,8 @@
                       "        ]",
                       "    };",
                       "",
-                      "    pm.test(\"GET Tenants Details by Tenant Name: Validation Schema Response\", () => {",
-                      "        pm.response.to.have.jsonSchema(GetTenantDetailsByNameSchema);",
+                      "    pm.test(\"GET Tenants EdOrgs: Validation Schema Response\", () => {",
+                      "        pm.response.to.have.jsonSchema(GetTenantEdOrgsByNameSchema);",
                       "    });",
                       " ",
                       "    const header = {",
@@ -475,7 +477,7 @@
                       "",
                       "}",
                       "else {",
-                      "    pm.test(\"GET Tenants Details: Status code is Found\", function () {",
+                      "    pm.test(\"GET Tenants EdOrgs: Status code is Found\", function () {",
                       "        pm.response.to.have.status(404);",
                       "    });",
                       "}"
@@ -532,49 +534,44 @@
               ],
               "request": {
                 "method": "GET",
-                "header": [
-                  {
-                    "key": "tenant",
-                    "value": "{{tenant1}}",
-                    "type": "text"
-                  }
-                ],
+                "header": [],
                 "url": {
-                  "raw": "{{API_URL}}/v2/tenants/details",
+                  "raw": "{{API_URL}}/v2/tenants/tenant1/edOrgsByInstances",
                   "host": [
                     "{{API_URL}}"
                   ],
                   "path": [
                     "v2",
                     "tenants",
-                    "details"
+                    "tenant1",
+                    "edOrgsByInstances"
                   ]
                 }
               },
               "response": []
             },
             {
-              "name": "Tenants Details by Tenant Name - Singletenant",
+              "name": "Tenants EdOrgs by Tenant Name - Singletenant",
               "event": [
                 {
                   "listen": "test",
                   "script": {
                     "exec": [
                       "if (pm.variables.get(\"isMultitenant\") == \"false\") {",
-                      "    pm.test(\"GET Tenants Details: Status code is Found\", function () {",
+                      "    pm.test(\"GET Tenants EdOrgs: Status code is Found\", function () {",
                       "        pm.response.to.have.status(200);",
                       "    });",
                       "",
                       "    const result = pm.response.json();",
                       "",
-                      "    pm.test(\"GET Tenant Name: Response result matches tenant\", function () {",
-                      "        pm.expect(result.id).to.equal(\"default\");",
-                      "        pm.expect(result.name).to.equal(\"default\");",
+                      "    pm.test(\"GET Tenant EdOrgs: Response result matches tenant\", function () {",
+                      "        pm.expect(result.id.toLowerCase()).to.equal(\"default\");",
+                      "        pm.expect(result.name.toLowerCase()).to.equal(\"default\");",
                       "        pm.expect(result.odsInstances).to.be.an('array');",
                       "        pm.expect(result.odsInstances).to.not.be.empty;",
                       "    });",
                       "",
-                      "    const GetTenantDetailsByNameSchema = {",
+                      "    const GetTenantEdOrgsByNameSchema = {",
                       "        \"type\": \"object\",",
                       "        \"properties\": {",
                       "            \"id\": {",
@@ -626,8 +623,8 @@
                       "        }",
                       "    };",
                       "",
-                      "    pm.test(\"GET Tenants Details by Tenant Name: Validation Schema Response\", () => {",
-                      "        pm.response.to.have.jsonSchema(GetTenantDetailsByNameSchema);",
+                      "    pm.test(\"GET Tenants EdOrgs: Validation Schema Response\", () => {",
+                      "        pm.response.to.have.jsonSchema(GetTenantEdOrgsByNameSchema);",
                       "    });",
                       "",
                       "    const header = {",
@@ -697,14 +694,15 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{API_URL}}/v2/tenants/details",
+                  "raw": "{{API_URL}}/v2/tenants/default/edOrgsByInstances",
                   "host": [
                     "{{API_URL}}"
                   ],
                   "path": [
                     "v2",
                     "tenants",
-                    "details"
+                    "default",
+                    "edOrgsByInstances"
                   ]
                 }
               },
