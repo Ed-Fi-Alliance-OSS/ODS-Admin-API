@@ -39,12 +39,8 @@ jobs:
       - name: Set Version Numbers
         id: versions
         run: |
-          $apiPrefix = "v"
-
-          # Install the MinVer CLI tool
-          &dotnet tool install --global minver-cli
-
-          "admin-api=$($apiPrefix)$(minver -t $apiPrefix)" >> $env:GITHUB_OUTPUT
+          $apiVersion = & ./eng/get-version.ps1
+          "admin-api=$apiVersion" >> $env:GITHUB_OUTPUT
 
       - name: Create Admin API Pre-Release
         run: |

@@ -44,10 +44,7 @@ jobs:
         run: |
           $apiPrefix = "v"
 
-          # Install the MinVer CLI tool
-          &dotnet tool install --global minver-cli
-
-          $apiVersion = $(minver -t $apiPrefix)
+          $apiVersion = & ./eng/get-version.ps1
 
           # Full release name
           "admin-api=$apiVersion" >> $env:GITHUB_OUTPUT
