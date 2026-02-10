@@ -1,0 +1,202 @@
+meta {
+  name: Tenants EdOrgs by Tenant Name - Singletenant
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{API_URL}}/v2/tenants/default/edOrgsByInstances
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  bru.setVar("OdsInstanceGUID", bru.interpolate('{{$guid}}'));
+
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    let offsetVar = bru.getEnvVar("offset");
+    let limitVar = bru.getEnvVar("limit");
+    const odsResponse = await axios.post(`${API_URL}/v2/odsInstances`,{
+      "name": `Test-OdsInstance-${bru.getVar("OdsInstanceGUID")}`,
+      "instanceType": "OdsInstance",
+      "connectionString": `${bru.getEnvVar("connectionString")}`
+    }, axiosConfig);
+
+    if (odsResponse.status === 201) {
+      console.log("✅ OdsInstance created successfully");
+      const id = odsResponse.headers.get("location").split("/")[2];
+      bru.setVar("ODSInstanceId", id);
+    } else {
+      console.log("❌ Failed to create odsInstances");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to create odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    }
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+
+}
+
+script:post-response {
+  if (bru.getEnvVar("isMultitenant") == "false") {
+      test("GET Tenants EdOrgs: Status code is Found", function () {
+          expect(res.getStatus()).to.equal(200);
+      });
+
+      const result = res.getBody();
+
+      test("GET Tenant EdOrgs: Response result matches tenant", function () {
+          expect(result.id.toLowerCase()).to.equal("default");
+          expect(result.name.toLowerCase()).to.equal("default");
+          expect(result.odsInstances).to.be.an('array');
+          expect(result.odsInstances).to.not.be.empty;
+      });
+
+      const response = res.getBody();
+      const Ajv = require('ajv');
+      const ajv = new Ajv();
+      const GetTenantEdOrgsByNameSchema = {
+          "type": "object",
+          "properties": {
+              "id": {
+                  "type": "string"
+              },
+              "name": {
+                  "type": "string"
+              },
+              "odsInstances": {
+                  "type": "array",
+                  "properties": {
+                      "id": {
+                          "type": "number"
+                      },
+                      "name": {
+                          "type": "string"
+                      },
+                      "instanceType": {
+                          "type": "string"
+                      },
+                      "educationOrganizations": {
+                          "type": "array",
+                          "properties": {
+                              "instanceId": {
+                                  "type": "number"
+                              },
+                              "instanceName": {
+                                  "type": "string"
+                              },
+                              "educationOrganizationId": {
+                                  "type": "number"
+                              },
+                              "nameOfInstitution": {
+                                  "type": "string"
+                              },
+                              "shortNameOfInstitution": {
+                                  "type": "string"
+                              },
+                              "discriminator": {
+                                  "type": "string"
+                              },
+                              "parentId": {
+                                  "type": "number"
+                              }
+                          },
+                      }
+                  },
+              }
+          }
+      };
+
+      test("GET Tenants EdOrgs: Validation Schema Response", () => {
+          const valid = ajv.validate(GetTenantEdOrgsByNameSchema, response);
+          expect(valid).to.be.true;
+
+          if (!valid) {
+              console.log("Schema validation errors:", ajv.errors);
+          }
+      });
+
+      console.log("🔧 Setting post environment to ignore SSL certificates...");
+
+      // Safely set Node.js environment variable if available (CLI only)
+      try {
+        if (typeof process !== 'undefined' && process.env) {
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+        }
+      } catch (e) {
+        // Ignore in UI environment
+      }
+
+      const axios = require('axios');
+      const API_URL = bru.getEnvVar("API_URL");
+      const TOKEN = bru.getEnvVar("TOKEN");
+
+      // Configure axios to handle SSL and network issues
+      const axiosConfig = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${TOKEN}`
+        },
+        validateStatus: function (status) {
+          return status < 500;
+        },
+        timeout: 30000
+      };
+
+      try {
+        // Create a vendor for the application test
+        const odsResponse = await axios.delete(`${API_URL}/v2/odsInstances/${bru.getVar("ODSInstanceId")}`, axiosConfig);
+
+        if (odsResponse.status === 200) {
+          console.log("✅ OdsInstance delete successfully");
+            bru.deleteVar("ODSInstanceId");
+        } else {
+          console.log("❌ Failed to delete odsinstance:");
+          console.log("Status:", odsResponse.status);
+          console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+          throw new Error(`Failed to delete odsinstance - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+        }
+
+      } catch (error) {
+        console.log("Error in post-request setup:", error.message);
+      }
+
+  }
+}
+
+settings {
+  encodeUrl: true
+}

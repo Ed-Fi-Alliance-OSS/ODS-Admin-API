@@ -62,23 +62,18 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: "16"
+          node-version: "20"
 
-      - name: Combine Collections
+      - name: Get Token and Set Variables
         run: |
-          npx postman-combine-collections@1.1.2 -f './E2E Tests/V1/Admin API E2E.postman_collection*.json' \
-             -n 'Admin API E2E 1.0' \
-             -o './E2E Tests/V1/Admin-API-Full-Collection.json'
+          bash './E2E Tests/V1/Bruno Admin API E2E refactor/get_token.sh'
 
-      - name: Run tests
+      - name: Run Tests
         run: |
-          npx --package=newman@6.1.2 --package=newman-reporter-htmlextra@1.23.1 -- newman run './E2E Tests/V1/Admin-API-Full-Collection.json' \
-            -e './E2E Tests/V1/Admin API Docker.postman_environment.json' \
-            -r cli,junit,htmlextra \
-            --reporter-htmlextra-title 'AdminAPI - 1.0' \
-            --reporter-htmlextra-export './report-html/results.html' \
-            --reporter-junit-export ./reports/report.xml \
-            -k
+          cd './E2E Tests/V1/Bruno Admin API E2E refactor/'
+          npx @usebruno/cli@latest run --env local --sandbox=developer \
+          --insecure 'v1/Vendors' 'v1/OdsInstances' 'v1/ClaimSets' 'v1/Application' \
+          --reporter-html ./results.html --reporter-junit ./report.xml
 
       - name: Get Docker logs
         if: failure()
@@ -101,7 +96,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-html-results
-          path: Application/EdFi.Ods.AdminApi/report-html/results.html
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/results.html
           retention-days: 10
 
       - name: Upload xml results
@@ -109,7 +104,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-results
-          path: Application/EdFi.Ods.AdminApi/reports/report.xml
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/report.xml
           retention-days: 10
 
   report:
@@ -124,18 +119,3 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Download artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #v4.1.8
-
-# Commented code until Token is renewed
-#      - name: Send report to Zephyr
-#        run: |
-#          $parameters = @{
-#              cycleName = '${{ env.CYCLE_NAME }}'
-#              taskName = '${{ env.TASK_NAME }}'
-#              folderName = '${{ env.FOLDER_NAME }}'
-#          }
-#          .\eng\send-test-results.ps1 `
-#              -PersonalAccessToken ${{ env.JIRA_ACCESS_TOKEN }} `
-#              -ProjectId ${{ env.PROJECT_ID }} `
-#              -AdminApiVersion '${{ env.ADMIN_API_VERSION }}' `
-#              -ResultsFilePath '${{ env.RESULTS_FILE }}/report.xml' `
-#              -ConfigParams $parameters
