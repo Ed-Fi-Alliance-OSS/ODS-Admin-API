@@ -34,7 +34,7 @@ services:
         assets: ../../../../../
       dockerfile: dev.pgsql.Dockerfile
       args:
-        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
+        ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.3.0}"
     environment:
       ADMIN_API_VERSION: ${ADMIN_API_VERSION}
       ADMIN_WAIT_POSTGRES_HOSTS: "db-admin-tenant1 db-admin-tenant2 "
@@ -42,7 +42,7 @@ services:
       AppSettings__DatabaseEngine: "PostgreSql"
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
       AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
-      AppSettings__EnableApplicationResetEndpoint: ${ENABLE_APPLICATION_RESET_ENDPOINT:-true} 
+      AppSettings__EnableApplicationResetEndpoint: ${ENABLE_APPLICATION_RESET_ENDPOINT:-true}
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-true}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
