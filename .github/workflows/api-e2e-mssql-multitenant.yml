@@ -69,21 +69,16 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Combine Collections
+      - name: Get Token and Set Variables
         run: |
-          npx postman-combine-collections@1.1.2 -f './E2E Tests/V2/Admin API E2E 2.0 -*.postman_collection.json' \
-             -n 'Admin API E2E 2.0' \
-             -o './E2E Tests/V2/Admin-API-Full-Collection.json'
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' multitenant mssql
 
-      - name: Run tests
+      - name: Run Tests
         run: |
-          npx --package=newman@6.1.3 --package=newman-reporter-htmlextra@1.23.1 newman run './E2E Tests/V2/Admin-API-Full-Collection.json' \
-            -e './E2E Tests/V2/Admin API Docker-multitenant-mssql.postman_environment.json' \
-            -r cli,junit,htmlextra \
-            --reporter-htmlextra-title 'AdminAPI - 2.0' \
-            --reporter-htmlextra-export './report-html/results.html' \
-            --reporter-junit-export ./reports/report.xml \
-            -k
+          cd './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/'
+          npx @usebruno/cli@latest run --env local --sandbox=developer \
+          --insecure -r 'v2/' \
+          --reporter-html ./results.html --reporter-junit ./report.xml
 
       - name: Get Docker logs
         if: failure()
@@ -106,7 +101,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-html-results
-          path: Application/EdFi.Ods.AdminApi/report-html/results.html
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/results.html
           retention-days: 5
 
       - name: Upload xml results
@@ -114,7 +109,7 @@ jobs:
         if: success() || failure()
         with:
           name: test-xml-results
-          path: Application/EdFi.Ods.AdminApi/reports/report.xml
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/report.xml
           retention-days: 5
 
   report:
@@ -130,18 +125,3 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #v4.1.8
-
-      # Commented code until Token is renewed
-      # - name: Send report to Zephyr
-      #  run: |
-      #    $parameters = @{
-      #        cycleName = '${{ env.CYCLE_NAME }}'
-      #        taskName = '${{ env.TASK_NAME }}'
-      #        folderName = '${{ env.FOLDER_NAME }}'
-      #    }
-      #    .\eng\send-test-results.ps1 `
-      #        -PersonalAccessToken ${{ env.JIRA_ACCESS_TOKEN }} `
-      #        -ProjectId ${{ env.PROJECT_ID }} `
-      #        -AdminApiVersion '${{ env.ADMIN_API_VERSION }}' `
-      #        -ResultsFilePath '${{ env.RESULTS_FILE }}/report.xml' `
-      #        -ConfigParams $parameters

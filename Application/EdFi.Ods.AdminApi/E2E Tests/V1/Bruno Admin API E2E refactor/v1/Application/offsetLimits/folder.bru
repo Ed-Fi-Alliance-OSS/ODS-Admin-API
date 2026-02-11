@@ -8,7 +8,7 @@ auth {
 
 script:pre-request {
   console.log("🔧 Setting environment to ignore SSL certificates...");
-  
+
   // Safely set Node.js environment variable if available (CLI only)
   try {
     if (typeof process !== 'undefined' && process.env) {
@@ -17,11 +17,11 @@ script:pre-request {
   } catch (e) {
     // Ignore in UI environment
   }
-  
+
   const axios = require('axios');
   const API_URL = bru.getEnvVar("API_URL");
   const TOKEN = bru.getEnvVar("TOKEN");
-  
+
   // Configure axios to handle SSL and network issues
   const axiosConfig = {
     headers: {
@@ -61,7 +61,7 @@ script:pre-request {
             "profileId": null,
             "educationOrganizationIds": [ 255901 ]
           }, axiosConfig);
-        
+
           if (applicationResponse.status === 201 && applicationResponse.data && applicationResponse.data.result && applicationResponse.data.result.applicationId) {
             bru.setVar("OtherApplicationId", applicationResponse.data.result.applicationId);
             applicationsToDelete.push(applicationResponse.data.result.applicationId);
@@ -85,12 +85,12 @@ script:pre-request {
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);
   }
-  
+
 }
 
 script:post-response {
 console.log("🔧 Setting environment to ignore SSL certificates...");
-  
+
   // Safely set Node.js environment variable if available (CLI only)
   try {
     if (typeof process !== 'undefined' && process.env) {
@@ -99,11 +99,11 @@ console.log("🔧 Setting environment to ignore SSL certificates...");
   } catch (e) {
     // Ignore in UI environment
   }
-  
+
   const axios = require('axios');
   const API_URL = bru.getEnvVar("API_URL");
   const TOKEN = bru.getEnvVar("TOKEN");
-  
+
     // Configure axios to handle SSL and network issues
   const axiosConfig = {
     headers: {
@@ -128,8 +128,8 @@ console.log("🔧 Setting environment to ignore SSL certificates...");
       console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
       throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
     }
-    
+
   } catch (error) {
-    console.log("Error in ppost-request setup:", error.message);
-  }  
+    console.log("Error in post-request setup:", error.message);
+  }
 }

@@ -5,7 +5,11 @@
 set -e
 
 API_URL="${API_URL:-https://localhost/adminapi}"
-BRUNO_DIR="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BRUNO_DIR="$SCRIPT_DIR"
+
+# Change to the Bruno directory
+cd "$BRUNO_DIR"
 
 # Parse command line arguments for tenant mode
 if [ "$1" = "multitenant" ]; then
@@ -23,16 +27,16 @@ else
 fi
 
 # Parse command line arguments for DB Type
-if [ "$2" = "postgres" ]; then
+if [ "$2" = "pgsql" ]; then
   CONNECTION_STRING="host=test;port=90;username=test;password=test;database=EdFi_Admin;pooling=false"
-  echo "🏢 DB Postgres connection"
+  echo "🏢 DB Pgsql connection"
 elif [ "$2" = "mssql" ]; then
   CONNECTION_STRING="Data Source=.;Initial Catalog=EdFi_Admin;Integrated Security=True;TrustServerCertificate=True"
   echo "🏠 DB Mssql connection"
 else
   echo "❌ Invalid parameter: $2"
-  echo "Usage: $0 [postgres|mssql]"
-  echo "  postgres  - Use connection string for postgres Ods"
+  echo "Usage: $0 [pgsql|mssql]"
+  echo "  pgsql  - Use connection string for pgsql Ods"
   echo "  mssql - Use connection string for mssql Ods"
   exit 1
 fi

@@ -5,7 +5,11 @@
 set -e
 
 API_URL="${API_URL:-https://localhost/adminapi}"
-BRUNO_DIR="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BRUNO_DIR="$SCRIPT_DIR"
+
+# Change to the Bruno directory
+cd "$BRUNO_DIR"
 
 echo "🔧 Setting environment to ignore SSL certificates..."
 export NODE_TLS_REJECT_UNAUTHORIZED=0
