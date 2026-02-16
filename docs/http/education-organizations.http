@@ -3,9 +3,10 @@
 # different tenants named "tenant1" and "tenant2". Each has only one ODS
 # instance.
 
-@adminapi_url=https://localhost:7214
-@adminapi_client=edfi-josephc
-@adminapi_secret=j5HXO7*lHqMuYI2iqKoA3ciH$1#rN8q*
+@adminapi_url=https://localhost/adminapi
+
+@adminapi_client=adminapi_client2
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
 
 ### Register a new client
 POST {{adminapi_url}}/connect/register
