@@ -1,0 +1,53 @@
+meta {
+  name: Tenants
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/tenants
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Tenants: Status code is Found", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+
+  test("GET Tenants: Response structure assertions", function () {
+      expect(Array.isArray(response)).to.be.true;
+
+      response.forEach(function (tenant) {
+          expect(tenant).to.be.an('object');
+          expect(tenant).to.have.property('tenantName').that.is.a('string');
+
+          if (tenant.adminConnectionString != null) {
+              expect(tenant.adminConnectionString).to.be.an('object');
+              if (tenant.adminConnectionString.host != null) {
+                  expect(tenant.adminConnectionString.host).to.be.a('string');
+              }
+              if (tenant.adminConnectionString.database != null) {
+                  expect(tenant.adminConnectionString.database).to.be.a('string');
+              }
+          }
+
+          if (tenant.securityConnectionString != null) {
+              expect(tenant.securityConnectionString).to.be.an('object');
+              if (tenant.securityConnectionString.host != null) {
+                  expect(tenant.securityConnectionString.host).to.be.a('string');
+              }
+              if (tenant.securityConnectionString.database != null) {
+                  expect(tenant.securityConnectionString.database).to.be.a('string');
+              }
+          }
+      });
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -5,6 +5,7 @@
 
 using System.Text.Json.Serialization;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Features.EducationOrganizations;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.Features.Tenants;
@@ -33,32 +34,12 @@ public class TenantOdsInstanceModel
     public string Name { get; set; }
     public string? InstanceType { get; set; }
 
-    [SwaggerSchema(Title = "EducationOrganization")]
-    public List<TenantEducationOrganizationModel> EducationOrganizations { get; set; }
+    [SwaggerSchema(Title = "EducationOrganizations")]
+    public List<EducationOrganizationModel> EducationOrganizations { get; set; }
 
     public TenantOdsInstanceModel()
     {
         Name = string.Empty;
         EducationOrganizations = [];
-    }
-}
-
-[SwaggerSchema]
-public class TenantEducationOrganizationModel
-{
-    public int InstanceId { get; set; }
-    public string InstanceName { get; set; }
-    public long EducationOrganizationId { get; set; }
-    public string NameOfInstitution { get; set; }
-    public string? ShortNameOfInstitution { get; set; }
-    public string Discriminator { get; set; }
-    public long? ParentId { get; set; }
-
-    public TenantEducationOrganizationModel()
-    {
-        InstanceName = string.Empty;
-        NameOfInstitution = string.Empty;
-        ShortNameOfInstitution = string.Empty;
-        Discriminator = string.Empty;
     }
 }

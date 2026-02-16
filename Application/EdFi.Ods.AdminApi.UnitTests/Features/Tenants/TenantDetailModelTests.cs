@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using EdFi.Ods.AdminApi.Features.EducationOrganizations;
 using EdFi.Ods.AdminApi.Features.Tenants;
 using NUnit.Framework;
 using Shouldly;
@@ -29,10 +30,9 @@ public class TenantDetailModelTests
     {
         // Act
         var tenantName = "tenant 1";
-        var educationOrganization = new TenantEducationOrganizationModel()
+        var educationOrganization = new EducationOrganizationModel()
         {
-            InstanceId = 1,
-            InstanceName = "instance name 1",
+            EducationOrganizationId = 1001,
             NameOfInstitution = "name of institution 1",
             ShortNameOfInstitution = "short name of institution 1",
             Discriminator = "discriminator 1"

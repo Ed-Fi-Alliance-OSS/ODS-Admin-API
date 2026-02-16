@@ -11,6 +11,7 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Features.EducationOrganizations;
 using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
@@ -199,12 +200,10 @@ internal class TenantServiceTests
             }
         };
 
-        var tenantEducationOrganizationModels = new List<TenantEducationOrganizationModel>
+        var tenantEducationOrganizationModels = new List<EducationOrganizationModel>
         {
             new()
             {
-                InstanceId = 101,
-                InstanceName = "Test Instance",
                 EducationOrganizationId = 100,
                 NameOfInstitution = "Test School",
                 ShortNameOfInstitution = "Test",
@@ -215,7 +214,7 @@ internal class TenantServiceTests
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
         A.CallTo(() => _getEducationOrganizationQuery.Execute(101)).Returns([educationOrganization]);
         A.CallTo(() => _mapper.Map<List<TenantOdsInstanceModel>>(A<List<OdsInstance>>._)).Returns(tenantOdsInstanceModels);
-        A.CallTo(() => _mapper.Map<List<TenantEducationOrganizationModel>>(A<List<EducationOrganization>>._)).Returns(tenantEducationOrganizationModels);
+        A.CallTo(() => _mapper.Map<List<EducationOrganizationModel>>(A<List<EducationOrganization>>._)).Returns(tenantEducationOrganizationModels);
 
         var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _mapper, tenantName);
 
@@ -227,8 +226,6 @@ internal class TenantServiceTests
         tenant.OdsInstances[0].Name.ShouldBe(odsInstance.Name);
         tenant.OdsInstances[0].EducationOrganizations.ShouldNotBeNull();
         tenant.OdsInstances[0].EducationOrganizations!.Count.ShouldBe(1);
-        tenant.OdsInstances[0].EducationOrganizations[0].InstanceId.ShouldBe(educationOrganization.InstanceId);
-        tenant.OdsInstances[0].EducationOrganizations[0].InstanceName.ShouldBe(educationOrganization.InstanceName);
         tenant.OdsInstances[0].EducationOrganizations[0].EducationOrganizationId.ShouldBe(educationOrganization.EducationOrganizationId);
         tenant.OdsInstances[0].EducationOrganizations[0].NameOfInstitution.ShouldBe(educationOrganization.NameOfInstitution);
         tenant.OdsInstances[0].EducationOrganizations[0].ShortNameOfInstitution.ShouldBe(educationOrganization.ShortNameOfInstitution);

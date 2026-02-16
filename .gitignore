@@ -72,3 +72,6 @@ Docker/Settings/ssl/dhparam.pem
 coverage
 coverage.*
 coveragereport/
+
+# Bruno test results
+**/E2E Tests/**/results.html

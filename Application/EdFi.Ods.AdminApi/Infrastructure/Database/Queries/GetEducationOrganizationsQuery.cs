@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.EducationOrganizations;
+using EdFi.Ods.AdminApi.Features.ODSInstances;
 using EdFi.Ods.AdminApi.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +20,9 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 public interface IGetEducationOrganizationsQuery
 {
-    Task<List<EducationOrganizationModel>> ExecuteAsync();
+    Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync();
 
-    Task<List<EducationOrganizationModel>> ExecuteAsync(CommonQueryParams commonQueryParams, int? instanceId);
+    Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync(CommonQueryParams commonQueryParams, int? instanceId);
 }
 
 public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
@@ -62,17 +63,17 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
         };
     }
 
-    public async Task<List<EducationOrganizationModel>> ExecuteAsync()
+    public async Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync()
     {
         var educationOrganizations = await _adminApiDbContext.EducationOrganizations
             .OrderBy(e => e.InstanceId)
             .ThenBy(e => e.EducationOrganizationId)
             .ToListAsync();
 
-        return _mapper.Map<List<EducationOrganizationModel>>(educationOrganizations);
+        return GroupEducationOrganizationsByInstance(educationOrganizations);
     }
 
-    public async Task<List<EducationOrganizationModel>> ExecuteAsync(
+    public async Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync(
         CommonQueryParams commonQueryParams,
         int? instanceId)
     {
@@ -85,6 +86,22 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToListAsync();
 
-        return _mapper.Map<List<EducationOrganizationModel>>(educationOrganizations);
+        return GroupEducationOrganizationsByInstance(educationOrganizations);
+    }
+
+    private List<OdsInstanceWithEducationOrganizationsModel> GroupEducationOrganizationsByInstance(
+        List<EducationOrganization> educationOrganizations)
+    {
+        return educationOrganizations
+            .GroupBy(e => new { e.InstanceId, e.InstanceName })
+            .Select(group => new OdsInstanceWithEducationOrganizationsModel
+            {
+                Id = group.Key.InstanceId,
+                Name = group.Key.InstanceName ?? string.Empty,
+                InstanceType = null,
+                EducationOrganizations = _mapper.Map<List<EducationOrganizationModel>>(group.ToList())
+            })
+            .OrderBy(i => i.Id)
+            .ToList();
     }
 }
