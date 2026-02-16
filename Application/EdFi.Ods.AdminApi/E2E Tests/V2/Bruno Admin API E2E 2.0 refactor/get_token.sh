@@ -4,7 +4,7 @@
 
 set -e
 
-API_URL="${API_URL:-https://localhost:7214}"
+API_URL="${API_URL:-https://localhost/adminapi}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BRUNO_DIR="$SCRIPT_DIR"
 
