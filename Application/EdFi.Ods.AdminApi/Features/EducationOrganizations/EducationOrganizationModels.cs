@@ -10,12 +10,6 @@ namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
 [SwaggerSchema(Title = "EducationOrganization")]
 public class EducationOrganizationModel
 {
-    [SwaggerSchema(Description = "ODS instance identifier", Nullable = false)]
-    public int InstanceId { get; set; }
-
-    [SwaggerSchema(Description = "ODS instance name", Nullable = false)]
-    public string InstanceName { get; set; } = string.Empty;
-
     [SwaggerSchema(Description = "Education organization identifier", Nullable = false)]
     public long EducationOrganizationId { get; set; }
 

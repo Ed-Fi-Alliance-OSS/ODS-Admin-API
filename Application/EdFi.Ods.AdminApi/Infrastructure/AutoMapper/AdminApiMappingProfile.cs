@@ -143,15 +143,6 @@ public class AdminApiMappingProfile : Profile
             .ForMember(dst => dst.InstanceType, opt => opt.MapFrom(src => src.InstanceType))
             .ForMember(dst => dst.EducationOrganizations, opt => opt.Ignore());
 
-        CreateMap<EducationOrganization, TenantEducationOrganizationModel>()
-            .ForMember(dst => dst.InstanceId, opt => opt.MapFrom(src => src.InstanceId))
-            .ForMember(dst => dst.InstanceName, opt => opt.MapFrom(src => src.InstanceName))
-            .ForMember(dst => dst.EducationOrganizationId, opt => opt.MapFrom(src => src.EducationOrganizationId))
-            .ForMember(dst => dst.NameOfInstitution, opt => opt.MapFrom(src => src.NameOfInstitution))
-            .ForMember(dst => dst.ShortNameOfInstitution, opt => opt.MapFrom(src => src.ShortNameOfInstitution))
-            .ForMember(dst => dst.Discriminator, opt => opt.MapFrom(src => src.Discriminator))
-            .ForMember(dst => dst.ParentId, opt => opt.MapFrom(src => src.ParentId));
-
         CreateMap<EdFi.Security.DataAccess.Models.Action, ActionModel>()
             .ForMember(dst => dst.Id, opt => opt.MapFrom(src => src.ActionId))
             .ForMember(dst => dst.Name, opt => opt.MapFrom(src => src.ActionName))

@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Features.EducationOrganizations;
 using EdFi.Ods.AdminApi.Features.Tenants;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using log4net;
@@ -134,7 +135,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 foreach (var odsInstance in tenantDetails.OdsInstances)
                 {
                     var edOrgs = edOrgsList.Where(eo => eo.InstanceId == odsInstance.OdsInstanceId).ToList();
-                    odsInstance.EducationOrganizations = mapper.Map<List<TenantEducationOrganizationModel>>(edOrgs);
+                    odsInstance.EducationOrganizations = mapper.Map<List<EducationOrganizationModel>>(edOrgs);
                 }
             }
 

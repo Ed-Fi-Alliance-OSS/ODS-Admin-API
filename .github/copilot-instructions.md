@@ -28,3 +28,12 @@
 ## Running tests
 
 * To build and run tests in the repo, use the command `./build.ps1 UnitTest`
+
+## Development Notes
+
+* **Project structure:** The `Application/EdFi.Ods.AdminApi/` project uses a feature-based layout (features, infrastructure, tests).
+* **Key patterns:** Prefer feature-based endpoints, CQRS-style Query/Command separation, AutoMapper for DTO mappings, and ASP.NET Core minimal APIs for route definitions.
+* **Adding an endpoint (high-level):** Create feature endpoint, add Query/Command class, register in DI, add unit tests.
+* **AutoMapper:** Keep mappings in `AdminApiMappingProfile.cs`; use `CreateMap<Source, Destination>()` and `.ForMember()` or `.Ignore()` when needed.
+* **EF Core queries:** Use `OrderBy`, `Paginate()`, and helper `OrderByColumn()` patterns; group results in-memory when necessary for nested response shapes.
+* **Models & tests:** Use annotated request/response models with nullable annotations; write NUnit unit tests with Shouldly and FakeItEasy; E2E tests use Bruno (.bru) files under the project's E2E tests folder.
