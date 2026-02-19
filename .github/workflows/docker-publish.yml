@@ -11,11 +11,17 @@ on:
         description: 'Release tag (e.g., Pre-Release-v2.3.1-alpha.0.132 or v2.3.1)'
         required: true
         type: string
-      publish-6x-image:
-        description: 'Publish 6.x database image'
+      publish-only-minor-image:
+        description: 'Publish only the minor image (e.g., v2.3)'
         required: false
         type: boolean
         default: false
+      publish-6x-image:
+        description: 'Publish 6.x database image '
+        required: false
+        type: boolean
+        default: false
+      
 
 env:
   IMAGE_NAME: ${{ vars.IMAGE_NAME }}
@@ -34,6 +40,7 @@ jobs:
         id: prepare-tags
         run: |
           REF="${{ inputs.ref }}"
+          MINOR_ONLY="${{ inputs.publish-only-minor-image }}"
           if [[ $REF =~ "Pre-Release" ]]
           then
              # Remove Pre-Release prefix
@@ -54,8 +61,16 @@ jobs:
             # We are not using shortened form for major or using "latest"
             # because they are too imprecise.
             MINOR=`echo ${PACKAGEVERSION} | awk -F"." '{print $1"."$2}'`
-            APITAGS="${{ env.IMAGE_NAME }}:${PACKAGEVERSION},${{ env.IMAGE_NAME }}:${MINOR}"
-            DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION},${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
+            if [[ $MINOR_ONLY == "true" ]]
+            then
+              APITAGS="${{ env.IMAGE_NAME }}:${MINOR}"
+              DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
+              DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:${MINOR}-6.2"
+            else
+              APITAGS="${{ env.IMAGE_NAME }}:${PACKAGEVERSION},${{ env.IMAGE_NAME }}:${MINOR}"
+              DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION},${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
+              DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION}-6.2,${{ env.DATABASE_IMAGE_NAME }}:${MINOR}-6.2"
+            fi
           fi
 
           SEMVERSION=${PACKAGEVERSION:1}  # strip off the leading 'v'
