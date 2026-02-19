@@ -32,10 +32,13 @@ public class ReadInformation : IFeature
         {
             throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
         }
+
+        var tenantMode = options.Value.MultiTenancy ? "multitenant" : "singletenant";
+
         return adminApiMode switch
         {
-            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build),
-            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build),
+            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, tenantMode),
+            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, tenantMode),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

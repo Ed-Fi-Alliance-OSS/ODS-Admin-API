@@ -10,14 +10,17 @@ namespace EdFi.Ods.AdminApi.Features.Information;
 [SwaggerSchema(Title = "Information")]
 public class InformationResult
 {
-    public InformationResult(string version, string build)
+    public InformationResult(string version, string build, string tenantMode)
     {
         Build = build;
         Version = version;
+        TenantMode = tenantMode;
     }
 
     [SwaggerSchema("Application version", Nullable = false)]
     public string Version { get; }
     [SwaggerSchema("Build / release version", Nullable = false)]
     public string Build { get; }
+    [SwaggerSchema("Tenant mode (multitenant or singletenant)", Nullable = false)]
+    public string TenantMode { get; }
 }
