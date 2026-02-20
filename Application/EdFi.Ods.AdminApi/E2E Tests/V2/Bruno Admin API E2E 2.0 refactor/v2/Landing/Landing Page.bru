@@ -10,6 +10,13 @@ get {
   auth: none
 }
 
+script:pre-request {
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  }
+}
+
 script:post-response {
   test("GET Landing: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
@@ -75,6 +82,31 @@ script:post-response {
           console.log("Schema validation errors:", ajv.errors);
       }
   });
+  
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    test("GET Landing: Multitenant mode - multitenantMode is true", function () {
+        expect(response.tenancy.multitenantMode).to.be.true;
+    });
+  
+    test("GET Landing: Multitenant mode - tenants list is not empty", function () {
+        expect(response.tenancy.tenants.length).to.be.greaterThan(0);
+    });
+  
+    test("GET Landing: Multitenant mode - tenants list contains configured tenants", function () {
+        const tenant1 = bru.getEnvVar("tenant1");
+        const tenant2 = bru.getEnvVar("tenant2");
+        if (tenant1) expect(response.tenancy.tenants).to.include(tenant1);
+        if (tenant2) expect(response.tenancy.tenants).to.include(tenant2);
+    });
+  } else {
+    test("GET Landing: Singletenant mode - multitenantMode is false", function () {
+        expect(response.tenancy.multitenantMode).to.be.false;
+    });
+  
+    test("GET Landing: Singletenant mode - tenants list is empty", function () {
+        expect(response.tenancy.tenants).to.have.length(0);
+    });
+  }
   
 }
 
