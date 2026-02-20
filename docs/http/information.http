@@ -1,0 +1,13 @@
+# This file is intended for use with Admin API V1 and V2 running in multi-tenant and singletenant mode. 
+# It assumes there are two different tenants named "tenant1" and "tenant2". 
+# Admin API V1 is singletenant (only) and wont return tenant information.
+
+@adminapi_url=https://localhost:7214
+# @adminapi_url=https://localhost/adminapi
+
+
+
+### Get information V1/V2
+GET {{adminapi_url}}
+Content-Type: application/json
+

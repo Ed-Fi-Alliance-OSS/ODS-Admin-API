@@ -95,57 +95,60 @@ var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
     "AppSettings:MultiTenancy"
 );
 
-if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
+if (adminApiMode == AdminApiMode.V2)
 {
-    if (isMultiTenancyEnabled)
+    if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
     {
-        using var scope = app.Services.CreateScope();
-        var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
-        await tenantService.InitializeTenantsAsync();
-
-        var tenants = await tenantService.GetTenantsAsync(fromCache: true);
-
-        var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
-        var scheduler = await schedulerFactory.GetScheduler();
-
-        var tenantNames = tenants.Select(tenant => tenant.TenantName);
-
-        foreach (var tenantName in tenantNames)
+        if (isMultiTenancyEnabled)
         {
-            var jobData = new Dictionary<string, object>
-            {
-                [JobConstants.TenantNameKey] = tenantName
-            };
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+            await tenantService.InitializeTenantsAsync();
 
-            var jobKey = new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}_{tenantName}");
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
+            var scheduler = await schedulerFactory.GetScheduler();
+
+            var tenantNames = tenants.Select(tenant => tenant.TenantName);
+
+            foreach (var tenantName in tenantNames)
+            {
+                var jobData = new Dictionary<string, object>
+                {
+                    [JobConstants.TenantNameKey] = tenantName
+                };
+
+                var jobKey = new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}_{tenantName}");
+
+                await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
+                    scheduler,
+                    jobKey: jobKey,
+                    jobData: jobData,
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(refreshInterval)
+                );
+            }
+        }
+        else
+        {
+            var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
+            var scheduler = await schedulerFactory.GetScheduler();
 
             await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
                 scheduler,
-                jobKey: jobKey,
-                jobData: jobData,
+                jobKey: new JobKey(JobConstants.RefreshEducationOrganizationsJobName),
+                jobData: new Dictionary<string, object>(),
                 startImmediately: false,
                 interval: TimeSpan.FromMinutes(refreshInterval)
             );
         }
+
     }
     else
     {
-        var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
-        var scheduler = await schedulerFactory.GetScheduler();
-
-        await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
-            scheduler,
-            jobKey: new JobKey(JobConstants.RefreshEducationOrganizationsJobName),
-            jobData: new Dictionary<string, object>(),
-            startImmediately: false,
-            interval: TimeSpan.FromMinutes(refreshInterval)
-        );
+        _logger.Error("Invalid value for EdOrgsRefreshIntervalInMins. Please ensure it is a valid number.");
     }
-
-}
-else
-{
-    _logger.Error("Invalid value for EdOrgsRefreshIntervalInMins. Please ensure it is a valid number.");
 }
 
 await app.RunAsync();
