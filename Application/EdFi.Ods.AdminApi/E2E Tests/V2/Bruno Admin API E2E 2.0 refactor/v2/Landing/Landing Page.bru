@@ -20,6 +20,14 @@ script:post-response {
   test("GET Landing: Response includes expected properties", function () {
       expect(response).to.have.property("version");
       expect(response).to.have.property("build");
+      expect(response).to.have.property("tenancy");
+  });
+  
+  test("GET Landing: Response tenancy includes expected properties", function () {
+      expect(response.tenancy).to.have.property("multitenantMode");
+      expect(response.tenancy).to.have.property("tenants");
+      expect(response.tenancy.multitenantMode).to.be.a("boolean");
+      expect(response.tenancy.tenants).to.be.an("array");
   });
   
   const Ajv = require('ajv');
@@ -27,6 +35,24 @@ script:post-response {
   const GetSchemaLanding =  {
     "type": "object",
     "properties": {
+      "tenancy": {
+        "type": "object",
+        "properties": {
+          "multitenantMode": {
+            "type": "boolean"
+          },
+          "tenants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "multitenantMode",
+          "tenants"
+        ]
+      },
       "version": {
         "type": "string"
       },
@@ -35,6 +61,7 @@ script:post-response {
       }
     },
     "required": [
+      "tenancy",
       "version",
       "build"
     ]

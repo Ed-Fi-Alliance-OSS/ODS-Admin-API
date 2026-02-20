@@ -20,6 +20,14 @@ script:post-response {
   test("Response includes expected properties", function () {
       expect(response).to.have.property("version");
       expect(response).to.have.property("build");
+      expect(response).to.have.property("tenancy");
+  });
+
+  test("Response tenancy includes expected properties", function () {
+      expect(response.tenancy).to.have.property("multitenantMode");
+      expect(response.tenancy).to.have.property("tenants");
+      expect(response.tenancy.multitenantMode).to.be.a("boolean");
+      expect(response.tenancy.tenants).to.be.an("array");
   });
 
 }

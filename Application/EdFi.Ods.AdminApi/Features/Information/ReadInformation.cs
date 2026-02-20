@@ -9,6 +9,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -26,16 +27,32 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    internal static InformationResult GetInformation(IOptions<AppSettings> options)
+    public static async Task<InformationResult> GetInformation(IOptions<AppSettings> options, ITenantsService tenantsService)
     {
         if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
         {
             throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
         }
+
+        var isMultiTenant = options.Value.MultiTenancy;
+        List<string> tenantNames;
+
+        if (isMultiTenant)
+        {
+            var tenants = await tenantsService.GetTenantsAsync();
+            tenantNames = tenants.Select(t => t.TenantName).ToList();
+        }
+        else
+        {
+            tenantNames = [];
+        }
+
+        var tenancy = new TenancyResult(isMultiTenant, tenantNames);
+
         return adminApiMode switch
         {
-            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build),
-            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build),
+            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, tenancy),
+            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, tenancy),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }
