@@ -4,21 +4,23 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace EdFi.Ods.AdminApi.Features.Information;
 
 [SwaggerSchema(Title = "Information")]
 public class InformationResult
 {
-    public InformationResult(string version, string build, TenancyResult tenancy)
+    public InformationResult(string version, string build, TenancyResult? tenancy = null)
     {
         Build = build;
         Version = version;
         Tenancy = tenancy;
     }
 
-    [SwaggerSchema("Tenancy information", Nullable = false)]
-    public TenancyResult Tenancy { get; }
+    [SwaggerSchema("Tenancy information", Nullable = true)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public TenancyResult? Tenancy { get; }
     [SwaggerSchema("Application version", Nullable = false)]
     public string Version { get; }
     [SwaggerSchema("Build / release version", Nullable = false)]

@@ -34,20 +34,25 @@ public class ReadInformation : IFeature
             throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
         }
 
-        var isMultiTenant = options.Value.MultiTenancy;
-        List<string> tenantNames;
+        TenancyResult? tenancy = null;
 
-        if (isMultiTenant)
+        if (adminApiMode is AdminApiMode.V2)
         {
-            var tenants = await tenantsService.GetTenantsAsync();
-            tenantNames = tenants.Select(t => t.TenantName).ToList();
-        }
-        else
-        {
-            tenantNames = [];
-        }
+            var isMultiTenant = options.Value.MultiTenancy;
+            List<string> tenantNames;
 
-        var tenancy = new TenancyResult(isMultiTenant, tenantNames);
+            if (isMultiTenant)
+            {
+                var tenants = await tenantsService.GetTenantsAsync();
+                tenantNames = tenants.Select(t => t.TenantName).ToList();
+            }
+            else
+            {
+                tenantNames = [];
+            }
+
+            tenancy = new TenancyResult(isMultiTenant, tenantNames);
+        }
 
         return adminApiMode switch
         {
