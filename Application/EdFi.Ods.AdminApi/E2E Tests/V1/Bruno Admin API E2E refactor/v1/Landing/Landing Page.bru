@@ -10,13 +10,6 @@ get {
   auth: none
 }
 
-script:pre-request {
-  // Add tenant header if multitenant mode is enabled
-  if (bru.getEnvVar("isMultitenant") == "true") {
-    console.log("🔧 Setting pre environment to ignore SSL certificates...");
-  }
-}
-
 script:post-response {
   test("Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
