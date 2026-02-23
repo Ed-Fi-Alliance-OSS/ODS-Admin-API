@@ -100,8 +100,12 @@ public static class WebApplicationBuilderExtensions
             opt.AssumeDefaultVersionWhenUnspecified = false;
         });
 
-        // Add Quartz services
-        RegisterQuartzServices(webApplicationBuilder);
+        if (adminApiMode is AdminApiMode.V2)
+        {
+            // Add Quartz services
+            RegisterQuartzServices(webApplicationBuilder);
+            webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
+        }
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));
         var issuer = webApplicationBuilder.Configuration.GetValue<string>("Authentication:IssuerUrl");
@@ -221,10 +225,7 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AppSettingsFile>(webApplicationBuilder.Configuration);
 
         webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
-        webApplicationBuilder.Services.AddTransient<
-            IEducationOrganizationService,
-            EducationOrganizationService
-        >();
+
         webApplicationBuilder.Services.AddHostedService<DefaultTenantContextInitializer>();
     }
 
