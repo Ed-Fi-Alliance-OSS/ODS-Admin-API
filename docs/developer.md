@@ -31,12 +31,12 @@
 
 ## Build Script
 
-The PowerShell script `build.ps1` in the root directory contains functions for
-running standard build operations at the command line . This script assumes that
-.NET 8.0 SDK or newer is installed. Other dependencies tools are downloaded
-as needed (nuget, nunit).
+The PowerShell script [build.ps1](/build.ps1) in the root directory contains functions for
+running standard build operations at the command line. This script assumes that
+.NET 8.0 SDK or newer is installed. Other dependency tools are downloaded
+as needed (NuGet, NUnit).
 
-Available command (e.g. `./build.ps1 clean`) (commands are not case sensitive):
+Available commands (e.g., `./build.ps1 clean`) (commands are not case sensitive):
 
 * `clean`: runs `dotnet clean`
 * `build`: runs `dotnet build` with several implicit steps
