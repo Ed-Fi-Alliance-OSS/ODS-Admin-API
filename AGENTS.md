@@ -15,7 +15,6 @@ This file documents agent guidance and repository-specific rules for automated a
 * Ensure that the final return statement of a method is on its own line.
 * Use pattern matching and switch expressions wherever possible.
 * Use `nameof` instead of string literals when referring to member names.
-* Use `nameof` instead of string literals when referring to member names.
 
 ### Testing
 
