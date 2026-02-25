@@ -1,61 +1,42 @@
-## AGENTS
+## AGENTS (summary)
 
-This file documents agent guidance and repository-specific rules for automated assistants and contributors.
+This file is a concise, machine-friendly summary of repository conventions and procedures. For full developer guidance and long-form procedures, see `docs/developer.md`.
+
+Full developer procedures and examples: `docs/developer.md` (Build Script, Running on Localhost, Application Architecture, DB migrations, test coverage).
+
+### Sections (use these exact headers when referencing)
+
+* `General`
+* `Coding & Tests`
+* `Run & Architecture`
+
+---
 
 ### General
 
-* Make only high confidence suggestions when reviewing code changes.
-* Never change NuGet.config files unless explicitly asked to.
+* Make only high-confidence suggestions when reviewing code changes.
+* Do not change `NuGet.config` files unless explicitly requested.
+* For short tasks, include the section name in the prompt so agents load only that section.
+* Keep updates to `AGENTS.md` concise and focused to reduce token usage; put full details, examples and long procedures in `docs/developer.md`.
 
-### Formatting
+### Coding & Tests
 
-* Apply code-formatting style defined in `.editorconfig`.
-* Prefer file-scoped namespace declarations and single-line using directives.
-* Insert a newline before the opening curly brace of any code block (e.g., after `if`, `for`, `while`, `foreach`, `using`, `try`, etc.).
-* Ensure that the final return statement of a method is on its own line.
-* Use pattern matching and switch expressions wherever possible.
-* Use `nameof` instead of string literals when referring to member names.
+Concise coding conventions, nullability rules, and testing basics.
 
-### Testing
+* Formatting: follow `.editorconfig`, prefer file-scoped namespaces and single-line `using` directives.
+* Control blocks: put a newline before `{` and keep final `return` on its own line.
+* Language: prefer pattern matching, switch expressions, and use `nameof` for member names.
+* Nullability: declare variables non-nullable where possible; validate at entry points; use `is null` / `is not null`.
+* Testing: NUnit + Shouldly for assertions; use FakeItEasy for mocks; mirror existing test naming/style.
+* Run tests locally: `./build.ps1 -Command UnitTest` (see `docs/developer.md` for integration/E2E instructions).
 
-* We use NUnit tests.
-* We use Shouldly for assertions.
-* Use FakeItEasy for mocking in tests.
-* Copy existing style in nearby files for test method names and capitalization.
+### Run & Architecture
 
-### Nullable Reference Types
+Short run/build/architecture notes — see `docs/developer.md` for full procedures.
 
-* Declare variables non-nullable, and check for `null` at entry points.
-* Always use `is null` or `is not null` instead of `== null` or `!= null`.
-* Trust the C# null annotations and avoid redundant null checks when the type system covers it.
+* Build helper: `./build.ps1` (common commands: `build`, `UnitTest`, `IntegrationTest`, `run`).
+* Local run options: `build.ps1 run`, Docker compose, or Visual Studio launch profiles.
+* DB migrations: scripts and artifacts under `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`.
+* Architecture: feature-based layout; `IUsersContext` handles `EdFi_Admin`, `ISecurityContext` handles `EdFi_Security` (EF Core); AutoMapper mappings in `AdminApiMappingProfile.cs`.
 
-### Running tests
-
-* To build and run tests in the repo, use the command `./build.ps1 UnitTest`.
-
-### Development Notes
-
-* **Project structure:** The `Application/EdFi.Ods.AdminApi/` project uses a feature-based layout (features, infrastructure, tests).
-* **Key patterns:** Prefer feature-based endpoints, CQRS-style Query/Command separation, AutoMapper for DTO mappings, and ASP.NET Core minimal APIs for route definitions.
-* **AutoMapper:** Keep mappings in `AdminApiMappingProfile.cs`.
-* **EF Core queries:** Use `OrderBy`, `Paginate()`, and helper `OrderByColumn()` patterns.
-* **Models & tests:** Use annotated request/response models with nullable annotations; write NUnit unit tests with Shouldly and FakeItEasy; E2E tests use Bruno (.bru) files under the project's E2E tests folder.
-
-For expanded developer guidance, see `docs/developer.md`. That document includes detailed bullets and procedures for:
-
-* Development pre-requisites (requires .NET 8.0 SDK; Visual Studio 2022 or Build Tools recommended).
-* The `build.ps1` build script and available commands (`clean`, `build`, `UnitTest`, `IntegrationTest`, `BuildAndTest`, `package`, `run`).
-* Running the application locally (via `build.ps1 run`, Docker compose, or Visual Studio) and launch profiles.
-* Running unit/integration/E2E tests and generating code coverage reports (`./build.ps1 UnitTest`, `./build.ps1 -Command IntegrationTest`).
-* Database migration and reset steps (see `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`).
-
-### Important
-
-Agents and contributors should consult `docs/developer.md` when a task involves local development setup, builds, tests, or database operations.
-
-### How to use
-
-* Short tasks: Include the section name in the prompt (for example: "Formatting" or "Testing"). Agents should load and apply only that section.
-* System prompt example: "Apply repository rules from `AGENTS.md` (root). If task requests a specific section, load that section only."
-* Developer prompt example: "Apply these high-priority rules: Formatting, Nullable Reference Types, Testing, and Running tests (`./build.ps1 UnitTest`)."
-* User prompt example: "Implement feature X and follow the `Formatting` and `Testing` sections in `AGENTS.md`."
+<!-- Changelog removed to keep AGENTS.md concise; use git history for changes. -->
