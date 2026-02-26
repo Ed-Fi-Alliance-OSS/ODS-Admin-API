@@ -29,14 +29,16 @@
 * To work with the official Ed-Fi Docker solution, also clone the [Docker
   repository](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS-Docker).
 
+> Note: For quick, machine-friendly guidance and short rules, consult the repository root `AGENTS.md` (sections: `General`, `Coding & Tests`, `Run & Architecture`). Use `docs/developer.md` for full procedures and examples.
+
 ## Build Script
 
-The PowerShell script `build.ps1` in the root directory contains functions for
-running standard build operations at the command line . This script assumes that
-.NET 8.0 SDK or newer is installed. Other dependencies tools are downloaded
-as needed (nuget, nunit).
+The PowerShell script [build.ps1](/build.ps1) in the root directory contains functions for
+running standard build operations at the command line. This script assumes that
+.NET 8.0 SDK or newer is installed. Other dependency tools are downloaded
+as needed (NuGet, NUnit).
 
-Available command (e.g. `./build.ps1 clean`) (commands are not case sensitive):
+Available commands (e.g., `./build.ps1 clean`) (commands are not case sensitive):
 
 * `clean`: runs `dotnet clean`
 * `build`: runs `dotnet build` with several implicit steps
@@ -84,7 +86,7 @@ reason, you may need to launch an instance of the ODS/API. The
 `compose-build-dev.yml` file handles this for you.
 
 With the other two options, you will need to startup the [ODS/API on your
-own]((https://techdocs.ed-fi.org/display/ETKB/Ed-Fi+Operational+Data+Store+and+API)),
+own](https://techdocs.ed-fi.org/display/ETKB/Ed-Fi+Operational+Data+Store+and+API),
 using Visual Studio or the command line. Do not start the ODS/API in a separate
 Docker network from Admin API, because at present both need to access the same
 `EdFi_Admin` and `EdFi_Security` databases. If starting up manually, make sure
