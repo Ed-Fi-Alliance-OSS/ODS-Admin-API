@@ -13,7 +13,7 @@ function Set-TlsVersion {
 }
 
 $appCommonDirectory = "$PSScriptRoot/AppCommon"
-$RequiredDotNetHostingBundleVersion = "6.0.0"
+$RequiredDotNetHostingBundleVersion = "8.0.21"
 
 Import-Module -Force "$appCommonDirectory/Environment/Prerequisites.psm1" -Scope Global
 Set-TlsVersion
@@ -28,7 +28,7 @@ Import-Module -Force "$appCommonDirectory/Application/Install.psm1" -Scope Globa
 Import-Module -Force "$appCommonDirectory/Application/Uninstall.psm1" -Scope Global
 Import-Module -Force "$appCommonDirectory/Application/Configuration.psm1" -Scope Global
 
-$DbDeployVersion = "3.0.1"
+$DbDeployVersion = "4.2.3"
 
 function Install-EdFiOdsAdminApi {
     <#
@@ -48,7 +48,9 @@ function Install-EdFiOdsAdminApi {
         }
         PS c:\> $parameters = @{
             ToolsPath = "C:/temp/tools"
-            DbConnectionInfo = $dbConnectionInfo
+            DbConnectionInfo = $dbConnectionInfo,
+            PackageVersion = "__ADMINAPI_VERSION__"
+            AdminApiMode = "v2"
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
@@ -86,6 +88,7 @@ function Install-EdFiOdsAdminApi {
             ToolsPath = "C:/temp/tools"
             DbConnectionInfo = $dbConnectionInfo
             InstallCredentialsUseIntegratedSecurity = $true
+            AdminApiMode = "v2"
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
@@ -101,6 +104,7 @@ function Install-EdFiOdsAdminApi {
         PS c:\> $parameters = @{
             ToolsPath = "C:/temp/tools"
             DbConnectionInfo = $dbConnectionInfo
+            AdminApiMode = "v2"
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
@@ -232,15 +236,33 @@ function Install-EdFiOdsAdminApi {
         [Parameter(Mandatory=$true, ParameterSetName="MultiTenant")]
         $Tenants,
 
-        # Set Encrypt=false for all connection strings
-        # Not recomended for production environment.
-        [switch]
-        $UnEncryptedConnection
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('4.0.0', '5.2.0', '6.0.0')]
+        $StandardVersion,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('v1', 'v2')]
+        $AdminApiMode,
+
+        [Parameter(Mandatory=$true)]
+        $EncryptionKey
     )
 
     Write-InvocationInfo $MyInvocation
 
     Clear-Error
+
+    if($IsMultiTenant.IsPresent -and $AdminApiMode -eq 'v1')
+    {
+        Write-Error "Admin API v1 mode does not support MultiTenant configuration."
+        exit
+    }
+
+    if($AdminApiMode -eq 'v1' -and $StandardVersion -ne '4.0.0')
+    {
+        Write-Error "Admin API v1 mode only supports StandardVersion 4.0.0."
+        exit
+    }
 
     $result = @()
 
@@ -271,7 +293,9 @@ function Install-EdFiOdsAdminApi {
         NoDuration = $NoDuration
         IsMultiTenant = $IsMultiTenant.IsPresent
         Tenants = $Tenants
-        UnEncryptedConnection = $UnEncryptedConnection
+        StandardVersion = $StandardVersion
+        AdminApiMode = $AdminApiMode
+        EncryptionKey = $EncryptionKey
     }
 
     if($IsMultiTenant.IsPresent)
@@ -746,7 +770,7 @@ function Invoke-TransferAppsettings {
 
         $backUpPath = $Config.ApplicationBackupPath
         Write-Warning "The following appsettings will be copied over from existing application: "
-        $appSettings = @('DatabaseEngine', 'ApiStartupType', 'ApiExternalUrl', 'PathBase', 'Log4NetConfigFileName', 'Authority', 'IssuerUrl', 'SigningKey', 'AllowRegistration')
+        $appSettings = @('DatabaseEngine', 'adminApiMode', 'EncryptionKey', 'ApiStartupType', 'ApiExternalUrl', 'PathBase', 'Log4NetConfigFileName', 'Authority', 'IssuerUrl', 'SigningKey', 'AllowRegistration')
         foreach ($property in $appSettings) {
            Write-Host $property;
         }
@@ -757,6 +781,8 @@ function Invoke-TransferAppsettings {
         $newSettings = Get-Content $newSettingsFile | ConvertFrom-Json | ConvertTo-Hashtable
 
         $newSettings.AppSettings.DatabaseEngine = $oldSettings.AppSettings.DatabaseEngine
+        $newSettings.AppSettings.adminApiMode = $oldSettings.AppSettings.adminApiMode
+        $newSettings.AppSettings.EncryptionKey = $oldSettings.AppSettings.EncryptionKey
         $newSettings.AppSettings.ApiStartupType = $oldSettings.AppSettings.ApiStartupType
         $newSettings.AppSettings.ApiExternalUrl =  $oldSettings.AppSettings.ApiExternalUrl
         $newSettings.AppSettings.PathBase = $oldSettings.AppSettings.PathBase
@@ -954,6 +980,8 @@ function Invoke-TransformAppSettings {
         $settingsFile = Join-Path $Config.WebConfigLocation "appsettings.json"
         $settings = Get-Content $settingsFile | ConvertFrom-Json | ConvertTo-Hashtable
         $settings.AppSettings.DatabaseEngine = $config.engine
+        $settings.AppSettings.adminApiMode = $config.adminApiMode
+        $settings.AppSettings.EncryptionKey = $config.EncryptionKey
 
         $settings.AppSettings.MultiTenancy = $config.IsMultiTenant
 
@@ -1027,7 +1055,8 @@ function Invoke-TransformConnectionStrings {
         $adminconnString = New-ConnectionString -ConnectionInfo $Config.AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
         $securityConnString = New-ConnectionString -ConnectionInfo $Config.SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-        if ($Config.UnEncryptedConnection) {
+
+        if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
             $adminconnString += ";Encrypt=false"
             $securityConnString += ";Encrypt=false"
         }
@@ -1078,7 +1107,7 @@ function Invoke-TransformMultiTenantConnectionStrings {
             $adminconnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
             $securityConnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-            if ($Config.UnEncryptedConnection) {
+            if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
                 $adminconnString += ";Encrypt=false"
                 $securityConnString += ";Encrypt=false"
             }
@@ -1157,6 +1186,9 @@ function Invoke-DbUpScripts {
             foreach ($tenantKey in $Config.Tenants.Keys) {
 
                 $adminConnectionString = Get-AdminInstallConnectionString  $Config.Tenants[$tenantKey].AdminDbConnectionInfo
+                if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+                    $adminConnectionString += ";Encrypt=false"
+                }
                 $params["ConnectionString"] = $adminConnectionString
                 Invoke-DbDeploy @params
             }
@@ -1164,6 +1196,9 @@ function Invoke-DbUpScripts {
         else
         {
             $adminConnectionString = Get-AdminInstallConnectionString $Config.AdminDbConnectionInfo
+            if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+                $adminConnectionString += ";Encrypt=false"
+            }
             $params["ConnectionString"] = $adminConnectionString
             Invoke-DbDeploy @params
         }
