@@ -23,6 +23,7 @@ This document analyzes the implications of disabling EdOrg Sync for the V1 versi
 ### Overview
 
 Admin API 2.3 implements both V1 and V2 specifications:
+
 * **V1 Spec**: Maintains backward compatibility with Admin API 1.x, supporting ODS/API versions 3.4 through 6.1
 * **V2 Spec**: Introduces new features including multi-tenancy, education organization management, and enhanced instance management
 
@@ -161,6 +162,7 @@ app.UseAuthorization();
 Based on code analysis, V1 provides the following features:
 
 **Vendors**
+
 * `GET /v1/vendors`
 * `GET /v1/vendors/{id}`
 * `POST /v1/vendors`
@@ -168,6 +170,7 @@ Based on code analysis, V1 provides the following features:
 * `DELETE /v1/vendors/{id}`
 
 **Applications**
+
 * `GET /v1/applications`
 * `GET /v1/applications/{id}`
 * `GET /v1/vendors/{vendorId}/applications`
@@ -177,6 +180,7 @@ Based on code analysis, V1 provides the following features:
 * `POST /v1/applications/{id}/reset-credential`
 
 **ClaimSets**
+
 * `GET /v1/claimSets`
 * `GET /v1/claimSets/{id}`
 * `POST /v1/claimSets`
@@ -184,6 +188,7 @@ Based on code analysis, V1 provides the following features:
 * `DELETE /v1/claimSets/{id}`
 
 **ODS Instances**
+
 * `GET /v1/odsInstances`
 * `GET /v1/odsInstances/{id}`
 * `POST /v1/odsInstances`
@@ -205,11 +210,13 @@ V2 includes all V1 features PLUS:
 ### Database Context Dependencies
 
 **V1 Mode**:
+
 * Uses `IUsersContext` (EdFi_Admin database)
 * Uses `ISecurityContext` (EdFi_Security database)
 * Single-tenant architecture
 
 **V2 Mode**:
+
 * Uses `IUsersContext` and `ISecurityContext`
 * **Additionally uses `ITenantSpecificDbContextProvider`** for tenant isolation
 * **Requires `IContextProvider<TenantConfiguration>`** for tenant resolution
@@ -224,30 +231,36 @@ V2 includes all V1 features PLUS:
 #### Positive Aspects
 
 ✅ **Clean Separation of Concerns**
+
 * V1 remains stable and unchanged
 * V2 can evolve independently
 * Reduces risk of breaking changes for V1 consumers
 
 ✅ **Reduced Complexity for V1**
+
 * No unnecessary background jobs
 * Simpler middleware pipeline
 * Lower resource consumption
 
 ✅ **Explicit Feature Boundaries**
+
 * Clear documentation of what's available in each version
 * Easier to reason about system behavior
 
 #### Challenges
 
 ⚠️ **No EdOrg Data in V1 Mode**
+
 * Applications running in V1 mode cannot access education organization information
 * Admin App v4 must handle the absence of EdOrg endpoints gracefully
 
 ⚠️ **Migration Path Complexity**
+
 * Organizations upgrading from V1 to V2 must understand feature differences
 * May require Admin App UI changes to support both modes
 
 ⚠️ **Data Consistency**
+
 * V1 and V2 share same database tables (EdFi_Admin, EdFi_Security)
 * But V2 adds `adminapi.EducationOrganizations` table that V1 doesn't populate
 
@@ -280,6 +293,7 @@ The Admin App v4 is a **frontend-only application** that uses Admin API as its b
 #### When Running Against V2 API
 
 **Full Feature Set**:
+
 * All V1 features (vendors, applications, claimsets, instances)
 * Plus all additional V2 features listed above
 
@@ -287,13 +301,15 @@ The Admin App v4 is a **frontend-only application** that uses Admin API as its b
 
 #### V1 API Consumers
 
-- Must rely on direct ODS queries for education organization data
+* Must rely on direct ODS queries for education organization data
+
 * Cannot leverage Admin API for EdOrg information
 * May need to implement their own EdOrg caching/indexing
 
 #### V2 API Consumers
 
-- Full EdOrg data available via REST API
+* Full EdOrg data available via REST API
+
 * Automatic background refresh
 * Consolidated view across all ODS instances
 
@@ -335,6 +351,7 @@ async function detectApiMode(): Promise<ApiInformation> {
 ```
 
 **Admin API Endpoint**: `/information` (unversioned)
+
 * Returns API mode, version, build info
 * Available in both V1 and V2 modes
 
@@ -520,6 +537,7 @@ Create `docs/configuration.md`:
 ### V1 Mode
 
 **When to Use**:
+
 * Supporting legacy ODS/API versions (3.4 - 6.1)
 * Single-tenant deployments
 * Backward compatibility required
@@ -531,6 +549,7 @@ Create `docs/configuration.md`:
 ### V2 Mode
 
 **When to Use**:
+
 * ODS/API version 7.0+
 * Multi-tenant deployments
 * Need Education Organization management
@@ -538,51 +557,62 @@ Create `docs/configuration.md`:
 **Features Available**: All V1 features PLUS Education Organizations, Multi-Tenancy, etc.
 
 **Requirements**:
+
 * `MultiTenancy` setting (true/false)
 * `EdOrgsRefreshIntervalInMins` for background sync
-
-```
 
 ### For Admin App v4
 
 #### Implementation Checklist
 
 ##### Phase 1: API Mode Detection (High Priority)
-- [ ] Implement `/information` endpoint call on app initialization
-- [ ] Parse and store API mode configuration
-- [ ] Create feature flag service based on detected mode
-- [ ] Add mode indicator to UI (e.g., header badge)
+
+* [ ] Implement `/information` endpoint call on app initialization
+
+* [ ] Parse and store API mode configuration
+* [ ] Create feature flag service based on detected mode
+* [ ] Add mode indicator to UI (e.g., header badge)
 
 ##### Phase 2: Conditional Feature Rendering (High Priority)
-- [ ] Update navigation to conditionally show V2-only features
-- [ ] Add feature guards to all V2-specific pages
-- [ ] Implement graceful degradation for missing features
-- [ ] Show appropriate user messages when features unavailable
+
+* [ ] Update navigation to conditionally show V2-only features
+
+* [ ] Add feature guards to all V2-specific pages
+* [ ] Implement graceful degradation for missing features
+* [ ] Show appropriate user messages when features unavailable
 
 ##### Phase 3: Form Updates (Medium Priority)
-- [ ] Update Application forms to conditionally show EdOrg selector
-- [ ] Update Application forms to conditionally show Profile selector
-- [ ] Ensure form validation works in both modes
-- [ ] Test form submission with and without optional V2 fields
+
+* [ ] Update Application forms to conditionally show EdOrg selector
+
+* [ ] Update Application forms to conditionally show Profile selector
+* [ ] Ensure form validation works in both modes
+* [ ] Test form submission with and without optional V2 fields
 
 ##### Phase 4: EdOrg Synchronization (When Admin App Implements EdOrg Management)
-- [ ] Implement EdOrg list/search UI (V2 only)
-- [ ] Implement EdOrg hierarchy visualization (V2 only)
-- [ ] Add EdOrg filtering to relevant pages (V2 only)
-- [ ] Implement manual refresh trigger UI
+
+* [ ] Implement EdOrg list/search UI (V2 only)
+
+* [ ] Implement EdOrg hierarchy visualization (V2 only)
+* [ ] Add EdOrg filtering to relevant pages (V2 only)
+* [ ] Implement manual refresh trigger UI
 
 ##### Phase 5: Testing
-- [ ] Test all features in V1 mode
-- [ ] Test all features in V2 mode (single-tenant)
-- [ ] Test all features in V2 mode (multi-tenant)
-- [ ] Test mode switching (if supported)
-- [ ] Verify error handling for API version mismatches
+
+* [ ] Test all features in V1 mode
+
+* [ ] Test all features in V2 mode (single-tenant)
+* [ ] Test all features in V2 mode (multi-tenant)
+* [ ] Test mode switching (if supported)
+* [ ] Verify error handling for API version mismatches
 
 ##### Phase 6: Documentation
-- [ ] User guide: Understanding API versions
-- [ ] Installation guide: Choosing V1 vs V2
-- [ ] Migration guide: Moving from V1 to V2
-- [ ] Troubleshooting: Common API mode issues
+
+* [ ] User guide: Understanding API versions
+
+* [ ] Installation guide: Choosing V1 vs V2
+* [ ] Migration guide: Moving from V1 to V2
+* [ ] Troubleshooting: Common API mode issues
 
 #### Sample Admin App Code Structure
 
@@ -632,36 +662,47 @@ src/
 ### Admin API Testing
 
 #### Unit Tests
-- ✅ Existing tests already validate V2-only endpoint registration
-- ✅ Existing tests validate middleware pipeline for V1 vs V2
-- 📝 **Add**: Test that EdOrg sync job is NOT scheduled in V1 mode
-- 📝 **Add**: Test that `/v1/educationOrganizations` returns 400
+
+* ✅ Existing tests already validate V2-only endpoint registration
+
+* ✅ Existing tests validate middleware pipeline for V1 vs V2
+* 📝 **Add**: Test that EdOrg sync job is NOT scheduled in V1 mode
+* 📝 **Add**: Test that `/v1/educationOrganizations` returns 400
 
 #### Integration Tests
-- ✅ Existing tests validate EdOrg sync in V2 mode
-- 📝 **Add**: Test Admin API startup in V1 mode (no EdOrg job scheduled)
-- 📝 **Add**: Test Admin API startup in V2 mode (EdOrg job scheduled)
-- 📝 **Add**: Test API mode validation middleware with V1/V2 endpoints
+
+* ✅ Existing tests validate EdOrg sync in V2 mode
+
+* 📝 **Add**: Test Admin API startup in V1 mode (no EdOrg job scheduled)
+* 📝 **Add**: Test Admin API startup in V2 mode (EdOrg job scheduled)
+* 📝 **Add**: Test API mode validation middleware with V1/V2 endpoints
 
 #### E2E Tests
-- 📝 **Add**: Complete V1 workflow (vendors → applications → reset credentials)
-- 📝 **Add**: Complete V2 workflow including EdOrg operations
-- 📝 **Add**: Test switching API mode (if supported)
+
+* 📝 **Add**: Complete V1 workflow (vendors → applications → reset credentials)
+
+* 📝 **Add**: Complete V2 workflow including EdOrg operations
+* 📝 **Add**: Test switching API mode (if supported)
 
 ### Admin App Testing
 
 #### Unit Tests
-- Test feature flag service with V1 mode
-- Test feature flag service with V2 mode
-- Test conditional component rendering
+
+* Test feature flag service with V1 mode
+
+* Test feature flag service with V2 mode
+* Test conditional component rendering
 
 #### Integration Tests
-- Test API mode detection
-- Test navigation renders correctly for V1 mode
-- Test navigation renders correctly for V2 mode
-- Test forms work with and without EdOrg fields
+
+* Test API mode detection
+
+* Test navigation renders correctly for V1 mode
+* Test navigation renders correctly for V2 mode
+* Test forms work with and without EdOrg fields
 
 #### E2E Tests (Cypress/Playwright)
+
 ```typescript
 describe('Admin App with V1 API', () => {
   it('should hide EdOrg navigation item', () => {
@@ -699,7 +740,8 @@ describe('Admin App with V2 API', () => {
 
 ### Database State Tests
 
-- Verify `adminapi.EducationOrganizations` table is empty when running in V1 mode
+* Verify `adminapi.EducationOrganizations` table is empty when running in V1 mode
+
 * Verify table populates when switching to V2 mode and running refresh job
 
 ---
@@ -708,14 +750,16 @@ describe('Admin App with V2 API', () => {
 
 ### Low Risk ✅
 
-- **V1 API Consumers**: No breaking changes; everything continues to work
+* **V1 API Consumers**: No breaking changes; everything continues to work
+
 * **Database Schema**: No schema changes required
 * **Backward Compatibility**: V1 behavior unchanged
 
 ### Medium Risk ⚠️
 
-- **Admin App UX**: Users may be confused by missing features if not properly communicated
+* **Admin App UX**: Users may be confused by missing features if not properly communicated
   * **Mitigation**: Clear documentation, in-app messaging, mode indicator
+
 * **Documentation Lag**: Users may not understand V1 vs V2 differences
   * **Mitigation**: Comprehensive documentation updates, migration guides
 
