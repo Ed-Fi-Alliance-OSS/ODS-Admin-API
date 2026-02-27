@@ -113,6 +113,14 @@ The Education Organization synchronization system consists of:
    * `POST /v2/educationOrganizations/refresh`
    * `POST /v2/educationOrganizations/refresh/{instanceId}`
 
+   > **📝 Note - Upcoming Changes**: These endpoints will be restructured to nest under ODS Instances:
+   > * `/v2/educationOrganizations` → `/v2/odsInstances/edOrgs`
+   > * `/v2/educationOrganizations/{instanceId}` → `/v2/odsInstances/{instanceId}/edOrgs`
+   > * `/v2/educationOrganizations/refresh` → `/v2/odsInstances/edOrgs/refresh`
+   > * `/v2/educationOrganizations/{instanceId}/refresh` → `/v2/odsInstances/{instanceId}/edOrgs/refresh`
+   >
+   > These changes will be implemented in **ADMINAPI-1371** and **ADMINAPI-1372**.
+
 ### Middleware Architecture
 
 The request pipeline includes mode validation:
@@ -865,10 +873,10 @@ None identified.
 | `POST /odsInstances` | ✅ | ✅ |
 | `PUT /odsInstances/{id}` | ✅ | ✅ |
 | `DELETE /odsInstances/{id}` | ✅ | ✅ |
-| `GET /educationOrganizations` | ❌ | ✅ |
-| `GET /educationOrganizations/{instanceId}` | ❌ | ✅ |
-| `POST /educationOrganizations/refresh` | ❌ | ✅ |
-| `POST /educationOrganizations/refresh/{instanceId}` | ❌ | ✅ |
+| `GET /educationOrganizations` ¹ | ❌ | ✅ |
+| `GET /educationOrganizations/{instanceId}` ¹ | ❌ | ✅ |
+| `POST /educationOrganizations/refresh` ¹ | ❌ | ✅ |
+| `POST /educationOrganizations/{instanceId}/refresh` ¹ | ❌ | ✅ |
 | `GET /tenants` | ❌ | ✅ |
 | `GET /odsInstanceContexts` | ❌ | ✅ |
 | `POST /odsInstanceContexts` | ❌ | ✅ |
@@ -882,6 +890,8 @@ None identified.
 | `PUT /profiles/{id}` | ❌ | ✅ |
 | `GET /resourceClaims` | ❌ | ✅ |
 | `GET /resourceClaimActions` | ❌ | ✅ |
+
+**¹ Note**: Education Organization endpoints are scheduled for restructuring to nest under ODS Instances. See [ADMINAPI-1371](https://edfi.atlassian.net/browse/ADMINAPI-1371) and [ADMINAPI-1372](https://edfi.atlassian.net/browse/ADMINAPI-1372) for details.
 
 ### C. References
 
@@ -903,13 +913,3 @@ None identified.
 * **BFF**: Backend-for-Frontend, a pattern where an API serves a specific UI application
 
 ---
-
-## Change History
-
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2024-02-26 | Analysis Agent | Initial analysis document created |
-
----
-
-**Document Status**: ✅ Complete - Ready for Review
