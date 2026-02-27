@@ -57,6 +57,7 @@ public class EducationOrganizationService(
     public async Task Execute(string? tenantName, int? instanceId)
     {
         var multiTenancyEnabled = options.Value.MultiTenancy;
+        var maxDegreeOfParallelism = options.Value.MaxDegreeOfParallelism;
         var encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
         var databaseEngine = DatabaseEngineEnum.Parse(options.Value.DatabaseEngine ?? throw new NotFoundException<string>(nameof(AppSettings), nameof(AppSettings.DatabaseEngine)));
 
@@ -68,15 +69,15 @@ public class EducationOrganizationService(
                 return;
             }
             var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
-            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine, maxDegreeOfParallelism: maxDegreeOfParallelism);
         }
         else
         {
-            await ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId);
+            await ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId, maxDegreeOfParallelism);
         }
     }
 
-    public virtual async Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+    public virtual async Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null, int maxDegreeOfParallelism = 10)
     {
         var odsInstances = instanceId.HasValue
             ? await usersContext.OdsInstances
@@ -90,15 +91,16 @@ public class EducationOrganizationService(
             return;
         }
 
-        // Process all OdsInstances in parallel using Task.WhenAll
-        var tasks = odsInstances.Select(odsInstance =>
-            RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, odsInstance)
-        );
-
-        await Task.WhenAll(tasks);
+        await Parallel.ForEachAsync(
+            odsInstances,
+            new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
+            async (odsInstance, cancellationToken) =>
+            {
+                await RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, odsInstance);
+            });
     }
 
-    private async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance)
+    protected virtual async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance)
     {
         try
         {

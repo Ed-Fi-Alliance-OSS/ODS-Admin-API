@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
@@ -186,7 +187,7 @@ internal class EducationOrganizationServiceTests
     {
         private readonly Action _onProcessOdsInstance = onProcessOdsInstance;
 
-        public override Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+        public override Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null, int maxDegreeOfParallelism = 10)
         {
             _onProcessOdsInstance();
             return Task.CompletedTask;
@@ -465,21 +466,20 @@ internal class EducationOrganizationServiceTests
         A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-3", A<byte[]>._, out decryptedConnectionString))
             .Returns(true).AssignsOutAndRefParameters("Server=test3;");
 
-        var callCount = 0;
         var service = new TestableEducationOrganizationServiceWithErrorSimulation(
             _options,
             usersContext,
             fakeEncryption,
             _tenantSpecificDbContextProvider,
             _serviceScopeFactory,
-            () => ++callCount == 2, // Fail on second call
+            callNum => callNum == 2, // Fail on second call
             fakeLogger);
 
         // Should not throw - processing should continue despite one failure
         await Should.NotThrowAsync(async () => await service.Execute(null, null));
 
         // GetEducationOrganizationsAsync should be called for all three instances
-        callCount.ShouldBe(3);
+        service.CallCount.ShouldBe(3);
     }
 
     [Test]
@@ -517,25 +517,20 @@ internal class EducationOrganizationServiceTests
         A.CallTo(() => fakeEncryption.TryDecrypt(A<string>._, A<byte[]>._, out decryptedConnectionString))
             .Returns(true).AssignsOutAndRefParameters("Server=test;");
 
-        var callCount = 0;
         var service = new TestableEducationOrganizationServiceWithErrorSimulation(
             _options,
             usersContext,
             fakeEncryption,
             _tenantSpecificDbContextProvider,
             _serviceScopeFactory,
-            () =>
-            {
-                callCount++;
-                return true; // Always fail
-            },
+            _ => true, // Always fail
             fakeLogger);
 
         // Should not throw even when all instances fail
         await Should.NotThrowAsync(async () => await service.Execute(null, null));
 
         // GetEducationOrganizationsAsync should be called for both instances
-        callCount.ShouldBe(2);
+        service.CallCount.ShouldBe(2);
     }
 
     private class TestableEducationOrganizationServiceWithTracking(
@@ -549,23 +544,15 @@ internal class EducationOrganizationServiceTests
     {
         private readonly List<int> _processedInstanceIds = processedInstanceIds;
 
-        public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
+        protected override Task RefreshEducationOrganizationsAsync(
+            string? tenantName, string encryptionKey, string databaseEngine,
+            OdsInstance odsInstance)
         {
-            return Task.FromResult(new List<EducationOrganizationResult>());
-        }
-
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
-        {
-            var odsInstances = instanceId.HasValue
-                ? await usersContext.OdsInstances
-                    .Where(o => o.OdsInstanceId == instanceId.Value)
-                    .ToListAsync()
-                : await usersContext.OdsInstances.ToListAsync();
-
-            foreach (var instance in odsInstances)
+            lock (_processedInstanceIds)
             {
-                _processedInstanceIds.Add(instance.OdsInstanceId);
+                _processedInstanceIds.Add(odsInstance.OdsInstanceId);
             }
+            return Task.CompletedTask;
         }
     }
 
@@ -575,47 +562,182 @@ internal class EducationOrganizationServiceTests
         ISymmetricStringEncryptionProvider encryptionProvider,
         ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
         IServiceScopeFactory serviceScopeFactory,
-        Func<bool> shouldFail,
+        Func<int, bool> shouldFail,
         ILogger<EducationOrganizationServiceImpl> logger) : EducationOrganizationServiceImpl(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
-        private readonly Func<bool> _shouldFail = shouldFail;
+        private readonly Func<int, bool> _shouldFail = shouldFail;
+        private int _callCount;
+        public int CallCount => _callCount;
 
-        public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
+        // Override at the RefreshEducationOrganizationsAsync level so that
+        // ProcessOdsInstanceAsync (the thing under test) drives all iterations.
+        // We replicate the base-class error-handling contract: catch per instance
+        // so one failure never blocks the others.
+        protected override Task RefreshEducationOrganizationsAsync(
+            string? tenantName, string encryptionKey, string databaseEngine,
+            OdsInstance odsInstance)
         {
-            if (_shouldFail())
+            // Capture the atomic call number before the predicate sees it.
+            var callNum = Interlocked.Increment(ref _callCount);
+            try
             {
-                throw new InvalidOperationException("Simulated database error");
+                if (_shouldFail(callNum))
+                    throw new InvalidOperationException("Simulated database error");
+            }
+            catch (Exception)
+            {
+                // mirrors production: errors are logged and swallowed per instance
             }
 
-            return Task.FromResult(new List<EducationOrganizationResult>());
+            return Task.CompletedTask;
         }
+    }
 
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+    private class TestableEducationOrganizationServiceWithParallelismTracking(
+        IOptions<AppSettings> options,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+        IServiceScopeFactory serviceScopeFactory,
+        List<int> processedInstanceIds,
+        ILogger<EducationOrganizationServiceImpl> logger) : EducationOrganizationServiceImpl(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
+    {
+        private readonly List<int> _processedInstanceIds = processedInstanceIds;
+        public int PeakConcurrency { get; private set; }
+        private int _activeTasks;
+
+        protected override async Task RefreshEducationOrganizationsAsync(
+            string? tenantName, string encryptionKey, string databaseEngine,
+            OdsInstance odsInstance)
         {
-            var odsInstances = instanceId.HasValue
-                ? await usersContext.OdsInstances
-                    .Where(o => o.OdsInstanceId == instanceId.Value)
-                    .ToListAsync()
-                : await usersContext.OdsInstances.ToListAsync();
+            var current = Interlocked.Increment(ref _activeTasks);
+            if (current > PeakConcurrency)
+                PeakConcurrency = current;
 
-            // Process all OdsInstances in parallel - we override to avoid GetConnectionString() call
-            // which doesn't work with InMemory DB
-            var tasks = odsInstances.Select(odsInstance =>
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        _ = await GetEducationOrganizationsAsync("test-connection", databaseEngine);
-                    }
-                    catch (Exception)
-                    {
-                        // Simulate the error handling in ProcessSingleOdsInstanceAsync
-                        // Errors are caught and logged, not rethrown
-                    }
-                })
-            );
+            await Task.Delay(10); // small delay to allow overlap when parallelism > 1
 
-            await Task.WhenAll(tasks);
+            lock (_processedInstanceIds)
+            {
+                _processedInstanceIds.Add(odsInstance.OdsInstanceId);
+            }
+            Interlocked.Decrement(ref _activeTasks);
         }
+    }
+
+    [Test]
+    public async Task ProcessOdsInstanceAsync_Should_Process_All_Instances_Within_MaxDegreeOfParallelism()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_Parallelism")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        for (var i = 1; i <= 5; i++)
+        {
+            usersContext.OdsInstances.Add(new OdsInstance
+            {
+                OdsInstanceId = i,
+                Name = $"Instance {i}",
+                ConnectionString = $"encrypted-{i}"
+            });
+        }
+        await usersContext.SaveChangesAsync();
+
+        var processedInstanceIds = new List<int>();
+        var service = new TestableEducationOrganizationServiceWithParallelismTracking(
+            _options,
+            usersContext,
+            _encryptionProvider,
+            _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
+            processedInstanceIds,
+            _logger);
+
+        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer",
+            instanceId: null, maxDegreeOfParallelism: 2);
+
+        processedInstanceIds.Count.ShouldBe(5);
+        processedInstanceIds.ShouldContain(1);
+        processedInstanceIds.ShouldContain(2);
+        processedInstanceIds.ShouldContain(3);
+        processedInstanceIds.ShouldContain(4);
+        processedInstanceIds.ShouldContain(5);
+        service.PeakConcurrency.ShouldBeLessThanOrEqualTo(2);
+    }
+
+    [Test]
+    public async Task ProcessOdsInstanceAsync_Should_Process_Sequentially_When_MaxDegreeOfParallelism_Is_One()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_Sequential")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        for (var i = 1; i <= 3; i++)
+        {
+            usersContext.OdsInstances.Add(new OdsInstance
+            {
+                OdsInstanceId = i,
+                Name = $"Instance {i}",
+                ConnectionString = $"encrypted-{i}"
+            });
+        }
+        await usersContext.SaveChangesAsync();
+
+        var processedInstanceIds = new List<int>();
+        var service = new TestableEducationOrganizationServiceWithParallelismTracking(
+            _options,
+            usersContext,
+            _encryptionProvider,
+            _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
+            processedInstanceIds,
+            _logger);
+
+        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer",
+            instanceId: null, maxDegreeOfParallelism: 1);
+
+        processedInstanceIds.Count.ShouldBe(3);
+        service.PeakConcurrency.ShouldBe(1);
+    }
+
+    [Test]
+    public async Task Execute_Should_Use_MaxDegreeOfParallelism_From_AppSettings()
+    {
+        _appSettings.MaxDegreeOfParallelism = 1;
+
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_AppSettings_Parallelism")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        for (var i = 1; i <= 3; i++)
+        {
+            usersContext.OdsInstances.Add(new OdsInstance
+            {
+                OdsInstanceId = i,
+                Name = $"Instance {i}",
+                ConnectionString = $"encrypted-{i}"
+            });
+        }
+        await usersContext.SaveChangesAsync();
+
+        var processedInstanceIds = new List<int>();
+        var service = new TestableEducationOrganizationServiceWithParallelismTracking(
+            _options,
+            usersContext,
+            _encryptionProvider,
+            _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
+            processedInstanceIds,
+            _logger);
+
+        await service.Execute(null, null);
+
+        processedInstanceIds.Count.ShouldBe(3);
+        service.PeakConcurrency.ShouldBe(1);
     }
 }

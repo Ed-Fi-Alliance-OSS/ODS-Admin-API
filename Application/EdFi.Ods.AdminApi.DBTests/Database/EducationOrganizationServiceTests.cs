@@ -704,20 +704,45 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     {
         public List<int> ProcessedInstanceIds { get; } = [];
 
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+        public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
         {
-            var odsInstances = instanceId.HasValue
+            var results = new List<EducationOrganizationResult>
+            {
+                new() {
+                    EducationOrganizationId = 255901,
+                    NameOfInstitution = "Test School 1",
+                    ShortNameOfInstitution = "TS1",
+                    Discriminator = "edfi.School",
+                    Id = Guid.NewGuid(),
+                    ParentId = 255900
+                },
+                new() {
+                    EducationOrganizationId = 255902,
+                    NameOfInstitution = "Test School 2",
+                    ShortNameOfInstitution = "TS2",
+                    Discriminator = "edfi.School",
+                    Id = Guid.NewGuid(),
+                    ParentId = 255900
+                }
+            };
+
+            return Task.FromResult(results);
+        }
+
+        public new async Task Execute(string tenantName, int? instanceId)
+        {
+            var instances = instanceId.HasValue
                 ? await usersContext.OdsInstances
                     .Where(o => o.OdsInstanceId == instanceId.Value)
                     .ToListAsync()
                 : await usersContext.OdsInstances.ToListAsync();
 
-            foreach (var instance in odsInstances)
+            foreach (var instance in instances)
             {
                 ProcessedInstanceIds.Add(instance.OdsInstanceId);
             }
 
-            await base.ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId);
+            await base.Execute(tenantName, instanceId);
         }
     }
 }
