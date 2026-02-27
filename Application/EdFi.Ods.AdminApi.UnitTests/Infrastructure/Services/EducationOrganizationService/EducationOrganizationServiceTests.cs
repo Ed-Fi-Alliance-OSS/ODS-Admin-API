@@ -546,7 +546,7 @@ internal class EducationOrganizationServiceTests
 
         protected override Task RefreshEducationOrganizationsAsync(
             string? tenantName, string encryptionKey, string databaseEngine,
-            OdsInstance odsInstance)
+            OdsInstance odsInstance, CancellationToken cancellationToken = default)
         {
             lock (_processedInstanceIds)
             {
@@ -575,7 +575,7 @@ internal class EducationOrganizationServiceTests
         // so one failure never blocks the others.
         protected override Task RefreshEducationOrganizationsAsync(
             string? tenantName, string encryptionKey, string databaseEngine,
-            OdsInstance odsInstance)
+            OdsInstance odsInstance, CancellationToken cancellationToken = default)
         {
             // Capture the atomic call number before the predicate sees it.
             var callNum = Interlocked.Increment(ref _callCount);
@@ -603,24 +603,38 @@ internal class EducationOrganizationServiceTests
         ILogger<EducationOrganizationServiceImpl> logger) : EducationOrganizationServiceImpl(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
         private readonly List<int> _processedInstanceIds = processedInstanceIds;
-        public int PeakConcurrency { get; private set; }
+        public int PeakConcurrency => _peakConcurrency;
+        private int _peakConcurrency;
         private int _activeTasks;
 
         protected override async Task RefreshEducationOrganizationsAsync(
             string? tenantName, string encryptionKey, string databaseEngine,
-            OdsInstance odsInstance)
+            OdsInstance odsInstance, CancellationToken cancellationToken = default)
         {
             var current = Interlocked.Increment(ref _activeTasks);
-            if (current > PeakConcurrency)
-                PeakConcurrency = current;
 
-            await Task.Delay(10); // small delay to allow overlap when parallelism > 1
-
-            lock (_processedInstanceIds)
+            // Atomically update peak: spin until our value is recorded or a higher one already is.
+            int observed;
+            do
             {
-                _processedInstanceIds.Add(odsInstance.OdsInstanceId);
+                observed = _peakConcurrency;
+                if (current <= observed) break;
             }
-            Interlocked.Decrement(ref _activeTasks);
+            while (Interlocked.CompareExchange(ref _peakConcurrency, current, observed) != observed);
+
+            try
+            {
+                await Task.Delay(10, cancellationToken); // small delay to allow overlap when parallelism > 1
+
+                lock (_processedInstanceIds)
+                {
+                    _processedInstanceIds.Add(odsInstance.OdsInstanceId);
+                }
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _activeTasks);
+            }
         }
     }
 
