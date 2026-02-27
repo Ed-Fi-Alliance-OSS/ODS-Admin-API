@@ -23,6 +23,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using System.Threading;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database;
 
@@ -222,7 +223,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         ILogger<EducationOrganizationService> logger
         ) : EducationOrganizationService(options, usersContext, encryptionProvider, tenantSpecificDbContextProvider, serviceScopeFactory, logger)
     {
-        public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string connectionString, string databaseEngine)
+        public override Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string? connectionString, string databaseEngine, CancellationToken cancellationToken = default)
         {
             var results = new List<EducationOrganizationResult>
             {
@@ -704,20 +705,12 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     {
         public List<int> ProcessedInstanceIds { get; } = [];
 
-        public override async Task ProcessOdsInstanceAsync(string tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+        protected override Task RefreshEducationOrganizationsAsync(
+            string? tenantName, string encryptionKey, string databaseEngine,
+            OdsInstance odsInstance, CancellationToken cancellationToken = default)
         {
-            var odsInstances = instanceId.HasValue
-                ? await usersContext.OdsInstances
-                    .Where(o => o.OdsInstanceId == instanceId.Value)
-                    .ToListAsync()
-                : await usersContext.OdsInstances.ToListAsync();
-
-            foreach (var instance in odsInstances)
-            {
-                ProcessedInstanceIds.Add(instance.OdsInstanceId);
-            }
-
-            await base.ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId);
+            ProcessedInstanceIds.Add(odsInstance.OdsInstanceId);
+            return base.RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, odsInstance, cancellationToken);
         }
     }
 }
