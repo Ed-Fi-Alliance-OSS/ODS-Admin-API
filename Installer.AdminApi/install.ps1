@@ -91,7 +91,7 @@ $authenticationSettings = @{
     AllowRegistration = $false
 }
 
-$encryptionKey = "" # Base 64 and must be 32 characters for AES-256 encryption. This value should be kept secret and secure. This will encrypt values in db.
+$encryptionKey = "" # Admin API encryption - generate a new signing key using `openssl rand -base64 32`. This will encrypt values in db.
 
 $packageSource = Split-Path $PSScriptRoot -Parent
 $adminApiSource = "$packageSource/AdminApi"
