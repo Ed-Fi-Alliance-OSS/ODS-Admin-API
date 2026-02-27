@@ -25,7 +25,7 @@
     Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
     (install the ".NET Build Tools" component)
 * Clone [this
-  repository](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS-AdminApi) locally
+  repository](https://github.com/Ed-Fi-Alliance-OSS/ODS-Admin-API) locally
 * To work with the official Ed-Fi Docker solution, also clone the [Docker
   repository](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS-Docker).
 
