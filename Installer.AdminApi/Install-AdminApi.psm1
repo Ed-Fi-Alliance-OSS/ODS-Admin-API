@@ -46,18 +46,34 @@ function Install-EdFiOdsAdminApi {
             Engine = "SqlServer"
             UseIntegratedSecurity=$true
         }
+        PS c:\> $authenticationSettings = @{
+            Authority = "https://localhost/adminapi"
+            RequireHttpsMetadata = $true
+            IssuerUrl = "https://localhost/adminapi"
+            SigningKey = "<generated signing key>"
+        }
         PS c:\> $parameters = @{
             ToolsPath = "C:/temp/tools"
-            DbConnectionInfo = $dbConnectionInfo,
+            DbConnectionInfo = $dbConnectionInfo
             PackageVersion = "__ADMINAPI_VERSION__"
+            PackageSource = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+            AuthenticationSettings = $authenticationSettings
+            StandardVersion = "5.2.0"
             AdminApiMode = "v2"
+            EncryptionKey = (New-AESKey)  # Must match the OdsConnectionStringEncryptionKey used in ODS/API
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
         Installs Admin Api to SQL Server with mainly defaults, except for the custom Sandbox ODS
-        and the required ODS/API URL.
+        and the required ODS/API URL. The EncryptionKey must match the key used in the ODS/API installation.
 
     .EXAMPLE
+        PS c:\> $authenticationSettings = @{
+            Authority = "https://localhost/adminapi"
+            RequireHttpsMetadata = $true
+            IssuerUrl = "https://localhost/adminapi"
+            SigningKey = "<generated signing key>"
+        }
         PS c:\> $parameters = @{
             ToolsPath = "C:/temp/tools"
             AdminDbConnectionInfo = @{
@@ -70,6 +86,11 @@ function Install-EdFiOdsAdminApi {
                 Server="edfi-auth.my-sql-server.example"
                 UseIntegratedSecurity=$true
             }
+            PackageSource = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+            AuthenticationSettings = $authenticationSettings
+            StandardVersion = "5.2.0"
+            AdminApiMode = "v2"
+            EncryptionKey = (New-AESKey)  # Must match the OdsConnectionStringEncryptionKey used in ODS/API
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
@@ -84,11 +105,21 @@ function Install-EdFiOdsAdminApi {
             Username="install-user"
             Password="@#$%^&*(GHJ%^&*YUKSDF"
         }
+        PS c:\> $authenticationSettings = @{
+            Authority = "https://localhost/adminapi"
+            RequireHttpsMetadata = $true
+            IssuerUrl = "https://localhost/adminapi"
+            SigningKey = "<generated signing key>"
+        }
         PS c:\> $parameters = @{
             ToolsPath = "C:/temp/tools"
             DbConnectionInfo = $dbConnectionInfo
             InstallCredentialsUseIntegratedSecurity = $true
+            PackageSource = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+            AuthenticationSettings = $authenticationSettings
+            StandardVersion = "5.2.0"
             AdminApiMode = "v2"
+            EncryptionKey = (New-AESKey)  # Must match the OdsConnectionStringEncryptionKey used in ODS/API
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
@@ -101,10 +132,20 @@ function Install-EdFiOdsAdminApi {
             Engine = "SqlServer"
             UseIntegratedSecurity=$true
         }
+        PS c:\> $authenticationSettings = @{
+            Authority = "https://localhost/adminapi"
+            RequireHttpsMetadata = $true
+            IssuerUrl = "https://localhost/adminapi"
+            SigningKey = "<generated signing key>"
+        }
         PS c:\> $parameters = @{
             ToolsPath = "C:/temp/tools"
             DbConnectionInfo = $dbConnectionInfo
+            PackageSource = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+            AuthenticationSettings = $authenticationSettings
+            StandardVersion = "5.2.0"
             AdminApiMode = "v2"
+            EncryptionKey = (New-AESKey)  # Must match the OdsConnectionStringEncryptionKey used in ODS/API
         }
         PS c:\> Install-EdFiOdsAdminApi @parameters
 
@@ -244,7 +285,29 @@ function Install-EdFiOdsAdminApi {
         [ValidateSet('v1', 'v2')]
         $AdminApiMode,
 
-        [Parameter(Mandatory=$true)]
+        # Encryption key for securing sensitive data. Required for AdminApiMode v2.
+        # Must be a valid base64-encoded 256-bit (32 byte) key.
+        # IMPORTANT: When using AdminApiMode v2, this key MUST match the OdsConnectionStringEncryptionKey
+        # used in your Ed-Fi ODS / API installation. See:
+        # https://docs.ed-fi.org/reference/ods-api/getting-started/binary-installation/singlemulti-tenant-installation-steps/#prepare-installation-script
+        [ValidateScript({
+            if (-not [string]::IsNullOrWhiteSpace($_)) {
+                try {
+                    $bytes = [Convert]::FromBase64String($_)
+                    if ($bytes.Length -ne 32) {
+                        throw "Encryption key must be exactly 32 bytes (256 bits) when decoded. Provided key is $($bytes.Length) bytes. This key must match the OdsConnectionStringEncryptionKey used in your Ed-Fi ODS / API installation."
+                    }
+                    $true
+                }
+                catch [FormatException] {
+                    throw "Encryption key must be a valid base64-encoded string. This key must match the OdsConnectionStringEncryptionKey used in your Ed-Fi ODS / API installation."
+                }
+            }
+            else {
+                $true
+            }
+        })]
+        [string]
         $EncryptionKey
     )
 
@@ -254,14 +317,17 @@ function Install-EdFiOdsAdminApi {
 
     if($IsMultiTenant.IsPresent -and $AdminApiMode -eq 'v1')
     {
-        Write-Error "Admin API v1 mode does not support MultiTenant configuration."
-        exit
+        throw "Admin API v1 mode does not support MultiTenant configuration."
     }
 
     if($AdminApiMode -eq 'v1' -and $StandardVersion -ne '4.0.0')
     {
-        Write-Error "Admin API v1 mode only supports StandardVersion 4.0.0."
-        exit
+        throw "Admin API v1 mode only supports StandardVersion 4.0.0."
+    }
+
+    if($AdminApiMode -eq 'v2' -and [string]::IsNullOrWhiteSpace($EncryptionKey))
+    {
+        throw "EncryptionKey is required for Admin API v2 mode. This key must match the OdsConnectionStringEncryptionKey used in your Ed-Fi ODS / API installation."
     }
 
     $result = @()

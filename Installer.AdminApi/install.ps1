@@ -91,7 +91,12 @@ $authenticationSettings = @{
     AllowRegistration = $false
 }
 
-$encryptionKey = "" # Base 64 and must be 32 characters for AES-256 encryption. This value should be kept secret and secure. This will encrypt values in db.
+# Encryption key for securing sensitive data. Required for AdminApiMode v2.
+# Must be a valid base64-encoded 256-bit (32 byte) key.
+# IMPORTANT: When using AdminApiMode v2, this key MUST match the OdsConnectionStringEncryptionKey
+# used in your Ed-Fi ODS / API installation. See:
+# https://docs.ed-fi.org/reference/ods-api/getting-started/binary-installation/singlemulti-tenant-installation-steps/#prepare-installation-script
+$odsEncryptionKey = "" 
 
 $packageSource = Split-Path $PSScriptRoot -Parent
 $adminApiSource = "$packageSource/AdminApi"
@@ -104,7 +109,7 @@ $p = @{
     PackageSource = $adminApiSource
     AuthenticationSettings = $authenticationSettings
     StandardVersion = '5.2.0'
-    EncryptionKey = $encryptionKey
+    EncryptionKey = $odsEncryptionKey
 }
 
 if ([string]::IsNullOrWhiteSpace($p.AuthenticationSettings.Authority) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.IssuerUrl) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.SigningKey) -or $p.AuthenticationSettings.AllowRegistration -isnot [bool]) {
