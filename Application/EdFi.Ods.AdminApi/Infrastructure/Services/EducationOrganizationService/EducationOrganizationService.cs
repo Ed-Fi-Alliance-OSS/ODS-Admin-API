@@ -57,6 +57,7 @@ public class EducationOrganizationService(
     public async Task Execute(string? tenantName, int? instanceId)
     {
         var multiTenancyEnabled = options.Value.MultiTenancy;
+        var maxDegreeOfParallelism = options.Value.MaxDegreeOfParallelism;
         var encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
         var databaseEngine = DatabaseEngineEnum.Parse(options.Value.DatabaseEngine ?? throw new NotFoundException<string>(nameof(AppSettings), nameof(AppSettings.DatabaseEngine)));
 
@@ -68,15 +69,15 @@ public class EducationOrganizationService(
                 return;
             }
             var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
-            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine);
+            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine, instanceId, maxDegreeOfParallelism);
         }
         else
         {
-            await ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId);
+            await ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId, maxDegreeOfParallelism);
         }
     }
 
-    public virtual async Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null)
+    public virtual async Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null, int maxDegreeOfParallelism = 10)
     {
         var odsInstances = instanceId.HasValue
             ? await usersContext.OdsInstances
@@ -90,25 +91,28 @@ public class EducationOrganizationService(
             return;
         }
 
-        // Process all OdsInstances in parallel using Task.WhenAll
-        var tasks = odsInstances.Select(odsInstance =>
-            RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, odsInstance)
-        );
-
-        await Task.WhenAll(tasks);
+        await Parallel.ForEachAsync(
+            odsInstances,
+            new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
+            async (odsInstance, cancellationToken) =>
+            {
+                await RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, odsInstance, cancellationToken);
+            });
     }
 
-    private async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance)
+    protected virtual async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance, CancellationToken cancellationToken = default)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString))
             {
                 logger.LogError("Failed to decrypt connection string for ODS Instance ID {OdsInstanceId}. Skipping education organization synchronization for this instance.", odsInstance.OdsInstanceId);
                 return;
             }
 
-            var edorgs = await GetEducationOrganizationsAsync(decryptedConnectionString, databaseEngine);
+            var edorgs = await GetEducationOrganizationsAsync(decryptedConnectionString, databaseEngine, cancellationToken);
 
             // Create a completely isolated scope with its own DbContext instance for thread safety
             await using var scope = serviceScopeFactory.CreateAsyncScope();
@@ -118,7 +122,7 @@ public class EducationOrganizationService(
 
             var existingEducationOrganizations = await taskAdminApiDbContext.EducationOrganizations
             .Where(e => e.InstanceId == odsInstance.OdsInstanceId)
-            .ToDictionaryAsync(e => e.EducationOrganizationId);
+            .ToDictionaryAsync(e => e.EducationOrganizationId, cancellationToken);
 
             var currentSourceIds = new HashSet<long>(edorgs.Select(e => e.EducationOrganizationId));
 
@@ -162,7 +166,7 @@ public class EducationOrganizationService(
             }
 
             // Save changes for this OdsInstance
-            await taskAdminApiDbContext.SaveChangesAsync(CancellationToken.None);
+            await taskAdminApiDbContext.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("Successfully processed ODS Instance ID {OdsInstanceId}. Updated/Added {EdOrgCount} education organizations.",
                 odsInstance.OdsInstanceId, edorgs.Count);
@@ -175,7 +179,7 @@ public class EducationOrganizationService(
         }
     }
 
-    public virtual async Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string? connectionString, string databaseEngine)
+    public virtual async Task<List<EducationOrganizationResult>> GetEducationOrganizationsAsync(string? connectionString, string databaseEngine, CancellationToken cancellationToken = default)
     {
         if (databaseEngine is null)
             throw new InvalidOperationException("Database engine must be specified.");
@@ -183,18 +187,18 @@ public class EducationOrganizationService(
         if (databaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
             using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync(cancellationToken);
             using var command = new SqlCommand(AllEdorgQuery, connection);
-            using var reader = await command.ExecuteReaderAsync();
-            return await ReadEducationOrganizationsFromDbDataReader(reader);
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            return await ReadEducationOrganizationsFromDbDataReader(reader, cancellationToken);
         }
         else if (databaseEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
         {
             using var connection = new Npgsql.NpgsqlConnection(connectionString);
-            await connection.OpenAsync();
+            await connection.OpenAsync(cancellationToken);
             using var command = new Npgsql.NpgsqlCommand(AllEdorgQuery, connection);
-            using var reader = await command.ExecuteReaderAsync();
-            return await ReadEducationOrganizationsFromDbDataReader(reader);
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            return await ReadEducationOrganizationsFromDbDataReader(reader, cancellationToken);
         }
         else
         {
@@ -202,25 +206,25 @@ public class EducationOrganizationService(
         }
     }
 
-    private async Task<List<EducationOrganizationResult>> ReadEducationOrganizationsFromDbDataReader(DbDataReader reader)
+    private async Task<List<EducationOrganizationResult>> ReadEducationOrganizationsFromDbDataReader(DbDataReader reader, CancellationToken cancellationToken = default)
     {
         var results = new List<EducationOrganizationResult>();
 
         try
         {
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 try
                 {
                     long educationOrganizationId = Convert("educationorganizationid");
                     var nameOfInstitution = reader.GetString(reader.GetOrdinal("nameofinstitution"));
                     var shortNameOfInstitutionOrdinal = reader.GetOrdinal("shortnameofinstitution");
-                    string? shortNameOfInstitution = await reader.IsDBNullAsync(shortNameOfInstitutionOrdinal)
+                    string? shortNameOfInstitution = await reader.IsDBNullAsync(shortNameOfInstitutionOrdinal, cancellationToken)
                         ? null
                         : reader.GetString(shortNameOfInstitutionOrdinal);
                     var discriminator = reader.GetString(reader.GetOrdinal("discriminator"));
                     var id = reader.GetGuid(reader.GetOrdinal("id"));
-                    long? parentId = await reader.IsDBNullAsync(reader.GetOrdinal("parentid"))
+                    long? parentId = await reader.IsDBNullAsync(reader.GetOrdinal("parentid"), cancellationToken)
                         ? null
                         : Convert("parentid");
 

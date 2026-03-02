@@ -24,6 +24,7 @@ public class AppSettings
     public bool PreventDuplicateApplications { get; set; }
     public bool EnableApplicationResetEndpoint { get; set; }
     public int EdOrgsRefreshIntervalInMins { get; set; }
+    public int MaxDegreeOfParallelism { get; set; } = 10;
     public string? AdminApiMode { get; set; }
 }
 
