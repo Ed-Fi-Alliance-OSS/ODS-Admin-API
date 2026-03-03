@@ -44,10 +44,7 @@ jobs:
         run: |
           $apiPrefix = "v"
 
-          # Install the MinVer CLI tool
-          &dotnet tool install --global minver-cli
-
-          $apiVersion = $(minver -t $apiPrefix)
+          $apiVersion = & ./eng/get-version.ps1
 
           # Full release name
           "admin-api=$apiVersion" >> $env:GITHUB_OUTPUT
@@ -289,9 +286,11 @@ jobs:
           name: ${{ env.PACKAGE_NAME }}-NuGet
 
       - name: Install-credential-handler
-        run: iex "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+        shell: bash
+        run: wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash
 
       - name: Push Package to Azure Artifacts
+        shell: pwsh
         run: |
           $artifact = (Get-ChildItem -Path $_ -Name -Include *.nupkg)
           $arguments = @{
@@ -326,7 +325,7 @@ jobs:
              PACKAGEVERSION=${REF}
           fi
 
-          if [[ $PACKAGEVERSION =~ "pre" ]]
+          if [[ $PACKAGEVERSION =~ "alpha" ]]
           then
             # Pre-releases get the tag "pre"
             APITAGS="${{ env.IMAGE_NAME }}:pre"

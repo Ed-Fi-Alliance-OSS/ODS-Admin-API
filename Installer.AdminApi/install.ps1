@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Licensed to the Ed-Fi Alliance under one or more agreements.
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
-# See the LICENSE and NOTICES files in the project root for more information.
+# See the LICENSE and NOTICES files in the project root for more information. 
 
 import-module -force "$PSScriptRoot/Install-AdminApi.psm1"
 
@@ -17,6 +17,7 @@ Installs and connects the applications to the database using SQL Authentication
         UseIntegratedSecurity = $false
         Username = "exampleAdmin"
         Password = "examplePassword"
+        UnEncryptedConnection = $true # Optional. Set Encrypt=false for all connection strings. Not recommended for production environment.
     }
 
 Installs and connects the applications to the database using PostgreSQL Authentication
@@ -37,19 +38,31 @@ $dbConnectionInfo = @{
 }
 
 <#
-Review and edit the following application settings and connection information for Admin App
+Review and edit the following application settings and connection information for Admin Api
 
 .EXAMPLE
+Configure Admin Api with V1
+
+    $p = @{
+        ToolsPath = "C:/temp/tools"
+        AdminApiMode = "v1"
+        DbConnectionInfo = $dbConnectionInfo
+        PackageVersion = "__ADMINAPI_VERSION__"
+    }
+
+
 Configure Admin Api with Single tenant
 
     $p = @{
         ToolsPath = "C:/temp/tools"
+        AdminApiMode = "v2"
         DbConnectionInfo = $dbConnectionInfo
         PackageVersion = "__ADMINAPI_VERSION__"
     }
 
 Configure Admin Api with Multi tenant
     $p = @{
+        AdminApiMode = "v2"
         IsMultiTenant = $true
         ToolsPath = "C:/temp/tools"
         DbConnectionInfo = $dbConnectionInfo
@@ -78,15 +91,25 @@ $authenticationSettings = @{
     AllowRegistration = $false
 }
 
+# Encryption key for securing sensitive data. Required for AdminApiMode v2.
+# Must be a valid base64-encoded 256-bit (32 byte) key.
+# IMPORTANT: When using AdminApiMode v2, this key MUST match the OdsConnectionStringEncryptionKey
+# used in your Ed-Fi ODS / API installation. See:
+# https://docs.ed-fi.org/reference/ods-api/getting-started/binary-installation/singlemulti-tenant-installation-steps/#prepare-installation-script
+$odsEncryptionKey = "" 
+
 $packageSource = Split-Path $PSScriptRoot -Parent
 $adminApiSource = "$packageSource/AdminApi"
 
 $p = @{
     ToolsPath = "C:/temp/tools"
+    AdminApiMode = "v2"
     DbConnectionInfo = $dbConnectionInfo
     PackageVersion = "__ADMINAPI_VERSION__"
     PackageSource = $adminApiSource
     AuthenticationSettings = $authenticationSettings
+    StandardVersion = '5.2.0'
+    EncryptionKey = $odsEncryptionKey
 }
 
 if ([string]::IsNullOrWhiteSpace($p.AuthenticationSettings.Authority) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.IssuerUrl) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.SigningKey) -or $p.AuthenticationSettings.AllowRegistration -isnot [bool]) {

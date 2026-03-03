@@ -163,8 +163,6 @@ $supportedApiVersions6x = @(
 )
 $maintainers = "Ed-Fi Alliance, LLC and contributors"
 
-$appCommonPackageName = "EdFi.Installer.AppCommon"
-$appCommonPackageVersion = "3.0.0"
 
 # Code coverage analysis
 $script:coverageOutputFile = "coverage.cobertura.xml"
@@ -374,21 +372,6 @@ function NewDevCertificate {
     }
 }
 
-function AddAppCommonPackageForInstaller {
-    $project = "EdFi.Ods.AdminApi"
-    $mainPath = "$solutionRoot/$project"
-    $destinationPath = "$mainPath/publish"
-
-    $arguments = @{
-        AppCommonPackageName    = $appCommonPackageName
-        AppCommonPackageVersion = $appCommonPackageVersion
-        NuGetFeed               = $EdFiNuGetFeed
-        DestinationPath         = $destinationPath
-    }
-
-    Add-AppCommon @arguments
-}
-
 function BuildApiPackage {
     $project = "EdFi.Ods.AdminApi"
     $mainPath = "$solutionRoot/$project"
@@ -508,7 +491,6 @@ function Invoke-IntegrationTestSuite {
 }
 
 function Invoke-BuildApiPackage {
-    Invoke-Step { AddAppCommonPackageForInstaller }
     Invoke-Step { BuildApiPackage }
 }
 

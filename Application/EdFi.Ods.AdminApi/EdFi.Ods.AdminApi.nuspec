@@ -5,7 +5,7 @@
     <version>1.0.0.0</version>
     <title>Ed-Fi ODS Admin API</title>
     <authors>Ed-Fi Alliance</authors>
-    <projectUrl>https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-ODS-AdminApi</projectUrl>
+    <projectUrl>https://github.com/Ed-Fi-Alliance-OSS/ODS-Admin-API</projectUrl>
     <copyright>Copyright © 2022, Ed-Fi Alliance, LLC.</copyright>
     <summary>Ed-Fi Admin Api for the ODS</summary>
     <description>Ed-Fi Admin Api for the ODS</description>
