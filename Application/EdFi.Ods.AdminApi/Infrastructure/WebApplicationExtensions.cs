@@ -30,7 +30,6 @@ public static class WebApplicationExtensions
                     routeBuilder.MapEndpoints(application);
                 }
                 break;
-
             default:
                 throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}");
         }
