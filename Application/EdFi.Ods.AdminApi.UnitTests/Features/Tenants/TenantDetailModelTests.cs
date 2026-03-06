@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
-using EdFi.Ods.AdminApi.Features.EducationOrganizations;
+using EdFi.Ods.AdminApi.Features.OdsInstances;
 using EdFi.Ods.AdminApi.Features.Tenants;
 using NUnit.Framework;
 using Shouldly;

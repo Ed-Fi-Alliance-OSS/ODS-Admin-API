@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Features.OdsInstanceDerivative;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json.Serialization;
 
-namespace EdFi.Ods.AdminApi.Features.ODSInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 [SwaggerSchema(Title = "OdsInstance")]
 public class OdsInstanceModel

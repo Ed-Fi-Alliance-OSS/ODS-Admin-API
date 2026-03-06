@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
-namespace EdFi.Ods.AdminApi.Features.ODSInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 public class ReadOdsInstance : IFeature
 {

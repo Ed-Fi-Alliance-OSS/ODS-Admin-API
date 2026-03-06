@@ -5,7 +5,7 @@
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 [SwaggerSchema(Title = "EducationOrganization")]
 public class EducationOrganizationModel
@@ -25,4 +25,3 @@ public class EducationOrganizationModel
     [SwaggerSchema(Description = "Parent education organization identifier")]
     public long? ParentId { get; set; }
 }
-

@@ -3,10 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.Features.EducationOrganizations;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.Features.ODSInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 [SwaggerSchema(Title = "OdsInstanceWithEducationOrganizations")]
 public class OdsInstanceWithEducationOrganizationsModel
