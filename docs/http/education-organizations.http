@@ -27,13 +27,13 @@ grant_type=client_credentials&scope=edfi_admin_api/full_access
 ###
 @token={{tokenRequest.response.body.access_token}}
 
-### Get EducationOrganizations grouped by OdsInstance V2
+### Get EducationOrganizations
 GET {{adminapi_url}}/v2/odsInstances/edOrgs
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: tenant1
 
-### Get EducationOrganizations grouped by OdsInstance V2
+### Get EducationOrganizations by OdsInstanceId
 GET {{adminapi_url}}/v2/odsInstances/2/edOrgs
 Content-Type: application/json
 Authorization: bearer {{token}}
