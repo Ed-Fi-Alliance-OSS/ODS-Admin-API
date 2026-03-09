@@ -14,14 +14,14 @@ using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Quartz;
 
-namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 public class RefreshEducationOrganizations : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/educationOrganizations/refresh", RefreshAllEducationOrganizations)
+            .MapPost(endpoints, "/odsInstances/edOrgs/refresh", RefreshAllEducationOrganizations)
             .WithSummaryAndDescription(
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
@@ -30,7 +30,7 @@ public class RefreshEducationOrganizations : IFeature
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/educationOrganizations/refresh/{instanceId}", RefreshEducationOrganizationsByInstance)
+            .MapPost(endpoints, "/odsInstances/{instanceId}/edOrgs/refresh", RefreshEducationOrganizationsByInstance)
             .WithSummaryAndDescription(
                 "Refreshes education organizations for a specific ODS instance",
                 "Triggers a refresh of education organization data for the specified ODS instance"
@@ -77,6 +77,7 @@ public class RefreshEducationOrganizations : IFeature
         {
             throw new NotFoundException<int>("OdsInstance", instanceId);
         }
+
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
@@ -85,6 +86,7 @@ public class RefreshEducationOrganizations : IFeature
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
             .UsingJobData(JobConstants.OdsInstanceIdKey, instanceId)
             .Build();
+
         var trigger = TriggerBuilder.Create()
             .StartNow()
             .Build();
@@ -98,4 +100,3 @@ public class RefreshEducationOrganizations : IFeature
         });
     }
 }
-
