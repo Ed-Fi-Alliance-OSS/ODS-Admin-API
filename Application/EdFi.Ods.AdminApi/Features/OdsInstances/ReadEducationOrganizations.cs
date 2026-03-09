@@ -5,19 +5,18 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Features.ODSInstances;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EdFi.Ods.AdminApi.Features.EducationOrganizations;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 public class ReadEducationOrganizations : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/educationOrganizations", GetEducationOrganizations)
+            .MapGet(endpoints, "/odsInstances/edOrgs", GetEducationOrganizations)
             .WithSummaryAndDescription(
                 "Retrieves all education organizations grouped by ODS instance",
                 "Returns all education organizations from all ODS instances in a nested structure"
@@ -26,7 +25,7 @@ public class ReadEducationOrganizations : IFeature
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/educationOrganizations/{instanceId}", GetEducationOrganizationsByInstance)
+            .MapGet(endpoints, "/odsInstances/{instanceId}/edOrgs", GetEducationOrganizationsByInstance)
             .WithSummaryAndDescription(
                 "Retrieves education organizations for a specific ODS instance",
                 "Returns all education organizations for the specified ODS instance in a nested structure"
