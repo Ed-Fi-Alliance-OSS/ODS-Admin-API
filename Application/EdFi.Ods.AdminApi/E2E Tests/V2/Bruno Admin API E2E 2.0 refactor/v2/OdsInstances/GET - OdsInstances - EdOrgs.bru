@@ -1,0 +1,21 @@
+meta {
+  name: OdsInstances Education Organizations
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances/edOrgs
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstances EdOrgs: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

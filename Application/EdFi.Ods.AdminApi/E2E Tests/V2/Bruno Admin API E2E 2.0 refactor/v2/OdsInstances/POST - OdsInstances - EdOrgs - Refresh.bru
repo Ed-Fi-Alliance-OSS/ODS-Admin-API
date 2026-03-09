@@ -1,0 +1,21 @@
+meta {
+  name: OdsInstances Refresh Education Organizations
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{API_URL}}/v2/odsInstances/edOrgs/refresh
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("POST OdsInstances EdOrgs Refresh: Status code is Accepted", function () {
+      expect(res.getStatus()).to.equal(202);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
