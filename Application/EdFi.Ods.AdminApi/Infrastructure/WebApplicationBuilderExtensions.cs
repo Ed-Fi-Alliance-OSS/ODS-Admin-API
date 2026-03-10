@@ -12,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
@@ -105,6 +106,7 @@ public static class WebApplicationBuilderExtensions
             // Add Quartz services
             RegisterQuartzServices(webApplicationBuilder);
             webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
+            webApplicationBuilder.Services.AddSingleton<IConfigConnectionStringsProvider, ConfigConnectionStringsProvider>();
         }
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));

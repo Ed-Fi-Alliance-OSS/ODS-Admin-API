@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.V1", "EdF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.V1.DBTests", "EdFi.Ods.AdminApi.V1.DBTests\EdFi.Ods.AdminApi.V1.DBTests.csproj", "{4377A3CF-71EC-4097-AC8C-789ED63075C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.InstanceManagement", "EdFi.Ods.AdminApi.InstanceManagement\EdFi.Ods.AdminApi.InstanceManagement.csproj", "{0C82B8C7-4140-46D9-82E7-E16439D809C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +94,14 @@ Global
 		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|x64.ActiveCfg = Release|Any CPU
 		{4377A3CF-71EC-4097-AC8C-789ED63075C9}.Release|x64.Build.0 = Release|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Debug|x64.Build.0 = Debug|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Release|x64.ActiveCfg = Release|Any CPU
+		{0C82B8C7-4140-46D9-82E7-E16439D809C7}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

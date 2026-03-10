@@ -40,6 +40,7 @@ jobs:
           mkdir ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
+          cp -r ../EdFi.Ods.AdminApi.InstanceManagement ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
 
       - name: Copy nuget config to docker context
