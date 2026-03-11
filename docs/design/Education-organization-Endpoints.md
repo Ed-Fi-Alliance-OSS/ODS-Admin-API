@@ -9,13 +9,13 @@ basis.
 ## Features
 
 * **REST API Endpoints:**
-  * `GET /{version}/educationOrganizations` - Returns all education
+  * `GET /{version}/odsInstances/edOrgs` - Returns all education
     organizations from all instances
-  * `GET /{version}/educationOrganizations/{instanceId}` - Returns education
+  * `GET /{version}/odsInstances/{instanceId}/edOrgs` - Returns education
     organizations for a specific instance
-  * `POST /{version}/educationOrganizations/refresh` - Refreshes the education
+  * `POST /{version}/odsInstances/edOrgs/refresh` - Refreshes the education
     organizations for all instances
-  * `POST /{version}/educationOrganizations/refresh/{instanceId}` - Refreshes
+  * `POST /{version}/odsInstances/{instanceId}/edOrgs/refresh` - Refreshes
     the education organizations for specific instance
 
 * **Data Refresh:**
@@ -58,14 +58,14 @@ basis.
 ### Get All Education Organizations
 
 ```http
-GET /v2/educationOrganizations
+GET /v2/odsInstances/edOrgs
 Authorization: Bearer <token>
 ```
 
 ### Get Education Organizations for Specific Instance
 
 ```http
-GET /v2/educationOrganizations/123
+GET /v2/odsInstances/123/edOrgs
 Authorization: Bearer <token>
 ```
 
@@ -96,9 +96,9 @@ configuration.
 The service files can be maintained in a common project and shared between the
 V1 and V2 projects to avoid code duplication.
 
-* `IGetEducationOrganizationQuery` - Main query handling interface
+* `IGetEducationOrganizationsQuery` - Main query handling interface
 
-* `GetEducationOrganizationQuery` - Implementation of database context query logic
+* `GetEducationOrganizationsQuery` - Implementation of database context query logic
   for reading the EducationOrganizations
 
 The `RefreshEducationOrganizationCommand` service layer implements a
@@ -157,5 +157,6 @@ multiple ODS instances and persist it into the
 
 ### Controllers
 
-* `EducationOrganizationsController` - REST API endpoints for read-only access
+* `ReadEducationOrganizations` and `RefreshEducationOrganizations` features -
+  REST API endpoints for read and refresh operations
 * Includes proper authorization, error handling, and logging
