@@ -7,7 +7,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.InstanceManagement.Provisioners;
 
-internal interface ISandboxProvisioner
+public interface ISandboxProvisioner
 {
     void AddSandbox(string sandboxKey, SandboxType sandboxType);
 
@@ -17,10 +17,6 @@ internal interface ISandboxProvisioner
 
     SandboxStatus GetSandboxStatus(string clientKey);
 
-    void ResetDemoSandbox();
-
-    string[] GetSandboxDatabases();
-
     Task AddSandboxAsync(string sandboxKey, SandboxType sandboxType);
 
     Task DeleteSandboxesAsync(params string[] deletedClientKeys);
@@ -28,10 +24,6 @@ internal interface ISandboxProvisioner
     Task RenameSandboxAsync(string oldName, string newName);
 
     Task<SandboxStatus> GetSandboxStatusAsync(string clientKey);
-
-    Task ResetDemoSandboxAsync();
-
-    Task<string[]> GetSandboxDatabasesAsync();
 
     Task CopySandboxAsync(string originalDatabaseName, string newDatabaseName);
 }

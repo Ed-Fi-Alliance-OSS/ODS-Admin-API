@@ -49,18 +49,4 @@ public class NpgsqlConnectionStringBuilderAdapter : IDbConnectionStringBuilderAd
             _builder.Host = value;
         }
     }
-
-    public string ApplicationName
-    {
-        get => _builder?.ApplicationName;
-        set
-        {
-            if (_builder == null)
-            {
-                throw new InvalidOperationException("Connection string has not been set.");
-            }
-
-            _builder.ApplicationName = value;
-        }
-    }
 }

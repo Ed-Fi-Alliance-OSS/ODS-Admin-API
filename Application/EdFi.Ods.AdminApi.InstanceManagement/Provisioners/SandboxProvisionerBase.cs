@@ -34,8 +34,6 @@ public abstract class SandboxProvisionerBase : ISandboxProvisioner
 
     protected string ConnectionString { get; }
 
-    public string[] GetSandboxDatabases() => GetSandboxDatabasesAsync().GetResultSafely();
-
     public void AddSandbox(string sandboxKey, SandboxType sandboxType)
         => AddSandboxAsync(sandboxKey, sandboxType).WaitSafely();
 
@@ -45,25 +43,23 @@ public abstract class SandboxProvisionerBase : ISandboxProvisioner
 
     public SandboxStatus GetSandboxStatus(string clientKey) => GetSandboxStatusAsync(clientKey).GetResultSafely();
 
-    public void ResetDemoSandbox() => ResetDemoSandboxAsync().WaitSafely();
-
-    public async Task AddSandboxAsync(string sandboxKey, SandboxType sandboxType)
+    public async Task AddSandboxAsync(string database, SandboxType sandboxType)
     {
-        await DeleteSandboxesAsync(sandboxKey).ConfigureAwait(false);
+        await DeleteSandboxesAsync(database).ConfigureAwait(false);
 
         switch (sandboxType)
         {
             case SandboxType.Minimal:
                 await CopySandboxAsync(
                         _databaseNameBuilder.MinimalDatabase,
-                        _databaseNameBuilder.SandboxNameForKey(sandboxKey))
+                        database)
                     .ConfigureAwait(false);
 
                 break;
             case SandboxType.Sample:
                 await CopySandboxAsync(
                         _databaseNameBuilder.SampleDatabase,
-                        _databaseNameBuilder.SandboxNameForKey(sandboxKey))
+                        database)
                     .ConfigureAwait(false);
 
                 break;
@@ -83,8 +79,6 @@ public abstract class SandboxProvisionerBase : ISandboxProvisioner
         await DeleteSandboxesAsync(_databaseNameBuilder.DemoSandboxDatabase).ConfigureAwait(false);
         await RenameSandboxAsync(tmpName, _databaseNameBuilder.DemoSandboxDatabase).ConfigureAwait(false);
     }
-
-    public abstract Task<string[]> GetSandboxDatabasesAsync();
 
     public abstract Task RenameSandboxAsync(string oldName, string newName);
 

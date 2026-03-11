@@ -14,10 +14,4 @@ public interface IDatabaseNameBuilder
     string SampleDatabase { get; }
 
     string DemoSandboxDatabase { get; }
-
-    string SandboxNameForKey(string key);
-
-    string KeyFromSandboxName(string sandboxName);
-
-    string TemplateSandboxNameForKey(string sandboxKey);
 }

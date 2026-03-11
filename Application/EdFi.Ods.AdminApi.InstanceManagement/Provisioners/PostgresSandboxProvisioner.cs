@@ -3,10 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using Dapper;
 using System.Data.Common;
-using System.Linq;
-using System.Threading.Tasks;
+using Dapper;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using log4net;
 using Microsoft.Extensions.Configuration;
@@ -37,17 +35,17 @@ public class PostgresSandboxProvisioner : SandboxProvisionerBase
         }
     }
 
-    public override async Task DeleteSandboxesAsync(params string[] deletedClientKeys)
+    public override async Task DeleteSandboxesAsync(params string[] databases)
     {
         using (var conn = CreateConnection())
         {
-            foreach (string key in deletedClientKeys)
+            foreach (string database in databases)
             {
                 await conn.ExecuteAsync(
-                    $@"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{_databaseNameBuilder.SandboxNameForKey(key)}';");
+                    $@"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{database}';");
 
                 await conn.ExecuteAsync(
-                        $@"DROP DATABASE IF EXISTS ""{_databaseNameBuilder.SandboxNameForKey(key)}"";",
+                        $@"DROP DATABASE IF EXISTS ""{database}"";",
                         commandTimeout: CommandTimeout)
                     .ConfigureAwait(false);
             }
@@ -68,29 +66,17 @@ public class PostgresSandboxProvisioner : SandboxProvisionerBase
 
     protected override DbConnection CreateConnection() => new NpgsqlConnection(ConnectionString);
 
-    public override async Task<SandboxStatus> GetSandboxStatusAsync(string clientKey)
+    public override async Task<SandboxStatus> GetSandboxStatusAsync(string database)
     {
         using (var conn = CreateConnection())
         {
+            var query = $"SELECT datname as Name, 0 as Code, 'ONLINE' Description FROM pg_database WHERE datname = \'{database}\';";
             var results = await conn.QueryAsync<SandboxStatus>(
-                    $"SELECT datname as Name, 0 as Code, 'ONLINE' Description FROM pg_database WHERE datname = \'{_databaseNameBuilder.SandboxNameForKey(clientKey)}\';",
+                    query,
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
 
             return results.SingleOrDefault() ?? SandboxStatus.ErrorStatus();
-        }
-    }
-
-    public override async Task<string[]> GetSandboxDatabasesAsync()
-    {
-        using (var conn = CreateConnection())
-        {
-            var results = await conn.QueryAsync<string>(
-                    $"SELECT datname as name FROM pg_database WHERE datname like \'{_databaseNameBuilder.SandboxNameForKey("%")}\';",
-                    commandTimeout: CommandTimeout)
-                .ConfigureAwait(false);
-
-            return results.ToArray();
         }
     }
 }

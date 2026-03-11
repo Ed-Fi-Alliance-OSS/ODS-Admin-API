@@ -6,6 +6,7 @@
 using System.Net;
 using System.Reflection;
 using System.Threading.RateLimiting;
+using Autofac.Core;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
 using EdFi.Ods.AdminApi.Common.Constants;
@@ -28,6 +29,7 @@ using EdFi.Ods.AdminApi.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using EdFi.Ods.AdminApi.InstanceManagement.Provisioners;
 using EdFi.Security.DataAccess.Contexts;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -106,7 +108,13 @@ public static class WebApplicationBuilderExtensions
             // Add Quartz services
             RegisterQuartzServices(webApplicationBuilder);
             webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
+
             webApplicationBuilder.Services.AddSingleton<IConfigConnectionStringsProvider, ConfigConnectionStringsProvider>();
+            webApplicationBuilder.Services.AddTransient<IDatabaseNameBuilder, DatabaseNameBuilder>();
+            webApplicationBuilder.Services.AddTransient<IDbConnectionStringBuilderAdapterFactory, DbConnectionStringBuilderAdapterFactory>();
+            webApplicationBuilder.Services.AddTransient<IDbConnectionStringBuilderAdapter, NpgsqlConnectionStringBuilderAdapter>();
+
+            webApplicationBuilder.Services.AddTransient<ISandboxProvisioner, PostgresSandboxProvisioner>();
         }
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));

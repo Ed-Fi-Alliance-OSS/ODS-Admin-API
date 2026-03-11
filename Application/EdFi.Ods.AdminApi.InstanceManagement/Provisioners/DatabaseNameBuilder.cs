@@ -4,14 +4,12 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 
 namespace EdFi.Ods.AdminApi.InstanceManagement.Provisioners;
 
 public class DatabaseNameBuilder : IDatabaseNameBuilder
 {
     private const string TemplatePrefix = "Ods_";
-    private const string SandboxPrefix = TemplatePrefix + "Sandbox_";
 
     private const string TemplateEmptyDatabase = TemplatePrefix + "Empty_Template";
     private const string TemplateMinimalDatabase = TemplatePrefix + "Minimal_Template";
@@ -45,27 +43,16 @@ public class DatabaseNameBuilder : IDatabaseNameBuilder
 
     public string EmptyDatabase
     {
-        get => DatabaseName(TemplateEmptyDatabase);
+        get => TemplateEmptyDatabase;
     }
 
     public string MinimalDatabase
     {
-        get => DatabaseName(TemplateMinimalDatabase);
+        get => TemplateMinimalDatabase;
     }
 
     public string SampleDatabase
     {
-        get => DatabaseName(TemplateSampleDatabase);
+        get => TemplateSampleDatabase;
     }
-
-    public string SandboxNameForKey(string key) => DatabaseName(SandboxPrefix + key);
-
-    public string KeyFromSandboxName(string sandboxName) => sandboxName.Replace(DatabaseName(SandboxPrefix), string.Empty);
-
-    public string TemplateSandboxNameForKey(string key) => SandboxPrefix + key;
-
-    private string DatabaseName(string databaseName)
-        => _databaseNameTemplate.Value.IsFormatString()
-            ? string.Format(_databaseNameTemplate.Value, databaseName)
-            : _databaseNameTemplate.Value;
 }
