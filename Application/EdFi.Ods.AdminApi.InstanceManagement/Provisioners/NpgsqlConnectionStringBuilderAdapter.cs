@@ -14,39 +14,43 @@ namespace EdFi.Ods.AdminApi.InstanceManagement.Provisioners;
 /// </summary>
 public class NpgsqlConnectionStringBuilderAdapter : IDbConnectionStringBuilderAdapter
 {
-    private NpgsqlConnectionStringBuilder _builder;
+    private const string ConnectionStringNotSetMessage = "Connection string has not been set.";
+    private NpgsqlConnectionStringBuilder? _builder;
+
+    private NpgsqlConnectionStringBuilder Builder
+    {
+        get
+        {
+            if (_builder == null)
+            {
+                throw new InvalidOperationException(ConnectionStringNotSetMessage);
+            }
+
+            return _builder;
+        }
+    }
 
     public string ConnectionString
     {
-        get => _builder?.ConnectionString;
+        get => Builder.ConnectionString;
         set => _builder = new NpgsqlConnectionStringBuilder(value);
     }
 
     public string DatabaseName
     {
-        get => _builder?.Database;
+        get => Builder.Database ?? throw new InvalidOperationException("Database name has not been set.");
         set
         {
-            if (_builder == null)
-            {
-                throw new InvalidOperationException("Connection string has not been set.");
-            }
-
-            _builder.Database = value;
+            Builder.Database = value;
         }
     }
 
     public string ServerName
     {
-        get => _builder?.Host;
+        get => Builder.Host ?? throw new InvalidOperationException("Server name has not been set.");
         set
         {
-            if (_builder == null)
-            {
-                throw new InvalidOperationException("Connection string has not been set.");
-            }
-
-            _builder.Host = value;
+            Builder.Host = value;
         }
     }
 }

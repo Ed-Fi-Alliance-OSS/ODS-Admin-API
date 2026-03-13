@@ -64,7 +64,7 @@ public abstract class SandboxProvisionerBase : ISandboxProvisioner
 
                 break;
             default:
-                throw new Exception("Unhandled SandboxType provided");
+                throw new System.ArgumentOutOfRangeException(nameof(sandboxType), sandboxType, "Unhandled SandboxType provided.");
         }
     }
 

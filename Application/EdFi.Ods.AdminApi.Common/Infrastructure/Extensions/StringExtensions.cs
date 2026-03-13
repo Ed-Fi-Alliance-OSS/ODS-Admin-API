@@ -45,15 +45,6 @@ public static partial class StringExtensions
         return stringBuilder.ToString();
     }
 
-    public static bool IsFormatString(this string input)
-    {
-        if (string.IsNullOrEmpty(input))
-            return false;
-
-        // Check if the string contains format placeholders like {0}, {1}, etc.
-        return input.Contains("{0}");
-    }
-
     [GeneratedRegex("^(?<word>^[a-z]+|[A-Z]+|[A-Z][a-z]+)+$")]
     private static partial Regex ToPascalCaseRegex();
 }

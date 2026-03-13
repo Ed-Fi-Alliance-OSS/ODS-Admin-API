@@ -10,20 +10,12 @@ namespace EdFi.Ods.AdminApi.InstanceManagement.Provisioners;
 public interface ISandboxProvisioner
 {
     void AddSandbox(string sandboxKey, SandboxType sandboxType);
-
-    void DeleteSandboxes(params string[] deletedClientKeys);
-
+    void DeleteSandboxes(params string[] databaseNames);
     void RenameSandbox(string oldName, string newName);
-
-    SandboxStatus GetSandboxStatus(string clientKey);
-
+    SandboxStatus GetSandboxStatus(string databaseName);
     Task AddSandboxAsync(string sandboxKey, SandboxType sandboxType);
-
-    Task DeleteSandboxesAsync(params string[] deletedClientKeys);
-
+    Task DeleteSandboxesAsync(params string[] databaseNames);
     Task RenameSandboxAsync(string oldName, string newName);
-
-    Task<SandboxStatus> GetSandboxStatusAsync(string clientKey);
-
+    Task<SandboxStatus> GetSandboxStatusAsync(string databaseName);
     Task CopySandboxAsync(string originalDatabaseName, string newDatabaseName);
 }

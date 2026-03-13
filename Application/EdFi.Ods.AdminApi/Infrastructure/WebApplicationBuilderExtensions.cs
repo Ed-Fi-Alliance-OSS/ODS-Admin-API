@@ -6,7 +6,6 @@
 using System.Net;
 using System.Reflection;
 using System.Threading.RateLimiting;
-using Autofac.Core;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
 using EdFi.Ods.AdminApi.Common.Constants;
@@ -107,14 +106,9 @@ public static class WebApplicationBuilderExtensions
         {
             // Add Quartz services
             RegisterQuartzServices(webApplicationBuilder);
+            RegisterSandboxProvisioningServices(webApplicationBuilder, config);
+
             webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
-
-            webApplicationBuilder.Services.AddSingleton<IConfigConnectionStringsProvider, ConfigConnectionStringsProvider>();
-            webApplicationBuilder.Services.AddTransient<IDatabaseNameBuilder, DatabaseNameBuilder>();
-            webApplicationBuilder.Services.AddTransient<IDbConnectionStringBuilderAdapterFactory, DbConnectionStringBuilderAdapterFactory>();
-            webApplicationBuilder.Services.AddTransient<IDbConnectionStringBuilderAdapter, NpgsqlConnectionStringBuilderAdapter>();
-
-            webApplicationBuilder.Services.AddTransient<ISandboxProvisioner, PostgresSandboxProvisioner>();
         }
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));
@@ -657,6 +651,29 @@ public static class WebApplicationBuilderExtensions
             ITenantSpecificDbContextProvider,
             TenantSpecificDbContextProvider
         >();
+    }
+    private static void RegisterSandboxProvisioningServices(WebApplicationBuilder webApplicationBuilder, ConfigurationManager config)
+    {
+        var databaseEngine = config.Get("AppSettings:DatabaseEngine", "SqlServer");
+        var parsedDatabaseEngine = DatabaseEngineEnum.Parse(databaseEngine);
+
+        if (parsedDatabaseEngine == DatabaseEngineEnum.PostgreSql)
+        {
+            webApplicationBuilder.Services.AddSingleton<
+                IConfigConnectionStringsProvider,
+                ConfigConnectionStringsProvider
+            >();
+            webApplicationBuilder.Services.AddTransient<IDatabaseNameBuilder, DatabaseNameBuilder>();
+            webApplicationBuilder.Services.AddTransient<
+                IDbConnectionStringBuilderAdapterFactory,
+                DbConnectionStringBuilderAdapterFactory
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                IDbConnectionStringBuilderAdapter,
+                NpgsqlConnectionStringBuilderAdapter
+            >();
+            webApplicationBuilder.Services.AddTransient<ISandboxProvisioner, PostgresSandboxProvisioner>();
+        }
     }
 
     private enum HttpVerbOrder

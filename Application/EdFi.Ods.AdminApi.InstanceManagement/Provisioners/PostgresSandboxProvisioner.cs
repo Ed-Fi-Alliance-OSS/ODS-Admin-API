@@ -4,16 +4,17 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Data.Common;
+using System.Text.RegularExpressions;
 using Dapper;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
-using log4net;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
 namespace EdFi.Ods.AdminApi.InstanceManagement.Provisioners;
+
 public class PostgresSandboxProvisioner : SandboxProvisionerBase
 {
-    private readonly ILog _logger = LogManager.GetLogger(typeof(PostgresSandboxProvisioner));
+    private static readonly Regex _validDatabaseIdentifierPattern = new("^[A-Za-z0-9_]+$", RegexOptions.Compiled);
 
     public PostgresSandboxProvisioner(IConfiguration configuration,
         IConfigConnectionStringsProvider connectionStringsProvider, IDatabaseNameBuilder databaseNameBuilder)
@@ -23,29 +24,40 @@ public class PostgresSandboxProvisioner : SandboxProvisionerBase
     {
         using (var conn = CreateConnection())
         {
-            string sql = $"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{oldName}';";
+            string safeOldName = QuoteDatabaseIdentifier(oldName);
+            string safeNewName = QuoteDatabaseIdentifier(newName);
+            const string TerminateConnectionsSql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = @DatabaseName;";
 
-            await conn.ExecuteAsync(sql, commandTimeout: CommandTimeout)
+            await ExecuteAsync(conn, TerminateConnectionsSql, new { DatabaseName = oldName }, CommandTimeout)
                 .ConfigureAwait(false);
 
-            sql = $"ALTER DATABASE \"{oldName}\" RENAME TO \"{newName}\";";
+            string renameSql = $"ALTER DATABASE {safeOldName} RENAME TO {safeNewName};";
 
-            await conn.ExecuteAsync(sql, commandTimeout: CommandTimeout)
+            await ExecuteAsync(conn, renameSql, commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
         }
     }
 
-    public override async Task DeleteSandboxesAsync(params string[] databases)
+    public override async Task DeleteSandboxesAsync(params string[] deletedClientKeys)
     {
         using (var conn = CreateConnection())
         {
-            foreach (string database in databases)
-            {
-                await conn.ExecuteAsync(
-                    $@"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{database}';");
+            const string TerminateConnectionsSql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = @DatabaseName;";
 
-                await conn.ExecuteAsync(
-                        $@"DROP DATABASE IF EXISTS ""{database}"";",
+            foreach (string database in deletedClientKeys)
+            {
+                string safeDatabaseName = QuoteDatabaseIdentifier(database);
+
+                await ExecuteAsync(
+                    conn,
+                    TerminateConnectionsSql,
+                    new { DatabaseName = database },
+                    commandTimeout: CommandTimeout)
+                    .ConfigureAwait(false);
+
+                await ExecuteAsync(
+                    conn,
+                        $"DROP DATABASE IF EXISTS {safeDatabaseName};",
                         commandTimeout: CommandTimeout)
                     .ConfigureAwait(false);
             }
@@ -56,27 +68,53 @@ public class PostgresSandboxProvisioner : SandboxProvisionerBase
     {
         using (var conn = CreateConnection())
         {
-            string sql = @$"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{originalDatabaseName}';";
-            await conn.ExecuteAsync(sql, commandTimeout: CommandTimeout).ConfigureAwait(false);
+            string safeOriginalDatabaseName = QuoteDatabaseIdentifier(originalDatabaseName);
+            string safeNewDatabaseName = QuoteDatabaseIdentifier(newDatabaseName);
+            const string TerminateConnectionsSql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = @DatabaseName;";
 
-            sql = @$"CREATE DATABASE ""{newDatabaseName}"" TEMPLATE ""{originalDatabaseName}""";
-            await conn.ExecuteAsync(sql, commandTimeout: CommandTimeout).ConfigureAwait(false);
+            await ExecuteAsync(
+                    conn,
+                    TerminateConnectionsSql,
+                    new { DatabaseName = originalDatabaseName },
+                    commandTimeout: CommandTimeout)
+                .ConfigureAwait(false);
+
+            string createSql = $"CREATE DATABASE {safeNewDatabaseName} TEMPLATE {safeOriginalDatabaseName};";
+            await ExecuteAsync(conn, createSql, commandTimeout: CommandTimeout).ConfigureAwait(false);
         }
     }
 
     protected override DbConnection CreateConnection() => new NpgsqlConnection(ConnectionString);
 
-    public override async Task<SandboxStatus> GetSandboxStatusAsync(string database)
+    public override async Task<SandboxStatus> GetSandboxStatusAsync(string clientKey)
     {
         using (var conn = CreateConnection())
         {
-            var query = $"SELECT datname as Name, 0 as Code, 'ONLINE' Description FROM pg_database WHERE datname = \'{database}\';";
-            var results = await conn.QueryAsync<SandboxStatus>(
-                    query,
+            const string Query = "SELECT datname as Name, 0 as Code, 'ONLINE' Description FROM pg_database WHERE datname = @DatabaseName;";
+            var results = await QueryAsync<SandboxStatus>(
+                    conn,
+                    Query,
+                    new { DatabaseName = clientKey },
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
 
             return results.SingleOrDefault() ?? SandboxStatus.ErrorStatus();
         }
+    }
+
+    protected virtual Task<int> ExecuteAsync(DbConnection connection, string sql, object? parameters = null, int? commandTimeout = null)
+        => connection.ExecuteAsync(sql, parameters, commandTimeout: commandTimeout);
+
+    protected virtual Task<IEnumerable<T>> QueryAsync<T>(DbConnection connection, string sql, object? parameters = null, int? commandTimeout = null)
+        => connection.QueryAsync<T>(sql, parameters, commandTimeout: commandTimeout);
+
+    private static string QuoteDatabaseIdentifier(string databaseName)
+    {
+        if (string.IsNullOrWhiteSpace(databaseName) || !_validDatabaseIdentifierPattern.IsMatch(databaseName))
+        {
+            throw new ArgumentException("Database name contains invalid characters.", nameof(databaseName));
+        }
+
+        return $"\"{databaseName}\"";
     }
 }
