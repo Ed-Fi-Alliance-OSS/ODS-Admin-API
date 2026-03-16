@@ -10,6 +10,7 @@ using AutoMapper;
 using EdFi.Ods.AdminApi.V1.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using Action = EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.Action;
 using ActionName = EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor.Action;
@@ -337,7 +338,9 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
         return resourceClaimWithDefaultAuthStrategies;
     }
 
-    protected static IMapper Mapper() => new MapperConfiguration(cfg => cfg.AddProfile<AdminApiMappingProfile>()).CreateMapper();
+    protected static IMapper Mapper() =>
+        new MapperConfiguration(cfg => cfg.AddProfile<AdminApiMappingProfile>(), NullLoggerFactory.Instance)
+            .CreateMapper();
 
     protected List<ClaimSetEditorTypes.ResourceClaim> ResourceClaimsForClaimSet(int securityContextClaimSetId)
     {
