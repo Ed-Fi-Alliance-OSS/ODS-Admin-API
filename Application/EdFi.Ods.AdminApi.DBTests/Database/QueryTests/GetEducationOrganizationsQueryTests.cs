@@ -12,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using Shouldly;
 
@@ -25,7 +26,10 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
     [SetUp]
     public void SetUpMapper()
     {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<AdminApiMappingProfile>());
+        var config = new MapperConfiguration(
+            cfg => cfg.AddProfile<AdminApiMappingProfile>(),
+            NullLoggerFactory.Instance
+        );
         _mapper = config.CreateMapper();
     }
 
