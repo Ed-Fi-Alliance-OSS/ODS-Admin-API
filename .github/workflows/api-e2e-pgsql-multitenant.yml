@@ -43,6 +43,9 @@ jobs:
       - name: Copy admin api common folder to docker context
         run: cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
 
+      - name: Copy admin api instance management folder to docker context
+        run: cp -r ../EdFi.Ods.AdminApi.InstanceManagement ../../Docker/Application
+
       - name: Copy adminApi V1 folder to docker context
         run: cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
 

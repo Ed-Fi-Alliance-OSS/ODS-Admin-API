@@ -6,7 +6,6 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EdFi.Ods.AdminApi.Features.OdsInstances;

@@ -32,7 +32,6 @@
     <ItemGroup>
         <Folder Include="Infrastructure\ErrorHandling\" />
         <Folder Include="Infrastructure\Context\" />
-        <Folder Include="Infrastructure\Extensions\" />
     </ItemGroup>
 
 </Project>

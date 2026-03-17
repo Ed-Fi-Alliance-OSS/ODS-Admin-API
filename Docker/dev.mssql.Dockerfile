@@ -20,6 +20,7 @@ RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json
 
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
+COPY --from=assets ./Application/EdFi.Ods.AdminApi.InstanceManagement EdFi.Ods.AdminApi.InstanceManagement/
 
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.V1 EdFi.Ods.AdminApi.V1/
 
