@@ -12,6 +12,7 @@ on:
   pull_request:
     branches:
       - main
+      - "patch-v*.*.*"
     paths:
       - ".github/workflows/on-pullrequest-dockerfile.yml"
       - "Docker/*"
