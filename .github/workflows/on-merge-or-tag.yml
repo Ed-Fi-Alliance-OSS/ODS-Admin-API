@@ -3,13 +3,11 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: On Merge to Main or Releasable Tag
+name: On Merge to Main
 on:
   push:
     branches:
       - main
-    tags:
-      - "v*.*.*"
 
 env:
   API_URL: https://api.github.com/repos/${{ github.repository }}
@@ -20,8 +18,6 @@ permissions: read-all
 jobs:
   create-pre-releases:
     name: Create Pre-Releases
-    # Was not successful filtering out alpha in on.push.tags, so try filtering at the job level
-    if: "! contains(github.ref_name, 'alpha')"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -42,7 +38,29 @@ jobs:
           $apiVersion = & ./eng/get-version.ps1
           "admin-api=$apiVersion" >> $env:GITHUB_OUTPUT
 
+      - name: Check if Pre-Release Already Exists
+        id: check-release
+        run: |
+          $version = "${{ steps.versions.outputs.admin-api }}"
+          $tag = $version -replace "v","Pre-Release-v"
+
+          $headers = @{
+            Accept = "application/vnd.github+json"
+            Authorization = "Bearer ${{ env.TOKEN }}"
+          }
+
+          try {
+            $release = Invoke-RestMethod -Uri "${{ env.API_URL }}/releases/tags/$tag" -Headers $headers -ErrorAction Stop
+            "exists=true" >> $env:GITHUB_OUTPUT
+            "Pre-release $tag already exists, skipping creation" | Write-Output
+          }
+          catch {
+            "exists=false" >> $env:GITHUB_OUTPUT
+            "Pre-release $tag does not exist, will create" | Write-Output
+          }
+
       - name: Create Admin API Pre-Release
+        if: steps.check-release.outputs.exists == 'false'
         run: |
           $version = "${{ steps.versions.outputs.admin-api }}"
           $tag = $version -replace "v","Pre-Release-v"
