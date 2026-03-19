@@ -3,11 +3,13 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: On Merge to Main
+name: On Merge to Main or Auto-Generated Tags
 on:
   push:
     branches:
       - main
+    tags:
+      - "v*.*.*"
 
 env:
   API_URL: https://api.github.com/repos/${{ github.repository }}
@@ -19,6 +21,8 @@ jobs:
   create-pre-releases:
     name: Create Pre-Releases
     runs-on: ubuntu-latest
+    # Skip if tag is clean version (v2.3.1) - those are handled by on-prerelease.yml
+    if: "github.ref_type != 'tag' || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'Pre-Release-')"
     defaults:
       run:
         shell: pwsh
