@@ -43,8 +43,27 @@ jobs:
         id: versions
         run: |
           $apiPrefix = "v"
+          $tagName = "${{ github.ref_name }}"
 
-          $apiVersion = & ./eng/get-version.ps1
+          # Determine if this is a manual tag (v2.3.1) or auto-generated (Pre-Release-v2.3.2-alpha.0.X)
+          if ($tagName -match '^Pre-Release-v')
+          {
+            # Auto-generated pre-release: strip "Pre-Release-" prefix
+            $apiVersion = $tagName -replace '^Pre-Release-', ''
+            "Using auto-generated version: $apiVersion" | Write-Output
+          }
+          elseif ($tagName -match '^v\d+\.\d+\.\d+')
+          {
+            # Manual clean tag: use exact version
+            $apiVersion = $tagName
+            "Using manual tag version: $apiVersion" | Write-Output
+          }
+          else
+          {
+            # Fallback to get-version.ps1 (shouldn't normally happen)
+            $apiVersion = & ./eng/get-version.ps1
+            "Using fallback version from get-version.ps1: $apiVersion" | Write-Output
+          }
 
           # Full release name
           "admin-api=$apiVersion" >> $env:GITHUB_OUTPUT

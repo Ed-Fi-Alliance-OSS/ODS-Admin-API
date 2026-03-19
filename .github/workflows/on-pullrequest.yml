@@ -10,6 +10,7 @@ on:
     branches:
       - main
       - "*-hotfix"
+      - "patch-v*.*.*"
     paths:
       # TODO: restore this with AA-1601, except run in a PS-specific
       # workflow, so that the C# build and CodeQL do not run
