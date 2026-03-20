@@ -37,7 +37,7 @@ function Invoke-Promote {
     )
 
     $package = "EdFi.Suite3.ODS.AdminApi"
-    $version = ($ReleaseRef -split "-v")[1]
+    $version = ($ReleaseRef -split "v")[1]
 
     $body = '
     {
