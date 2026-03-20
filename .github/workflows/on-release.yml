@@ -8,6 +8,12 @@ on:
   release:
     types:
       - released
+  workflow_dispatch:
+    inputs:
+      tag_reference:
+        description: 'Tag reference (e.g., v2.3.1)'
+        required: true
+        type: string
 
 permissions: read-all
 
@@ -21,6 +27,7 @@ env:
 jobs:
   delete-pre-releases:
     name: Delete Unnecessary Pre-Releases
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -74,7 +81,7 @@ jobs:
             PackagesURL = "${{ env.ARTIFACTS_PACKAGES_URL }}"
             Username    = "${{ env.ARTIFACTS_USERNAME }}"
             ViewId        = "${{ env.RELEASE_VIEW_ID }}"
-            ReleaseRef  = "${{ github.ref_name }}"
+            ReleaseRef  = "${{ inputs.tag_reference || github.ref_name }}"
             Password    = (ConvertTo-SecureString -String "${{ env.ARTIFACTS_API_KEY }}" -AsPlainText -Force)
           }
 
