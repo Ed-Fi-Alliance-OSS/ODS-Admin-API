@@ -19,12 +19,17 @@ public class AddDbInstanceCommand
 
     public DbInstance Execute(IAddDbInstanceModel model)
     {
+        if (string.IsNullOrWhiteSpace(model.Name))
+            throw new ArgumentException("Name is required.", nameof(model));
+        if (string.IsNullOrWhiteSpace(model.DatabaseTemplate))
+            throw new ArgumentException("DatabaseTemplate is required.", nameof(model));
+
         var now = DateTime.UtcNow;
 
         var dbInstance = new DbInstance
         {
-            Name = model.Name!.Trim(),
-            DatabaseTemplate = model.DatabaseTemplate!.Trim(),
+            Name = model.Name.Trim(),
+            DatabaseTemplate = model.DatabaseTemplate.Trim(),
             Status = DbInstanceStatus.Pending.ToString(),
             OdsInstanceId = null,
             OdsInstanceName = null,

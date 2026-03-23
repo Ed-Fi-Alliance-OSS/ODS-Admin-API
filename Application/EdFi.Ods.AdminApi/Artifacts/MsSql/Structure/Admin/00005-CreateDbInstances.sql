@@ -17,4 +17,10 @@ CREATE TABLE [adminapi].[DbInstances] (
     [LastModifiedDate] DATETIME2 NULL,
     CONSTRAINT [PK_DbInstances] PRIMARY KEY ([Id])
 );
+
+CREATE NONCLUSTERED INDEX [IX_DbInstances_Name]
+    ON [adminapi].[DbInstances] ([Name]);
+
+CREATE NONCLUSTERED INDEX [IX_DbInstances_OdsInstanceId]
+    ON [adminapi].[DbInstances] ([OdsInstanceId]);
 END

@@ -15,3 +15,9 @@ CREATE TABLE IF NOT EXISTS adminapi.DbInstances (
     LastModifiedDate TIMESTAMP,
     CONSTRAINT PK_DbInstances PRIMARY KEY (Id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_dbinstances_name
+    ON adminapi.DbInstances (Name);
+
+CREATE INDEX IF NOT EXISTS idx_dbinstances_odsinstanceid
+    ON adminapi.DbInstances (OdsInstanceId);

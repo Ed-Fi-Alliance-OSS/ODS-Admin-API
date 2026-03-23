@@ -65,8 +65,8 @@ public enum DbInstanceStatus
     Pending,
     Completed,
     InProgress,
-    Pending_Delete,
+    PendingDelete,
     Deleted,
-    Delete_Failed,
+    DeleteFailed,
     Error
 }
