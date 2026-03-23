@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
