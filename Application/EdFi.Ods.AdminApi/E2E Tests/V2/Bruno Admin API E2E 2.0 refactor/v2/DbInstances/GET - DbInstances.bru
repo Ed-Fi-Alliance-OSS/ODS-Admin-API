@@ -1,0 +1,61 @@
+meta {
+  name: DbInstances - Get All
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{API_URL}}/v2/dbinstances?offset={{offset}}&limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET DbInstances: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("GET DbInstances: Response is an array", function () {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("GET DbInstances: Response includes created instance", function () {
+    expect(res.getBody().length).to.be.greaterThan(0);
+  });
+
+  const Ajv = require("ajv");
+  const ajv = new Ajv();
+
+  const schema = {
+    type: "array",
+    items: {
+      type: "object",
+      properties: {
+        id: { type: "integer" },
+        name: { type: "string" },
+        odsInstanceId: { type: ["integer", "null"] },
+        odsInstanceName: { type: ["string", "null"] },
+        status: { type: "string" },
+        databaseTemplate: { type: "string" },
+        databaseName: { type: ["string", "null"] },
+        lastRefreshed: { type: "string" },
+        lastModifiedDate: { type: ["string", "null"] }
+      },
+      required: ["id", "name", "status", "databaseTemplate"]
+    }
+  };
+
+  test("GET DbInstances: Response matches schema", function () {
+    const valid = ajv.validate(schema, res.getBody());
+    expect(valid).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+}

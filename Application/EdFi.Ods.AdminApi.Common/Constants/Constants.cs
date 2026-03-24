@@ -59,3 +59,14 @@ public enum AdminApiMode
     V1,
     Unversioned
 }
+
+public enum DbInstanceStatus
+{
+    Pending,
+    Completed,
+    InProgress,
+    PendingDelete,
+    Deleted,
+    DeleteFailed,
+    Error
+}

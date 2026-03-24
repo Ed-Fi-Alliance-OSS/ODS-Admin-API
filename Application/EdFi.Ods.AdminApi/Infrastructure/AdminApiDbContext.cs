@@ -20,6 +20,8 @@ public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, ICon
 
     public DbSet<EducationOrganization> EducationOrganizations { get; set; }
 
+    public DbSet<DbInstance> DbInstances { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,6 +33,7 @@ public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, ICon
         modelBuilder.Entity<ApiToken>().ToTable("Tokens").HasKey(t => t.Id);
         modelBuilder.Entity<EducationOrganization>().ToTable("EducationOrganizations").HasKey(t => t.Id);
         modelBuilder.Entity<JobStatus>().ToTable("JobStatuses").HasKey(t => t.Id);
+        modelBuilder.Entity<DbInstance>().ToTable("DbInstances").HasKey(t => t.Id);
 
         var engine = _configuration.Get("AppSettings:DatabaseEngine", "SqlServer");
         modelBuilder.ApplyDatabaseServerSpecificConventions(engine);

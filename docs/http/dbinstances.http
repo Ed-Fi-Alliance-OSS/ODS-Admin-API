@@ -1,0 +1,85 @@
+@adminapi_url=https://localhost:7214
+@adminapi_client=adminapi_client2
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+
+### Get a token
+# @name tokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@token={{tokenRequest.response.body.access_token}}
+
+
+### Create a DB instance (Minimal template)
+# @name createDbInstance
+POST {{adminapi_url}}/v2/dbinstances
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "My DB Instance",
+  "databaseTemplate": "Minimal"
+}
+
+### Create a DB instance (Sample template)
+POST {{adminapi_url}}/v2/dbinstances
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "My Sample DB Instance",
+  "databaseTemplate": "Sample"
+}
+
+###
+@createdDbInstanceId={{createDbInstance.response.headers.location.split('/')[2]}}
+
+
+### Get all DB instances
+GET {{adminapi_url}}/v2/dbinstances
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get all DB instances with pagination
+GET {{adminapi_url}}/v2/dbinstances?offset=0&limit=10
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get all DB instances filtered by name
+GET {{adminapi_url}}/v2/dbinstances?name=My DB Instance
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get DB instance by ID
+GET {{adminapi_url}}/v2/dbinstances/{{createdDbInstanceId}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get DB instance by ID - not found
+GET {{adminapi_url}}/v2/dbinstances/0
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Create DB instance - invalid (missing required fields)
+POST {{adminapi_url}}/v2/dbinstances
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "",
+  "databaseTemplate": ""
+}
+
+### Create DB instance - invalid template
+POST {{adminapi_url}}/v2/dbinstances
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "My DB Instance",
+  "databaseTemplate": "InvalidTemplate"
+}
