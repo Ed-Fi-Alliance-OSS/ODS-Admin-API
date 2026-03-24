@@ -415,9 +415,22 @@ Referenced infrastructure files:
 
 ### Phase 2: Actions
 
-**Files to test:** All action handler files in the Actions folder
+**Files to test:**
 
-**Pattern:** Review structures in Actions folder and apply standard test file pattern (Models, Validators, Handlers, Queries)
+Endpoint files:
+
+* `Features/Actions/ActionModel.cs`
+* `Features/Actions/ReadActions.cs`
+
+Referenced infrastructure files:
+
+* `Infrastructure/Database/Queries/GetAllActionsQuery.cs`
+
+**Test files to create:**
+
+* `Features/Actions/ActionModelTests.cs` - Model initialization and property mapping
+* `Features/Actions/ReadActionsTests.cs` - Endpoint query handler behavior
+* `Infrastructure/Database/Queries/GetAllActionsQueryTests.cs` - Direct query coverage (all actions, filter by id/name)
 
 ---
 
@@ -841,8 +854,8 @@ Total new test files: ~102-115 files (across 14 phases)
 
 | Phase | Endpoint | Status |
 |-------|----------|--------|
-| 1 | Vendors | Not Started |
-| 2 | Actions | Not Started |
+| 1 | Vendors | Completed |
+| 2 | Actions | Completed |
 | 3 | Applications | Not Started |
 | 4 | AuthorizationStrategies | Not Started |
 | 5 | ClaimSets | Not Started |
@@ -855,7 +868,7 @@ Total new test files: ~102-115 files (across 14 phases)
 | 12 | ResourceClaimActions | Not Started |
 | 13 | ResourceClaims | Not Started |
 | 14 | Tenants | Not Started |
-| | **ALL PHASES** | **Ready To Start** |
+| | **ALL PHASES** | **In Progress** |
 
 ---
 
@@ -919,15 +932,14 @@ Before starting each phase:
 
 ## Next Steps
 
-1. **Confirm Phase 1 Start:** Begin with Vendors endpoint
-2. **Reference the ApiClients tests** for exact patterns
-3. **Create test files** in `EdFi.Ods.AdminApi.UnitTests/Features/Vendors/`
-4. **Follow the patterns** from the "Test File Patterns" section above
-5. **Track progress** in the Phase Summary table
-6. **Review and iterate** - each phase builds on the same patterns
+1. **Start Phase 3:** Begin with Applications endpoint
+2. **Follow folder convention:** Endpoint tests under `Features/Applications/`; command/query tests under `Infrastructure/Database/Commands` and `Infrastructure/Database/Queries`
+3. **Reference the ApiClients and completed Vendors/Actions tests** for exact patterns
+4. **Track progress** in the Phase Summary table
+5. **Review and iterate** - each phase builds on the same patterns
 
 ---
 
-**Document Version:** 2.0  
-**Last Updated:** March 16, 2026  
-**Status:** 14-Phase Plan Complete - Ready to Begin Phase 1
+**Document Version:** 3.0  
+**Last Updated:** March 23, 2026  
+**Status:** 2 of 14 Phases Complete (Vendors, Actions) - Phase 3 (Applications) Ready to Start

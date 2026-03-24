@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Net;
+using System.Runtime.CompilerServices;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
@@ -16,6 +17,8 @@ using log4net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Quartz;
+
+[assembly: InternalsVisibleTo("EdFi.Ods.AdminApi.UnitTests")]
 
 var builder = WebApplication.CreateBuilder(args);
 
