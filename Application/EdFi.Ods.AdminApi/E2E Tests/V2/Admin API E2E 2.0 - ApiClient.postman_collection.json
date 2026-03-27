@@ -315,6 +315,148 @@
 							"response": []
 						},
 						{
+							"name": "ApiClients - Not Approved",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"POST ApiClients Not Approved: Status code is Created\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"const result = pm.response.json();\r",
+											"\r",
+											"pm.test(\"POST ApiClients Not Approved: Response includes location in header\", function () {\r",
+											"    pm.response.to.have.header(\"Location\");\r",
+											"    pm.response.to.be.header(\"Location\", `/apiclients/${result.id}`);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"POST ApiClients Not Approved: Response result includes api client key and secret\", function () {\r",
+											"    pm.expect(result).to.have.property(\"id\");\r",
+											"    pm.expect(result).to.have.property(\"key\");\r",
+											"    pm.expect(result).to.have.property(\"secret\");\r",
+											"    pm.expect(result).to.have.property(\"applicationId\");\r",
+											"});\r",
+											"\r",
+											"const PostApiClientNotApprovedSchema = {\r",
+											"  \"type\": \"object\",\r",
+											"  \"properties\": {\r",
+											"    \"id\": {\r",
+											"      \"type\": \"integer\"\r",
+											"    },\r",
+											"    \"key\": {\r",
+											"      \"type\": \"string\"\r",
+											"    },\r",
+											"    \"secret\": {\r",
+											"      \"type\": \"string\"\r",
+											"    },\r",
+											"    \"applicationId\": {\r",
+											"      \"type\": \"integer\"\r",
+											"    }\r",
+											"  },\r",
+											"  \"required\": [\r",
+											"    \"id\",\r",
+											"    \"key\",\r",
+											"    \"secret\",\r",
+											"    \"applicationId\"\r",
+											"  ]\r",
+											"}\r",
+											"\r",
+											"pm.test(\"POST ApiClients Not Approved: Validation Schema Response\", () => {\r",
+											"    pm.response.to.have.jsonSchema(PostApiClientNotApprovedSchema);\r",
+											"});\r",
+											"\r",
+											"if(result.id) {\r",
+											"    pm.collectionVariables.set(\"CreatedNotApprovedApiClientId\", result.id);\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Not Approved ApiClient\",\r\n  \"isApproved\": false,\r\n  \"applicationId\": {{CreatedApplicationId}},\r\n  \"odsInstanceIds\": [\r\n    {{ODSInstanceId}}\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_URL}}/v2/apiclients",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"apiclients"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ApiClients by Id - Not Approved",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"GET ApiClientId Not Approved: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"const result = pm.response.json();\r",
+											"\r",
+											"pm.test(\"GET ApiClientId Not Approved: isApproved is false\", function () {\r",
+											"    pm.expect(result.isApproved).to.equal(false);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"GET ApiClientId Not Approved: name matches\", function () {\r",
+											"    pm.expect(result.name).to.equal(\"Not Approved ApiClient\");\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/apiclients/{{CreatedNotApprovedApiClientId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"apiclients",
+										"{{CreatedNotApprovedApiClientId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "ApiClients - Invalid No Name",
 							"event": [
 								{
@@ -1242,6 +1384,40 @@
 							"response": []
 						},
 						{
+							"name": "ApiClients - Not Approved",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"DELETE ApiClients Not Approved: Status code is OK\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{API_URL}}/v2/apiclients/{{CreatedNotApprovedApiClientId}}",
+									"host": [
+										"{{API_URL}}"
+									],
+									"path": [
+										"v2",
+										"apiclients",
+										"{{CreatedNotApprovedApiClientId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "ApiClients by Id - Invalid Not Found",
 							"event": [
 								{
@@ -1600,6 +1776,11 @@
 		},
 		{
 			"key": "CreatedApiClientId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "CreatedNotApprovedApiClientId",
 			"value": "",
 			"type": "string"
 		}
