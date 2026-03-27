@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
+using Shouldly;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
 
@@ -106,7 +107,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldCreateApiClientWithOutOdsInstances()
+    public void ShouldCreateApiClientWithoutOdsInstances()
     {
         var vendor = new Vendor
         {
@@ -138,6 +139,28 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
             };
 
             command.Execute(newApiClient, _options);
+        });
+    }
+
+    [Test]
+    public void ShouldCreateApiClientWithIsApprovedFalse()
+    {
+        Transaction(usersContext =>
+        {
+            var command = new AddApiClientCommand(usersContext);
+            var newApiClient = new TestApiClient
+            {
+                Name = "Test ApiClient IsApproved False",
+                ApplicationId = applicationId,
+                IsApproved = false,
+                OdsInstanceIds = null
+            };
+
+            var result = command.Execute(newApiClient, _options);
+            var persistedApiClient = usersContext.ApiClients.Find(result.Id);
+
+            persistedApiClient.ShouldNotBeNull();
+            persistedApiClient.IsApproved.ShouldBeFalse();
         });
     }
 

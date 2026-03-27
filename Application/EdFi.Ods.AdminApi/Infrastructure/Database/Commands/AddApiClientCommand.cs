@@ -35,7 +35,7 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
         var apiClient = new ApiClient(true)
         {
             Name = apiClientModel.Name,
-            IsApproved = true,
+            IsApproved = apiClientModel.IsApproved,
             Application = application,
             UseSandbox = false,
             KeyStatus = "Active",
