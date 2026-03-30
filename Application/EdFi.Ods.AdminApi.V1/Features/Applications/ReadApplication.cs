@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -27,20 +26,20 @@ public class ReadApplication : IFeature
     }
 
     internal Task<IResult> GetApplications(
-        IGetApplicationsQuery getApplicationsAndApplicationsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+        IGetApplicationsQuery getApplicationsAndApplicationsQuery, [AsParameters] CommonQueryParams commonQueryParams)
     {
         var applications = getApplicationsAndApplicationsQuery.Execute(commonQueryParams);
-        return Task.FromResult(AdminApiResponse<List<ApplicationModel>>.Ok(mapper.Map<List<ApplicationModel>>(applications)));
+        return Task.FromResult(AdminApiResponse<List<ApplicationModel>>.Ok(ApplicationMapper.ToModelList(applications)));
     }
 
-    internal Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, IMapper mapper, int id)
+    internal Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, int id)
     {
         var application = getApplicationByIdQuery.Execute(id);
         if (application == null)
         {
             throw new NotFoundException<int>("application", id);
         }
-        var model = mapper.Map<ApplicationModel>(application);
+        var model = ApplicationMapper.ToModel(application);
         return Task.FromResult(AdminApiResponse<ApplicationModel>.Ok(model));
     }
 }

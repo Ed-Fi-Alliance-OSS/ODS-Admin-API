@@ -66,7 +66,7 @@ public class OverrideDefaultAuthorizationStrategyServiceTests : SecurityDataTest
         using var securityContext = TestContext;
         var command = new OverrideDefaultAuthorizationStrategyService(securityContext);
         command.Execute(overrideModel);
-        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(new GetResourcesByClaimSetIdQueryService(securityContext, SecurityDataTestBase.Mapper()));
+        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(new GetResourcesByClaimSetIdQueryService(securityContext));
         resourceClaimsForClaimSet = [.. getResourcesByClaimSetIdQuery.AllResources(testClaimSet.ClaimSetId)];
 
         var resultResourceClaim1 =

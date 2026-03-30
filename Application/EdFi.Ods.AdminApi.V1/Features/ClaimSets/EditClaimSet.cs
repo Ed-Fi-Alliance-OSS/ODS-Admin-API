@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -33,7 +32,6 @@ public class EditClaimSet : IFeature
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications,
         IAuthStrategyResolver strategyResolver,
-        IMapper mapper,
         EditClaimSetRequest request, int id)
     {
         request.Id = id;
@@ -55,7 +53,7 @@ public class EditClaimSet : IFeature
             throw new ValidationException([new ValidationFailure(nameof(id), exception.Message)]);
         }
 
-        var resourceClaims = mapper.Map<List<ResourceClaim>>(request.ResourceClaims);
+        var resourceClaims = ClaimSetMapper.ToResourceClaimList(request.ResourceClaims ?? []);
         var resolvedResourceClaims = strategyResolver.ResolveAuthStrategies(resourceClaims).ToList();
 
         updateResourcesOnClaimSetCommand.Execute(
@@ -63,10 +61,10 @@ public class EditClaimSet : IFeature
 
         var claimSet = getClaimSetByIdQuery.Execute(updatedClaimSetId);
 
-        var model = mapper.Map<ClaimSetDetailsModel>(claimSet);
+        var model = ClaimSetMapper.ToDetailsModel(claimSet);
         model.ApplicationsCount = getApplications.ExecuteCount(updatedClaimSetId);
         model.ResourceClaims = getResourcesByClaimSetIdQuery.AllResources(updatedClaimSetId)
-            .Select(r => mapper.Map<ResourceClaimModel>(r)).ToList();
+            .Select(ClaimSetMapper.ToResourceClaimModel).ToList();
 
         return AdminApiResponse<ClaimSetDetailsModel>.Updated(
             model,
@@ -99,8 +97,7 @@ public class EditClaimSet : IFeature
         public Validator(IGetClaimSetByIdQuery getClaimSetByIdQuery,
             IGetAllClaimSetsQuery getAllClaimSetsQuery,
             IGetResourceClaimsAsFlatListQuery getResourceClaimsAsFlatListQuery,
-            IGetAllAuthorizationStrategiesQuery getAllAuthorizationStrategiesQuery,
-            IMapper mapper)
+            IGetAllAuthorizationStrategiesQuery getAllAuthorizationStrategiesQuery)
         {
             _getClaimSetByIdQuery = getClaimSetByIdQuery;
             _getAllClaimSetsQuery = getAllClaimSetsQuery;
@@ -136,7 +133,7 @@ public class EditClaimSet : IFeature
                     foreach (var resourceClaim in claimSet.ResourceClaims)
                     {
                         resourceClaimValidator.Validate(resourceClaims, authStrategyNames,
-                            resourceClaim, mapper.Map<List<ChildrenRequestResourceClaimModel>>(claimSet.ResourceClaims), context, claimSet.Name);
+                            resourceClaim, ClaimSetMapper.ToChildrenRequestResourceClaimModelList(claimSet.ResourceClaims), context, claimSet.Name);
                     }
                 }
             });

@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
@@ -26,7 +25,6 @@ public class EditOdsInstance : IFeature
     public async Task<IResult> Handle(
         Validator validator,
         IEditOdsInstanceCommand editOdsInstanceCommand,
-        IMapper mapper,
         EditOdsInstanceRequest request,
         int id
     )
@@ -34,7 +32,7 @@ public class EditOdsInstance : IFeature
         request.OdsInstanceId = id;
         await validator.GuardAsync(request);
         var updatedOdsInstance = editOdsInstanceCommand.Execute(request);
-        var model = mapper.Map<OdsInstanceModel>(updatedOdsInstance);
+        var model = OdsInstanceMapper.ToModel(updatedOdsInstance);
         return AdminApiResponse<OdsInstanceModel>.Updated(model, "odsInstance");
     }
 
