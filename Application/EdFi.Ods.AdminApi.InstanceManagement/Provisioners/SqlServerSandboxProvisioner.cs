@@ -31,24 +31,41 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
         {
             string safeOldName = QuoteDatabaseIdentifier(oldName);
             string safeNewName = QuoteDatabaseIdentifier(newName);
+            bool renameSucceeded = false;
 
-            await ExecuteAsync(
-                    conn,
-                    $"ALTER DATABASE {safeOldName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;",
-                    commandTimeout: CommandTimeout)
-                .ConfigureAwait(false);
+            try
+            {
+                await ExecuteAsync(
+                        conn,
+                        $"ALTER DATABASE {safeOldName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;",
+                        commandTimeout: CommandTimeout)
+                    .ConfigureAwait(false);
 
-            await ExecuteAsync(
-                    conn,
-                    $"ALTER DATABASE {safeOldName} MODIFY NAME = {safeNewName};",
-                    commandTimeout: CommandTimeout)
-                .ConfigureAwait(false);
+                await ExecuteAsync(
+                        conn,
+                        $"ALTER DATABASE {safeOldName} MODIFY NAME = {safeNewName};",
+                        commandTimeout: CommandTimeout)
+                    .ConfigureAwait(false);
 
-            await ExecuteAsync(
-                    conn,
-                    $"ALTER DATABASE {safeNewName} SET MULTI_USER;",
-                    commandTimeout: CommandTimeout)
-                .ConfigureAwait(false);
+                renameSucceeded = true;
+            }
+            finally
+            {
+                var databaseToRestore = renameSucceeded ? safeNewName : safeOldName;
+
+                try
+                {
+                    await ExecuteAsync(
+                            conn,
+                            $"ALTER DATABASE {databaseToRestore} SET MULTI_USER;",
+                            commandTimeout: CommandTimeout)
+                        .ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Intentionally ignore to avoid masking the original exception.
+                }
+            }
         }
     }
 
@@ -91,19 +108,19 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
 
             await ExecuteAsync(
                     conn,
-                    $"RESTORE DATABASE {safeNewDatabaseName} FROM DISK = '{backup}' WITH REPLACE, MOVE '{logicalDataName}' TO '{dataFilePath}', MOVE '{logicalLogName}' TO '{logFilePath}';",
+                    $"RESTORE DATABASE {safeNewDatabaseName} FROM DISK = '{EscapeSqlString(backup)}' WITH REPLACE, MOVE '{EscapeSqlString(logicalDataName)}' TO '{EscapeSqlString(dataFilePath)}', MOVE '{EscapeSqlString(logicalLogName)}' TO '{EscapeSqlString(logFilePath)}';",
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
 
             await ExecuteAsync(
                     conn,
-                    $"ALTER DATABASE {safeNewDatabaseName} MODIFY FILE (NAME = '{logicalDataName}', NEWNAME = '{newDatabaseName}');",
+                    $"ALTER DATABASE {safeNewDatabaseName} MODIFY FILE (NAME = '{EscapeSqlString(logicalDataName)}', NEWNAME = '{EscapeSqlString(newDatabaseName)}');",
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
 
             await ExecuteAsync(
                     conn,
-                    $"ALTER DATABASE {safeNewDatabaseName} MODIFY FILE (NAME = '{logicalLogName}', NEWNAME = '{newDatabaseName}_log');",
+                    $"ALTER DATABASE {safeNewDatabaseName} MODIFY FILE (NAME = '{EscapeSqlString(logicalLogName)}', NEWNAME = '{EscapeSqlString(newDatabaseName + "_log")}');",
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
         }
@@ -113,7 +130,7 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
     {
         using (var conn = CreateConnection())
         {
-            const string Query = "SELECT name as Name, 0 as Code, 'ONLINE' as Description FROM sys.databases WHERE name = @DatabaseName;";
+            const string Query = "SELECT name as Name, state as Code, state_desc as Description FROM sys.databases WHERE name = @DatabaseName;";
 
             var results = await QueryAsync<SandboxStatus>(
                     conn,
@@ -145,7 +162,7 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
         string logName = string.Empty;
 
         using (var reader = (DbDataReader)await conn.ExecuteReaderAsync(
-                $"RESTORE FILELISTONLY FROM DISK = '{backupFilePath}';",
+                $"RESTORE FILELISTONLY FROM DISK = '{EscapeSqlString(backupFilePath)}';",
                 commandTimeout: CommandTimeout)
             .ConfigureAwait(false))
         {
@@ -212,7 +229,7 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
 
         return (
             Data: $"/var/opt/mssql/data/{newDatabaseName}.mdf",
-            Log: $"/var/opt/mssql/data/{newDatabaseName}.ldf"
+            Log: $"/var/opt/mssql/data/{newDatabaseName}_log.ldf"
         );
     }
 
@@ -234,4 +251,6 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
 
         return $"[{databaseName}]";
     }
+
+    private static string EscapeSqlString(string value) => value.Replace("'", "''");
 }

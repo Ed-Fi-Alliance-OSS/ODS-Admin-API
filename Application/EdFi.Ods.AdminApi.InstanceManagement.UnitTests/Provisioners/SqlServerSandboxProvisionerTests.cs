@@ -26,20 +26,30 @@ public class SqlServerSandboxProvisionerTests
 
         sut.Executions.Count.ShouldBe(3);
 
-        var setSingleUser = sut.Executions[0];
-        setSingleUser.Sql.ShouldBe("ALTER DATABASE [OldDb] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;");
-        setSingleUser.Parameters.ShouldBeNull();
-        setSingleUser.CommandTimeout.ShouldBe(30);
+        sut.Executions[0].Sql.ShouldBe("ALTER DATABASE [OldDb] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;");
+        sut.Executions[0].Parameters.ShouldBeNull();
+        sut.Executions[0].CommandTimeout.ShouldBe(30);
 
-        var rename = sut.Executions[1];
-        rename.Sql.ShouldBe("ALTER DATABASE [OldDb] MODIFY NAME = [NewDb];");
-        rename.Parameters.ShouldBeNull();
-        rename.CommandTimeout.ShouldBe(30);
+        sut.Executions[1].Sql.ShouldBe("ALTER DATABASE [OldDb] MODIFY NAME = [NewDb];");
+        sut.Executions[1].Parameters.ShouldBeNull();
+        sut.Executions[1].CommandTimeout.ShouldBe(30);
 
-        var setMultiUser = sut.Executions[2];
-        setMultiUser.Sql.ShouldBe("ALTER DATABASE [NewDb] SET MULTI_USER;");
-        setMultiUser.Parameters.ShouldBeNull();
-        setMultiUser.CommandTimeout.ShouldBe(30);
+        sut.Executions[2].Sql.ShouldBe("ALTER DATABASE [NewDb] SET MULTI_USER;");
+        sut.Executions[2].Parameters.ShouldBeNull();
+        sut.Executions[2].CommandTimeout.ShouldBe(30);
+    }
+
+    [Test]
+    public async Task RenameSandboxAsync_WhenRenameFails_ShouldRestoreMultiUserOnOldName()
+    {
+        var sut = CreateSut();
+        sut.ThrowOnSql = "MODIFY NAME";
+
+        await Should.ThrowAsync<InvalidOperationException>(() => sut.RenameSandboxAsync("OldDb", "NewDb"));
+
+        sut.Executions.Count.ShouldBe(2);
+        sut.Executions[0].Sql.ShouldContain("SET SINGLE_USER");
+        sut.Executions[1].Sql.ShouldBe("ALTER DATABASE [OldDb] SET MULTI_USER;");
     }
 
     [Test]
@@ -101,7 +111,7 @@ public class SqlServerSandboxProvisionerTests
         sut.Queries.Count.ShouldBe(1);
 
         var query = sut.Queries[0];
-        query.Sql.ShouldBe("SELECT name as Name, 0 as Code, 'ONLINE' as Description FROM sys.databases WHERE name = @DatabaseName;");
+        query.Sql.ShouldBe("SELECT name as Name, state as Code, state_desc as Description FROM sys.databases WHERE name = @DatabaseName;");
         GetDatabaseNameParam(query.Parameters).ShouldBe("TenantDb");
         query.CommandTimeout.ShouldBe(30);
     }
@@ -218,11 +228,19 @@ public class SqlServerSandboxProvisionerTests
 
         public (string Data, string Log) FilePaths { get; set; } = (@"C:\Data\NewDb.mdf", @"C:\Data\NewDb_log.ldf");
 
+        public string? ThrowOnSql { get; set; }
+
         protected override DbConnection CreateConnection() => new NoopDbConnection();
 
         protected override Task<int> ExecuteAsync(DbConnection connection, string sql, object? parameters = null, int? commandTimeout = null)
         {
+            if (ThrowOnSql is not null && sql.Contains(ThrowOnSql))
+            {
+                throw new InvalidOperationException($"Simulated SQL failure on: {ThrowOnSql}");
+            }
+
             Executions.Add(new ExecutionRecord(sql, parameters, commandTimeout));
+
             return Task.FromResult(1);
         }
 
@@ -233,8 +251,6 @@ public class SqlServerSandboxProvisionerTests
 
             return Task.FromResult(results);
         }
-
-        protected override string GetBackupFilePath() => @"C:\Backups\template.bak";
 
         protected override Task<(string DataName, string LogName)> GetLogicalNamesFromBackupAsync(DbConnection conn, string backupFilePath)
             => Task.FromResult(LogicalNames);
