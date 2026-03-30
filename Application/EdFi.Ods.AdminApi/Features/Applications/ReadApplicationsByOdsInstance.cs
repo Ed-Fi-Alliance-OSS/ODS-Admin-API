@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -23,9 +22,14 @@ public class ReadApplicationsByOdsInstance : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetOdsInstanceApplications(IGetApplicationsByOdsInstanceIdQuery getApplicationByOdsInstanceIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstanceApplications(
+        IGetApplicationsByOdsInstanceIdQuery getApplicationByOdsInstanceIdQuery,
+        IGetOdsInstanceIdsByApplicationIdQuery getOdsInstanceIdsByApplicationIdQuery,
+        int id)
     {
-        var odsInstanceApplications = mapper.Map<List<ApplicationModel>>(getApplicationByOdsInstanceIdQuery.Execute(id));
+        var applicationEntities = getApplicationByOdsInstanceIdQuery.Execute(id);
+        var odsInstanceIdsByApplicationId = getOdsInstanceIdsByApplicationIdQuery.Execute(applicationEntities.Select(a => a.ApplicationId));
+        var odsInstanceApplications = ApplicationMapper.ToModelList(applicationEntities, odsInstanceIdsByApplicationId);
         return Task.FromResult(Results.Ok(odsInstanceApplications));
     }
 }

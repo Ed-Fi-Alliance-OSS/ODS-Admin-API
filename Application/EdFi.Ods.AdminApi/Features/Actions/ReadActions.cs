@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -23,9 +22,9 @@ public class ReadActions : IFeature
            .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, IMapper mapper, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)
+    internal static Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)
     {
-        var actions = mapper.Map<List<ActionModel>>(
+        var actions = ActionMapper.ToModelList(
             getAllActionsQuery.Execute(
                 new CommonQueryParams(offset, limit, orderBy, direction),
                 id,
