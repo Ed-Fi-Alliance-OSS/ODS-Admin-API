@@ -671,6 +671,23 @@ public static class WebApplicationBuilderExtensions
             >();
             webApplicationBuilder.Services.AddTransient<ISandboxProvisioner, PostgresSandboxProvisioner>();
         }
+        else if (parsedDatabaseEngine == DatabaseEngineEnum.SqlServer)
+        {
+            webApplicationBuilder.Services.AddSingleton<
+                IConfigConnectionStringsProvider,
+                ConfigConnectionStringsProvider
+            >();
+            webApplicationBuilder.Services.AddTransient<IDatabaseNameBuilder, DatabaseNameBuilder>();
+            webApplicationBuilder.Services.AddTransient<
+                IDbConnectionStringBuilderAdapterFactory,
+                DbConnectionStringBuilderAdapterFactory
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                IDbConnectionStringBuilderAdapter,
+                SqlConnectionStringBuilderAdapter
+            >();
+            webApplicationBuilder.Services.AddTransient<ISandboxProvisioner, SqlServerSandboxProvisioner>();
+        }
     }
 
     private enum HttpVerbOrder
