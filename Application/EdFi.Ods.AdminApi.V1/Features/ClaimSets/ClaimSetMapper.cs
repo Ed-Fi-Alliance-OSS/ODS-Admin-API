@@ -61,6 +61,11 @@ public static class ClaimSetMapper
 
     public static ResourceClaim ToResourceClaim(RequestResourceClaimModel source)
     {
+        // Use pattern matching to read the correct children collection, accounting for property shadowing
+        IEnumerable<RequestResourceClaimModel> childrenToMap = source is ChildrenRequestResourceClaimModel childModel
+            ? childModel.Children  // Use the shadowed property (List<RequestResourceClaimModel>)
+            : source.Children.Cast<RequestResourceClaimModel>();  // Convert base property (List<ChildrenRequestResourceClaimModel>)
+
         return new ResourceClaim
         {
             Name = source.Name,
@@ -70,7 +75,7 @@ public static class ClaimSetMapper
             Delete = source.Delete,
             ReadChanges = source.ReadChanges,
             AuthStrategyOverridesForCRUD = ToClaimSetResourceClaimActionAuthStrategiesArray(source.AuthStrategyOverridesForCRUD),
-            Children = ToResourceClaimList(source.Children),
+            Children = childrenToMap.Select(ToResourceClaim).ToList(),
         };
     }
 
@@ -92,7 +97,7 @@ public static class ClaimSetMapper
             AuthStrategyOverridesForCRUD = source.AuthStrategyOverridesForCRUD,
         };
 
-        model.Children = source.Children.Select(ToRequestResourceClaimModel).ToList();
+        model.Children = GetChildrenForMapping(source).Select(ToRequestResourceClaimModel).ToList();
 
         return model;
     }
@@ -108,8 +113,21 @@ public static class ClaimSetMapper
             Delete = source.Delete,
             ReadChanges = source.ReadChanges,
             AuthStrategyOverridesForCRUD = source.AuthStrategyOverridesForCRUD,
-            Children = source.Children.Select(ToChildrenRequestResourceClaimModel).ToList(),
+            Children = GetChildrenForMapping(source).Select(ToChildrenRequestResourceClaimModel).ToList(),
         };
+    }
+
+    /// <summary>
+    /// Retrieves children from either the base or shadowed property based on runtime type.
+    /// ChildrenRequestResourceClaimModel shadows Children with a different type, so direct access
+    /// through the base type reference would read the wrong property. This helper detects the
+    /// actual runtime type and reads the correct collection.
+    /// </summary>
+    private static IEnumerable<RequestResourceClaimModel> GetChildrenForMapping(RequestResourceClaimModel source)
+    {
+        return source is ChildrenRequestResourceClaimModel childModel
+            ? childModel.Children  // Shadowed property (List<RequestResourceClaimModel>)
+            : source.Children;     // Base property (List<ChildrenRequestResourceClaimModel>, which is a subtype)
     }
 
     public static List<ChildrenRequestResourceClaimModel> ToChildrenRequestResourceClaimModelList(IEnumerable<RequestResourceClaimModel> source)
