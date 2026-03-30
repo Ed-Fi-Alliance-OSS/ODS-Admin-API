@@ -54,7 +54,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
         using var securityContext = TestContext;
         var command = new OverrideDefaultAuthorizationStrategyCommand(securityContext);
         command.Execute(overrideModel);
-        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(securityContext, SecurityDataTestBase.Mapper());
+        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(securityContext);
         resourceClaimsForClaimSet = getResourcesByClaimSetIdQuery.AllResources(testClaimSet.ClaimSetId).ToList();
 
         var resultResourceClaim1 =
@@ -96,7 +96,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
         using var securityContext = TestContext;
         var command = new OverrideDefaultAuthorizationStrategyCommand(securityContext);
         command.ExecuteOnSpecificAction(overrideModel);
-        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(securityContext, SecurityDataTestBase.Mapper());
+        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(securityContext);
         resourceClaimsForClaimSet = getResourcesByClaimSetIdQuery.AllResources(testClaimSet.ClaimSetId).ToList();
 
         var resultResourceClaim1 =
@@ -138,7 +138,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
         using var securityContext = TestContext;
         var command = new OverrideDefaultAuthorizationStrategyCommand(securityContext);
         command.ExecuteOnSpecificAction(overrideModel);
-        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(securityContext, SecurityDataTestBase.Mapper());
+        var getResourcesByClaimSetIdQuery = new GetResourcesByClaimSetIdQuery(securityContext);
         resourceClaimsForClaimSet = getResourcesByClaimSetIdQuery.AllResources(testClaimSet.ClaimSetId).ToList();
 
         var resultResourceClaim1 =
