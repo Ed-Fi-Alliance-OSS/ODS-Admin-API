@@ -113,6 +113,8 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
             // are accepted by the SQL Server engine in these positions. Single quotes are doubled via
             // EscapeSqlString to prevent injection from config values and backup metadata.
             await ExecuteAsync(
+                    conn,
+                    $"RESTORE DATABASE {safeNewDatabaseName} FROM DISK = '{EscapeSqlString(backup)}' WITH REPLACE, MOVE '{EscapeSqlString(logicalDataName)}' TO '{EscapeSqlString(dataFilePath)}', MOVE '{EscapeSqlString(logicalLogName)}' TO '{EscapeSqlString(logFilePath)}';",
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
 
