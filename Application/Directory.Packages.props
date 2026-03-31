@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- ASP.NET Core and Versioning -->
-    <PackageVersion Include="Asp.Versioning.Http" Version="8.1.0" />
+    <PackageVersion Include="Asp.Versioning.Http" Version="8.1.1" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
     <PackageVersion Include="Dapper" Version="2.1.72" />
