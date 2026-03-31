@@ -76,18 +76,18 @@ public class SqlServerSandboxProvisionerTests
     }
 
     [Test]
-    public async Task CopySandboxAsync_ShouldRestoreFromBackupAndRenameLogicalFiles()
+    public async Task CopySandboxAsync_WithMinimalDatabase_ShouldRestoreFromMinimalBakFile()
     {
         var sut = CreateSut();
         sut.LogicalNames = ("EdFi_Ods", "EdFi_Ods_log");
         sut.FilePaths = (@"C:\Data\TenantDb.mdf", @"C:\Data\TenantDb_log.ldf");
 
-        await sut.CopySandboxAsync("TemplateDb", "TenantDb");
+        await sut.CopySandboxAsync("EdFi_Ods_Minimal_Template", "TenantDb");
 
         sut.Executions.Count.ShouldBe(3);
 
         var restore = sut.Executions[0];
-        restore.Sql.ShouldBe(@"RESTORE DATABASE [TenantDb] FROM DISK = 'C:\Backups\template.bak' WITH REPLACE, MOVE 'EdFi_Ods' TO 'C:\Data\TenantDb.mdf', MOVE 'EdFi_Ods_log' TO 'C:\Data\TenantDb_log.ldf';");
+        restore.Sql.ShouldBe(@"RESTORE DATABASE [TenantDb] FROM DISK = 'C:\Backups\minimal.bak' WITH REPLACE, MOVE 'EdFi_Ods' TO 'C:\Data\TenantDb.mdf', MOVE 'EdFi_Ods_log' TO 'C:\Data\TenantDb_log.ldf';");
         restore.Parameters.ShouldBeNull();
 
         var renameData = sut.Executions[1];
@@ -97,6 +97,20 @@ public class SqlServerSandboxProvisionerTests
         renameLog.Sql.ShouldBe("ALTER DATABASE [TenantDb] MODIFY FILE (NAME = 'EdFi_Ods_log', NEWNAME = 'TenantDb_log');");
 
         sut.Executions.All(x => x.CommandTimeout == 30).ShouldBeTrue();
+    }
+
+    [Test]
+    public async Task CopySandboxAsync_WithSampleDatabase_ShouldRestoreFromSampleBakFile()
+    {
+        var sut = CreateSut();
+        sut.LogicalNames = ("EdFi_Ods", "EdFi_Ods_log");
+        sut.FilePaths = (@"C:\Data\TenantDb.mdf", @"C:\Data\TenantDb_log.ldf");
+
+        await sut.CopySandboxAsync("EdFi_Ods_Sample_Template", "TenantDb");
+
+        var restore = sut.Executions[0];
+        restore.Sql.ShouldContain(@"C:\Backups\sample.bak");
+        restore.Sql.ShouldNotContain(@"C:\Backups\minimal.bak");
     }
 
     [Test]
@@ -171,7 +185,7 @@ public class SqlServerSandboxProvisionerTests
     {
         var sut = CreateSut();
 
-        var ex = Should.ThrowAsync<ArgumentException>(() => sut.CopySandboxAsync("ValidName", "bad-name"));
+        var ex = Should.ThrowAsync<ArgumentException>(() => sut.CopySandboxAsync("EdFi_Ods_Minimal_Template", "bad-name"));
 
         ex.Result.ParamName.ShouldBe("databaseName");
     }
@@ -192,7 +206,8 @@ public class SqlServerSandboxProvisionerTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["SandboxAdminSQLCommandTimeout"] = "30",
-                ["AppSettings:SqlServerBakFile"] = @"C:\Backups\template.bak"
+                ["AppSettings:SqlServerMinimalBakFile"] = @"C:\Backups\minimal.bak",
+                ["AppSettings:SqlServerSampleBakFile"] = @"C:\Backups\sample.bak"
             })
             .Build();
 
@@ -201,6 +216,9 @@ public class SqlServerSandboxProvisionerTests
 
         A.CallTo(() => connectionStringsProvider.GetConnectionString("EdFi_Master"))
             .Returns("Data Source=localhost;Initial Catalog=master;Integrated Security=True;");
+
+        A.CallTo(() => databaseNameBuilder.MinimalDatabase).Returns("EdFi_Ods_Minimal_Template");
+        A.CallTo(() => databaseNameBuilder.SampleDatabase).Returns("EdFi_Ods_Sample_Template");
 
         return new TestableSqlServerSandboxProvisioner(configuration, connectionStringsProvider, databaseNameBuilder)
         {

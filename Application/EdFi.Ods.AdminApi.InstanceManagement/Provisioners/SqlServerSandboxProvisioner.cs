@@ -16,13 +16,15 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
 {
     private static readonly Regex _validDatabaseIdentifierPattern = new("^[A-Za-z0-9_]+$", RegexOptions.Compiled);
 
-    private readonly string _sqlServerBakFile;
+    private readonly string _sqlServerMinimalBakFile;
+    private readonly string _sqlServerSampleBakFile;
 
     public SqlServerSandboxProvisioner(IConfiguration configuration,
         IConfigConnectionStringsProvider connectionStringsProvider, IDatabaseNameBuilder databaseNameBuilder)
         : base(configuration, connectionStringsProvider, databaseNameBuilder)
     {
-        _sqlServerBakFile = configuration.GetSection("AppSettings:SqlServerBakFile").Value ?? string.Empty;
+        _sqlServerMinimalBakFile = configuration.GetSection("AppSettings:SqlServerMinimalBakFile").Value ?? string.Empty;
+        _sqlServerSampleBakFile = configuration.GetSection("AppSettings:SqlServerSampleBakFile").Value ?? string.Empty;
     }
 
     public override async Task RenameSandboxAsync(string oldName, string newName)
@@ -98,7 +100,7 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
 
         using (var conn = CreateConnection())
         {
-            string backup = GetBackupFilePath();
+            string backup = GetBackupFilePath(originalDatabaseName);
 
             var (dataFilePath, logFilePath) = await GetDatabaseFilePathsAsync(conn, newDatabaseName)
                 .ConfigureAwait(false);
@@ -106,9 +108,11 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
             var (logicalDataName, logicalLogName) = await GetLogicalNamesFromBackupAsync(conn, backup)
                 .ConfigureAwait(false);
 
+            // SQL Server RESTORE, FILELISTONLY, and ALTER DATABASE MODIFY FILE statements do not support
+            // parameterized values for DISK paths, MOVE destinations, or file names — only string literals
+            // are accepted by the SQL Server engine in these positions. Single quotes are doubled via
+            // EscapeSqlString to prevent injection from config values and backup metadata.
             await ExecuteAsync(
-                    conn,
-                    $"RESTORE DATABASE {safeNewDatabaseName} FROM DISK = '{EscapeSqlString(backup)}' WITH REPLACE, MOVE '{EscapeSqlString(logicalDataName)}' TO '{EscapeSqlString(dataFilePath)}', MOVE '{EscapeSqlString(logicalLogName)}' TO '{EscapeSqlString(logFilePath)}';",
                     commandTimeout: CommandTimeout)
                 .ConfigureAwait(false);
 
@@ -145,15 +149,35 @@ public class SqlServerSandboxProvisioner : SandboxProvisionerBase
 
     protected override DbConnection CreateConnection() => new SqlConnection(ConnectionString);
 
-    protected virtual string GetBackupFilePath()
+    protected virtual string GetBackupFilePath(string originalDatabaseName)
     {
-        if (string.IsNullOrEmpty(_sqlServerBakFile))
+        string configKey;
+        string bakFile;
+
+        if (originalDatabaseName == _databaseNameBuilder.MinimalDatabase)
+        {
+            configKey = "AppSettings:SqlServerMinimalBakFile";
+            bakFile = _sqlServerMinimalBakFile;
+        }
+        else if (originalDatabaseName == _databaseNameBuilder.SampleDatabase)
+        {
+            configKey = "AppSettings:SqlServerSampleBakFile";
+            bakFile = _sqlServerSampleBakFile;
+        }
+        else
         {
             throw new InvalidOperationException(
-                "AppSettings:SqlServerBakFile is not configured. A SQL Server backup file path is required to copy a sandbox database.");
+                $"No backup file is configured for database template '{originalDatabaseName}'. " +
+                "Configure AppSettings:SqlServerMinimalBakFile or AppSettings:SqlServerSampleBakFile.");
         }
 
-        return _sqlServerBakFile;
+        if (string.IsNullOrEmpty(bakFile))
+        {
+            throw new InvalidOperationException(
+                $"{configKey} is not configured. A SQL Server backup file path is required to copy a sandbox database.");
+        }
+
+        return bakFile;
     }
 
     protected virtual async Task<(string DataName, string LogName)> GetLogicalNamesFromBackupAsync(DbConnection conn, string backupFilePath)
