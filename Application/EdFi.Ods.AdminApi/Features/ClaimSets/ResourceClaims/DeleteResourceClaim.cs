@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
@@ -28,7 +27,7 @@ public class DeleteResourceClaim : IFeature
         IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IAuthStrategyResolver strategyResolver,
         IDeleteResouceClaimOnClaimSetCommand deleteResouceClaimOnClaimSetCommand,
-        IMapper mapper, int claimSetId, int resourceClaimId)
+        int claimSetId, int resourceClaimId)
     {
         var claimSet = getClaimSetByIdQuery.Execute(claimSetId);
 

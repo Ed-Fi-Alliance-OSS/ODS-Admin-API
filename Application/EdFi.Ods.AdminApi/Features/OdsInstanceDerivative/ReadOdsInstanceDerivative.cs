@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -26,16 +25,16 @@ public class ReadOdsInstanceDerivative : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetOdsInstanceDerivatives(IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal static Task<IResult> GetOdsInstanceDerivatives(IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, [AsParameters] CommonQueryParams commonQueryParams)
     {
-        var odsInstanceDerivativeList = mapper.Map<List<OdsInstanceDerivativeModel>>(getOdsInstanceDerivativesQuery.Execute(commonQueryParams));
+        var odsInstanceDerivativeList = OdsInstanceDerivativeMapper.ToModelList(getOdsInstanceDerivativesQuery.Execute(commonQueryParams));
         return Task.FromResult(Results.Ok(odsInstanceDerivativeList));
     }
 
-    internal static Task<IResult> GetOdsInstanceDerivative(IGetOdsInstanceDerivativeByIdQuery getOdsInstanceDerivativeByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstanceDerivative(IGetOdsInstanceDerivativeByIdQuery getOdsInstanceDerivativeByIdQuery, int id)
     {
         var odsInstanceDerivative = getOdsInstanceDerivativeByIdQuery.Execute(id);
-        var model = mapper.Map<OdsInstanceDerivativeModel>(odsInstanceDerivative);
+        var model = OdsInstanceDerivativeMapper.ToModel(odsInstanceDerivative);
         return Task.FromResult(Results.Ok(model));
     }
 }

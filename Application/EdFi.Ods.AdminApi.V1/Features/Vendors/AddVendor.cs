@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
@@ -24,11 +23,11 @@ public class AddVendor : IFeature
             .BuildForVersions(AdminApiVersions.V1);
     }
 
-    public async Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, IMapper mapper, AddVendorRequest request)
+    public async Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, AddVendorRequest request)
     {
         await validator.GuardAsync(request);
         var addedVendor = addVendorCommand.Execute(request);
-        var model = mapper.Map<VendorModel>(addedVendor);
+        var model = VendorMapper.ToModel(addedVendor);
         return AdminApiResponse<VendorModel>.Created(model, "Vendor", $"/vendors/{model.VendorId}");
     }
 

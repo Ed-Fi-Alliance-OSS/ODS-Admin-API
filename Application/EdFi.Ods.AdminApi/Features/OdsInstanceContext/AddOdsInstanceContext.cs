@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -24,7 +23,7 @@ public class AddOdsInstanceContext : IFeature
            .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, IMapper mapper, AddOdsInstanceContextRequest request)
+    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, AddOdsInstanceContextRequest request)
     {
         await validator.GuardAsync(request);
         var addedOdsInstanceContext = addOdsInstanceContextCommand.Execute(request);

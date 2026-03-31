@@ -11,34 +11,9 @@ copies of the license agreement are provided in separate files in the Licenses
 subdirectory. Unless noted below, all open source software is distributed in its
 original form without modification.
 
-## AutoMapper
-
-https://github.com/AutoMapper/AutoMapper/
-
-    The MIT License (MIT)
-
-    Copyright (c) 2010 Jimmy Bogard
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy of
-    this software and associated documentation files (the "Software"), to deal in
-    the Software without restriction, including without limitation the rights to
-    use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-    the Software, and to permit persons to whom the Software is furnished to do so,
-    subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-    FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-    COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-    IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 ## BuildBundlerMinifier
 
-https://github.com/madskristensen/BundlerMinifier
+<https://github.com/madskristensen/BundlerMinifier>
 
     Copyright 2015-2020 Mads Kristensen
 
@@ -56,7 +31,7 @@ https://github.com/madskristensen/BundlerMinifier
 
 ## bootstrap
 
-https://github.com/twbs/bootstrap
+<https://github.com/twbs/bootstrap>
     The MIT License (MIT)
 
     Copyright (c) 2011-2020 Twitter, Inc.
@@ -82,19 +57,19 @@ https://github.com/twbs/bootstrap
 
 ## CsvHelper
 
-https://github.com/JoshClose/CsvHelper
+<https://github.com/JoshClose/CsvHelper>
 
 Dual licensing under MS-PL and Apache 2.0. See the license at [LICENSE](https://github.com/JoshClose/CsvHelper/blob/master/LICENSE.txt).
 
 ## Dapper
 
-https://github.com/StackExchange/Dapper
+<https://github.com/StackExchange/Dapper>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## DbUp
 
-http://dbup.github.io/
+<http://dbup.github.io/>
 
 * dbup-core
 * dbup-postgresql
@@ -123,13 +98,13 @@ The following license applies to these packages:
 
 ## EntityFramework
 
-https://github.com/dotnet/ef6
+<https://github.com/dotnet/ef6>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## FluentValidation
 
-https://github.com/FluentValidation/FluentValidation
+<https://github.com/FluentValidation/FluentValidation>
 
 * FluentValidation.AspNetCore
 
@@ -137,7 +112,7 @@ See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Flurl
 
-https://github.com/tmenier/Flurl
+<https://github.com/tmenier/Flurl>
 
     MIT License
 
@@ -163,7 +138,7 @@ https://github.com/tmenier/Flurl
 
 ## HtmlTags
 
-https://github.com/HtmlTags/htmltags
+<https://github.com/HtmlTags/htmltags>
 
     Copyright 2009 Chad Myers, Jeremy Miller, Joshua Flanagan, Mark Nijhof
 
@@ -181,7 +156,7 @@ https://github.com/HtmlTags/htmltags
 
 ## jQuery.Validation
 
-http://jqueryvalidation.org/
+<http://jqueryvalidation.org/>
 
     Copyright (c) 2016 Jörn Zaefferer
 
@@ -204,7 +179,7 @@ http://jqueryvalidation.org/
 
 ## jQuery
 
-http://jquery.org
+<http://jquery.org>
 
     Copyright OpenJS Foundation and other contributors, https://openjsf.org/
 
@@ -229,7 +204,7 @@ http://jquery.org
 
 ## lodash
 
-https://github.com/lodash/lodash
+<https://github.com/lodash/lodash>
 
     The MIT License
 
@@ -268,13 +243,13 @@ https://github.com/lodash/lodash
 
 ## log4net
 
-http://logging.apache.org/log4net/
+<http://logging.apache.org/log4net/>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Microsoft.ApplicationInsights.Agent.Intercept
 
-https://github.com/microsoft/ApplicationInsights-Home
+<https://github.com/microsoft/ApplicationInsights-Home>
 
     The MIT License (MIT)
 
@@ -300,7 +275,7 @@ https://github.com/microsoft/ApplicationInsights-Home
 
 ## Microsoft Application Insights .NET Libraries
 
-https://github.com/Microsoft/ApplicationInsights-dotnet
+<https://github.com/Microsoft/ApplicationInsights-dotnet>
 
 * Microsoft.ApplicationInsights.DependencyCollector
 * Microsoft.ApplicationInsights.Log4NetAppender
@@ -334,25 +309,25 @@ https://github.com/Microsoft/ApplicationInsights-dotnet
 
 ## Microsoft.AspNet.TelemetryCorrelation
 
-https://github.com/aspnet/Microsoft.AspNet.TelemetryCorrelation/
+<https://github.com/aspnet/Microsoft.AspNet.TelemetryCorrelation/>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
-https://github.com/dotnet/aspnetcore
+<https://github.com/dotnet/aspnetcore>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Microsoft.EntityFrameworkCore.SqlServer
 
-https://github.com/dotnet/efcore
+<https://github.com/dotnet/efcore>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Modernizr
 
-http://www.modernizr.com/
+<http://www.modernizr.com/>
 
     Copyright (c) 2009-2018
 
@@ -375,7 +350,7 @@ http://www.modernizr.com/
 
 ## Moq
 
-https://github.com/moq/moq4
+<https://github.com/moq/moq4>
 
     BSD 3-Clause License
 
@@ -409,7 +384,7 @@ https://github.com/moq/moq4
 
 ## Newtonsoft.Json
 
-https://www.newtonsoft.com/json
+<https://www.newtonsoft.com/json>
 
     The MIT License (MIT)
 
@@ -434,7 +409,7 @@ https://www.newtonsoft.com/json
 
 ## Npgsql
 
-https://github.com/npgsql/npgsql
+<https://github.com/npgsql/npgsql>
 
     Copyright (c) 2002-2019, Npgsql
 
@@ -456,7 +431,7 @@ https://github.com/npgsql/npgsql
 
 ## Npgsql.EntityFrameworkCore.PostgreSQL
 
-https://github.com/npgsql/efcore.pg
+<https://github.com/npgsql/efcore.pg>
 
     Copyright (c) 2002-2019, Npgsql
 
@@ -506,13 +481,13 @@ The following license applies to these packages:
 
 ## Respawn
 
-https://github.com/jbogard/Respawn
+<https://github.com/jbogard/Respawn>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Respond
 
-https://github.com/scottjehl/Respond
+<https://github.com/scottjehl/Respond>
 
     Copyright (c) 2012 Scott Jehl
 
@@ -539,13 +514,13 @@ https://github.com/scottjehl/Respond
 
 ## RestSharp
 
-https://github.com/restsharp/RestSharp
+<https://github.com/restsharp/RestSharp>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 ## Shouldly
 
-https://github.com/shouldly/shouldly
+<https://github.com/shouldly/shouldly>
 
     Redistribution and use in source and binary forms, with or without modification,
     are permitted provided that the following conditions are met:
@@ -572,7 +547,7 @@ https://github.com/shouldly/shouldly
 
 ## System.IdentityModel.Tokens.Jwt
 
-https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet
+<https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet>
 
     The MIT License (MIT)
 
@@ -598,13 +573,13 @@ https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-do
 
 ## Microsoft.Extensions.Logging.Log4Net.AspNetCore
 
-https://github.com/huorswords/Microsoft.Extensions.Logging.Log4Net.AspNetCore
+<https://github.com/huorswords/Microsoft.Extensions.Logging.Log4Net.AspNetCore>
 
 See the [Apache License, Version 2.0](LICENSE) file in this application.
 
 # Azure SDK
 
-https://github.com/Azure/azure-sdk-for-net
+<https://github.com/Azure/azure-sdk-for-net>
 
 * Hyak.Common
 * Microsoft.Azure.Common
@@ -636,7 +611,7 @@ The license below applies to all of these packages:
 
 ## ASP.NET Extensions
 
-https://github.com/dotnet/extensions
+<https://github.com/dotnet/extensions>
 
 * Microsoft.Extensions.Options
 * Microsoft.Extensions.Primitives
@@ -669,7 +644,7 @@ The license below applies to all of these packages:
 
 ## Microsoft .NET Core Libraries
 
-https://github.com/dotnet/runtime
+<https://github.com/dotnet/runtime>
 
 * Microsoft.Azure.Management.ResourceManager
 * Microsoft.Azure.Management.WebSites
@@ -722,7 +697,6 @@ The license below applies to all of these packages:
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
-
 
 # Microsoft .NET Libraries
 
