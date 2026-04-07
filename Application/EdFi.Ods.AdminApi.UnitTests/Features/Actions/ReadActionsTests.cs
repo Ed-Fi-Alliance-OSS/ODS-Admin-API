@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
 using EdFi.Ods.AdminApi.Features.Actions;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Security.DataAccess.Models;
@@ -22,37 +21,33 @@ public class ReadActionsTests
     public async Task GetActions_ReturnsOkWithMappedList()
     {
         var fakeQuery = A.Fake<IGetAllActionsQuery>();
-        var fakeMapper = A.Fake<IMapper>();
 
         var queryResult = new List<Action>
         {
             new Action { ActionId = 1, ActionName = "Read", ActionUri = "/resource/read" }
         };
 
-        var mappedResult = new List<ActionModel>
-        {
-            new ActionModel { Id = 1, Name = "Read", Uri = "/resource/read" }
-        };
-
         A.CallTo(() => fakeQuery.Execute(A<EdFi.Ods.AdminApi.Common.Infrastructure.CommonQueryParams>._, null, null)).Returns(queryResult);
-        A.CallTo(() => fakeMapper.Map<List<ActionModel>>(queryResult)).Returns(mappedResult);
 
-        var result = await ReadActions.GetActions(fakeQuery, fakeMapper, 0, 10, "name", "Ascending", null, null);
+        var result = await ReadActions.GetActions(fakeQuery, 0, 10, "name", "Ascending", null, null);
 
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<ActionModel>>>();
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<ActionModel>>;
-        okResult!.Value.ShouldBe(mappedResult);
+        okResult!.Value.ShouldNotBeNull();
+        okResult.Value.Count.ShouldBe(1);
+        okResult.Value[0].Id.ShouldBe(1);
+        okResult.Value[0].Name.ShouldBe("Read");
+        okResult.Value[0].Uri.ShouldBe("/resource/read");
     }
 
     [Test]
     public void GetActions_WhenQueryThrows_ExceptionIsPropagated()
     {
         var fakeQuery = A.Fake<IGetAllActionsQuery>();
-        var fakeMapper = A.Fake<IMapper>();
 
         A.CallTo(() => fakeQuery.Execute(A<EdFi.Ods.AdminApi.Common.Infrastructure.CommonQueryParams>._, null, null))
             .Throws(new System.Exception("Query failed"));
 
-        Should.Throw<System.Exception>(async () => await ReadActions.GetActions(fakeQuery, fakeMapper, 0, 10, null, null, null, null));
+        Should.Throw<System.Exception>(async () => await ReadActions.GetActions(fakeQuery, 0, 10, null, null, null, null));
     }
 }

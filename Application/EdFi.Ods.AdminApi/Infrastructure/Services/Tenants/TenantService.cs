@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -26,7 +25,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IMapper mapper, string tenantName);
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -113,7 +112,6 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
     public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IMapper mapper,
         string tenantName)
     {
         var tenant = await GetTenantByTenantIdAsync(tenantName);
@@ -124,7 +122,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             var odsInstances = getOdsInstancesQuery.Execute();
 
-            tenantDetails.OdsInstances = mapper.Map<List<TenantOdsInstanceModel>>(odsInstances);
+            tenantDetails.OdsInstances = TenantMapper.ToOdsInstanceModelList(odsInstances);
 
             var OdsInstanceIdsList = tenantDetails.OdsInstances.Select(i => i.OdsInstanceId).ToArray();
 
@@ -135,7 +133,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 foreach (var odsInstance in tenantDetails.OdsInstances)
                 {
                     var edOrgs = edOrgsList.Where(eo => eo.InstanceId == odsInstance.OdsInstanceId).ToList();
-                    odsInstance.EducationOrganizations = mapper.Map<List<EducationOrganizationModel>>(edOrgs);
+                    odsInstance.EducationOrganizations = EducationOrganizationMapper.ToModelList(edOrgs);
                 }
             }
 

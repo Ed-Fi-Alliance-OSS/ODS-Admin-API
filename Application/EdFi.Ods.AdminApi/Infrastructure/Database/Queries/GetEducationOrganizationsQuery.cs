@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Linq.Expressions;
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
@@ -28,17 +27,14 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
 {
     private readonly AdminApiDbContext _adminApiDbContext;
     private readonly IOptions<AppSettings> _options;
-    private readonly IMapper _mapper;
     private readonly Dictionary<string, Expression<Func<EducationOrganization, object>>> _orderByColumns;
 
     public GetEducationOrganizationsQuery(
         AdminApiDbContext adminApiDbContext,
-        IOptions<AppSettings> options,
-        IMapper mapper)
+        IOptions<AppSettings> options)
     {
         _adminApiDbContext = adminApiDbContext;
         _options = options;
-        _mapper = mapper;
 
         var isSQLServerEngine = _options.Value.DatabaseEngine?.ToLowerInvariant() == DatabaseEngineEnum.SqlServer.ToLowerInvariant();
 
@@ -98,7 +94,7 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
                 Id = group.Key.InstanceId,
                 Name = group.Key.InstanceName ?? string.Empty,
                 InstanceType = null,
-                EducationOrganizations = _mapper.Map<List<EducationOrganizationModel>>(group.ToList())
+                EducationOrganizations = EducationOrganizationMapper.ToModelList(group.ToList())
             })
             .OrderBy(i => i.Id)
             .ToList();

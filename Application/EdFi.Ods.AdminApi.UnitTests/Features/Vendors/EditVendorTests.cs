@@ -6,13 +6,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Features.Vendors;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
-using FakeItEasy;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
@@ -44,10 +42,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
                 ]
             };
             usersContext.Vendors.Add(vendor);
-            usersContext.SaveChanges();
+            await usersContext.SaveChangesAsync();
 
             var command = new EditVendorCommand(usersContext);
-            var mapper = A.Fake<IMapper>();
             var validator = new EditVendor.Validator();
             var request = new EditVendor.EditVendorRequest
             {
@@ -57,19 +54,21 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
                 ContactEmailAddress = "updated@acme.org"
             };
 
-            var result = await EditVendor.Handle(command, mapper, validator, request, vendor.VendorId);
+            var result = await EditVendor.Handle(command, validator, request, vendor.VendorId);
 
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok>();
 
             var updatedVendor = usersContext.Vendors
                 .Include(v => v.VendorNamespacePrefixes)
                 .Include(v => v.Users)
-                .Single(v => v.VendorId == vendor.VendorId);
+                .SingleAsync(v => v.VendorId == vendor.VendorId);
 
-            updatedVendor.VendorName.ShouldBe("Updated Vendor");
-            updatedVendor.VendorNamespacePrefixes.Single().NamespacePrefix.ShouldBe("https://new.org/ns");
-            updatedVendor.Users.Single().FullName.ShouldBe("Updated Contact");
-            updatedVendor.Users.Single().Email.ShouldBe("updated@acme.org");
+            var updatedVendorResult = await updatedVendor;
+
+            updatedVendorResult.VendorName.ShouldBe("Updated Vendor");
+            updatedVendorResult.VendorNamespacePrefixes.Single().NamespacePrefix.ShouldBe("https://new.org/ns");
+            updatedVendorResult.Users.Single().FullName.ShouldBe("Updated Contact");
+            updatedVendorResult.Users.Single().Email.ShouldBe("updated@acme.org");
         }
 
         [Test]
@@ -81,7 +80,6 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
             using var usersContext = new SqlServerUsersContext(contextOptions);
 
             var command = new EditVendorCommand(usersContext);
-            var mapper = A.Fake<IMapper>();
             var validator = new EditVendor.Validator();
             var request = new EditVendor.EditVendorRequest
             {
@@ -91,7 +89,7 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
                 ContactEmailAddress = "updated@acme.org"
             };
 
-            Should.ThrowAsync<ValidationException>(async () => await EditVendor.Handle(command, mapper, validator, request, 0));
+            Should.ThrowAsync<ValidationException>(async () => await EditVendor.Handle(command, validator, request, 0));
         }
 
         [Test]
@@ -103,7 +101,6 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
             using var usersContext = new SqlServerUsersContext(contextOptions);
 
             var command = new EditVendorCommand(usersContext);
-            var mapper = A.Fake<IMapper>();
             var validator = new EditVendor.Validator();
             var request = new EditVendor.EditVendorRequest
             {
@@ -113,7 +110,7 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
                 ContactEmailAddress = "updated@acme.org"
             };
 
-            Should.Throw<NotFoundException<int>>(() => EditVendor.Handle(command, mapper, validator, request, 999).GetAwaiter().GetResult());
+            Should.Throw<NotFoundException<int>>(() => EditVendor.Handle(command, validator, request, 999).GetAwaiter().GetResult());
         }
     }
 }

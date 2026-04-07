@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -26,21 +25,21 @@ public class ReadDbInstance : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public static Task<IResult> GetDbInstances(IGetDbInstancesQuery query, IMapper mapper,
+    public static Task<IResult> GetDbInstances(IGetDbInstancesQuery query,
         [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        var list = mapper.Map<List<DbInstanceModel>>(query.Execute(commonQueryParams, id, name));
+        var list = DbInstanceMapper.ToModelList(query.Execute(commonQueryParams, id, name));
         return Task.FromResult(Results.Ok(list));
     }
 
-    public static Task<IResult> GetDbInstance(IGetDbInstanceByIdQuery query, IMapper mapper, int id)
+    public static Task<IResult> GetDbInstance(IGetDbInstanceByIdQuery query, int id)
     {
         var dbInstance = query.Execute(id);
         if (dbInstance == null)
         {
             throw new NotFoundException<int>("dbInstance", id);
         }
-        var model = mapper.Map<DbInstanceModel>(dbInstance);
+        var model = DbInstanceMapper.ToModel(dbInstance);
         return Task.FromResult(Results.Ok(model));
     }
 }

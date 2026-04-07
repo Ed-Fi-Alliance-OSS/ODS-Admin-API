@@ -7,7 +7,7 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Features.OdsInstanceContext;
 using EdFi.Ods.AdminApi.Features.OdsInstanceDerivative;
 
-namespace EdFi.Ods.AdminApi.Features.ODSInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 
 public static class OdsInstanceMapper
 {

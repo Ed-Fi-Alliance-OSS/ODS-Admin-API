@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -34,7 +33,6 @@ public class ReadTenants : IFeature
         [FromServices] ITenantsService tenantsService,
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IMapper mapper,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,
         IOptions<SwaggerSettings> _swaggerOptions,
@@ -59,7 +57,7 @@ public class ReadTenants : IFeature
             throw new NotFoundException<string>("TenantName", tenantName);
         }
 
-        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getOdsInstancesQuery, getEducationOrganizationQuery, mapper, tenantName);
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getOdsInstancesQuery, getEducationOrganizationQuery, tenantName);
 
         if (tenant is null)
             return Results.NotFound();

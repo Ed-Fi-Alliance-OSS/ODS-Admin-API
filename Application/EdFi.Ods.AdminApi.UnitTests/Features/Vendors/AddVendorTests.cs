@@ -6,11 +6,9 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Features.Vendors;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
-using FakeItEasy;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
@@ -31,7 +29,6 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
 
             var validator = new AddVendor.Validator();
             var command = new AddVendorCommand(usersContext);
-            var mapper = A.Fake<IMapper>();
             var request = new AddVendor.AddVendorRequest
             {
                 Company = "Acme Vendor",
@@ -40,10 +37,10 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
                 ContactEmailAddress = "alice@acme.org"
             };
 
-            var result = await AddVendor.Handle(validator, command, mapper, request);
+            var result = await AddVendor.Handle(validator, command, request);
 
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Created>();
-            usersContext.Vendors.Any(v => v.VendorName == "Acme Vendor").ShouldBeTrue();
+            (await usersContext.Vendors.AnyAsync(v => v.VendorName == "Acme Vendor")).ShouldBeTrue();
         }
 
         [Test]
@@ -56,7 +53,6 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
 
             var validator = new AddVendor.Validator();
             var command = new AddVendorCommand(usersContext);
-            var mapper = A.Fake<IMapper>();
             var request = new AddVendor.AddVendorRequest
             {
                 Company = string.Empty,
@@ -65,7 +61,7 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Vendors
                 ContactEmailAddress = "alice@acme.org"
             };
 
-            Should.ThrowAsync<ValidationException>(async () => await AddVendor.Handle(validator, command, mapper, request));
+            Should.ThrowAsync<ValidationException>(async () => await AddVendor.Handle(validator, command, request));
         }
     }
 }
