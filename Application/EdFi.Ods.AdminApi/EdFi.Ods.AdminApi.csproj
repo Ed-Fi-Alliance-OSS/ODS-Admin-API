@@ -23,7 +23,6 @@
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
     <PackageReference Include="Asp.Versioning.Http" />
-    <PackageReference Include="AutoMapper" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="EdFi.Suite3.Admin.DataAccess" />
     <PackageReference Include="EdFi.Suite3.Security.DataAccess" />

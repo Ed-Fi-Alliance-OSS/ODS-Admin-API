@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -26,16 +25,16 @@ public class ReadOdsInstanceContext : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetOdsInstanceContexts(IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal static Task<IResult> GetOdsInstanceContexts(IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery, [AsParameters] CommonQueryParams commonQueryParams)
     {
-        var odsInstanceContextList = mapper.Map<List<OdsInstanceContextModel>>(getOdsInstanceContextsQuery.Execute(commonQueryParams));
+        var odsInstanceContextList = OdsInstanceContextMapper.ToModelList(getOdsInstanceContextsQuery.Execute(commonQueryParams));
         return Task.FromResult(Results.Ok(odsInstanceContextList));
     }
 
-    internal static Task<IResult> GetOdsInstanceContext(IGetOdsInstanceContextByIdQuery getOdsInstanceContextByIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetOdsInstanceContext(IGetOdsInstanceContextByIdQuery getOdsInstanceContextByIdQuery, int id)
     {
         var odsInstanceContext = getOdsInstanceContextByIdQuery.Execute(id);
-        var model = mapper.Map<OdsInstanceContextModel>(odsInstanceContext);
+        var model = OdsInstanceContextMapper.ToModel(odsInstanceContext);
         return Task.FromResult(Results.Ok(model));
     }
 }

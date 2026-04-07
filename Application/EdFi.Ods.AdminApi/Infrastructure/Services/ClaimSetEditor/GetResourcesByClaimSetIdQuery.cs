@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Security.DataAccess.Contexts;
 using EdFi.Security.DataAccess.Models;
 using SecurityResourceClaim = EdFi.Security.DataAccess.Models.ResourceClaim;
@@ -15,12 +14,10 @@ namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor
     public class GetResourcesByClaimSetIdQuery : IGetResourcesByClaimSetIdQuery
     {
         private readonly ISecurityContext _securityContext;
-        private readonly IMapper _mapper;
 
-        public GetResourcesByClaimSetIdQuery(ISecurityContext securityContext, IMapper mapper)
+        public GetResourcesByClaimSetIdQuery(ISecurityContext securityContext)
         {
             _securityContext = securityContext;
-            _mapper = mapper;
         }
 
         public IList<ResourceClaim> AllResources(int securityContextClaimSetId)
@@ -122,7 +119,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor
                             {
                                 ActionId = action.ActionId,
                                 ActionName = action.ActionName,
-                                AuthorizationStrategies = _mapper.Map<List<AuthorizationStrategy>>(defaultStrategies)
+                                AuthorizationStrategies = ToAuthorizationStrategies(defaultStrategies)
                             });
                         }
                     }
@@ -150,7 +147,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor
                             {
                                 ActionId = action.ActionId,
                                 ActionName = action.ActionName,
-                                AuthorizationStrategies = _mapper.Map<List<AuthorizationStrategy>>(childResourceStrategies)
+                                AuthorizationStrategies = childResourceStrategies
                             });
                         }
                     }
@@ -179,6 +176,16 @@ namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor
             }
 
             return resultDictionary;
+        }
+
+        private static List<AuthorizationStrategy> ToAuthorizationStrategies(IEnumerable<SecurityAuthorizationStrategy> authStrategies)
+        {
+            return authStrategies.Select(authStrategy => new AuthorizationStrategy
+            {
+                AuthStrategyId = authStrategy.AuthorizationStrategyId,
+                AuthStrategyName = authStrategy.AuthorizationStrategyName,
+                IsInheritedFromParent = false
+            }).ToList();
         }
 
         private Dictionary<int, List<ClaimSetResourceClaimActionAuthStrategies?>> GetAuthStrategyOverrides(List<ClaimSetResourceClaimAction> resourceClaims)

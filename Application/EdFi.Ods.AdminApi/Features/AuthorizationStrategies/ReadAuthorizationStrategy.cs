@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -23,9 +22,9 @@ public class ReadAuthorizationStrategy : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetAuthStrategies(IGetAuthStrategiesQuery getAuthStrategiesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal static Task<IResult> GetAuthStrategies(IGetAuthStrategiesQuery getAuthStrategiesQuery, [AsParameters] CommonQueryParams commonQueryParams)
     {
-        var authStrategyList = mapper.Map<List<AuthorizationStrategyModel>>(getAuthStrategiesQuery.Execute(commonQueryParams));
+        var authStrategyList = AuthorizationStrategyMapper.ToModelList(getAuthStrategiesQuery.Execute(commonQueryParams));
         return Task.FromResult(Results.Ok(authStrategyList));
     }
 }

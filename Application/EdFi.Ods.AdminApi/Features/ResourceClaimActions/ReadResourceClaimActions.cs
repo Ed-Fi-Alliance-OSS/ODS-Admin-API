@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
@@ -20,7 +19,7 @@ public class ReadResourceClaimActions : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetResourceClaimsActions(IGetResourceClaimActionsQuery getResourceClaimActionsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, string? resourceName)
+    internal static Task<IResult> GetResourceClaimsActions(IGetResourceClaimActionsQuery getResourceClaimActionsQuery, [AsParameters] CommonQueryParams commonQueryParams, string? resourceName)
     {
         var resourceClaimActions = getResourceClaimActionsQuery.Execute(commonQueryParams, resourceName);
         return Task.FromResult(Results.Ok(resourceClaimActions));

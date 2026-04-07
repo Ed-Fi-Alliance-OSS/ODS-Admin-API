@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Admin.DataAccess.Contexts;
@@ -26,12 +25,12 @@ public class AddApplication : IFeature
             .BuildForVersions(AdminApiVersions.V1);
     }
 
-    public async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IMapper mapper, IUsersContext db, AddApplicationRequest request)
+    public async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IUsersContext db, AddApplicationRequest request)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
         var addedApplicationResult = addApplicationCommand.Execute(request);
-        var model = mapper.Map<ApplicationResult>(addedApplicationResult);
+        var model = ApplicationMapper.ToResult(addedApplicationResult);
         return AdminApiResponse<ApplicationResult>.Created(model, "Application", $"/applications/{model.ApplicationId}");
     }
 

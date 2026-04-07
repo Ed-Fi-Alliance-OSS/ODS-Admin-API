@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Features.ApiClients;
@@ -24,20 +23,26 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientsByApplicationIdQuery>();
-            var fakeMapper = A.Fake<IMapper>();
+            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
             int appId = 42;
-            var queryResult = new List<ApiClient> { new ApiClient() };
-            var mappedResult = new List<ApiClientModel> { new ApiClientModel { Id = 1 } };
-            A.CallTo(() => fakeQuery.Execute(appId)).Returns(queryResult);
-            A.CallTo(() => fakeMapper.Map<List<ApiClientModel>>(queryResult)).Returns(mappedResult);
+            var apiClient = new ApiClient
+            {
+                ApiClientId = 1,
+                Name = "Test",
+                Application = new Application { ApplicationId = appId },
+                ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>()
+            };
+            A.CallTo(() => fakeQuery.Execute(appId)).Returns(new List<ApiClient> { apiClient });
+            A.CallTo(() => fakeOdsQuery.Execute(A<IEnumerable<int>>._)).Returns(new Dictionary<int, IList<int>>());
 
             // Act
-            var result = await ReadApiClient.GetApiClients(fakeQuery, fakeMapper, appId);
+            var result = await ReadApiClient.GetApiClients(fakeQuery, fakeOdsQuery, appId);
 
             // Assert
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<ApiClientModel>>>();
             var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<ApiClientModel>>;
-            okResult!.Value.ShouldBe(mappedResult);
+            okResult!.Value!.Count.ShouldBe(1);
+            okResult.Value[0].Id.ShouldBe(1);
         }
 
         [Test]
@@ -45,20 +50,26 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientByIdQuery>();
-            var fakeMapper = A.Fake<IMapper>();
+            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
             int id = 7;
-            var queryResult = new ApiClient();
-            var mappedModel = new ApiClientModel { Id = id };
-            A.CallTo(() => fakeQuery.Execute(id)).Returns(queryResult);
-            A.CallTo(() => fakeMapper.Map<ApiClientModel>(queryResult)).Returns(mappedModel);
+            var apiClient = new ApiClient
+            {
+                ApiClientId = id,
+                Name = "Client",
+                Application = new Application { ApplicationId = 1 },
+                ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>()
+            };
+            A.CallTo(() => fakeQuery.Execute(id)).Returns(apiClient);
+            A.CallTo(() => fakeOdsQuery.Execute(id)).Returns(new List<int> { 10, 20 });
 
             // Act
-            var result = await ReadApiClient.GetApiClient(fakeQuery, fakeMapper, id);
+            var result = await ReadApiClient.GetApiClient(fakeQuery, fakeOdsQuery, id);
 
             // Assert
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientModel>>();
             var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientModel>;
-            okResult!.Value.ShouldBe(mappedModel);
+            okResult!.Value!.Id.ShouldBe(id);
+            okResult.Value.OdsInstanceIds.ShouldBe(new List<int> { 10, 20 });
         }
 
         [Test]
@@ -66,12 +77,12 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientByIdQuery>();
-            var fakeMapper = A.Fake<IMapper>();
+            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
             int id = 99;
             A.CallTo(() => fakeQuery.Execute(id)).Returns(null);
 
             // Act & Assert
-            Should.Throw<NotFoundException<int>>(() => ReadApiClient.GetApiClient(fakeQuery, fakeMapper, id).GetAwaiter().GetResult());
+            Should.Throw<NotFoundException<int>>(() => ReadApiClient.GetApiClient(fakeQuery, fakeOdsQuery, id).GetAwaiter().GetResult());
         }
 
         [Test]
@@ -79,27 +90,12 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientsByApplicationIdQuery>();
-            var fakeMapper = A.Fake<IMapper>();
+            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
             int appId = 42;
             A.CallTo(() => fakeQuery.Execute(appId)).Throws(new System.Exception("Query failed"));
 
             // Act & Assert
-            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClients(fakeQuery, fakeMapper, appId));
-        }
-
-        [Test]
-        public void GetApiClient_WhenMapperThrows_ExceptionIsPropagated()
-        {
-            // Arrange
-            var fakeQuery = A.Fake<IGetApiClientByIdQuery>();
-            var fakeMapper = A.Fake<IMapper>();
-            int id = 7;
-            var queryResult = new ApiClient();
-            A.CallTo(() => fakeQuery.Execute(id)).Returns((ApiClient)queryResult);
-            A.CallTo(() => fakeMapper.Map<ApiClientModel>(queryResult)).Throws(new System.Exception("Mapping failed"));
-
-            // Act & Assert
-            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClient(fakeQuery, fakeMapper, id));
+            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClients(fakeQuery, fakeOdsQuery, appId));
         }
     }
 }

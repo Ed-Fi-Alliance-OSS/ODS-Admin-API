@@ -3,10 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor.Extensions;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
+using EdFi.Ods.AdminApi.V1.Features.ClaimSets;
 using Microsoft.EntityFrameworkCore;
 using SecurityAuthorizationStrategy = EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.AuthorizationStrategy;
 using SecurityResourceClaim = EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.ResourceClaim;
@@ -16,12 +16,10 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
     public class GetResourcesByClaimSetIdQueryService
     {
         private readonly ISecurityContext _securityContext;
-        private readonly IMapper _mapper;
 
-        public GetResourcesByClaimSetIdQueryService(ISecurityContext securityContext, IMapper mapper)
+        public GetResourcesByClaimSetIdQueryService(ISecurityContext securityContext)
         {
             _securityContext = securityContext;
-            _mapper = mapper;
         }
 
         internal static void AddChildResourcesToParents(IReadOnlyList<ResourceClaim> childResources, IList<ResourceClaim> parentResources)
@@ -117,7 +115,7 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
                     {
                         actions.Add(defaultStrategy != null ? new ClaimSetResourceClaimActionAuthStrategies()
                         {
-                            AuthorizationStrategies = defaultStrategy.Select(x => _mapper.Map<AuthorizationStrategy>(x)).ToList()!
+                            AuthorizationStrategies = defaultStrategy.Select(strategy => ClaimSetMapper.ToAuthorizationStrategy(strategy)).ToList()!
                         } : null);
                     }
                 }
@@ -160,7 +158,7 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
                             {
                                 var mappedStrategies = defaultStrategies.Select(x =>
                                 {
-                                    var value = _mapper.Map<AuthorizationStrategy>(x);
+                                    var value = ClaimSetMapper.ToAuthorizationStrategy(x);
                                     if (value != null)
                                         value.IsInheritedFromParent = true;
                                     return value;
@@ -174,7 +172,7 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
                         }
                         else
                         {
-                            var mappedStrategies = defaultStrategies.Select(x => _mapper.Map<AuthorizationStrategy>(x));
+                            var mappedStrategies = defaultStrategies.Select(strategy => ClaimSetMapper.ToAuthorizationStrategy(strategy));
                             actions.Add(new ClaimSetResourceClaimActionAuthStrategies()
                             {
                                 AuthorizationStrategies = mappedStrategies.ToArray()
@@ -201,8 +199,9 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
                 List<AuthorizationStrategy>? authStrategies = null;
                 if (resourceClaim.ResourceClaim.ParentResourceClaim == null)
                 {
-                    authStrategies = _mapper.Map<List<AuthorizationStrategy>>(resourceClaim.AuthorizationStrategyOverrides is not null && resourceClaim.AuthorizationStrategyOverrides.Any() ?
-                        resourceClaim.AuthorizationStrategyOverrides.Select(x => x.AuthorizationStrategy) : null);
+                    authStrategies = resourceClaim.AuthorizationStrategyOverrides is not null && resourceClaim.AuthorizationStrategyOverrides.Any()
+                        ? resourceClaim.AuthorizationStrategyOverrides.Select(x => ClaimSetMapper.ToAuthorizationStrategy(x.AuthorizationStrategy)).ToList()
+                        : null;
                 }
                 else
                 {
@@ -217,7 +216,7 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
                     if (parentResourceOverride?.AuthorizationStrategyOverrides != null && parentResourceOverride.AuthorizationStrategyOverrides.Any())
                     {
                         authStrategies =
-                            _mapper.Map<List<AuthorizationStrategy>>(parentResourceOverride.AuthorizationStrategyOverrides.Select(x => x.AuthorizationStrategy));
+                            parentResourceOverride.AuthorizationStrategyOverrides.Select(x => ClaimSetMapper.ToAuthorizationStrategy(x.AuthorizationStrategy)).ToList();
                         if (authStrategies != null)
                         {
                             authStrategies.ForEach(a => a.IsInheritedFromParent = true);
@@ -226,7 +225,7 @@ namespace EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor
 
                     if (resourceClaim.AuthorizationStrategyOverrides != null && resourceClaim.AuthorizationStrategyOverrides.Any())
                     {
-                        authStrategies = _mapper.Map<List<AuthorizationStrategy>>(resourceClaim.AuthorizationStrategyOverrides.Select(x => x.AuthorizationStrategy));
+                        authStrategies = resourceClaim.AuthorizationStrategyOverrides.Select(x => ClaimSetMapper.ToAuthorizationStrategy(x.AuthorizationStrategy)).ToList();
                     }
                 }
 

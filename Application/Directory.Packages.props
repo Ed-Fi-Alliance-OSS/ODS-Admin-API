@@ -7,13 +7,11 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- ASP.NET Core and Versioning -->
-    <PackageVersion Include="Asp.Versioning.Http" Version="8.1.1" />
-    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
-    <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
-    <PackageVersion Include="Dapper" Version="2.1.72" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.25" />
-    <!-- AutoMapper -->
-    <PackageVersion Include="AutoMapper" Version="16.1.1" />
+    <PackageVersion Include="Asp.Versioning.Http" Version="8.1.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
+    <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+
     <!-- Azure -->
     <PackageVersion Include="Azure.Identity" Version="1.12.0" />
     <!-- Testing -->

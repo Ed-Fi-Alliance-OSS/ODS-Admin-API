@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Features.Applications;
@@ -24,20 +23,20 @@ public class ExportClaimSet : IFeature
 
     internal static Task<IResult> GetClaimSet(IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
-        IGetApplicationsByClaimSetIdQuery getApplications, IMapper mapper, int id)
+        IGetApplicationsByClaimSetIdQuery getApplications, int id)
     {
         var claimSet = getClaimSetByIdQuery.Execute(id);
 
         var allResources = getResourcesByClaimSetIdQuery.AllResources(id);
         var applications = getApplications.Execute(id);
-        var claimSetData = mapper.Map<ClaimSetDetailsModel>(claimSet);
+        var claimSetData = ClaimSetMapper.ToDetailsModel(claimSet);
         if (applications != null)
         {
-            claimSetData.Applications = mapper.Map<List<SimpleApplicationModel>>(applications);
+            claimSetData.Applications = ClaimSetMapper.ToSimpleApplicationModelList(applications);
         }
         if (allResources != null)
         {
-            claimSetData.ResourceClaims = mapper.Map<List<ClaimSetResourceClaimModel>>(allResources.ToList());
+            claimSetData.ResourceClaims = ClaimSetMapper.ToClaimSetResourceClaimModelList(allResources.ToList());
         }
 
         return Task.FromResult(Results.Ok(claimSetData));
