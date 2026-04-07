@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.ComponentModel.DataAnnotations;
-using AutoMapper;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -26,13 +25,13 @@ public class ResetApplicationCredentials : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public static async Task<IResult> HandleResetCredentials(RegenerateApplicationApiClientSecretCommand resetSecretCommand, IOptions<AppSettings> settings, IMapper mapper, int id)
+    public static async Task<IResult> HandleResetCredentials(RegenerateApplicationApiClientSecretCommand resetSecretCommand, IOptions<AppSettings> settings, int id)
     {
         if (!settings.Value.EnableApplicationResetEndpoint)
             throw new FluentValidation.ValidationException(new[] { new ValidationFailure(nameof(Application), $"This endpoint has been disabled on application settings.") });
 
         var resetApplicationSecret = await Task.Run(() => resetSecretCommand.Execute(id));
-        var model = mapper.Map<ApplicationResult>(resetApplicationSecret);
+        var model = ApplicationMapper.ToResult(resetApplicationSecret);
         return Results.Ok(model);
     }
 }

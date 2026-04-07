@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -29,20 +28,23 @@ public class ReadApiClient : IFeature
 
     public static Task<IResult> GetApiClients(
         [FromServices] IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery,
-        [FromServices] IMapper mapper,
+        [FromServices] IGetOdsInstanceIdsByApiClientIdQuery getOdsInstanceIdsByApiClientIdQuery,
         [FromQuery(Name = "applicationid")] int applicationid)
     {
-        var apiClients = mapper.Map<List<ApiClientModel>>(getApiClientsByApplicationIdQuery.Execute(applicationid));
-        return Task.FromResult(Results.Ok(apiClients));
+        var apiClients = getApiClientsByApplicationIdQuery.Execute(applicationid);
+        var odsInstanceIdsByApiClientId = getOdsInstanceIdsByApiClientIdQuery.Execute(apiClients.Select(a => a.ApiClientId));
+        var models = ApiClientMapper.ToModelList(apiClients, odsInstanceIdsByApiClientId);
+        return Task.FromResult(Results.Ok(models));
     }
 
-    public static Task<IResult> GetApiClient([
-        FromServices] IGetApiClientByIdQuery getApiClientByIdQuery,
-        [FromServices] IMapper mapper,
+    public static Task<IResult> GetApiClient(
+        [FromServices] IGetApiClientByIdQuery getApiClientByIdQuery,
+        [FromServices] IGetOdsInstanceIdsByApiClientIdQuery getOdsInstanceIdsByApiClientIdQuery,
         int id)
     {
         var apiClient = getApiClientByIdQuery.Execute(id) ?? throw new NotFoundException<int>("apiClient", id);
-        var model = mapper.Map<ApiClientModel>(apiClient);
+        var odsInstanceIds = getOdsInstanceIdsByApiClientIdQuery.Execute(apiClient.ApiClientId);
+        var model = ApiClientMapper.ToModel(apiClient, odsInstanceIds);
         return Task.FromResult(Results.Ok(model));
     }
 }
