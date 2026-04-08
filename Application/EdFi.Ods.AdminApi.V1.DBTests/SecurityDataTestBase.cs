@@ -6,11 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AutoMapper;
-using EdFi.Ods.AdminApi.V1.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V1.Security.DataAccess.Models;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using Action = EdFi.Ods.AdminApi.V1.Security.DataAccess.Models.Action;
 using ActionName = EdFi.Ods.AdminApi.V1.Infrastructure.Services.ClaimSetEditor.Action;
@@ -338,16 +335,12 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
         return resourceClaimWithDefaultAuthStrategies;
     }
 
-    protected static IMapper Mapper() =>
-        new MapperConfiguration(cfg => cfg.AddProfile<AdminApiMappingProfile>(), NullLoggerFactory.Instance)
-            .CreateMapper();
-
     protected List<ClaimSetEditorTypes.ResourceClaim> ResourceClaimsForClaimSet(int securityContextClaimSetId)
     {
         List<ClaimSetEditorTypes.ResourceClaim> list = null;
         using (var securityContext = CreateDbContext())
         {
-            var getResourcesByClaimSetIdQuery = new ClaimSetEditorTypes.GetResourcesByClaimSetIdQuery(new ClaimSetEditorTypes.GetResourcesByClaimSetIdQueryService(securityContext, Mapper()));
+            var getResourcesByClaimSetIdQuery = new ClaimSetEditorTypes.GetResourcesByClaimSetIdQuery(new ClaimSetEditorTypes.GetResourcesByClaimSetIdQueryService(securityContext));
             list = [.. getResourcesByClaimSetIdQuery.AllResources(securityContextClaimSetId)];
         }
         return list;
@@ -358,7 +351,7 @@ public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
         ClaimSetEditorTypes.ResourceClaim resourceClaim = null;
         using (var securityContext = CreateDbContext())
         {
-            var getResourcesByClaimSetIdQuery = new ClaimSetEditorTypes.GetResourcesByClaimSetIdQuery(new ClaimSetEditorTypes.GetResourcesByClaimSetIdQueryService(securityContext, Mapper()));
+            var getResourcesByClaimSetIdQuery = new ClaimSetEditorTypes.GetResourcesByClaimSetIdQuery(new ClaimSetEditorTypes.GetResourcesByClaimSetIdQueryService(securityContext));
             resourceClaim = getResourcesByClaimSetIdQuery.SingleResource(securityContextClaimSetId, resourceClaimId);
         }
         return resourceClaim;

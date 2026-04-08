@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Queries;
@@ -31,7 +30,6 @@ public class AddClaimSet : IFeature
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications,
         IAuthStrategyResolver strategyResolver,
-        IMapper mapper,
         Request request)
     {
         await validator.GuardAsync(request);
@@ -40,7 +38,7 @@ public class AddClaimSet : IFeature
             ClaimSetName = request.Name ?? string.Empty
         });
 
-        var resourceClaims = mapper.Map<List<ResourceClaim>>(request.ResourceClaims);
+        var resourceClaims = ClaimSetMapper.ToResourceClaimList(request.ResourceClaims ?? []);
 
         var resolvedResourceClaims = strategyResolver.ResolveAuthStrategies(resourceClaims).ToList();
 
@@ -48,10 +46,10 @@ public class AddClaimSet : IFeature
 
         var claimSet = getClaimSetByIdQuery.Execute(addedClaimSetId);
 
-        var model = mapper.Map<ClaimSetDetailsModel>(claimSet);
+        var model = ClaimSetMapper.ToDetailsModel(claimSet);
         model.ApplicationsCount = getApplications.ExecuteCount(addedClaimSetId);
         model.ResourceClaims = getResourcesByClaimSetIdQuery.AllResources(addedClaimSetId)
-            .Select(r => mapper.Map<ResourceClaimModel>(r)).ToList();
+            .Select(ClaimSetMapper.ToResourceClaimModel).ToList();
 
 
         return AdminApiResponse<ClaimSetDetailsModel>.Created(
@@ -81,8 +79,7 @@ public class AddClaimSet : IFeature
 
         public Validator(IGetAllClaimSetsQuery getAllClaimSetsQuery,
             IGetResourceClaimsAsFlatListQuery getResourceClaimsAsFlatListQuery,
-            IGetAllAuthorizationStrategiesQuery getAllAuthorizationStrategiesQuery,
-            IMapper mapper)
+            IGetAllAuthorizationStrategiesQuery getAllAuthorizationStrategiesQuery)
         {
             _getAllClaimSetsQuery = getAllClaimSetsQuery;
 
@@ -109,7 +106,7 @@ public class AddClaimSet : IFeature
                     foreach (var resourceClaim in claimSet.ResourceClaims)
                     {
                         resourceClaimValidator.Validate(resourceClaims, authStrategyNames,
-                            resourceClaim, mapper.Map<List<ChildrenRequestResourceClaimModel>>(claimSet.ResourceClaims), context, claimSet.Name);
+                            resourceClaim, ClaimSetMapper.ToChildrenRequestResourceClaimModelList(claimSet.ResourceClaims), context, claimSet.Name);
                     }
                 }
             });

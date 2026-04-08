@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Features.ClaimSets;
@@ -30,23 +29,23 @@ public class ReadResourceClaims : IFeature
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    internal static Task<IResult> GetResourceClaims(IGetResourceClaimsQuery getResourceClaimsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
+    internal static Task<IResult> GetResourceClaims(IGetResourceClaimsQuery getResourceClaimsQuery, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        var resourceClaims = mapper.Map<List<ResourceClaimModel>>(getResourceClaimsQuery.Execute(
+        var resourceClaims = ResourceClaimMapper.ToModelList(getResourceClaimsQuery.Execute(
             commonQueryParams,
             id, name));
 
         return Task.FromResult(Results.Ok(resourceClaims));
     }
 
-    internal static Task<IResult> GetResourceClaim(IGetResourceClaimByResourceClaimIdQuery getResourceClaimByResourceClaimIdQuery, IMapper mapper, int id)
+    internal static Task<IResult> GetResourceClaim(IGetResourceClaimByResourceClaimIdQuery getResourceClaimByResourceClaimIdQuery, int id)
     {
         var resourceClaim = getResourceClaimByResourceClaimIdQuery.Execute(id);
         if (resourceClaim == null)
         {
             throw new NotFoundException<int>("resourceclaim", id);
         }
-        var model = mapper.Map<ResourceClaimModel>(resourceClaim);
+        var model = ResourceClaimMapper.ToModel(resourceClaim);
         return Task.FromResult(Results.Ok(model));
     }
 }

@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -26,20 +25,20 @@ public class ReadVendor : IFeature
             .BuildForVersions(AdminApiVersions.V1);
     }
 
-    internal Task<IResult> GetVendors(IGetVendorsQuery getVendorsQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal Task<IResult> GetVendors(IGetVendorsQuery getVendorsQuery, [AsParameters] CommonQueryParams commonQueryParams)
     {
-        var vendorList = mapper.Map<List<VendorModel>>(getVendorsQuery.Execute(commonQueryParams));
+        var vendorList = VendorMapper.ToModelList(getVendorsQuery.Execute(commonQueryParams));
         return Task.FromResult(AdminApiResponse<List<VendorModel>>.Ok(vendorList));
     }
 
-    internal Task<IResult> GetVendor(IGetVendorByIdQuery getVendorByIdQuery, IMapper mapper, int id)
+    internal Task<IResult> GetVendor(IGetVendorByIdQuery getVendorByIdQuery, int id)
     {
         var vendor = getVendorByIdQuery.Execute(id);
         if (vendor == null)
         {
             throw new NotFoundException<int>("vendor", id);
         }
-        var model = mapper.Map<VendorModel>(vendor);
+        var model = VendorMapper.ToModel(vendor);
         return Task.FromResult(AdminApiResponse<VendorModel>.Ok(model));
     }
 }

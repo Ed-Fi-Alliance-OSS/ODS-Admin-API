@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -26,21 +25,21 @@ public class ReadOdsInstance : IFeature
             .BuildForVersions(AdminApiVersions.V1);
     }
 
-    internal Task<IResult> GetOdsInstances(IGetOdsInstancesQuery getOdsInstancesQuery, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+    internal Task<IResult> GetOdsInstances(IGetOdsInstancesQuery getOdsInstancesQuery, [AsParameters] CommonQueryParams commonQueryParams)
     {
-        var odsInstances = mapper.Map<List<OdsInstanceModel>>(getOdsInstancesQuery.Execute(
+        var odsInstances = OdsInstanceMapper.ToModelList(getOdsInstancesQuery.Execute(
             commonQueryParams));
         return Task.FromResult(AdminApiResponse<List<OdsInstanceModel>>.Ok(odsInstances));
     }
 
-    internal Task<IResult> GetOdsInstance(IGetOdsInstanceQuery getOdsInstanceQuery, IMapper mapper, int id)
+    internal Task<IResult> GetOdsInstance(IGetOdsInstanceQuery getOdsInstanceQuery, int id)
     {
         var odsInstance = getOdsInstanceQuery.Execute(id);
         if (odsInstance == null)
         {
             throw new NotFoundException<int>("odsInstance", id);
         }
-        var model = mapper.Map<OdsInstanceModel>(odsInstance);
+        var model = OdsInstanceMapper.ToModel(odsInstance);
         return Task.FromResult(AdminApiResponse<OdsInstanceModel>.Ok(model));
     }
 }

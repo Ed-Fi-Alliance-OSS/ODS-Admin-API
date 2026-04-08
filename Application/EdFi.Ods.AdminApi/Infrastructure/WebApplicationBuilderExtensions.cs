@@ -74,8 +74,6 @@ public static class WebApplicationBuilderExtensions
         {
             assembly = Assembly.GetExecutingAssembly();
 
-            webApplicationBuilder.Services.AddAutoMapper(_ => { }, assembly);
-
             var adminApiV2Types = typeof(IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
             RegisterAdminApiServices(webApplicationBuilder, adminApiV2Types);
         }
@@ -83,10 +81,7 @@ public static class WebApplicationBuilderExtensions
         {
             assembly = Assembly.Load("EdFi.Ods.AdminApi.V1");
 
-            webApplicationBuilder.Services.AddAutoMapper(_ => { }, assembly);
-
-            var adminApiV1Types =
-                typeof(V1.Infrastructure.IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
+            var adminApiV1Types = typeof(V1.Infrastructure.IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
             RegisterAdminApiServices(webApplicationBuilder, adminApiV1Types);
         }
 

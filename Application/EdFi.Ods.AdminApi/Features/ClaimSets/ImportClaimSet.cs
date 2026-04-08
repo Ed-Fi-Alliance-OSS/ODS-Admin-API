@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -30,7 +29,6 @@ public class ImportClaimSet : IFeature
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications,
         IAuthStrategyResolver strategyResolver,
-        IMapper mapper,
         ImportClaimSetRequest request)
     {
         await validator.GuardAsync(request);
@@ -39,7 +37,7 @@ public class ImportClaimSet : IFeature
             ClaimSetName = request.Name ?? string.Empty
         });
 
-        var resourceClaims = mapper.Map<List<ResourceClaim>>(request.ResourceClaims);
+        var resourceClaims = ClaimSetMapper.ToResourceClaimList(request.ResourceClaims ?? []);
         var resolvedResourceClaims = strategyResolver.ResolveAuthStrategies(resourceClaims).ToList();
 
         addOrEditResourcesOnClaimSetCommand.Execute(addedClaimSetId, resolvedResourceClaims);
@@ -66,8 +64,7 @@ public class ImportClaimSet : IFeature
         public Validator(IGetAllClaimSetsQuery getAllClaimSetsQuery,
             IGetResourceClaimsAsFlatListQuery getResourceClaimsAsFlatListQuery,
             IGetAllAuthorizationStrategiesQuery getAllAuthorizationStrategiesQuery,
-            IGetAllActionsQuery getAllActionsQuery,
-            IMapper mapper)
+            IGetAllActionsQuery getAllActionsQuery)
         {
             _getAllClaimSetsQuery = getAllClaimSetsQuery;
 
@@ -95,7 +92,7 @@ public class ImportClaimSet : IFeature
                     foreach (var resourceClaim in claimSet.ResourceClaims)
                     {
                         resourceClaimValidator.Validate(resourceClaims, actions, authStrategyNames,
-                            resourceClaim, mapper.Map<List<ClaimSetResourceClaimModel>>(claimSet.ResourceClaims), context, claimSet.Name);
+                            resourceClaim, claimSet.ResourceClaims.ToList(), context, claimSet.Name);
                     }
                 }
             });

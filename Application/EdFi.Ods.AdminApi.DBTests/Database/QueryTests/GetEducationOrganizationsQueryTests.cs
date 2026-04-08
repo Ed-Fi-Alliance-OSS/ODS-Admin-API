@@ -6,13 +6,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.AutoMapper;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
-using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using Shouldly;
 
@@ -21,25 +18,13 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
 {
-    private IMapper _mapper = null!;
-
-    [SetUp]
-    public void SetUpMapper()
-    {
-        var config = new MapperConfiguration(
-            cfg => cfg.AddProfile<AdminApiMappingProfile>(),
-            NullLoggerFactory.Instance
-        );
-        _mapper = config.CreateMapper();
-    }
-
     [Test]
     public async Task ShouldGetAllEducationOrganizations()
     {
         await Transaction(async context =>
         {
             CreateMultiple(context);
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync();
             var results = instances.SelectMany(i => i.EducationOrganizations).ToList();
             results.Count.ShouldBe(5);
@@ -55,7 +40,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
             var offset = 0;
             var limit = 2;
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(offset, limit), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -93,7 +78,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultiple(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -116,7 +101,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
             CreateMultiple(context);
             var offset = 0;
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(offset, null), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -153,7 +138,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
             CreateMultiple(context);
             var limit = 2;
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(null, limit), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -172,7 +157,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleForDifferentInstances(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(), 1);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -192,7 +177,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleForDifferentInstances(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(), 999);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -207,7 +192,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleWithDifferentIds(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "educationOrganizationId", "asc"), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
@@ -229,7 +214,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleWithDifferentIds(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "educationOrganizationId", "desc"), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
@@ -251,7 +236,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleWithDifferentNames(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "nameOfInstitution", "asc"), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
@@ -273,7 +258,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleWithDifferentNames(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "nameOfInstitution", "desc"), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
@@ -295,7 +280,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleWithDifferentDiscriminators(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "discriminator", "asc"), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
@@ -316,7 +301,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleForDifferentInstances(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "instanceId", "asc"), null);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
@@ -338,7 +323,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleForDifferentInstances(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(new CommonQueryParams(offset: 1, limit: 1), 1);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();
 
@@ -355,7 +340,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         {
             CreateMultipleForDifferentInstancesWithDifferentIds(context);
 
-            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings(), _mapper);
+            var query = new GetEducationOrganizationsQuery(context, Testing.GetAppSettings());
             var instances = await query.ExecuteAsync(
                 new CommonQueryParams(null, null, "educationOrganizationId", "desc"), 1);
             var educationOrganizations = instances.SelectMany(i => i.EducationOrganizations).ToList();

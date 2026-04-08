@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -29,10 +28,10 @@ public class ReadClaimSets : IFeature
     }
 
     internal Task<IResult> GetClaimSets(
-        IGetAllClaimSetsQuery getClaimSetsQuery, IGetApplicationsByClaimSetIdQuery getApplications, IMapper mapper, [AsParameters] CommonQueryParams commonQueryParams)
+        IGetAllClaimSetsQuery getClaimSetsQuery, IGetApplicationsByClaimSetIdQuery getApplications, [AsParameters] CommonQueryParams commonQueryParams)
     {
         var claimSets = getClaimSetsQuery.Execute(commonQueryParams).ToList();
-        var model = mapper.Map<List<ClaimSetModel>>(claimSets);
+        var model = ClaimSetMapper.ToModelList(claimSets);
         foreach (var claimSet in model)
         {
             claimSet.ApplicationsCount = getApplications.ExecuteCount(claimSet.Id);
@@ -43,7 +42,7 @@ public class ReadClaimSets : IFeature
     internal Task<IResult> GetClaimSet(IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications,
-        IMapper mapper, int id)
+        int id)
     {
         ClaimSet claimSet;
         try
@@ -56,9 +55,9 @@ public class ReadClaimSets : IFeature
         }
 
         var allResources = getResourcesByClaimSetIdQuery.AllResources(id);
-        var claimSetData = mapper.Map<ClaimSetDetailsModel>(claimSet);
+        var claimSetData = ClaimSetMapper.ToDetailsModel(claimSet);
         claimSetData.ApplicationsCount = getApplications.ExecuteCount(id);
-        claimSetData.ResourceClaims = mapper.Map<List<ResourceClaimModel>>(allResources.ToList());
+        claimSetData.ResourceClaims = ClaimSetMapper.ToResourceClaimModelList(allResources.ToList());
         return Task.FromResult(AdminApiResponse<ClaimSetDetailsModel>.Ok(claimSetData,
             new JsonSerializerSettings()
             {

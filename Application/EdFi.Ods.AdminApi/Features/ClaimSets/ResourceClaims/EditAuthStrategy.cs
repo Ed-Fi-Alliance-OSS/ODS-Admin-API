@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -32,20 +31,22 @@ public class EditAuthStrategy : IFeature
     }
 
     internal static async Task<IResult> HandleOverrideAuthStrategies(OverrideAuthStategyOnClaimSetValidator validator,
-      OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand, IMapper mapper,
+            OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand,
+            IGetAuthStrategyIdsByNameQuery getAuthStrategyIdsByNameQuery,
       OverrideAuthStategyOnClaimSetRequest request, int claimSetId, int resourceClaimId)
     {
         request.ClaimSetId = claimSetId;
         request.ResourceClaimId = resourceClaimId;
         await validator.GuardAsync(request);
-        var model = mapper.Map<OverrideAuthStrategyOnClaimSetModel>(request);
+                var authStrategyIds = getAuthStrategyIdsByNameQuery.Execute(request.AuthorizationStrategies?.Where(x => x is not null).Select(x => x!) ?? []);
+                var model = ClaimSetMapper.ToOverrideAuthStrategyOnClaimSetModel(request, authStrategyIds);
         overrideDefaultAuthorizationStrategyCommand.ExecuteOnSpecificAction(model);
         return Results.Ok();
     }
 
     internal async Task<IResult> HandleResetAuthStrategies(IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand, IGetClaimSetByIdQuery getClaimSetByIdQuery,
-        IMapper mapper, int claimSetId, int resourceClaimId)
+        int claimSetId, int resourceClaimId)
     {
         var claimSet = getClaimSetByIdQuery.Execute(claimSetId);
 

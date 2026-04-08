@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -35,12 +34,11 @@ public class EditResourceClaimActions : IFeature
         UpdateResourcesOnClaimSetCommand updateResourcesOnClaimSetCommand,
         IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
-        IMapper mapper,
         AddResourceClaimOnClaimSetRequest request, int claimSetId)
     {
         request.ClaimSetId = claimSetId;
         await validator.GuardAsync(request);
-        await ExecuteHandle(editResourcesOnClaimSetCommand, mapper, request);
+        await ExecuteHandle(editResourcesOnClaimSetCommand, request);
         return Results.Ok();
     }
 
@@ -48,21 +46,20 @@ public class EditResourceClaimActions : IFeature
         EditResourceOnClaimSetCommand editResourcesOnClaimSetCommand,
         UpdateResourcesOnClaimSetCommand updateResourcesOnClaimSetCommand,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
-        IMapper mapper,
         EditResourceClaimOnClaimSetRequest request, int claimSetId, int resourceClaimId)
     {
         request.ClaimSetId = claimSetId;
         request.ResourceClaimId = resourceClaimId;
         await validator.GuardAsync(request);
 
-        await ExecuteHandle(editResourcesOnClaimSetCommand, mapper, request);
+        await ExecuteHandle(editResourcesOnClaimSetCommand, request);
 
         return Results.Ok();
     }
 
-    private static async Task ExecuteHandle(EditResourceOnClaimSetCommand editResourcesOnClaimSetCommand, IMapper mapper, IResourceClaimOnClaimSetRequest request)
+    private static async Task ExecuteHandle(EditResourceOnClaimSetCommand editResourcesOnClaimSetCommand, IResourceClaimOnClaimSetRequest request)
     {
-        var editResourceOnClaimSetModel = await Task.FromResult(mapper.Map<EditResourceOnClaimSetModel>(request));
+        var editResourceOnClaimSetModel = await Task.FromResult(ClaimSetMapper.ToEditResourceOnClaimSetModel(request));
         editResourceOnClaimSetModel.ResourceClaim!.Id = request.ResourceClaimId;
         editResourcesOnClaimSetCommand.Execute(editResourceOnClaimSetModel);
     }

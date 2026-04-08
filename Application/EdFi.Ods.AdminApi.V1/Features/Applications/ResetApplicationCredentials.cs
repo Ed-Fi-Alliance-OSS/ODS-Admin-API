@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using AutoMapper;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Database.Commands;
@@ -20,10 +19,10 @@ public class ResetApplicationCredentials : IFeature
             .BuildForVersions(AdminApiVersions.V1);
     }
 
-    public async Task<IResult> HandleResetCredentials(RegenerateApiClientSecretCommand resetSecretCommand, IMapper mapper, int id)
+    public async Task<IResult> HandleResetCredentials(RegenerateApiClientSecretCommand resetSecretCommand, int id)
     {
         var resetApplicationSecret = await Task.Run(() => resetSecretCommand.Execute(id));
-        var model = mapper.Map<ApplicationResult>(resetApplicationSecret);
+        var model = ApplicationMapper.ToResult(resetApplicationSecret);
         return AdminApiResponse<ApplicationResult>.Updated(model, "Application secret");
     }
 }
