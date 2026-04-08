@@ -47,6 +47,7 @@ public class GetOdsInstanceIdsByApiClientIdQuery : IGetOdsInstanceIdsByApiClient
                 ApiClientId = p.ApiClient.ApiClientId,
                 p.OdsInstance.OdsInstanceId
             })
+            .Distinct()
             .AsEnumerable()
             .GroupBy(x => x.ApiClientId)
             .ToDictionary(
