@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
@@ -80,12 +81,31 @@ public class DeleteDbInstanceCommandTests
     }
 
     [Test]
-    public void Execute_WithNonExistentId_ThrowsArgumentException()
+    public void Execute_WithNonExistentId_ThrowsNotFoundException()
     {
         using var context = CreateContext();
         var command = new DeleteDbInstanceCommand(context);
 
-        Should.Throw<ArgumentException>(() => command.Execute(9999));
+        Should.Throw<NotFoundException<int>>(() => command.Execute(9999));
+    }
+
+    [Test]
+    public void Execute_WhenStatusIsDeleted_ThrowsNotFoundException()
+    {
+        using var context = CreateContext();
+        var instance = new DbInstance
+        {
+            Name = "Test Instance",
+            Status = DbInstanceStatus.Deleted.ToString(),
+            DatabaseTemplate = "Minimal",
+            LastRefreshed = DateTime.UtcNow,
+        };
+        context.DbInstances.Add(instance);
+        context.SaveChanges();
+
+        var command = new DeleteDbInstanceCommand(context);
+
+        Should.Throw<NotFoundException<int>>(() => command.Execute(instance.Id));
     }
 }
 

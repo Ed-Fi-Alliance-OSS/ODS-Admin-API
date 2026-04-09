@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -25,7 +26,10 @@ public class DeleteDbInstanceCommand : IDeleteDbInstanceCommand
     {
         var dbInstance =
             _context.DbInstances.Find(id)
-            ?? throw new ArgumentException($"DbInstance with ID {id} was not found.", nameof(id));
+            ?? throw new NotFoundException<int>("dbInstance", id);
+
+        if (dbInstance.Status == DbInstanceStatus.Deleted.ToString())
+            throw new NotFoundException<int>("dbInstance", id);
 
         dbInstance.Status = DbInstanceStatus.PendingDelete.ToString();
         dbInstance.LastModifiedDate = DateTime.UtcNow;

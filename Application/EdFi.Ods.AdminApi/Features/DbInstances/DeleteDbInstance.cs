@@ -19,7 +19,7 @@ public class DeleteDbInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapDelete(endpoints, "/dbinstances/{id}", Handle)
+            .MapDelete(endpoints, "/dbInstances/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V2);
