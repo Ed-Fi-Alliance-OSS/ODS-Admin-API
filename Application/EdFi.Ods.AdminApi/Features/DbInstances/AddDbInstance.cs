@@ -17,7 +17,7 @@ public class AddDbInstance : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/dbinstances", Handle)
+            .MapPost(endpoints, "/dbInstances", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V2);

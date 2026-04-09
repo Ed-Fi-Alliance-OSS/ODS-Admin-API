@@ -14,12 +14,12 @@ public class ReadDbInstance : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapGet(endpoints, "/dbinstances", GetDbInstances)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/dbInstances", GetDbInstances)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<DbInstanceModel[]>(200))
             .BuildForVersions(AdminApiVersions.V2);
 
-        AdminApiEndpointBuilder.MapGet(endpoints, "/dbinstances/{id}", GetDbInstance)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/dbInstances/{id}", GetDbInstance)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<DbInstanceModel>(200))
             .BuildForVersions(AdminApiVersions.V2);
