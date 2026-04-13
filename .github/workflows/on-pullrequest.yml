@@ -18,6 +18,7 @@ on:
       # - "**/*.psm1"
       - "**/*.cs"
       - "**/*.csproj"
+      - "**/packages.lock.json"
       - ".github/**/*.yml"
   workflow_dispatch:
 
@@ -43,6 +44,9 @@ jobs:
     steps:
       - name: Checkout the Repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Verify NuGet lock files are up to date
+        run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --locked-mode
 
       - name: Build
         run: ./build.ps1 -Command Build -Configuration Debug
@@ -114,6 +118,9 @@ jobs:
 
       - name: Setup Nuget.exe
         uses: nuget/setup-nuget@323ab0502cd38fdc493335025a96c8fdb0edc71f #v2.0.1
+
+      - name: Verify NuGet lock files are up to date
+        run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --locked-mode
 
       - name: Build
         run: ./build.ps1 -Command Build -Configuration Debug
