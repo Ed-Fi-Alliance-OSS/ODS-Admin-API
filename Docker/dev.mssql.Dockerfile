@@ -8,7 +8,7 @@
 # The extra layers in the middle support caching of base layers.
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0.415-alpine3.21@sha256:f308a8fe0941a318421d18a0917b344d15d18996173a2db6f908a12b8db6b074 AS build
-RUN apk upgrade --no-cache && apk add --no-cache musl=~1.2.5-r9
+RUN apk upgrade --no-cache && apk add --no-cache musl=~1.2.5-r11
 ARG ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-"Production"}
 
 WORKDIR /source
@@ -31,7 +31,7 @@ RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-bu
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.21-alpine3.21-amd64@sha256:61adf767314cc4b6a298dd3bdba46a2f10be37d67c75ad64dc7a89a44df8a228 AS runtimebase
 RUN apk upgrade --no-cache && \
-    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~74 curl musl=~1.2.5-r9 && \
+    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~74 curl musl=~1.2.5-r11 && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
 FROM runtimebase AS setup
