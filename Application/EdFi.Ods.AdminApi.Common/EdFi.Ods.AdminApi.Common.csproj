@@ -30,6 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="FluentValidation" />
         <Folder Include="Infrastructure\ErrorHandling\" />
         <Folder Include="Infrastructure\Context\" />
     </ItemGroup>
