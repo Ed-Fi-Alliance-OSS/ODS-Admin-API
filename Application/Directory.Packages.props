@@ -44,7 +44,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
     <!-- Microsoft Core -->
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.63.0" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.11.0" />
     <!-- Code Analysis -->
