@@ -35,6 +35,6 @@ jobs:
         run: |
           git config user.name "dependabot[bot]+commit"
           git config user.email "noreply@ed-fi.org"
-          git add $(find Application -name "packages.lock.json")
+          find Application -name "packages.lock.json" -print0 | xargs -0 --no-run-if-empty git add
           git diff --staged --quiet || git commit -m "Update packages.lock.json after Dependabot package update"
           git push
