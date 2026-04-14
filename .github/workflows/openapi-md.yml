@@ -32,7 +32,7 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout the Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Git create branch
         run: |
@@ -67,7 +67,7 @@ jobs:
 
       - name: Commit file
         id: commit
-        uses: planetscale/ghcommit-action@d4176bfacef926cc2db351eab20398dfc2f593b5 #v0.2.0
+        uses: planetscale/ghcommit-action@25309d8005ac7c3bcd61d3fe19b69e0fe47dbdde # v0.2.20
         with:
           commit_message: "${{ env.CI_COMMIT_MESSAGE }}"
           repo: ${{ github.repository }}

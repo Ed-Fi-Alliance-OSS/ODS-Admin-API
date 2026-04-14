@@ -45,7 +45,7 @@ jobs:
           ]
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Set Version Numbers
         if: ${{ matrix.dockerfile.type == 'published' }}
@@ -87,7 +87,7 @@ jobs:
           fi
           
       - name: Analyze
-        uses: docker/scout-action@67eb1afe777307506aaecb9acd9a0e0389cb99ae # v1.5.0
+        uses: docker/scout-action@b23590dc1e4d09febc00cfcbc51e9e8c0f7ee9f3 # v1.16.1
         with:
           command: cves
           image: local://${{ matrix.dockerfile.name }}
@@ -97,6 +97,6 @@ jobs:
       - name: Upload SARIF result
         id: upload-sarif
         if: ${{ github.event_name != 'pull_request_target' }}
-        uses: github/codeql-action/upload-sarif@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 #codeql-bundle-v3.28.0
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
         with:
           sarif_file: sarif-${{ matrix.dockerfile.name }}.output.json
