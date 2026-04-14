@@ -78,3 +78,4 @@ coveragereport/
 
 # Git worktrees
 .claude/worktrees/
+.claude/settings.local.json
