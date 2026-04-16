@@ -578,7 +578,7 @@
       },
       "log4net": {
         "type": "CentralTransitive",
-        "requested": "[3.0.0, )",
+        "requested": "[3.3.0, )",
         "resolved": "2.0.15",
         "contentHash": "GahnO9ZgFka+xYcFwAfIFjW+k86P2nxFoaEpH6t3v4hiGj7tv2ksVZphxCVIHmJxoySS0HeU3dgCW+bSCcfD0A==",
         "dependencies": {

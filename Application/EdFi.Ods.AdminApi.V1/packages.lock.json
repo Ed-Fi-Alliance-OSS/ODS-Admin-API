@@ -84,9 +84,9 @@
       },
       "log4net": {
         "type": "Direct",
-        "requested": "[3.0.0, )",
-        "resolved": "3.0.0",
-        "contentHash": "qMdZQuo3u7aurPbcyO55xe6GykvhVOxIFqzdA1uMPQb4IldIMez8z4jA71PBSuZqTljzYxtjIGcIhiKjt5F1cw==",
+        "requested": "[3.3.0, )",
+        "resolved": "3.3.0",
+        "contentHash": "wtZ7K4XGWDxeQqHbUybwIug/3AAzhKcmroLf4ENfE5GsaDIMqT3GLX24f18XPFY8Qg9vaxfMSAODwWAXqkjI/Q==",
         "dependencies": {
           "System.Configuration.ConfigurationManager": "4.5.0"
         }
