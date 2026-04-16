@@ -11,4 +11,10 @@
     <PropertyGroup>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     </PropertyGroup>
+    <ItemGroup>
+        <!-- packages.lock.json must not be published: Microsoft.NET.Sdk.Web picks up *.json
+             as Content by default, and having the lock file from multiple projects land at
+             the same relative output path triggers NETSDK1152. -->
+        <Content Remove="packages.lock.json" />
+    </ItemGroup>
 </Project>
