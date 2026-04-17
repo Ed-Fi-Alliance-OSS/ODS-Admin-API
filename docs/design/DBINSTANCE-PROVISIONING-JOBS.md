@@ -79,12 +79,19 @@ flowchart LR
 ## Core model and invariants
 
 * `DbInstance.DatabaseTemplate` maps to both `SandboxType` and `OdsInstance.InstanceType`.
-* `DbInstance.DatabaseName` is generated once as `Guid.NewGuid().ToString("N")` and then reused on retries.
-* The synchronized final name is always `DbInstance.Name + " - " + DbInstance.Id`.
+* `DbInstance.DatabaseName` is generated once as `EdFi_Ods_<normalized DbInstance.Name>_<normalized DbInstance.DatabaseTemplate>` and then reused on retries.
+* Spaces in both `DbInstance.Name` and `DbInstance.DatabaseTemplate` are normalized to `_` when building `DbInstance.DatabaseName`.
+* Duplicate leading `EdFi_Ods` prefix variants are removed from the normalized `DbInstance.Name` segment, case-insensitively, before composing the final database name.
+* Prefix de-duplication applies only to the leading `DbInstance.Name` segment, not to later occurrences inside the user-provided name.
+* If the normalized `DbInstance.Name` segment collapses to empty because it only contained a prefix variant, the final database name becomes `EdFi_Ods_<normalized DbInstance.DatabaseTemplate>`.
+* `AddDbInstance` rejects requests whose generated database name would exceed 63 characters instead of trimming it.
+* `AddDbInstance` rejects requests when the trimmed `DbInstance.Name` already exists in either `adminapi.DbInstances.Name` or `admin.OdsInstances.Name`.
+* The synchronized final name is always `DbInstance.Name`.
 * The final name is written to both `DbInstance.OdsInstanceName` and `OdsInstance.Name`.
 * `OdsInstance.ConnectionString` is derived from the configured `EdFi_Ods` connection-string shape and encrypted with `AppSettings:EncryptionKey`.
 * `CreateInstanceJob` only processes `Pending` rows.
 * The dispatcher only scans rows in `Pending` or `Error`.
+* `AddDbInstance` validates `DbInstance.Name` so only `A-Za-z0-9 _` characters are accepted before background work is scheduled.
 
 ## Runtime flow
 
@@ -105,6 +112,7 @@ sequenceDiagram
     participant Status as adminapi.JobStatuses
 
     Client->>API: POST /v2/dbinstances
+    API->>Db: Reject if DbInstance or OdsInstance name already exists
     API->>Db: Insert DbInstance with Pending status
     API->>Quartz: Schedule CreateInstanceJob StartNow
     API-->>Client: 202 Accepted with Location header
@@ -113,7 +121,7 @@ sequenceDiagram
     Worker->>Db: Load row, require Pending, set InProgress
     Worker->>Db: Generate and persist DatabaseName when missing
     Worker->>Provisioner: AddSandboxAsync(DatabaseName, SandboxType)
-    Worker->>Users: Insert or update final-name OdsInstance
+    Worker->>Users: Insert or update name-matched OdsInstance
     Worker->>Db: Set OdsInstanceId, OdsInstanceName, Completed
     Worker->>Status: Mark run Completed or Error
 ```
@@ -235,6 +243,14 @@ This separation keeps the worker small and deterministic. It also avoids teachin
 ### Why retries replay the whole flow
 
 Retries reuse the same `DbInstance.DatabaseName` and replay the full create path instead of special-casing only one step. That keeps the happy path and the retry path aligned, and it relies on `AddSandboxAsync` being able to recreate the sandbox for the same database name.
+
+### Why character validation happens at the endpoint
+
+The sandbox provisioners only accept database identifiers that contain letters, numbers, and underscores. `AddDbInstance` therefore rejects `DbInstance.Name` values outside `A-Za-z0-9 _` before the worker is scheduled. That keeps invalid characters out of the persisted create flow while still allowing spaces in the request contract and normalizing those spaces to underscores in the worker-generated database name.
+
+### Why the feature rejects long database names
+
+The feature uses a 63-character portable limit for generated database names and rejects requests above that limit instead of trimming them. PostgreSQL may apply identifier-length behavior differently than SQL Server, but the Admin API persists `DbInstance.DatabaseName`, uses it to build the encrypted ODS connection string, and uses the same value for provisioning and status checks. Rejecting oversized names keeps the persisted value aligned with the actual provisioned database across supported engines and avoids silent truncation collisions.
 
 ### Why retry count comes from `JobStatuses`
 

@@ -1,0 +1,22 @@
+meta {
+  name: DbInstances - Delete - Success
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{API_URL}}/v2/dbinstances/{{FreshPendingDbInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE DbInstance Success: Status code is No Content", function () {
+    expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

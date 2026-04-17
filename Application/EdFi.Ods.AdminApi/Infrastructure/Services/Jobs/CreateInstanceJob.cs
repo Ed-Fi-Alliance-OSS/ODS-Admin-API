@@ -6,6 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Features.DbInstances;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
@@ -95,7 +96,7 @@ public class CreateInstanceJob(
 
             ValidatePendingState(dbInstance);
 
-            var finalName = $"{dbInstance.Name} - {dbInstance.Id}";
+            var finalName = dbInstance.Name;
             ValidateFinalName(finalName);
             var existingOdsInstance = await GetExistingOdsInstanceByNameAsync(resolvedUsersContext, finalName);
 
@@ -103,7 +104,9 @@ public class CreateInstanceJob(
             dbInstance.Status = DbInstanceStatus.InProgress.ToString();
             if (string.IsNullOrWhiteSpace(dbInstance.DatabaseName))
             {
-                dbInstance.DatabaseName = Guid.NewGuid().ToString("N");
+                dbInstance.DatabaseName = DbInstanceDatabaseNameFormatter.Build(
+                    dbInstance.Name,
+                    dbInstance.DatabaseTemplate);
             }
 
             dbInstance.LastModifiedDate = now;
