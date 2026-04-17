@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: Apache-2.0
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.V2.Infrastructure.Security;
+using Microsoft.EntityFrameworkCore;
+
+namespace EdFi.Ods.AdminApi.V2.Infrastructure;
+
+public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, IConfiguration configuration) : DbContext(options)
+{
+    private readonly IConfiguration _configuration = configuration;
+
+    public DbSet<JobStatus> JobStatuses { get; set; }
+
+    public DbSet<EducationOrganization> EducationOrganizations { get; set; }
+
+    public DbSet<DbInstance> DbInstances { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.HasDefaultSchema("adminapi");
+
+        modelBuilder.Entity<ApiApplication>().ToTable("Applications").HasKey(a => a.Id);
+        modelBuilder.Entity<ApiScope>().ToTable("Scopes").HasKey(s => s.Id);
+        modelBuilder.Entity<ApiAuthorization>().ToTable("Authorizations").HasKey(a => a.Id);
+        modelBuilder.Entity<ApiToken>().ToTable("Tokens").HasKey(t => t.Id);
+        modelBuilder.Entity<EducationOrganization>().ToTable("EducationOrganizations").HasKey(t => t.Id);
+        modelBuilder.Entity<JobStatus>().ToTable("JobStatuses").HasKey(t => t.Id);
+        modelBuilder.Entity<DbInstance>().ToTable("DbInstances").HasKey(t => t.Id);
+
+        var engine = _configuration.Get("AppSettings:DatabaseEngine", "SqlServer");
+        modelBuilder.ApplyDatabaseServerSpecificConventions(engine);
+    }
+}
