@@ -19,7 +19,7 @@ public class ReadAuthorizationStrategy : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/authorizationStrategies", GetAuthStrategies)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<AuthorizationStrategyModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetAuthStrategies(IGetAuthStrategiesQuery getAuthStrategiesQuery, [AsParameters] CommonQueryParams commonQueryParams)

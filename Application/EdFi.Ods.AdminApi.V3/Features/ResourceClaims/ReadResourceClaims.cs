@@ -21,12 +21,12 @@ public class ReadResourceClaims : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/resourceClaims", GetResourceClaims)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<List<ResourceClaimModel>>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/resourceClaims/{id}", GetResourceClaim)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ResourceClaimModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetResourceClaims(IGetResourceClaimsQuery getResourceClaimsQuery, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)

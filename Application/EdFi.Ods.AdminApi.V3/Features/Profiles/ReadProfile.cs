@@ -20,12 +20,12 @@ public class ReadProfile : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/profiles", GetProfiles)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ProfileModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/profiles/{id}", GetProfile)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ProfileDetailsModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetProfiles(IGetProfilesQuery getProfilesQuery, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)

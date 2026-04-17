@@ -20,7 +20,7 @@ public class AddClaimSet : IFeature
         AdminApiEndpointBuilder.MapPost(endpoints, "/claimSets", Handle)
         .WithDefaultSummaryAndDescription()
         .WithRouteOptions(b => b.WithResponseCode(201))
-        .BuildForVersions(AdminApiVersions.V2);
+        .BuildForVersions(AdminApiVersions.V3);
     }
 
     public async Task<IResult> Handle(Validator validator, AddClaimSetCommand addClaimSetCommand,

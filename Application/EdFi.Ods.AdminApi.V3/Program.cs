@@ -28,7 +28,7 @@ builder.AddLoggingServices();
 // logging
 var _logger = LogManager.GetLogger("Program");
 _logger.Info("Starting Admin API");
-var adminApiMode = builder.Configuration.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
+var adminApiMode = builder.Configuration.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V3);
 var databaseEngine = builder.Configuration.GetValue<string>("AppSettings:DatabaseEngine");
 
 // Log configuration values as requested
@@ -51,7 +51,7 @@ AdminApiVersions.Initialize(app);
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<AdminApiModeValidationMiddleware>();
 
-if (adminApiMode == AdminApiMode.V2)
+if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
     app.UseMiddleware<TenantResolverMiddleware>();
 
 app.UseRouting();
@@ -97,7 +97,7 @@ var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
     "AppSettings:MultiTenancy"
 );
 
-if (adminApiMode == AdminApiMode.V2)
+if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
 {
     if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
     {

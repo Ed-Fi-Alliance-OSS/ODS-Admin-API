@@ -65,12 +65,12 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         EnableMultiTenancySupport(webApplicationBuilder);
 
-        var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
+        var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V3);
         Assembly assembly;
 
         webApplicationBuilder.Services.AddScoped<InstanceContext>();
 
-        if (adminApiMode == AdminApiMode.V2)
+        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
         {
             assembly = Assembly.GetExecutingAssembly();
 
@@ -94,7 +94,7 @@ public static class WebApplicationBuilderExtensions
             opt.AssumeDefaultVersionWhenUnspecified = false;
         });
 
-        if (adminApiMode is AdminApiMode.V2)
+        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
         {
             // Add Quartz services
             RegisterQuartzServices(webApplicationBuilder);
@@ -270,7 +270,7 @@ public static class WebApplicationBuilderExtensions
     {
         IConfiguration config = webApplicationBuilder.Configuration;
 
-        var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
+        var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V3);
         var multiTenancyEnabled = config.Get("AppSettings:MultiTenancy", false);
 
         switch (adminApiMode)
@@ -345,6 +345,7 @@ public static class WebApplicationBuilderExtensions
                 }
                 break;
             case AdminApiMode.V2:
+            case AdminApiMode.V3:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
                     webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
@@ -415,7 +416,7 @@ public static class WebApplicationBuilderExtensions
                 break;
             default:
                 throw new InvalidOperationException(
-                    $"Invalid adminApiMode: {adminApiMode}. Must be 'v1' or 'v2'"
+                    $"Invalid adminApiMode: {adminApiMode}. Must be 'v1', 'v2', or 'v3'"
                 );
         }
 

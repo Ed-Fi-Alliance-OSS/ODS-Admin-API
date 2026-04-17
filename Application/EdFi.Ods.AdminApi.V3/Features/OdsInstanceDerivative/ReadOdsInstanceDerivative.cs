@@ -17,12 +17,12 @@ public class ReadOdsInstanceDerivative : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstanceDerivatives", GetOdsInstanceDerivatives)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<OdsInstanceDerivativeModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstanceDerivatives/{id}", GetOdsInstanceDerivative)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<OdsInstanceDerivativeModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetOdsInstanceDerivatives(IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, [AsParameters] CommonQueryParams commonQueryParams)

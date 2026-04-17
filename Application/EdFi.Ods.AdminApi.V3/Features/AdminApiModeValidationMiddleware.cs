@@ -19,7 +19,7 @@ public class AdminApiModeValidationMiddleware
     public AdminApiModeValidationMiddleware(RequestDelegate next, IOptions<AppSettings> options)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
-        _adminApiMode = Enum.Parse<AdminApiMode>(options.Value.AdminApiMode ?? AdminApiMode.V2.ToString(), true);
+        _adminApiMode = Enum.Parse<AdminApiMode>(options.Value.AdminApiMode ?? AdminApiMode.V3.ToString(), true);
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -60,6 +60,7 @@ public class AdminApiModeValidationMiddleware
 
         return path switch
         {
+            var p when p.Contains("/v3/", StringComparison.OrdinalIgnoreCase) => AdminApiMode.V3,
             var p when p.Contains("/v2/", StringComparison.OrdinalIgnoreCase) => AdminApiMode.V2,
             var p when p.Contains("/v1/", StringComparison.OrdinalIgnoreCase) => AdminApiMode.V1,
             _ => AdminApiMode.Unversioned

@@ -16,7 +16,7 @@ public class ReadResourceClaimActions : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/resourceClaimActions", GetResourceClaimsActions)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<List<ResourceClaimActionModel>>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetResourceClaimsActions(IGetResourceClaimActionsQuery getResourceClaimActionsQuery, [AsParameters] CommonQueryParams commonQueryParams, string? resourceName)

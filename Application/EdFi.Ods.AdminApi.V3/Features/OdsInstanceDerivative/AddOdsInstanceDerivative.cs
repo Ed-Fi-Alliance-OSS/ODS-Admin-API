@@ -23,7 +23,7 @@ public class AddOdsInstanceDerivative : IFeature
            .MapPost(endpoints, "/odsInstanceDerivatives", Handle)
            .WithDefaultSummaryAndDescription()
            .WithRouteOptions(b => b.WithResponseCode(201))
-           .BuildForVersions(AdminApiVersions.V2);
+           .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceDerivativeCommand addOdsInstanceDerivativeCommand, AddOdsInstanceDerivativeRequest request)

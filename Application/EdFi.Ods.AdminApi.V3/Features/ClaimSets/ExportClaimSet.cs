@@ -18,7 +18,7 @@ public class ExportClaimSet : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/claimSets/{id}/export", GetClaimSet)
             .WithSummary("Exports a specific claimset by id")
             .WithRouteOptions(b => b.WithResponse<ClaimSetDetailsModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetClaimSet(IGetClaimSetByIdQuery getClaimSetByIdQuery,

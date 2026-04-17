@@ -22,7 +22,7 @@ public class DeleteDbInstance : IFeature
             .MapDelete(endpoints, "/dbInstances/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static Task<IResult> Handle(

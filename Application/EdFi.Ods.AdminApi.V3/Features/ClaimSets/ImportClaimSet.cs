@@ -20,7 +20,7 @@ public class ImportClaimSet : IFeature
         AdminApiEndpointBuilder.MapPost(endpoints, "/claimSets/import", Handle)
             .WithSummary("Imports a new claimset")
             .WithRouteOptions(b => b.WithResponseCode(201))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal async Task<IResult> Handle(Validator validator, AddClaimSetCommand addClaimSetCommand,

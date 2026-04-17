@@ -4,7 +4,8 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 using EdFi.Ods.AdminApi.Common.Constants;
 using AdminApiV1Features = EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
-using AdminApiV2Features = EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
+using AdminApiV2Features = EdFi.Ods.AdminApi.V2.Infrastructure.Helpers;
+using AdminApiV3Features = EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure;
 
@@ -12,7 +13,7 @@ public static class WebApplicationExtensions
 {
     public static void MapFeatureEndpoints(this WebApplication application)
     {
-        var adminApiMode = application.Configuration.GetValue<AdminApiMode>("AppSettings:adminApiMode", AdminApiMode.V2);
+        var adminApiMode = application.Configuration.GetValue<AdminApiMode>("AppSettings:adminApiMode", AdminApiMode.V3);
 
         switch (adminApiMode)
         {
@@ -26,6 +27,13 @@ public static class WebApplicationExtensions
 
             case AdminApiMode.V2:
                 foreach (var routeBuilder in AdminApiV2Features.AdminApiFeatureHelper.GetFeatures())
+                {
+                    routeBuilder.MapEndpoints(application);
+                }
+                break;
+
+            case AdminApiMode.V3:
+                foreach (var routeBuilder in AdminApiV3Features.AdminApiFeatureHelper.GetFeatures())
                 {
                     routeBuilder.MapEndpoints(application);
                 }

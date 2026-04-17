@@ -19,7 +19,7 @@ public class DeleteApplication : IFeature
         AdminApiEndpointBuilder.MapDelete(endpoints, "/applications/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static Task<IResult> Handle(IDeleteApplicationCommand deleteApplicationCommand, int id)

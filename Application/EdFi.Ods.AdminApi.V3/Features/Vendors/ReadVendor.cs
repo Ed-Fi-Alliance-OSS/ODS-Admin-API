@@ -20,12 +20,12 @@ public class ReadVendor : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/vendors", GetVendors)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<VendorModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/vendors/{id}", GetVendor)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<VendorModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetVendors(

@@ -22,7 +22,7 @@ public class AddProfile : IFeature
            .MapPost(endpoints, "/profiles", Handle)
            .WithDefaultSummaryAndDescription()
            .WithRouteOptions(b => b.WithResponseCode(201))
-           .BuildForVersions(AdminApiVersions.V2);
+           .BuildForVersions(AdminApiVersions.V3);
     }
 
     [ProfileRequestExample]

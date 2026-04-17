@@ -22,7 +22,7 @@ public class ResetApplicationCredentials : IFeature
         AdminApiEndpointBuilder.MapPut(endpoints, "/applications/{id}/reset-credential", HandleResetCredentials)
             .WithSummary("Reset application credentials. Returns new key and secret.")
             .WithRouteOptions(b => b.WithResponse<ApplicationResult>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> HandleResetCredentials(RegenerateApplicationApiClientSecretCommand resetSecretCommand, IOptions<AppSettings> settings, int id)

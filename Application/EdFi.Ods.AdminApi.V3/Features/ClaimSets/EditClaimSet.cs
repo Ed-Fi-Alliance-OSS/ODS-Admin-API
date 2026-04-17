@@ -23,7 +23,7 @@ public class EditClaimSet : IFeature
         AdminApiEndpointBuilder.MapPut(endpoints, "/claimSets/{id}", Handle)
         .WithDefaultSummaryAndDescription()
         .WithRouteOptions(b => b.WithResponseCode(200))
-        .BuildForVersions(AdminApiVersions.V2);
+        .BuildForVersions(AdminApiVersions.V3);
     }
 
     public async Task<IResult> Handle(Validator validator, IEditClaimSetCommand editClaimSetCommand,

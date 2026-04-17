@@ -21,7 +21,7 @@ public class AddVendor : IFeature
             .MapPost(endpoints, "/vendors", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(201))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public async static Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, AddVendorRequest request)

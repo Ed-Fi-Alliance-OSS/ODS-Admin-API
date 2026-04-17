@@ -27,7 +27,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data from all ODS instances"
             )
             .WithRouteOptions(b => b.WithResponseCode(202))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/odsInstances/{instanceId}/edOrgs/refresh", RefreshEducationOrganizationsByInstance)
@@ -38,7 +38,7 @@ public class RefreshEducationOrganizations : IFeature
             .WithRouteOptions(b => b
                 .WithResponseCode(202)
                 .WithResponseCode(404))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> RefreshAllEducationOrganizations(

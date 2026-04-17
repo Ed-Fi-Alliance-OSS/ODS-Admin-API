@@ -25,7 +25,7 @@ public class EditOdsInstanceDerivative : IFeature
             .MapPut(endpoints, "/odsInstanceDerivatives/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(Validator validator, IEditOdsInstanceDerivativeCommand editOdsInstanceDerivativeCommand, IUsersContext db, EditOdsInstanceDerivativeRequest request, int id)
