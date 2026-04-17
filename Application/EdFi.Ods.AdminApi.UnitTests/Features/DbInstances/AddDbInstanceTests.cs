@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
@@ -50,6 +52,15 @@ public class AddDbInstanceTests
     private static IOptions<AppSettings> CreateOptions(bool multiTenancy = false)
         => Options.Create(new AppSettings { MultiTenancy = multiTenancy });
 
+    private static SqlServerUsersContext CreateUsersContext()
+    {
+        var options = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"AddDbInstanceUsers_{Guid.NewGuid()}")
+            .Options;
+
+        return new SqlServerUsersContext(options);
+    }
+
     private static IContextProvider<TenantConfiguration> CreateTenantConfigurationProvider(string? tenantIdentifier = null)
     {
         var provider = A.Fake<IContextProvider<TenantConfiguration>>();
@@ -80,7 +91,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithValidRequest_ReturnsAccepted()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -100,7 +112,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithValidRequest_PersistsDbInstance()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -120,7 +133,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithValidRequest_SchedulesCreateInstanceJob()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out var scheduler);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -150,7 +164,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithMultiTenancyEnabled_SchedulesTenantAwareCreateInstanceJob()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out var scheduler);
         var tenantProvider = CreateTenantConfigurationProvider("tenant1");
@@ -180,7 +195,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithEmptyName_ThrowsValidationException()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -198,7 +214,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithNullName_ThrowsValidationException()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -216,7 +233,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithNameExceedingMaxLength_ThrowsValidationException()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -231,10 +249,76 @@ public class AddDbInstanceTests
     }
 
     [Test]
+    public async Task Handle_WithNameAtPortableDatabaseNameLimit_ReturnsAccepted()
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
+        var command = new AddDbInstanceCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out _);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+        var request = new AddDbInstance.AddDbInstanceRequest
+        {
+            Name = new string('a', 46),
+            DatabaseTemplate = "Minimal"
+        };
+
+        var result = await AddDbInstance.Handle(validator, command, schedulerFactory, tenantProvider, options, request);
+
+        result.ShouldBeOfType<Accepted>();
+    }
+
+    [Test]
+    public async Task Handle_WithFormattedDatabaseNameExceedingPortableLimit_ThrowsValidationException()
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
+        var command = new AddDbInstanceCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out _);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+        var request = new AddDbInstance.AddDbInstanceRequest
+        {
+            Name = new string('a', 47),
+            DatabaseTemplate = "Minimal"
+        };
+
+        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, schedulerFactory, tenantProvider, options, request));
+
+        exception.Errors.ShouldContain(error =>
+            error.PropertyName == nameof(AddDbInstance.AddDbInstanceRequest.Name)
+            && error.ErrorMessage.Contains("portable limit of 63 characters"));
+    }
+
+    [TestCase("My-DB-Instance")]
+    [TestCase("My.DB.Instance")]
+    [TestCase("My/DB/Instance")]
+    public async Task Handle_WithInvalidNameCharacters_ThrowsValidationException(string name)
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
+        var command = new AddDbInstanceCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out _);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+        var request = new AddDbInstance.AddDbInstanceRequest
+        {
+            Name = name,
+            DatabaseTemplate = "Minimal"
+        };
+
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, schedulerFactory, tenantProvider, options, request));
+    }
+
+    [Test]
     public async Task Handle_WithEmptyDatabaseTemplate_ThrowsValidationException()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -252,7 +336,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithNullDatabaseTemplate_ThrowsValidationException()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -270,7 +355,8 @@ public class AddDbInstanceTests
     public async Task Handle_WithInvalidDatabaseTemplate_ThrowsValidationException()
     {
         using var context = CreateContext();
-        var validator = new AddDbInstance.Validator();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
         var command = new AddDbInstanceCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
@@ -282,6 +368,72 @@ public class AddDbInstanceTests
         };
 
         await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, schedulerFactory, tenantProvider, options, request));
+    }
+
+    [Test]
+    public async Task Handle_WithExistingDbInstanceName_ThrowsValidationException()
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
+        var command = new AddDbInstanceCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out _);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+
+        context.DbInstances.Add(new Common.Infrastructure.Models.DbInstance
+        {
+            Name = "Existing Instance",
+            DatabaseTemplate = "Minimal",
+            Status = "Pending",
+            LastModifiedDate = DateTime.UtcNow,
+            LastRefreshed = DateTime.UtcNow
+        });
+        await context.SaveChangesAsync();
+
+        var request = new AddDbInstance.AddDbInstanceRequest
+        {
+            Name = "Existing Instance",
+            DatabaseTemplate = "Minimal"
+        };
+
+        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, schedulerFactory, tenantProvider, options, request));
+
+        exception.Errors.ShouldContain(error =>
+            error.PropertyName == nameof(AddDbInstance.AddDbInstanceRequest.Name)
+            && error.ErrorMessage == "A DbInstance named 'Existing Instance' already exists.");
+    }
+
+    [Test]
+    public async Task Handle_WithExistingOdsInstanceName_ThrowsValidationException()
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDbInstance.Validator(context, usersContext);
+        var command = new AddDbInstanceCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out _);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+
+        usersContext.OdsInstances.Add(new OdsInstance
+        {
+            Name = "Existing Instance",
+            InstanceType = "Minimal",
+            ConnectionString = "encrypted::existing"
+        });
+        await usersContext.SaveChangesAsync();
+
+        var request = new AddDbInstance.AddDbInstanceRequest
+        {
+            Name = "Existing Instance",
+            DatabaseTemplate = "Minimal"
+        };
+
+        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, schedulerFactory, tenantProvider, options, request));
+
+        exception.Errors.ShouldContain(error =>
+            error.PropertyName == nameof(AddDbInstance.AddDbInstanceRequest.Name)
+            && error.ErrorMessage == "An OdsInstance named 'Existing Instance' already exists.");
     }
 }
 
