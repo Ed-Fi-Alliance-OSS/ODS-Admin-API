@@ -1,0 +1,29 @@
+meta {
+  name: DbInstances - Without Offset
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{API_URL}}/v2/dbinstances?limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET DbInstances Without Offset: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("GET DbInstances Without Offset: Response is an array", function () {
+    expect(res.getBody()).to.be.an("array");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

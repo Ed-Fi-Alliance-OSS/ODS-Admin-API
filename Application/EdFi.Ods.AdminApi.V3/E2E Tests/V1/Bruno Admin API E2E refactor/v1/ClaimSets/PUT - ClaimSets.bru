@@ -1,0 +1,98 @@
+meta {
+  name: ClaimSets
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id": {{CreatedClaimSetId}},
+      "name": "Updated Test ClaimSet {{ClaimSetGUID}}",
+      "resourceClaims": [
+        {
+          "name": "educationStandards",
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": [
+            {
+              "name": "learningObjective",
+              "read": true,
+              "create": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "children": []
+            }
+          ]
+        }      
+      ]
+  }
+  
+}
+
+script:pre-request {
+  bru.setVar("ClaimSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = response ? response.result : null;
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("claimset");
+      expect(response.title.toLowerCase()).to.contain("updated");
+  });
+  
+  test("Response result includes updated claimset", function () {
+      if(result) {
+          expect(result.name).contains("Updated Test ClaimSet");
+          expect(result.isSystemReserved).to.equal(false);
+          expect(result.applicationsCount).to.equal(0);
+          expect(result.resourceClaims).to.not.be.empty;
+          const educationStandardsResourceClaim = result.resourceClaims.find(r => r.name === "educationStandards")
+          expect(educationStandardsResourceClaim).to.be.an("object", "The educationStandards resource claim was not found.")
+          const academicSubjectDescriptorResourceClaim = result.resourceClaims.some(r => r.name === "academicSubjectDescriptor")
+          expect(academicSubjectDescriptorResourceClaim).to.equal(false);
+      } else {
+          throw new Error("Result is null or undefined");
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

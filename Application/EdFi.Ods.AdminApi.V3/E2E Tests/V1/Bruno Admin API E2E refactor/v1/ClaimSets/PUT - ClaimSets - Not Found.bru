@@ -1,0 +1,41 @@
+meta {
+  name: ClaimSets - Not Found
+  type: http
+  seq: 32
+}
+
+put {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id": {{CreatedClaimSetId}},
+      "name": "Edited-ClaimSet",
+      "resourceClaims": []
+  }
+  
+}
+
+script:post-response {
+  test("Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("not found");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

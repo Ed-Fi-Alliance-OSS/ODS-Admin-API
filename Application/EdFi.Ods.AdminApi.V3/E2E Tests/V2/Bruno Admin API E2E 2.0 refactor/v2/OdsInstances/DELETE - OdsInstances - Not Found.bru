@@ -1,0 +1,44 @@
+meta {
+  name: OdsInstances - Not Found
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{API_URL}}/v2/odsInstances/{{NotExistOdsInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  function randomIntFromInterval(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+  
+  const rndInt = randomIntFromInterval(99990, 99999)
+  bru.setVar("NotExistOdsInstanceId", bru.interpolate(rndInt));
+}
+
+script:post-response {
+  test("DELETE OdsInstance NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("DELETE OdsInstance NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("DELETE OdsInstance NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstance");
+      expect(response.title).to.contain(bru.getVar("NotExistOdsInstanceId"));
+  });
+}
+
+settings {
+  encodeUrl: true
+}

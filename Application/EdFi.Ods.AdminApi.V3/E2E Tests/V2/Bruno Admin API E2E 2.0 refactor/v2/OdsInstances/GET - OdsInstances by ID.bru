@@ -1,0 +1,73 @@
+meta {
+  name: OdsInstances by ID
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstancesID: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  test("GET OdsInstancesID: Response matches success format", function () {
+      expect(response).to.have.property("id");
+      expect(response).to.have.property("name");
+      expect(response).to.have.property("instanceType");
+      expect(response).to.have.property("odsInstanceContexts");
+      expect(response).to.have.property("odsInstanceDerivatives");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetOdsInstancesIdSchema = {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "instanceType": {
+        "type": "string"
+      },
+      "odsInstanceContexts": {
+            "type": "array",
+            "items": {}
+      },
+      "odsInstanceDerivatives": {
+            "type": "array",
+            "items": {}
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "instanceType",
+      "odsInstanceContexts",
+      "odsInstanceDerivatives"
+    ]
+  }
+  
+  test("GET OdsInstancesID: Validation Schema Response", () => {
+      const valid = ajv.validate(GetOdsInstancesIdSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,186 @@
+meta {
+  name: ClaimSets - Invalid Resource Duplication
+  type: http
+  seq: 24
+}
+
+put {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id": {{CreatedClaimSetId}},
+      "name": "Resource-Duplication",
+      "resourceClaims": [
+        {
+          "name": "educationStandards",
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "defaultAuthStrategiesForCRUD": [
+            {
+              "authStrategyName": "NamespaceBased",
+              "isInheritedFromParent": false
+            },
+            {
+              "authStrategyName": "NoFurtherAuthorizationRequired",
+              "isInheritedFromParent": false
+            },
+            {
+              "authStrategyName": "NamespaceBased",
+              "isInheritedFromParent": false
+            },
+            {
+              "authStrategyName": "NamespaceBased",
+              "isInheritedFromParent": false
+            }
+          ],
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": [
+            {
+              "name": "learningObjective",
+              "read": true,
+              "create": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "defaultAuthStrategiesForCRUD": [
+                {
+                  "authStrategyName": "NamespaceBased",
+                  "isInheritedFromParent": true
+                },
+                {
+                  "authStrategyName": "NoFurtherAuthorizationRequired",
+                  "isInheritedFromParent": true
+                },
+                {
+                  "authStrategyName": "NamespaceBased",
+                  "isInheritedFromParent": true
+                },
+                {
+                  "authStrategyName": "NamespaceBased",
+                  "isInheritedFromParent": true
+                }
+              ],
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "children": []
+            },
+  		  {
+              "name": "learningObjective",
+              "read": true,
+              "create": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "defaultAuthStrategiesForCRUD": [
+                {
+                  "authStrategyName": "NamespaceBased",
+                  "isInheritedFromParent": true
+                },
+                {
+                  "authStrategyName": "NoFurtherAuthorizationRequired",
+                  "isInheritedFromParent": true
+                },
+                {
+                  "authStrategyName": "NamespaceBased",
+                  "isInheritedFromParent": true
+                },
+                {
+                  "authStrategyName": "NamespaceBased",
+                  "isInheritedFromParent": true
+                }
+              ],
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "academicSubjectDescriptor",
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "defaultAuthStrategiesForCRUD": [
+            {
+              "authStrategyName": "NamespaceBased",
+              "isInheritedFromParent": true
+            },
+            {
+              "authStrategyName": "NoFurtherAuthorizationRequired",
+              "isInheritedFromParent": true
+            },
+            {
+              "authStrategyName": "NamespaceBased",
+              "isInheritedFromParent": true
+            },
+            {
+              "authStrategyName": "NamespaceBased",
+              "isInheritedFromParent": true
+            }
+          ],
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": []
+        }      
+      ]
+  }
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  const errors = res.getBody().errors;
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("Response errors include messages by property and resource", function () {
+      expect(response.errors.ResourceClaims.length).to.equal(1);
+      ["Only unique resource claims", "duplicate resource: 'learningObjective'"].forEach((substring) => {
+          expect(response.errors.ResourceClaims[0]).to.contain(substring);
+      });
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,84 @@
+meta {
+  name: Vendors
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{API_URL}}/v2/vendors/{{CreatedVendorId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "company": "Updated Test Company",
+      "namespacePrefixes": "uri://academicbenchmarks.com",
+      "contactName": "Updated User",
+      "contactEmailAddress": "updated@example.com"
+  }
+}
+
+script:post-response {
+  test("PUT Vendors: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  console.log("🔧 Setting post environment to ignore SSL certificates...");
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const vendorCreated = bru.getVar("CreatedVendorId");
+    const vendorResponse = await axios.get(`${API_URL}/v2/vendors/${vendorCreated}`, axiosConfig);
+
+    if (vendorResponse.status === 200) {
+      console.log("✅ Vendor loaded");
+      const vendorJson = vendorResponse.data;
+      test("PUT Profiles: Response includes updated profile", function () {
+        expect(vendorJson.company).to.equal("Updated Test Company");
+        expect(vendorJson.namespacePrefixes).to.equal("uri://academicbenchmarks.com");
+        expect(vendorJson.contactName).to.equal("Updated User");
+        expect(vendorJson.contactEmailAddress).to.equal("updated@example.com");
+       });
+    } else {
+      console.log("❌ Failed to get vendor");
+      console.log("Status:", vendorResponse.status);
+      console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
+      throw new Error(`Failed to get vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }    
+  } catch (error) {
+    console.log("Error in post-request setup:", error.message);
+  }  
+}
+
+settings {
+  encodeUrl: true
+}

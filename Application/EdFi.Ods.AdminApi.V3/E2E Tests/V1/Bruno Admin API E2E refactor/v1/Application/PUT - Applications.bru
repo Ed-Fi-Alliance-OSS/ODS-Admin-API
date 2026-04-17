@@ -1,0 +1,115 @@
+meta {
+  name: Applications_2
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{API_URL}}/v1/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "applicationId": {{CreatedApplicationId}},
+    "applicationName": "Updated Application Name",
+    "vendorId": {{OtherApplicationVendorId}},
+    "claimSetName": "Ed-Fi ODS Admin App",
+    "profileId": null,
+    "educationOrganizationIds": [1234]
+  }
+  
+}
+
+script:post-response {
+
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("application");
+      expect(response.title.toLowerCase()).to.contain("updated");
+  });
+  
+  test("Response result includes updated application", function () {
+      expect(result.applicationName).to.equal("Updated Application Name");
+      expect(result.claimSetName).to.equal("Ed-Fi ODS Admin App");
+      expect(result.educationOrganizationIds).to.length(1);
+      expect(result.educationOrganizationIds[0]).to.equal(1234);
+      expect(result.profileName).to.equal(null);
+      expect(result.odsInstanceName).to.equal(null);
+  });
+  
+  test("Response result does not include application key and secret", function () {
+      expect(result).to.not.have.property("key");
+      expect(result).to.not.have.property("secret");
+  });
+  
+  console.log("🔧 Setting environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+    // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+  
+  let vendorResponse = null;
+
+  try {
+    // Create a vendor for the application test
+    vendorResponse = await axios.get(`${API_URL}/v1/vendors/${bru.getVar("ApplicationVendorId")}/applications`, axiosConfig);
+
+    if (vendorResponse.status === 200 && vendorResponse.data && vendorResponse.data.result) {
+      console.log("✅ Vendor related with Application");
+    } else {
+      console.log("❌ Failed to request vendor with application:");
+      console.log("Status:", vendorResponse);
+      console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
+      throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in ppost-request setup:", error.message);
+  }
+
+  test("Request updated Application/Vendor relationship", function () {
+      const results = vendorResponse.data.result;
+      console.log("STATUS:", results);
+      expect(results.length).to.equal(0);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

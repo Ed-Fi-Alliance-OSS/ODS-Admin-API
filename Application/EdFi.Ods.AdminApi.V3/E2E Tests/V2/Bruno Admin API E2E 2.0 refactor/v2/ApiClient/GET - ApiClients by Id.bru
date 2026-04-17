@@ -1,0 +1,97 @@
+meta {
+  name: ApiClients by Id
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{API_URL}}/v2/apiclients/{{CreatedApiClientId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ApiClientId: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody();
+  
+  test("GET ApiClientId: Response result matches api client", function () {
+      expect(result.name).to.equal("Test ApiClient");
+      expect(result.isApproved).to.equal(true);
+      expect(result.applicationId).to.equal(parseInt(bru.getVar("CreatedApplicationId"), 10));
+      expect(result.odsInstanceIds.length).to.equal(1);
+  });
+  
+  test("GET ApiClientId: Response result does not include key or secret", function () {  
+      expect(result).to.not.have.property("secret");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetApiClientSchema = {
+      "type": "object",
+      "properties": {
+      "id": {
+          "type": "integer"
+      },
+      "key": {
+          "type": "string"
+      },
+      "name": {
+          "type": "string"
+      },
+      "isApproved": {
+          "type": "boolean"
+      },
+      "useSandbox": {
+          "type": "boolean"
+      },
+      "applicationId": {
+          "type": "integer"
+      },
+      "sandboxType": {
+          "type": "integer"
+      },
+      "keyStatus": {
+          "type": "string"
+      },
+      "educationOrganizationIds": {
+          "type": "array",
+          "items": {}
+      },
+      "odsInstanceIds": {
+          "type": "array",
+          "items": {}
+      }
+      },
+      "required": [
+      "id",
+      "key",
+      "name",
+      "isApproved",
+      "useSandbox",
+      "applicationId",
+      "sandboxType",
+      "keyStatus",
+      "educationOrganizationIds",
+      "odsInstanceIds"
+      ]
+  }
+  
+  test("GET ApiClientId: Validation Schema Response", () => {
+      const valid = ajv.validate(GetApiClientSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,96 @@
+meta {
+  name: ClaimSets - Invalid Existing ClaimSet Name
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_URL}}/v1/claimsets/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Other Test ClaimSet {{OtherClaimSetGUID}}",
+      "resourceClaims": []
+  }
+}
+
+script:pre-request {
+  bru.setVar("OtherClaimSetGUID", bru.interpolate('{{$guid}}'));
+  console.log("🔧 Setting environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  
+    // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+  
+  try {
+    // Create a claimset for test
+    const claimsetsResponse = await axios.post(`${API_URL}/v1/claimsets`, {
+        "name": `Other Test ClaimSet ${bru.getVar("OtherClaimSetGUID")}`,
+        "resourceClaims": []
+    }, axiosConfig);
+  
+    if (claimsetsResponse.status === 201 && claimsetsResponse.data && claimsetsResponse.data.result && claimsetsResponse.data.result.id) {
+      bru.setVar("OtherExistingClaimSetId", claimsetsResponse.data.result.id);
+      console.log("✅ Application created successfully with ID:", claimsetsResponse.data.result.id);
+    } else {
+      console.log("❌ Failed to create claimsets:");
+      console.log("Status:", claimsetsResponse.status);
+      console.log("Response data:", JSON.stringify(claimsetsResponse.data, null, 2));
+      throw new Error(`Failed to create claimsets - Status: ${claimsetsResponse.status}, Data: ${JSON.stringify(claimsetsResponse.data)}`);
+    }
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("Response errors include messages by property", function () {
+      expect(response.errors.Name.length).to.equal(1);
+      expect(response.errors.Name[0]).to.contain("already exists");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

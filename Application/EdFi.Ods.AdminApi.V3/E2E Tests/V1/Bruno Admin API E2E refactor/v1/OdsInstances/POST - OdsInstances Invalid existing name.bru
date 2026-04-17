@@ -1,0 +1,123 @@
+meta {
+  name: OdsInstances Invalid existing name
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v1/odsInstances
+  body: json
+  auth: inherit
+}
+
+script:pre-request {
+
+  console.log("🔧 Setting environment to ignore SSL certificates...");
+
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Generate unique identifiers to avoid conflicts
+  const timestamp = Date.now();
+  const uniqueId = Math.random().toString(36).substring(2, 8);
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  try {
+    // Create a vendor for the application test
+    const vendorResponse = await axios.post(`${API_URL}/v1/vendors`, {
+      "company": `Application Company ${timestamp}`,
+      "namespacePrefixes": "uri://ed-fi.org",
+      "contactName": `Application User ${uniqueId}`,
+      "contactEmailAddress": `application-${uniqueId}@example.com`
+    }, axiosConfig);
+
+    if (vendorResponse.status === 201 && vendorResponse.data && vendorResponse.data.result && vendorResponse.data.result.vendorId) {
+      bru.setVar("ApplicationVendorId", vendorResponse.data.result.vendorId);
+      console.log("✅ Vendor created successfully with ID:", vendorResponse.data.result.vendorId);
+    } else {
+      console.log("❌ Failed to create vendor:");
+      console.log("Status:", vendorResponse.status);
+      console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
+      throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }
+
+    // Create a ods for the application test
+    const odsResponse = await axios.post(`${API_URL}/v1/odsInstances`, {
+      "name": `Test Ods Instance`,
+      "instanceType": "Test Type",
+      "status": "Test Status",
+      "isExtended": true,
+      "version": "Test Version"
+    }, axiosConfig);
+
+    if (odsResponse.status === 201 && odsResponse.data && odsResponse.data.result && odsResponse.data.result.id) {
+      console.log("✅ Ods Instance created successfully with ID:", odsResponse.data.result.id);
+    } else {
+      console.log("❌ Failed to create ods:");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to create Ods - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    }
+
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+}
+
+body:json {
+  {
+      "name": "Test Ods Instance",
+      "instanceType": "Test Type",
+      "status": "Test Status",
+      "isExtended": true,
+      "version": "Test Version"
+  }
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+
+  test("Response errors include messages by property", function () {
+      expect(response.errors.Name.length).to.equal(1);
+      expect(response.errors.Name[0]).to.contain("already exists");
+  });
+
+}
+
+settings {
+  encodeUrl: true
+}

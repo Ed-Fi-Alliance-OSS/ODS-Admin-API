@@ -1,0 +1,65 @@
+meta {
+  name: OdsInstances
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/v1/odsInstances
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Test Ods Instance {{OdsSetGUID}}",
+      "instanceType": "Test Type",
+      "status": "Test Status",
+      "isExtended": true,
+      "version": "Test Version"
+  }
+}
+
+script:pre-request {
+  bru.setVar("OdsSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("odsinstance");
+      expect(response.title.toLowerCase()).to.contain("created");
+  });
+  
+  test("Response includes location in header", function () {
+      expect(res.getHeaders()).to.have.property("Location".toLowerCase());
+  //     pm.response.to.be.header("Location", `/odsInstances/${result.id}`);
+  });
+  
+  test("Response result includes ods instance info", function () {
+      expect(result.name).to.contains("Test Ods Instance");
+      expect(result.instanceType).to.equal("Test Type");
+      expect(result.version).to.equal("Test Version");
+      expect(result.isExtended).to.equal(true);
+      expect(result.status).to.equal("Test Status");
+  });
+  
+  if(result.id) {
+      bru.setVar("CreateOdsInstanceId", result.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

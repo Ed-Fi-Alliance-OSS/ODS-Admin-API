@@ -1,0 +1,50 @@
+meta {
+  name: Vendors with limit
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{API_URL}}/v1/vendors?limit=5
+  body: json
+  auth: inherit
+}
+
+params:query {
+  limit: 5
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response is not null", function () {
+      expect(response).to.not.be.null;
+      expect(response).to.not.be.undefined;
+  });
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  if (response && response.result) {
+    const results = response.result;
+    
+    test("Response result includes vendors", function () {
+        expect(results.length).to.eql(5);
+    });
+  } else {
+    test("Response result is missing", function () {
+        throw new Error("Response or result property is null/undefined");
+    });
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

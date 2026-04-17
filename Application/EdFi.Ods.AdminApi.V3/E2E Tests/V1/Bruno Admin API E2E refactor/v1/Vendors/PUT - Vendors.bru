@@ -1,0 +1,52 @@
+meta {
+  name: Vendors
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{API_URL}}/v1/vendors/{{CreatedVendorId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "company": "Updated Test Company",
+      "namespacePrefixes": "uri://academicbenchmarks.com",
+      "contactName": "Updated User",
+      "contactEmailAddress": "updated@example.com"
+  }
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("vendor");
+      expect(response.title.toLowerCase()).to.contain("updated");
+  });
+  
+  test("Response result includes updated vendor", function () {
+      expect(result.company).to.equal("Updated Test Company");
+      expect(result.namespacePrefixes).to.equal("uri://academicbenchmarks.com");
+      expect(result.contactName).to.equal("Updated User");
+      expect(result.contactEmailAddress).to.equal("updated@example.com");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

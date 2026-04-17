@@ -1,0 +1,74 @@
+meta {
+  name: ResourceClaimsActions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/resourceClaimActions?offset={{offset}}&limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET ResourceClaims: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  const GetResourceClaimsActionsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "resourceClaimId": {
+            "type": "integer"
+          },
+          "resourceName": {
+            "type": "string"
+          },
+          "claimName": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }]
+          }
+        },
+        "required": [
+          "resourceClaimId",
+          "resourceName",
+          "claimName",
+          "actions"
+        ]
+      }
+    ]
+  }
+  
+  test("GET ResourceClaimsActions: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetResourceClaimsActionsSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

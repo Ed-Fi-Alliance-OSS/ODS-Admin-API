@@ -1,0 +1,62 @@
+meta {
+  name: Get Claimsets order by Name Desc
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v2/claimSets?offset={{offset}}&limit={{limit}}&orderBy=Name&direction=desc
+  body: json
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  orderBy: Name
+  direction: desc
+}
+
+script:post-response {
+  test("GET Claimsets: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET Claimsets: Response result includes claimsets", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  test("GET Claimsets: Response result is ordered by Name desc", function () {
+      const results = res.getBody();
+      
+      function sortByProperty(objArray, prop, direction){ 
+          if (arguments.length<2) throw new Error("ARRAY, AND OBJECT PROPERTY MINIMUM ARGUMENTS, OPTIONAL DIRECTION"); 
+          if (!Array.isArray(objArray)) throw new Error("FIRST ARGUMENT NOT AN ARRAY"); 
+          const clone = objArray.slice(0); 
+          const direct = arguments.length>2 ? arguments[2] : 1; 
+          const propPath = (prop.constructor===Array) ? prop : prop.split("."); 
+          clone.sort(function(a,b){ 
+              for (let p in propPath){ 
+                  if (a[propPath[p]] && b[propPath[p]]){ 
+                      a = a[propPath[p]]; 
+                      b = b[propPath[p]]; 
+                  } 
+              } 
+              a = a.match(/^\d+$/) ? +a : a; 
+              b = b.match(/^\d+$/) ? +b : b; 
+              return ( (a < b) ? -1*direct : ((a > b) ? 1*direct : 0) ); 
+          }); 
+          return clone; 
+      }
+      
+      let expectedSortedOrder = sortByProperty(results, 'name', -1);
+      
+      expect(results).to.eql(expectedSortedOrder);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

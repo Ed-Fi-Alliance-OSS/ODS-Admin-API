@@ -1,0 +1,7 @@
+script:pre-request {
+  // Add tenant header if multitenant mode is enabled globally
+  console.log("Adding header Multitenant")
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    req.setHeader("Tenant", "tenant1");
+  }
+}

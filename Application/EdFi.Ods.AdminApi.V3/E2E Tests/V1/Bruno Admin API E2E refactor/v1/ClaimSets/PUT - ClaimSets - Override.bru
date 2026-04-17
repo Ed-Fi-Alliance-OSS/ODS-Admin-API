@@ -1,0 +1,109 @@
+meta {
+  name: ClaimSets - Override
+  type: http
+  seq: 17
+}
+
+put {
+  url: {{API_URL}}/v1/claimsets/{{CreatedClaimSetIdOverride}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id": {{CreatedClaimSetIdOverride}},
+      "name": "Updated Test ClaimSet Override",
+      "resourceClaims": [
+        {
+          "name": "educationStandards",
+          "read": true,
+          "create": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+             {
+            "authorizationStrategies": [
+              {
+                "authStrategyName": "RelationshipsWithPeopleOnly",
+                "isInheritedFromParent": true
+              }
+            ]
+           },
+            null,
+            null
+          ],
+          "children": [
+            {
+              "name": "learningObjective",
+              "read": true,
+              "create": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                 {
+                  "authorizationStrategies": [
+                      {
+                      "authStrategyName": "RelationshipsWithPeopleOnly",
+                      "isInheritedFromParent": true
+                      }
+                  ]
+                  },
+                null
+              ],
+              "children": []
+            }
+          ]
+        }      
+      ]
+  }
+  
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("claimset");
+      expect(response.title.toLowerCase()).to.contain("updated");
+  });
+  
+  test("Response result includes updated claimset", function () {
+      expect(result.name).to.equal("Updated Test ClaimSet Override");
+      expect(result.isSystemReserved).to.equal(false);
+      expect(result.applicationsCount).to.equal(0);
+      expect(result.resourceClaims).to.not.be.empty;
+      const educationStandardsResourceClaim = result.resourceClaims.find(r => r.name === "educationStandards")
+      expect(educationStandardsResourceClaim).to.be.an("object", "The educationStandards resource claim was not found.")
+      expect(educationStandardsResourceClaim.authStrategyOverridesForCRUD).to.not.be.empty;
+      expect(educationStandardsResourceClaim.authStrategyOverridesForCRUD[2]).to.be.an("object", "The override for update action in resource claim educationStandards was not found.")
+  
+      expect(educationStandardsResourceClaim.children).to.not.be.empty;
+      const educationStandardsChildrenResourceClaim = educationStandardsResourceClaim.children.find(r => r.name === "learningObjective")
+      expect(educationStandardsChildrenResourceClaim.authStrategyOverridesForCRUD).to.not.be.empty;
+      expect(educationStandardsChildrenResourceClaim.authStrategyOverridesForCRUD[3]).to.be.an("object", "The override for delete action in resource claim educationStandards was not found.")
+  
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,104 @@
+meta {
+  name: ClaimSets - Invalid Wrong Resource Name
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{API_URL}}/v1/claimsets/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "ClaimSet-WithWrongResource",
+      "resourceClaims": [
+        {
+          "name": "educationStandards-123",
+          "create": true,
+          "read": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": [
+            {
+              "name": "learningObjective-123",
+              "create": true,
+              "read": true,
+              "update": true,
+              "delete": true,
+              "readChanges": true,
+              "authStrategyOverridesForCRUD": [
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "NamespaceBased-123",
+          "create": true,
+          "read": true,
+          "update": true,
+          "delete": true,
+          "readChanges": true,
+          "authStrategyOverridesForCRUD": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "children": []
+        }      
+      ]
+  }
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  const errors = res.getBody().errors;
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("Response errors include messages by property and resource", function () {
+      expect(response.errors.ResourceClaims.length).to.equal(3);
+      ["not in the system", "educationStandards-123"].forEach((substring) => {
+          expect(response.errors.ResourceClaims[0]).to.contain(substring);
+      });
+      ["not in the system", "learningObjective-123"].forEach((substring) => {
+          expect(response.errors.ResourceClaims[1]).to.contain(substring);
+      });
+      ["not in the system", "NamespaceBased-123"].forEach((substring) => {
+          expect(response.errors.ResourceClaims[2]).to.contain(substring);
+      });
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

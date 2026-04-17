@@ -1,0 +1,42 @@
+meta {
+  name: ClaimSets - System Reserved
+  type: http
+  seq: 29
+}
+
+delete {
+  url: {{API_URL}}/v1/claimsets/{{SystemReservedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("Response errors include messages by property", function () {
+      expect(response.errors["id"].length).to.equal(1);
+      ["AB Connect", "system reserved"].forEach((substring) => {
+          expect(response.errors.id[0]).to.contain(substring);
+      });
+  });
+  
+  bru.deleteVar("SystemReservedClaimSetId");
+  
+}
+
+settings {
+  encodeUrl: true
+}

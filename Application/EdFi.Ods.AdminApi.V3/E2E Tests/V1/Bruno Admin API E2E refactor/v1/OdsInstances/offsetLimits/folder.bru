@@ -1,0 +1,125 @@
+meta {
+  name: offsetLimits
+}
+
+auth {
+  mode: inherit
+}
+
+script:pre-request {
+  console.log("🔧 Setting environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  let totalToCreate = parseInt(bru.getEnvVar("ODSINSTANCESCOUNT"), 10);
+  var odsInstancesToDelete = [];
+  let odsInstanceNamePrefix = 'ods Instance test'
+  for (let i = 0; i < totalToCreate; i++) {
+      let name = `${odsInstanceNamePrefix} ${i}`;
+      let instanceType = 'test type';
+      let version = 'test type';
+      let status = 'test status';
+
+      try {
+        // Create a vendor for the application test
+        const odsResponse = await axios.post(`${API_URL}/v1/odsInstances`, {
+          "name": `${name}`,
+          "instanceType": `${instanceType}`,
+          "status": `${status}`,
+          "isExtended": true,
+          "version": `${version}`
+        }, axiosConfig);
+    
+        if (odsResponse.status === 201 && odsResponse.data && odsResponse.data.result && odsResponse.data.result.id) {
+          console.log("✅ Ods created successfully with ID:", odsResponse.data.result.id);
+          let location = odsResponse.headers.location;
+          let matches = location.match(/(\d+)/);
+          let odsInstanceId = parseInt(matches[0], 10);
+          odsInstancesToDelete.push(odsInstanceId);
+        } else {
+          console.log("❌ Failed to create ods:");
+          console.log("Status:", odsResponse.status);
+          console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+          throw new Error(`Failed to create ods - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+        }
+        
+      } catch (error) {
+        console.log("Error in pre-request setup:", error.message);
+      }
+  }
+  bru.setVar("ODSINSTANCESTODELETE", odsInstancesToDelete.join(','));
+}
+
+script:post-response {
+console.log("🔧 Setting environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  
+    // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  let odsInstancesToDelete = bru.getVar("ODSINSTANCESTODELETE").split(",");
+  for (let i = 0; i < odsInstancesToDelete.length; i++) {
+      let id = odsInstancesToDelete[i];
+    try {
+        // Create a vendor for the application test
+        const delOdsResponse = await axios.delete(`${API_URL}/v1/odsInstances/${id}`, axiosConfig);
+    
+        if (delOdsResponse.status === 200) {
+          console.log("✅ Ods delete successfully");
+        } else {
+          console.log("❌ Failed to delete ods:");
+          console.log("Status:", delOdsResponse.status);
+          console.log("Response data:", JSON.stringify(delOdsResponse.data, null, 2));
+          throw new Error(`Failed to delete ods - Status: ${delOdsResponse.status}, Data: ${JSON.stringify(delOdsResponse.data)}`);
+        }
+        
+      } catch (error) {
+        console.log("Error in post-request setup:", error.message);
+      }
+  }
+
+}

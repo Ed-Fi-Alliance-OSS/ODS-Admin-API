@@ -1,0 +1,45 @@
+meta {
+  name: ResourceClaimClaimSets - Modify Action
+  type: http
+  seq: 25
+}
+
+put {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaimId": 4,
+    "resourceClaimActions": [
+      {
+        "name": "read",
+        "enabled": true
+      },
+      {
+        "name": "create",
+        "enabled": true
+      },
+      {
+        "name": "update",
+        "enabled": false
+      },
+      {
+        "name": "delete",
+        "enabled": false
+      }
+    ]
+  }
+}
+
+script:post-response {
+  test("PUT ResourceClaimAction: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

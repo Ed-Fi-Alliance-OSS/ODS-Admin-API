@@ -1,0 +1,56 @@
+meta {
+  name: Applications with offset and limit
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{API_URL}}/v1/applications?offset=5&limit=2
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: 5
+  limit: 2
+}
+
+script:post-response {
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response is not null", function () {
+      expect(response).to.not.be.null;
+      expect(response).to.not.be.undefined;
+  });
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("result");
+  });
+  
+  if (response && response.result) {
+    const results = response.result;
+    
+    test("Response result includes correct number of applications", function () {
+        expect(results.length).to.eql(2);
+    });
+    
+    test("Response result includes applications", function () {
+        expect(results[0].applicationName).to.eql('My application 5');
+        expect(results[1].applicationName).to.eql('My application 6');
+    });
+  } else {
+    test("Response result is missing", function () {
+        throw new Error("Response or result property is null/undefined");
+    });
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,91 @@
+meta {
+  name: OdsInstances
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{API_URL}}/v1/odsInstances/{{DeleteODSId}}
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  console.log("🔧 Setting environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  
+  // Generate unique identifiers to avoid conflicts
+  const uniqueId = Math.random().toString(36).substring(2, 8);
+  
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+  
+  try {
+    // Create a ods for the application test
+    const odsResponse = await axios.post(`${API_URL}/v1/odsInstances`, {
+      "name": `Delete Ods Instance ${uniqueId}`,
+      "instanceType": "Test Type",
+      "status": "Test Status",
+      "isExtended": false,
+      "version": "Test Version"
+    }, axiosConfig);
+  
+    if (odsResponse.status === 201 && odsResponse.data && odsResponse.data.result && odsResponse.data.result.id) {
+      bru.setVar("DeleteODSId", odsResponse.data.result.id);
+      console.log("✅ ODS created successfully with ID:", odsResponse.data.result.id);
+      console.log("Variable DeleteODSId set to:", bru.getVar("DeleteODSId"));
+    } else {
+      console.log("❌ Failed to create ods:");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to create ods - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsDelResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+  
+}
+
+script:post-response {  
+  test("Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches success format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("odsinstance");
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

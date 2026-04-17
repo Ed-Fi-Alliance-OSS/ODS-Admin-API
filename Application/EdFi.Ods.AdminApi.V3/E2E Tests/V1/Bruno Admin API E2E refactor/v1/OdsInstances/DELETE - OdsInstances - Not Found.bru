@@ -1,0 +1,38 @@
+meta {
+  name: OdsInstances - Not Found
+  type: http
+  seq: 15
+}
+
+delete {
+  url: {{API_URL}}/v1/odsInstances/{{DeleteODSId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstance");
+      expect(response.title).to.contain(bru.getVar("DeleteODSId"));
+  });
+  
+  bru.deleteVar("DeleteODSId");
+  
+}
+
+settings {
+  encodeUrl: true
+}

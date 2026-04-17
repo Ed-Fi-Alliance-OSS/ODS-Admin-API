@@ -1,0 +1,35 @@
+meta {
+  name: ApiClients - Invalid Not Found
+  type: http
+  seq: 18
+}
+
+delete {
+  url: {{API_URL}}/v2/apiclients/{{CreatedApiClientId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("PUT ApiClients NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("PUT ApiClients NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT ApiClients NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("apiclient");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

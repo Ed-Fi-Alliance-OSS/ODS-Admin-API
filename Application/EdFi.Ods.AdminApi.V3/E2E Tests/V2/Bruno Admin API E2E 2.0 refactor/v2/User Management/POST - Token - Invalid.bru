@@ -1,0 +1,35 @@
+meta {
+  name: Token - Invalid
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_URL}}/connect/token
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  client_id: {{$guid}}
+  client_secret: 
+  grant_type: client_credentials
+}
+
+script:post-response {
+  test("POST Token Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST Token Invalid: Response includes error message", function () {
+      expect(response).to.have.property("error");
+      expect(response).to.have.property("error_description");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,166 @@
+meta {
+  name: ClaimSets/Copy
+  type: http
+  seq: 42
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/copy
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Copied ClaimSet from {{CreatedClaimSetId}}",
+      "originalid": "{{CreatedClaimSetId}}"
+  }
+}
+
+script:pre-request {
+
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    let previouscreatedClaimSetId = bru.getVar("CreatedClaimSetId");
+    const claimSetResponse = await axios.post(`${API_URL}/v2/claimSets/${previouscreatedClaimSetId}/resourceClaimActions`, {
+      "resourceClaimId": 9,
+      "resourceClaimActions": [ 
+          {
+            "name": "read",
+            "enabled": true
+          },
+          {
+            "name": "create",
+            "enabled": true
+          }            
+        ]
+    }, axiosConfig);
+
+    if (claimSetResponse.status === 200) {
+      console.log("✅ ClaimSets Updated");
+    } else {
+      console.log("❌ Failed to update claimsets");
+      console.log("Status:", claimSetResponse.status);
+      console.log("Response data:", JSON.stringify(claimSetResponse.data, null, 2));
+      throw new Error(`Failed to update claimsets - Status: ${claimSetResponse.status}, Data: ${JSON.stringify(claimSetResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+  
+}
+
+script:post-response {
+  test("POST ClaimSets: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST ClaimSets: Response includes location in header", function () {
+      let headers = res.getHeaders(); 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location || headers["location"];
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("CopiedClaimSetId", id);
+          }
+      }
+  });
+
+  console.log("🔧 Setting post environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    let copiedClaimSetId = bru.getVar("CopiedClaimSetId");
+    const copiedClaimSetResponse = await axios.get(`${API_URL}/v2/claimSets/${copiedClaimSetId}`, axiosConfig);
+
+    if (copiedClaimSetResponse.status === 200 && copiedClaimSetResponse.data) {
+      console.log("✅ ClaimSets Returned:", copiedClaimSetResponse.data.id);
+      test("POST ClaimSets: Response result claimset has expected name and resource claims", function () {
+       expect(copiedClaimSetResponse.data).to.have.property("id");
+       expect(copiedClaimSetResponse.data).to.have.property("name");
+       expect(copiedClaimSetResponse.data.name).contains("Copied ClaimSet from");
+       expect(copiedClaimSetResponse.data.resourceClaims).to.not.be.empty;
+       const resourceclaimexists = copiedClaimSetResponse.data.resourceClaims.some(r => r.name === "educationStandards");
+       expect(resourceclaimexists).to.equal(true);
+      }); 
+
+    } else {
+      console.log("❌ Failed to return claimsets:");
+      console.log("Status:", copiedClaimSetResponse.status);
+      console.log("Response data:", JSON.stringify(copiedClaimSetResponse.data, null, 2));
+      throw new Error(`Failed to return claimsets - Status: ${copiedClaimSetResponse.status}, Data: ${JSON.stringify(copiedClaimSetResponse.data)}`);
+    }
+    
+   } catch (error) {
+     console.log("Error in post-request setup:", error.message);
+   }
+}
+
+settings {
+  encodeUrl: true
+}
+
+
