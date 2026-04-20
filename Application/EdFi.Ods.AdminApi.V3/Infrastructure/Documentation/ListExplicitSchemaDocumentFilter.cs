@@ -5,7 +5,6 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.V3.Features;
-using EdFi.Ods.AdminApi.V3.Features.Connect;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -15,7 +14,6 @@ public class ListExplicitSchemaDocumentFilter : IDocumentFilter
 {
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
-        context.SchemaGenerator.GenerateSchema(typeof(RegisterService.RegisterClientRequest), context.SchemaRepository);
         context.SchemaGenerator.GenerateSchema(typeof(AdminApiError), context.SchemaRepository);
     }
 }
