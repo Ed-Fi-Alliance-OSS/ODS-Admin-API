@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Linq;
-using EdFi.Ods.AdminApp.Management.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Services.ClaimSetEditor;
 using Moq;
 using NUnit.Framework;
 using Shouldly;

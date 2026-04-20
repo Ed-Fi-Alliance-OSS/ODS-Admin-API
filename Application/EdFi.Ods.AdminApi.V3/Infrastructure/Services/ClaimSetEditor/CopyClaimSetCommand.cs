@@ -7,7 +7,7 @@ using EdFi.Security.DataAccess.Contexts;
 using EdFi.Security.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EdFi.Ods.AdminApp.Management.ClaimSetEditor
+namespace EdFi.Ods.AdminApi.V3.Infrastructure.Services.ClaimSetEditor
 {
     public interface ICopyClaimSetCommand
     {

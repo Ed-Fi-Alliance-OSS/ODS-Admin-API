@@ -9,7 +9,7 @@ using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApp.Management.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Services.ClaimSetEditor;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
 
