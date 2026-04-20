@@ -5,12 +5,9 @@
 
 using System.Reflection;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Linq;
-using EdFi.Common.Extensions;
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class SwaggerOptionalAttribute : Attribute
@@ -34,14 +31,8 @@ public class SwaggerOptionalSchemaFilter : ISchemaFilter
             }
             else
             {
-                if (schema.Required == null)
-                {
-                    schema.Required = new HashSet<string>() { propertyNameInCamelCasing };
-                }
-                else
-                {
-                    schema.Required.Add(propertyNameInCamelCasing);
-                }
+                schema.Required ??= new HashSet<string>();
+                schema.Required.Add(propertyNameInCamelCasing);
             }
         }
     }
@@ -52,11 +43,11 @@ public class SwaggerSchemaRemoveRequiredFilter : ISchemaFilter
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
         var properties = context.Type.GetProperties();
+
         foreach (var property in properties)
         {
-            var propertyNameInCamelCasing = property.Name.ToCamelCase();
+            var propertyNameInCamelCasing = char.ToLowerInvariant(property.Name[0]) + property.Name[1..];
             schema.Required?.Remove(propertyNameInCamelCasing);
         }
     }
 }
-

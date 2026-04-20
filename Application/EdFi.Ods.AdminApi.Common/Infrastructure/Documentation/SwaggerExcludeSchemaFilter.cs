@@ -3,11 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Reflection;
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class SwaggerExcludeAttribute : Attribute
@@ -32,4 +32,3 @@ public class SwaggerExcludeSchemaFilter : ISchemaFilter
         }
     }
 }
-

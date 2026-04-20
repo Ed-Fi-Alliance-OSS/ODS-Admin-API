@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 public class TagByResourceUrlFilter : IOperationFilter
 {
@@ -27,6 +27,3 @@ public class TagByResourceUrlFilter : IOperationFilter
             operation.Tags = new List<OpenApiTag> { new() { Name = resourceName.Trim('/').ToPascalCase() } };
     }
 }
-
-
-

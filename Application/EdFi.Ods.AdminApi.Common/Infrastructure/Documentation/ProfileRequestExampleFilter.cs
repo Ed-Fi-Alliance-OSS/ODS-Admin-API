@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class ProfileRequestExampleAttribute : Attribute
@@ -20,6 +20,7 @@ public class ProfileRequestExampleFilter : IOperationFilter
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         var attribute = context.MethodInfo.GetCustomAttributes(typeof(ProfileRequestExampleAttribute), false).FirstOrDefault();
+
         if (attribute == null)
         {
             return;

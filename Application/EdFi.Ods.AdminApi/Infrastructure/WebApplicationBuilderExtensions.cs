@@ -21,6 +21,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
