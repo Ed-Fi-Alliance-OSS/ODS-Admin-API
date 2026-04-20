@@ -22,7 +22,7 @@ public class CopyClaimSet : IFeature
         AdminApiEndpointBuilder.MapPost(endpoints, "/claimSets/copy", Handle)
         .WithSummary("Copies the existing claimset and create a new one.")
         .WithRouteOptions(b => b.WithResponseCode(201))
-        .BuildForVersions(AdminApiVersions.V2);
+        .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(Validator validator, ICopyClaimSetCommand copyClaimSetCommand,

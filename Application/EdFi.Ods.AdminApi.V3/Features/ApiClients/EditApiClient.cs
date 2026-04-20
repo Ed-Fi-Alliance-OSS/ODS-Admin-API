@@ -22,7 +22,7 @@ public class EditApiClient : IFeature
         AdminApiEndpointBuilder.MapPut(endpoints, "/apiclients/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(IEditApiClientCommand editApiClientCommand,

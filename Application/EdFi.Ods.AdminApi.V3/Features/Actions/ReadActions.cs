@@ -19,7 +19,7 @@ public class ReadActions : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/actions", GetActions)
            .WithDefaultSummaryAndDescription()
            .WithRouteOptions(b => b.WithResponse<ActionModel[]>(200))
-           .BuildForVersions(AdminApiVersions.V2);
+           .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)

@@ -21,7 +21,7 @@ public class ReadEducationOrganizations : IFeature
                 "Returns all education organizations from all ODS instances in a nested structure"
             )
             .WithRouteOptions(b => b.WithResponse<List<OdsInstanceWithEducationOrganizationsModel>>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/odsInstances/{instanceId}/edOrgs", GetEducationOrganizationsByInstance)
@@ -30,7 +30,7 @@ public class ReadEducationOrganizations : IFeature
                 "Returns all education organizations for the specified ODS instance in a nested structure"
             )
             .WithRouteOptions(b => b.WithResponse<List<OdsInstanceWithEducationOrganizationsModel>>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> GetEducationOrganizations(

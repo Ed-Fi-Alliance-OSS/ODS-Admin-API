@@ -19,7 +19,7 @@ public class ReadApplicationsByOdsInstance : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, url, GetOdsInstanceApplications)
             .WithSummary("Retrieves applications assigned to a specific ODS instance based on the resource identifier.")
             .WithRouteOptions(b => b.WithResponse<ApplicationModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetOdsInstanceApplications(

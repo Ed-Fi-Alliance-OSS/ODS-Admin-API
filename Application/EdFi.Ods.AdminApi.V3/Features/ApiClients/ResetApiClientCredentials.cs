@@ -16,7 +16,7 @@ public class ResetApiClientCredentials : IFeature
         AdminApiEndpointBuilder.MapPut(endpoints, "/apiclients/{id}/reset-credential", HandleResetCredentials)
             .WithSummary("Reset apiclient credentials. Returns new key and secret.")
             .WithRouteOptions(b => b.WithResponse<ApiClientResult>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> HandleResetCredentials(IRegenerateApiClientSecretCommand resetSecretCommand, int id)

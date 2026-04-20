@@ -20,7 +20,7 @@ public class AddDbInstance : IFeature
             .MapPost(endpoints, "/dbInstances", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(202))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public async static Task<IResult> Handle(Validator validator, AddDbInstanceCommand addDbInstanceCommand, AddDbInstanceRequest request)

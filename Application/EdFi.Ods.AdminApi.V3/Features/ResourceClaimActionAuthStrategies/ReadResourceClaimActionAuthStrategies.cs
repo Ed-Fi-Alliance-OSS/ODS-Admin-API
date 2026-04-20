@@ -16,7 +16,7 @@ public class ReadResourceClaimActionAuthStrategies : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/resourceClaimActionAuthStrategies", GetResourceClaimActionAuthorizationStrategies)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<List<ResourceClaimActionAuthStrategyModel>>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetResourceClaimActionAuthorizationStrategies(IGetResourceClaimActionAuthorizationStrategiesQuery getResourceClaimActionAuthorizationStrategiesQuery, [AsParameters] CommonQueryParams commonQueryParams, string? resourceName)

@@ -16,12 +16,12 @@ public class ReadOdsInstance : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstances", GetOdsInstances)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<OdsInstanceModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstances/{id}", GetOdsInstance)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<OdsInstanceDetailModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static Task<IResult> GetOdsInstances(IGetOdsInstancesQuery getOdsInstancesQuery, [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name, string? instanceType)

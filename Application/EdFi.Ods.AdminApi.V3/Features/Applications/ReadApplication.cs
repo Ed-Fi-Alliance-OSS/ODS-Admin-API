@@ -21,12 +21,12 @@ public class ReadApplication : IFeature
         AdminApiEndpointBuilder.MapGet(endpoints, "/applications", GetApplications)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApplicationModel[]>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder.MapGet(endpoints, "/applications/{id}", GetApplication)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApplicationModel>(200))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static async Task<IResult> GetApplications(

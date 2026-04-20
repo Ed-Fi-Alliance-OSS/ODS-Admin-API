@@ -17,7 +17,7 @@ public class DeleteOdsInstanceContext : IFeature
         AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstanceContexts/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static Task<IResult> Handle(IDeleteOdsInstanceContextCommand deleteOdsInstanceContextCommand, int id)

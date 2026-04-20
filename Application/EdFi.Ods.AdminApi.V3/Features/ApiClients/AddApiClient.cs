@@ -23,7 +23,7 @@ public class AddApiClient : IFeature
         AdminApiEndpointBuilder.MapPost(endpoints, "/apiclients", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApiClientResult>(201))
-            .BuildForVersions(AdminApiVersions.V2);
+            .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options)

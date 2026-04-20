@@ -20,7 +20,7 @@ public class AddOdsInstanceContext : IFeature
            .MapPost(endpoints, "/odsInstanceContexts", Handle)
            .WithDefaultSummaryAndDescription()
            .WithRouteOptions(b => b.WithResponseCode(201))
-           .BuildForVersions(AdminApiVersions.V2);
+           .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, AddOdsInstanceContextRequest request)

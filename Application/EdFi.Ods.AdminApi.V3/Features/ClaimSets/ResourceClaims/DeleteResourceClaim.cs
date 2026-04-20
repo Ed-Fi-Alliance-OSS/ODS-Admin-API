@@ -20,7 +20,7 @@ public class DeleteResourceClaim : IFeature
         AdminApiEndpointBuilder.MapDelete(endpoints, "/claimSets/{claimSetId}/resourceClaimActions/{resourceClaimId}", Handle)
        .WithSummary("Deletes a resource claims association from a claimset")
        .WithRouteOptions(b => b.WithResponseCode(200))
-       .BuildForVersions(AdminApiVersions.V2);
+       .BuildForVersions(AdminApiVersions.V3);
     }
 
     internal static async Task<IResult> Handle(IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,

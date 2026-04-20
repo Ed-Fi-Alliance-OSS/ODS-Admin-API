@@ -25,7 +25,7 @@ public class AddOdsInstance : IFeature
            .MapPost(endpoints, "/odsInstances", Handle)
            .WithDefaultSummaryAndDescription()
            .WithRouteOptions(b => b.WithResponseCode(201))
-           .BuildForVersions(AdminApiVersions.V2);
+           .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(
