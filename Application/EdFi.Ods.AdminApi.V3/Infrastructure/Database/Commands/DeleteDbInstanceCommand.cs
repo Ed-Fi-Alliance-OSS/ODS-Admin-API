@@ -15,9 +15,9 @@ public interface IDeleteDbInstanceCommand
 
 public class DeleteDbInstanceCommand : IDeleteDbInstanceCommand
 {
-    private readonly AdminApiDbContext _context;
+    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
 
-    public DeleteDbInstanceCommand(AdminApiDbContext context)
+    public DeleteDbInstanceCommand(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         _context = context;
     }

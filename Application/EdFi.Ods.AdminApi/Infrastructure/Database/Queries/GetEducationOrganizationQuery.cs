@@ -16,9 +16,9 @@ public interface IGetEducationOrganizationQuery
     List<EducationOrganization> Execute(int[] odsInstanceIds);
 }
 
-public class GetEducationOrganizationQuery(AdminApiDbContext adminApiDbContext) : IGetEducationOrganizationQuery
+public class GetEducationOrganizationQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext adminApiDbContext) : IGetEducationOrganizationQuery
 {
-    private readonly AdminApiDbContext _adminApiDbContext = adminApiDbContext;
+    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _adminApiDbContext = adminApiDbContext;
 
     public List<EducationOrganization> Execute()
     {

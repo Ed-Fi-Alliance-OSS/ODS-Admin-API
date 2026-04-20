@@ -47,7 +47,7 @@ public class TenantSpecificDbContextProviderTests
         var context = provider.GetAdminApiDbContext(tenantId);
 
         // Assert
-        Assert.That(context, Is.InstanceOf<AdminApiDbContext>());
+        Assert.That(context, Is.InstanceOf<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>());
         context.Database.GetDbConnection().Database.ShouldBe("TestDb");
     }
 
@@ -66,7 +66,7 @@ public class TenantSpecificDbContextProviderTests
         var context = provider.GetAdminApiDbContext(tenantId);
 
         // Assert
-        Assert.That(context, Is.InstanceOf<AdminApiDbContext>());
+        Assert.That(context, Is.InstanceOf<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>());
         context.Database.GetDbConnection().Database.ShouldBe("TestDb");
     }
 

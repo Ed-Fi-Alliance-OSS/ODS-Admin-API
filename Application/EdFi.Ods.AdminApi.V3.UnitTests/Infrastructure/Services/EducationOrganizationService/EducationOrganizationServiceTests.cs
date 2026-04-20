@@ -67,8 +67,8 @@ internal class EducationOrganizationServiceTests
             .UseInMemoryDatabase(databaseName: "TestDb_EncryptionKeyNull")
             .Options;
         var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_EncryptionKeyNull_Admin").Options,
+        var adminApiDbContext = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
+            new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>().UseInMemoryDatabase("TestDb_EncryptionKeyNull_Admin").Options,
             A.Fake<IConfiguration>());
 
         // Ensure the correct class is instantiated here.
@@ -92,8 +92,8 @@ internal class EducationOrganizationServiceTests
             .UseInMemoryDatabase(databaseName: "TestDb_DatabaseEngineNull")
             .Options;
         var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_DatabaseEngineNull_Admin").Options,
+        var adminApiDbContext = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
+            new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>().UseInMemoryDatabase("TestDb_DatabaseEngineNull_Admin").Options,
             A.Fake<IConfiguration>());
 
         var service = new EducationOrganizationServiceImpl(
@@ -115,8 +115,8 @@ internal class EducationOrganizationServiceTests
             .Options;
 
         using var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_SingleTenant_Admin").Options,
+        var adminApiDbContext = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
+            new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>().UseInMemoryDatabase("TestDb_SingleTenant_Admin").Options,
             A.Fake<IConfiguration>());
 
         var odsInstance = new OdsInstance
@@ -204,8 +204,8 @@ internal class EducationOrganizationServiceTests
             .Options;
 
         using var usersContext = new SqlServerUsersContext(contextOptions);
-        var adminApiDbContext = new AdminApiDbContext(
-            new DbContextOptionsBuilder<AdminApiDbContext>().UseInMemoryDatabase("TestDb_InvalidEngine_Admin").Options,
+        var adminApiDbContext = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
+            new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>().UseInMemoryDatabase("TestDb_InvalidEngine_Admin").Options,
             A.Fake<IConfiguration>());
 
         var service = new EducationOrganizationServiceImpl(

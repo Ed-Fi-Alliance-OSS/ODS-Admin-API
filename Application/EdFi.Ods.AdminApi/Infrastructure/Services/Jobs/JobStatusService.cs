@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 
-public class JobStatusService(AdminApiDbContext dbContext,
+public class JobStatusService(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext dbContext,
     ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
     IOptions<AppSettings> options) : IJobStatusService
 {
@@ -20,7 +20,7 @@ public class JobStatusService(AdminApiDbContext dbContext,
 
     public async Task SetStatusAsync(string jobId, QuartzJobStatus status, string? tenantName, string? errorMessage = null)
     {
-        AdminApiDbContext resolvedDbContext;
+        EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext resolvedDbContext;
 
         if (_isMultiTenancyEnabled && !string.IsNullOrEmpty(tenantName))
         {

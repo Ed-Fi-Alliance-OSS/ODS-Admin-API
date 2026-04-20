@@ -117,7 +117,7 @@ public class EducationOrganizationService(
             // Create a completely isolated scope with its own DbContext instance for thread safety
             await using var scope = serviceScopeFactory.CreateAsyncScope();
             await using var taskAdminApiDbContext = tenantName is null
-                ? scope.ServiceProvider.GetRequiredService<AdminApiDbContext>()
+                ? scope.ServiceProvider.GetRequiredService<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>()
                 : scope.ServiceProvider.GetRequiredService<ITenantSpecificDbContextProvider>().GetAdminApiDbContext(tenantName);
 
             var existingEducationOrganizations = await taskAdminApiDbContext.EducationOrganizations

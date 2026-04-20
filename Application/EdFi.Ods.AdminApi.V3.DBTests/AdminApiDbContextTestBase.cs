@@ -48,9 +48,9 @@ public abstract class AdminApiDbContextTestBase
         });
     }
 
-    protected static void Transaction(System.Action<AdminApiDbContext> action)
+    protected static void Transaction(System.Action<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext> action)
     {
-        using var context = new AdminApiDbContext(
+        using var context = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
             GetAdminApiDbContextOptions(ConnectionString),
             Testing.Configuration());
         using var transaction = context.Database.BeginTransaction();
@@ -59,7 +59,7 @@ public abstract class AdminApiDbContextTestBase
         transaction.Commit();
     }
 
-    protected static TResult Transaction<TResult>(System.Func<AdminApiDbContext, TResult> query)
+    protected static TResult Transaction<TResult>(System.Func<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext, TResult> query)
     {
         var result = default(TResult);
         Transaction(database =>
@@ -69,9 +69,9 @@ public abstract class AdminApiDbContextTestBase
         return result;
     }
 
-    protected static async Task Transaction(System.Func<AdminApiDbContext, Task> action)
+    protected static async Task Transaction(System.Func<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext, Task> action)
     {
-        using var context = new AdminApiDbContext(
+        using var context = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
             GetAdminApiDbContextOptions(ConnectionString),
             Testing.Configuration());
         using var transaction = await context.Database.BeginTransactionAsync();
@@ -80,9 +80,9 @@ public abstract class AdminApiDbContextTestBase
         await transaction.CommitAsync();
     }
 
-    protected static async Task<TResult> Transaction<TResult>(System.Func<AdminApiDbContext, Task<TResult>> query)
+    protected static async Task<TResult> Transaction<TResult>(System.Func<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext, Task<TResult>> query)
     {
-        using var context = new AdminApiDbContext(
+        using var context = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(
             GetAdminApiDbContextOptions(ConnectionString),
             Testing.Configuration());
         using var transaction = await context.Database.BeginTransactionAsync();
@@ -92,9 +92,9 @@ public abstract class AdminApiDbContextTestBase
         return result;
     }
 
-    public static DbContextOptions<AdminApiDbContext> GetAdminApiDbContextOptions(string connectionString)
+    public static DbContextOptions<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext> GetAdminApiDbContextOptions(string connectionString)
     {
-        var builder = new DbContextOptionsBuilder<AdminApiDbContext>();
+        var builder = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>();
         builder.UseSqlServer(connectionString);
         return builder.Options;
     }

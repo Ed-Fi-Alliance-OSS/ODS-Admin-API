@@ -10,9 +10,9 @@ namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
 public class AddDbInstanceCommand
 {
-    private readonly AdminApiDbContext _context;
+    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
 
-    public AddDbInstanceCommand(AdminApiDbContext context)
+    public AddDbInstanceCommand(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         _context = context;
     }

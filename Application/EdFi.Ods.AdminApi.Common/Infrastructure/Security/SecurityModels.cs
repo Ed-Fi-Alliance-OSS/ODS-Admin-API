@@ -5,7 +5,7 @@
 
 using OpenIddict.EntityFrameworkCore.Models;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Security;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 
 public class ApiApplication : OpenIddictEntityFrameworkCoreApplication<int, ApiAuthorization, ApiToken>
 {

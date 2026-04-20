@@ -41,7 +41,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Quartz;
-using V3AdminApiDbContext = EdFi.Ods.AdminApi.V3.Infrastructure.AdminApiDbContext;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -320,7 +319,7 @@ public static class WebApplicationBuilderExtensions
                         "EdFi_Security"
                     );
 
-                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(options =>
+                    webApplicationBuilder.Services.AddDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>(options =>
                     {
                         options.UseNpgsql(adminConnectionString);
                         options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
@@ -351,7 +350,7 @@ public static class WebApplicationBuilderExtensions
                         "EdFi_Security"
                     );
 
-                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(options =>
+                    webApplicationBuilder.Services.AddDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>(options =>
                     {
                         options.UseSqlServer(adminConnectionString);
                         options.UseOpenIddict<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
@@ -382,7 +381,7 @@ public static class WebApplicationBuilderExtensions
             case AdminApiMode.V2:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
-                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseNpgsql(
@@ -412,7 +411,7 @@ public static class WebApplicationBuilderExtensions
                 }
                 else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
-                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseSqlServer(
@@ -451,7 +450,7 @@ public static class WebApplicationBuilderExtensions
             case AdminApiMode.V3:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
-                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseNpgsql(
@@ -481,7 +480,7 @@ public static class WebApplicationBuilderExtensions
                 }
                 else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
-                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseSqlServer(

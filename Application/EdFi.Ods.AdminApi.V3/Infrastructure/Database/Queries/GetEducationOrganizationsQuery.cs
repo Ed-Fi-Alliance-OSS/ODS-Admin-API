@@ -25,12 +25,12 @@ public interface IGetEducationOrganizationsQuery
 
 public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
 {
-    private readonly AdminApiDbContext _adminApiDbContext;
+    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _adminApiDbContext;
     private readonly IOptions<AppSettings> _options;
     private readonly Dictionary<string, Expression<Func<EducationOrganization, object>>> _orderByColumns;
 
     public GetEducationOrganizationsQuery(
-        AdminApiDbContext adminApiDbContext,
+        EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext adminApiDbContext,
         IOptions<AppSettings> options)
     {
         _adminApiDbContext = adminApiDbContext;

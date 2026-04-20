@@ -14,9 +14,9 @@ public interface IGetDbInstanceByIdQuery
 
 public class GetDbInstanceByIdQuery : IGetDbInstanceByIdQuery
 {
-    private readonly AdminApiDbContext _context;
+    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
 
-    public GetDbInstanceByIdQuery(AdminApiDbContext context)
+    public GetDbInstanceByIdQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         _context = context;
     }

@@ -353,7 +353,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         });
     }
 
-    private static void CreateMultiple(AdminApiDbContext context, int total = 5)
+    private static void CreateMultiple(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context, int total = 5)
     {
         for (var i = 0; i < total; i++)
         {
@@ -370,7 +370,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         context.SaveChanges();
     }
 
-    private static void CreateMultipleForDifferentInstances(AdminApiDbContext context)
+    private static void CreateMultipleForDifferentInstances(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         var organizations = new[]
         {
@@ -425,7 +425,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         context.SaveChanges();
     }
 
-    private static void CreateMultipleWithDifferentIds(AdminApiDbContext context)
+    private static void CreateMultipleWithDifferentIds(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         var organizations = new[]
         {
@@ -480,7 +480,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         context.SaveChanges();
     }
 
-    private static void CreateMultipleWithDifferentNames(AdminApiDbContext context)
+    private static void CreateMultipleWithDifferentNames(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         var organizations = new[]
         {
@@ -535,7 +535,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         context.SaveChanges();
     }
 
-    private static void CreateMultipleWithDifferentDiscriminators(AdminApiDbContext context)
+    private static void CreateMultipleWithDifferentDiscriminators(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         var organizations = new[]
         {
@@ -581,7 +581,7 @@ public class GetEducationOrganizationsQueryTests : AdminApiDbContextTestBase
         context.SaveChanges();
     }
 
-    private static void CreateMultipleForDifferentInstancesWithDifferentIds(AdminApiDbContext context)
+    private static void CreateMultipleForDifferentInstancesWithDifferentIds(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
     {
         var organizations = new[]
         {

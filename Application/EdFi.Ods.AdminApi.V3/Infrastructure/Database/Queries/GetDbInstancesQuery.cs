@@ -18,10 +18,10 @@ public interface IGetDbInstancesQuery
 
 public class GetDbInstancesQuery : IGetDbInstancesQuery
 {
-    private readonly AdminApiDbContext _context;
+    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
     private readonly IOptions<AppSettings> _options;
 
-    public GetDbInstancesQuery(AdminApiDbContext context, IOptions<AppSettings> options)
+    public GetDbInstancesQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context, IOptions<AppSettings> options)
     {
         _context = context;
         _options = options;

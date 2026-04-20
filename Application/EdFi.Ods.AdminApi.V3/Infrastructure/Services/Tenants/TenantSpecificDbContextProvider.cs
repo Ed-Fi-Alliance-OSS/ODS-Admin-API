@@ -14,7 +14,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 
 public interface ITenantSpecificDbContextProvider
 {
-    AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier);
+    EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier);
     IUsersContext GetUsersContext(string tenantIdentifier);
 }
 
@@ -37,22 +37,22 @@ public class TenantSpecificDbContextProvider : ITenantSpecificDbContextProvider
         _configuration = configuration;
     }
 
-    public AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
+    public EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
     {
         var tenantConfiguration = _tenantConfigurations[tenantIdentifier];
 
         if (_dbEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
-            var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+            var adminApiOptionsBuilder = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>();
             adminApiOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-            return new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+            return new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
         }
         else if (_dbEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
         {
-            var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+            var adminApiOptionsBuilder = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>();
             adminApiOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
             adminApiOptionsBuilder.UseLowerCaseNamingConvention();
-            return new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+            return new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
         }
         else
         {

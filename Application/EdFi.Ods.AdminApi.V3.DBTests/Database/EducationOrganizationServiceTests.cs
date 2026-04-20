@@ -125,12 +125,12 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
             out decryptedConnectionString))
             .Returns(true);
 
-        var builder = new DbContextOptionsBuilder<AdminApiDbContext>();
+        var builder = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>();
         builder.UseSqlServer(ConnectionString);
 
         AdminApiTransaction(adminApiDbContext =>
         {
-            var tenantDbContext = new AdminApiDbContext(builder.Options, _configuration);
+            var tenantDbContext = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(builder.Options, _configuration);
             var tenantSpecificProvider = new DummyTenantSpecificDbContextProvider(tenantDbContext, tenantName);
             var serviceScopeFactory = CreateMockServiceScopeFactory(tenantSpecificProvider, tenantDbContext);
 
@@ -147,11 +147,11 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         });
     }
 
-    private void AdminApiTransaction(Action<AdminApiDbContext> action)
+    private void AdminApiTransaction(Action<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext> action)
     {
-        var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+        var adminApiOptionsBuilder = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>();
         adminApiOptionsBuilder.UseSqlServer(ConnectionString);
-        var _adminApiDbContext = new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+        var _adminApiDbContext = new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
 
         using var transaction = _adminApiDbContext.Database.BeginTransaction();
         action(_adminApiDbContext);
@@ -159,7 +159,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         transaction.Commit();
     }
 
-    private Mock<IServiceScopeFactory> CreateMockServiceScopeFactory(ITenantSpecificDbContextProvider tenantSpecificProvider, AdminApiDbContext adminApiDbContext)
+    private Mock<IServiceScopeFactory> CreateMockServiceScopeFactory(ITenantSpecificDbContextProvider tenantSpecificProvider, EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext adminApiDbContext)
     {
         var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var mockServiceProvider = new Mock<IServiceProvider>();
@@ -167,14 +167,14 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         mockServiceProvider.Setup(x => x.GetService(typeof(ITenantSpecificDbContextProvider)))
             .Returns(tenantSpecificProvider);
         
-        // Create a new instance of AdminApiDbContext for the service scope
+        // Create a new instance of EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext for the service scope
         // to avoid disposing the test's context instance
-        mockServiceProvider.Setup(x => x.GetService(typeof(AdminApiDbContext)))
+        mockServiceProvider.Setup(x => x.GetService(typeof(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext)))
             .Returns(() =>
             {
-                var adminApiOptionsBuilder = new DbContextOptionsBuilder<AdminApiDbContext>();
+                var adminApiOptionsBuilder = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>();
                 adminApiOptionsBuilder.UseSqlServer(ConnectionString);
-                return new AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
+                return new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(adminApiOptionsBuilder.Options, _configuration);
             });
 
         var mockScope = new ServiceProviderAsyncDisposableWrapper(mockServiceProvider.Object);
@@ -192,14 +192,14 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         }
     }
 
-    private class DummyTenantSpecificDbContextProvider(AdminApiDbContext tenantDbContext, string tenantName = "default") : ITenantSpecificDbContextProvider
+    private class DummyTenantSpecificDbContextProvider(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext tenantDbContext, string tenantName = "default") : ITenantSpecificDbContextProvider
     {
-        private readonly AdminApiDbContext _tenantDbContext = tenantDbContext;
+        private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _tenantDbContext = tenantDbContext;
         private readonly string _tenantName = tenantName;
         private readonly IUsersContext _tenantUsersContext =
             new SqlServerUsersContext(GetDbContextOptions());
 
-        public AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
+        public EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
         {
             if (tenantIdentifier == _tenantName)
                 return _tenantDbContext;

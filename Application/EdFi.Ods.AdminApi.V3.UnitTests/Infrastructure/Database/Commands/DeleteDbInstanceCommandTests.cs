@@ -23,9 +23,9 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class DeleteDbInstanceCommandTests
 {
-    private static AdminApiDbContext CreateContext()
+    private static EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<AdminApiDbContext>()
+        var options = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteDbInstanceCommand_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
@@ -33,7 +33,7 @@ public class DeleteDbInstanceCommandTests
                 new Dictionary<string, string?> { ["AppSettings:DatabaseEngine"] = "SqlServer" }
             )
             .Build();
-        return new AdminApiDbContext(options, configuration);
+        return new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(options, configuration);
     }
 
     [Test]

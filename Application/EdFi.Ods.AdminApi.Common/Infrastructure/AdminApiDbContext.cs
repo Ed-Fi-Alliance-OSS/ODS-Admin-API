@@ -7,10 +7,11 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
-using EdFi.Ods.AdminApi.Infrastructure.Security;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
-namespace EdFi.Ods.AdminApi.Infrastructure;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure;
 
 public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, IConfiguration configuration) : DbContext(options)
 {
