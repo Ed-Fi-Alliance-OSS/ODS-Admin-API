@@ -14,8 +14,9 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0.415-alpine3.21@sha256:f308a8fe0941a318421d
 RUN apk add --no-cache musl=1.2.5-r11 && \
     rm -rf /var/cache/apk/*
 
-ARG ASPNETCORE_ENVIRONMENT="Production"
+ARG ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+
 
 WORKDIR /source
 COPY --from=assets ./Application/NuGet.Config ./

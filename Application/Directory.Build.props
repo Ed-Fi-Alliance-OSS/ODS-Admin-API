@@ -8,4 +8,7 @@
         <VersionPrefix>0.1.0.1</VersionPrefix>
         <VersionSuffix></VersionSuffix>
     </PropertyGroup>
+    <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
 </Project>

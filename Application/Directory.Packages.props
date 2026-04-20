@@ -37,7 +37,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.14" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.14" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" />
     <!-- Microsoft Extensions -->
@@ -69,7 +69,7 @@
     <!-- System -->
     <PackageVersion Include="System.Formats.Asn1" Version="9.0.0" />
     <!-- log4net -->
-    <PackageVersion Include="log4net" Version="3.0.0" />
+    <PackageVersion Include="log4net" Version="3.3.0" />
     <!-- EdFi.Admin.DataAccess and EdFi.Security.DataAccess  -->
     <PackageVersion Include="EdFi.Suite3.Common" Version="7.4.296" />
     <PackageVersion Include="Autofac.Extras.DynamicProxy" Version="7.1.0" />
