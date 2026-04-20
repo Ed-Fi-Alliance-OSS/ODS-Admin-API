@@ -3,30 +3,43 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Options;
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 public static class IEnumerableExtensions
 {
     public static string ToCommaSeparated(this IEnumerable<VendorNamespacePrefix> vendorNamespacePrefixes)
     {
-        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IEnumerableExtensions.ToCommaSeparated(vendorNamespacePrefixes);
+        return vendorNamespacePrefixes != null && vendorNamespacePrefixes.Any()
+                        ? ToDelimiterSeparated([.. vendorNamespacePrefixes.Select(x => x.NamespacePrefix).OrderBy(f => f)])
+                        : string.Empty;
     }
 
     public static string ToDelimiterSeparated(this IEnumerable<string> inputStrings, string separator = ",")
     {
-        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IEnumerableExtensions.ToDelimiterSeparated(inputStrings, separator);
+        var listOfStrings = inputStrings.ToList();
+
+        return listOfStrings.Count != 0
+            ? string.Join(separator, listOfStrings)
+            : string.Empty;
     }
 
     public static IEnumerable<T> Paginate<T>(this IEnumerable<T> source, int? offset, int? limit, IOptions<AppSettings> settings)
     {
-        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IEnumerableExtensions.Paginate(source, offset, limit, settings);
+        try
+        {
+            offset ??= settings.Value.DefaultPageSizeOffset;
+
+            limit ??= settings.Value.DefaultPageSizeLimit;
+
+            return source.Skip(offset.Value).Take(limit.Value);
+        }
+        catch (Exception)
+        {
+            return source;
+        }
     }
 }
-
-
-

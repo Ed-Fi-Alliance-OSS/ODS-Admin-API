@@ -9,10 +9,6 @@ public static class OdsInstanceIdentityHelper
 {
     public static int GetIdentityValue(string odsInstanceName)
     {
-        var index = odsInstanceName.LastIndexOf("_", StringComparison.InvariantCulture);
-
-        var identityValue = odsInstanceName[(index + 1)..];
-
-        return int.Parse(identityValue);
+        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.OdsInstanceIdentityHelper.GetIdentityValue(odsInstanceName);
     }
 }

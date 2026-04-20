@@ -12,13 +12,11 @@ public static class ConstantsHelpers
     /// <summary>
     /// Semantic version of the admin api.
     /// </summary>
-    public const string Version = "2.0";
+    public const string Version = EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.ConstantsHelpers.Version;
 
     /// <summary>
     /// Assembly version of the admin api.
     /// </summary>
-    public static readonly string Build = Assembly.GetExecutingAssembly()
-        .GetName()
-        .Version?.ToString() ?? Version;
+    public static readonly string Build = EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.ConstantsHelpers.GetBuild(Assembly.GetExecutingAssembly());
 }
 

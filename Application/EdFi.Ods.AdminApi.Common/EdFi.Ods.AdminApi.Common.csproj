@@ -12,6 +12,7 @@
         <PackageReference Include="EdFi.Suite3.Security.DataAccess" />
         <PackageReference Include="Asp.Versioning.Http" />
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
+        <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
         <PackageReference Include="FluentValidation.AspNetCore" />
         <PackageReference Include="Microsoft.Data.SqlClient" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />

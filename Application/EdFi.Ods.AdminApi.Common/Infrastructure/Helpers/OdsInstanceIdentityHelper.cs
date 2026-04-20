@@ -3,13 +3,16 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 public static class OdsInstanceIdentityHelper
 {
     public static int GetIdentityValue(string odsInstanceName)
     {
-        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.OdsInstanceIdentityHelper.GetIdentityValue(odsInstanceName);
+        var index = odsInstanceName.LastIndexOf("_", StringComparison.InvariantCulture);
+
+        var identityValue = odsInstanceName[(index + 1)..];
+
+        return int.Parse(identityValue);
     }
 }
-

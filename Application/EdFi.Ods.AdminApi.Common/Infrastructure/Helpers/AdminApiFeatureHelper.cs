@@ -6,10 +6,10 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using System.Reflection;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Helpers;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 public static class AdminApiFeatureHelper
 {
-    public static List<IFeature> GetFeatures()
-        => EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.AdminApiFeatureHelper.GetFeatures(Assembly.GetExecutingAssembly());
+    public static List<IFeature> GetFeatures(Assembly executingAssembly)
+        => FeatureHelper.GetFeatures(executingAssembly);
 }

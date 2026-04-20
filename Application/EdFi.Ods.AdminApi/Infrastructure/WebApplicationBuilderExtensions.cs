@@ -57,8 +57,8 @@ public static class WebApplicationBuilderExtensions
 
         var env = webApplicationBuilder.Environment;
         var appSettingsPath = Path.Combine(env.ContentRootPath, "appsettings.json");
-        webApplicationBuilder.Services.AddSingleton<IAppSettingsFileProvider>(
-            new FileSystemAppSettingsFileProvider(appSettingsPath)
+        webApplicationBuilder.Services.AddSingleton<EdFi.Ods.AdminApi.Infrastructure.Helpers.IAppSettingsFileProvider>(
+            new EdFi.Ods.AdminApi.Infrastructure.Helpers.FileSystemAppSettingsFileProvider(appSettingsPath)
         );
 
         ConfigureRateLimiting(webApplicationBuilder);
