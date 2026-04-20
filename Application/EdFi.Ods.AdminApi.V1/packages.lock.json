@@ -1186,6 +1186,7 @@
         "dependencies": {
           "Asp.Versioning.Http": "[8.1.1, )",
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
+          "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
           "Microsoft.Data.SqlClient": "[5.2.2, )",
           "Microsoft.EntityFrameworkCore": "[8.0.8, )",
@@ -1214,6 +1215,21 @@
           "System.Security.Cryptography.ProtectedData": "4.7.0",
           "System.Text.Json": "4.7.2",
           "System.Threading.Tasks.Extensions": "4.5.4"
+        }
+      },
+      "EdFi.Suite3.Admin.DataAccess": {
+        "type": "CentralTransitive",
+        "requested": "[7.3.67, )",
+        "resolved": "7.3.67",
+        "contentHash": "FPuQLnqGYHZJE5RvRA2bnj0Ep2700gGH6xsy0hpDcvPUzkZnm54aVnjwqfo99Gd20vZcI1/pSyGg2dLKAD+l6w==",
+        "dependencies": {
+          "EdFi.Suite3.Common": "7.3.33",
+          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.7",
+          "Microsoft.EntityFrameworkCore.Proxies": "8.0.7",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.7",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.7",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4",
+          "log4net": "2.0.17"
         }
       },
       "Microsoft.Extensions.Caching.Memory": {

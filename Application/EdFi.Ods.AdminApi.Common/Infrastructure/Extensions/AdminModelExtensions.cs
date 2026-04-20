@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Models;
 
-namespace EdFi.Ods.AdminApi.Infrastructure;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 
 public static class AdminModelExtensions
 {
@@ -22,10 +22,12 @@ public static class AdminModelExtensions
     public static IList<int> Profiles(this Application application)
     {
         var profiles = new List<int>();
+
         foreach (var profile in application.Profiles)
         {
             profiles.Add(profile.ProfileId);
         }
+
         return profiles;
     }
 

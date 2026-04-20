@@ -8,7 +8,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Extensions;
 
 namespace EdFi.Ods.AdminApi.V3.Features.Vendors;
 

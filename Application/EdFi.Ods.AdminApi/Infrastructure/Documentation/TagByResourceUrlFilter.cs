@@ -5,7 +5,6 @@
 
 using System.Text.RegularExpressions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
-using EdFi.Ods.AdminApi.Infrastructure.Extensions;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

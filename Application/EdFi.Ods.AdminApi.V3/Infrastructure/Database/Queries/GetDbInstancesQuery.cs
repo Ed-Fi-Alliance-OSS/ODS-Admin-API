@@ -6,7 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
