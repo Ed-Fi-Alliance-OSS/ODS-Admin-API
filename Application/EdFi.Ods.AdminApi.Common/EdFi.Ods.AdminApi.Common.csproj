@@ -30,6 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
         <Folder Include="Infrastructure\ErrorHandling\" />
         <Folder Include="Infrastructure\Context\" />
     </ItemGroup>
