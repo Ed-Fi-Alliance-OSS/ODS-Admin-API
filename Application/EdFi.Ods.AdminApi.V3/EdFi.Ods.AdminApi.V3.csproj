@@ -3,7 +3,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
     <IsPackable>true</IsPackable>
+    <IsPublishable>false</IsPublishable>
     <NoWarn>NU5100, NU5124</NoWarn>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>../..</DockerfileContext>
@@ -15,11 +17,6 @@
     <UserSecretsId>a39ca29f-5ebf-412e-bca9-53fc7221286b</UserSecretsId>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="EdFi.Ods.AdminApi.nuspec" CopyToPublishDirectory="Always" CopyToOutputDirectory="Never" />
-    <Content Include="Artifacts\**" CopyToPublishDirectory="Always" CopyToOutputDirectory="Never" />
-    <Content Include="Schema\Ed-Fi-ODS-API-Profile.xsd" CopyToPublishDirectory="Always" CopyToOutputDirectory="Always" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
