@@ -1,5 +1,5 @@
 meta {
-  name: DbInstances - Post - For Delete Test
+  name: DbInstances - Delete - Test Data
   type: http
   seq: 13
 }
@@ -21,12 +21,13 @@ script:post-response {
   test("POST DbInstances For Delete Test: Status code is Accepted", function () {
     expect(res.getStatus()).to.equal(202);
   });
-
+  
   test("POST DbInstances For Delete Test: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
     const location = res.getHeader("location");
     const parts = location.split("/");
     const id = parts[parts.length - 1];
+    console.log(id);
     if (id) {
       bru.setVar("FreshPendingDbInstanceId", id);
     }
@@ -35,4 +36,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

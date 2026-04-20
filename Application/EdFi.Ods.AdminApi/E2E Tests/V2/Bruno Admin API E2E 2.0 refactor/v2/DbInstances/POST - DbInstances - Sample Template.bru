@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "name": "Test DB Instance - Sample",
+    "name": "Test DB Instance",
     "databaseTemplate": "Sample"
   }
 }
@@ -21,7 +21,7 @@ script:post-response {
   test("POST DbInstances Sample: Status code is Accepted", function () {
     expect(res.getStatus()).to.equal(202);
   });
-
+  
   test("POST DbInstances Sample: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
     const id = res.getHeader("location").split("/")[2];
@@ -33,4 +33,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
