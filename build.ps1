@@ -216,7 +216,7 @@ function GenerateOpenAPI {
     Invoke-Execute {
         Push-Location $solutionRoot/EdFi.Ods.AdminApi/
         $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$APIVersion.yaml"
-        $dllPath = "./bin/Release/net8.0/EdFi.Ods.AdminApi.dll"
+        $dllPath = "./bin/Release/net10.0/EdFi.Ods.AdminApi.dll"
 
         try {
             dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath v2
@@ -547,7 +547,7 @@ function UpdateAppSettingsForAdminApi {
 }
 
 function CopyLatestFilesToAdminApiContainer {
-    $source = "$solutionRoot/EdFi.Ods.AdminApi/bin/Release/net8.0/."
+    $source = "$solutionRoot/EdFi.Ods.AdminApi/bin/Release/net10.0/."
     &docker cp $source adminapi:/app/AdminApi
 }
 

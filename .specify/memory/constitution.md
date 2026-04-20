@@ -99,8 +99,8 @@ risk and onboarding time.
 
 ## Technology & Runtime Constraints
 
-- Primary runtime MUST remain .NET 8 unless a governance amendment approves a
-  platform migration.
+- Primary runtime MUST remain .NET 10 (net10.0), as approved by governance
+  amendment via feature 001-dotnet10-upgrade.
 - Feature implementation MUST align with current architecture patterns:
   feature endpoints via `IFeature`, DI-driven handlers via ASP.NET Core DI,
   EF Core contexts (`IUsersContext`, `ISecurityContext`), and FluentValidation.

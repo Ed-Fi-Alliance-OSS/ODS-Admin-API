@@ -10,8 +10,8 @@
 # Define assets stage using Alpine 3.21 to match the version used in other stages
 FROM alpine:3.21@sha256:5405e8f36ce1878720f71217d664aa3dea32e5e5df11acbf07fc78ef5661465b AS assets
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0.415-alpine3.21@sha256:f308a8fe0941a318421d18a0917b344d15d18996173a2db6f908a12b8db6b074 AS build
-RUN apk add --no-cache musl=1.2.5-r11 && \
+FROM mcr.microsoft.com/dotnet/sdk:10.0.202-alpine3.23 AS build
+RUN apk add --no-cache musl && \
     rm -rf /var/cache/apk/*
 
 ARG ASPNETCORE_ENVIRONMENT="Production"
@@ -35,15 +35,15 @@ RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 RUN dotnet restore && dotnet build -c Release
 RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-build -o /app/EdFi.Ods.AdminApi
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.21-alpine3.21-amd64@sha256:61adf767314cc4b6a298dd3bdba46a2f10be37d67c75ad64dc7a89a44df8a228 AS runtimebase
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23 AS runtimebase
 RUN apk add --no-cache \
-        bash=5.2.37-r0 \
-        dos2unix=7.5.2-r0 \
-        gettext=0.22.5-r0 \
-        icu=74.2-r1 \
-        musl=1.2.5-r11 \
-        openssl=3.3.7-r0 \
-        postgresql15-client=15.17-r0 && \
+    bash \
+    dos2unix \
+    gettext \
+    icu \
+    musl \
+    openssl \
+    postgresql-client && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
 

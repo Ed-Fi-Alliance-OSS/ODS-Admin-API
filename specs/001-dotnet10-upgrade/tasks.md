@@ -28,7 +28,7 @@ the Foundational phase as a blocking prerequisite.
 
 **Purpose**: Confirm the developer environment is ready to execute the upgrade.
 
-- [ ] T001 Verify .NET 10.0 SDK (10.0.202 or later) is installed and active: run `dotnet --version` and confirm the output matches 10.0.x before proceeding with any file changes
+- [X] T001 Verify .NET 10.0 SDK (10.0.202 or later) is installed and active: run `dotnet --version` and confirm the output matches 10.0.x before proceeding with any file changes
 
 **Checkpoint**: .NET 10 SDK confirmed — proceed to Foundational phase
 
@@ -42,12 +42,12 @@ versions are pinned here.
 
 **⚠️ CRITICAL**: All user story implementation tasks depend on this phase completing successfully
 
-- [ ] T002 Update all EF Core package version pins (Microsoft.EntityFrameworkCore.Design, .Relational, .SqlServer, .InMemory, .Tools, and the base package) from 8.0.x to **10.0.6** in `Application/Directory.Packages.props` per FR-002
-- [ ] T003 Update `Microsoft.AspNetCore.Authentication.JwtBearer` from 8.0.25 to **10.0.6** in `Application/Directory.Packages.props` per FR-003
-- [ ] T004 Update `Npgsql.EntityFrameworkCore.PostgreSQL` from 8.0.4 to **10.0.1** and `EFCore.NamingConventions` from 8.0.3 to **10.0.1** in `Application/Directory.Packages.props` per FR-004 and FR-005
-- [ ] T005 Update `Npgsql` from 8.0.6 to **10.0.2** in `Application/Directory.Packages.props` per FR-006
-- [ ] T006 Upgrade `Quartz` and `Quartz.Extensions.Hosting` from 3.15.1 to the latest stable **4.x** version in `Application/Directory.Packages.props` (research gap: Quartz 3.x has no net10.0 TFM; upgrade required or build will fail with NU1202)
-- [ ] T007 Upgrade `Swashbuckle.AspNetCore`, `Swashbuckle.AspNetCore.Annotations`, and `Swashbuckle.AspNetCore.Filters` to **10.2.0** in `Application/Directory.Packages.props` (research gap: Swashbuckle 7.x lacks net10.0 TFM and conflicts with ASP.NET Core 10 built-in OpenAPI)
+- [X] T002 Update all EF Core package version pins (Microsoft.EntityFrameworkCore.Design, .Relational, .SqlServer, .InMemory, .Tools, and the base package) from 8.0.x to **10.0.6** in `Application/Directory.Packages.props` per FR-002
+- [X] T003 Update `Microsoft.AspNetCore.Authentication.JwtBearer` from 8.0.25 to **10.0.6** in `Application/Directory.Packages.props` per FR-003
+- [X] T004 Update `Npgsql.EntityFrameworkCore.PostgreSQL` from 8.0.4 to **10.0.1** and `EFCore.NamingConventions` from 8.0.3 to **10.0.1** in `Application/Directory.Packages.props` per FR-004 and FR-005
+- [X] T005 Update `Npgsql` from 8.0.6 to **10.0.2** in `Application/Directory.Packages.props` per FR-006
+- [X] T006 Upgrade `Quartz` and `Quartz.Extensions.Hosting` from 3.15.1 to the latest stable **4.x** version in `Application/Directory.Packages.props` (research gap: Quartz 3.x has no net10.0 TFM; upgrade required or build will fail with NU1202)
+- [X] T007 Upgrade `Swashbuckle.AspNetCore`, `Swashbuckle.AspNetCore.Annotations`, and `Swashbuckle.AspNetCore.Filters` to **10.2.0** in `Application/Directory.Packages.props` (research gap: Swashbuckle 7.x lacks net10.0 TFM and conflicts with ASP.NET Core 10 built-in OpenAPI)
 
 **Checkpoint**: `Application/Directory.Packages.props` fully updated — user story tasks can now begin
 
@@ -64,19 +64,19 @@ installed — zero errors. Then run `./build.ps1 -Command UnitTest` — zero new
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi/EdFi.Ods.AdminApi.csproj`; also add `<DisableImplicitOpenApiGeneration>true</DisableImplicitOpenApiGeneration>` to suppress the ASP.NET Core 10 built-in OpenAPI generator (prevents duplicate schema routes alongside Swashbuckle 10.2.0)
-- [ ] T009 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.Common/EdFi.Ods.AdminApi.Common.csproj`
-- [ ] T010 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.Common.UnitTests/EdFi.Ods.AdminApi.Common.UnitTests.csproj`
-- [ ] T011 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.DBTests/EdFi.Ods.AdminApi.DBTests.csproj`
-- [ ] T012 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.InstanceManagement/EdFi.Ods.AdminApi.InstanceManagement.csproj`
-- [ ] T013 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.InstanceManagement.UnitTests/EdFi.Ods.AdminApi.InstanceManagement.UnitTests.csproj`
-- [ ] T014 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.UnitTests/EdFi.Ods.AdminApi.UnitTests.csproj`
-- [ ] T015 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.V1/EdFi.Ods.AdminApi.V1.csproj`
-- [ ] T016 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.V1.DBTests/EdFi.Ods.AdminApi.DBTests.csproj` (note: duplicate project name; this is the V1 folder copy)
-- [ ] T017 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.V1.DBTests/EdFi.Ods.AdminApi.V1.DBTests.csproj`
-- [ ] T018 [US1] Replace both occurrences of the `net8.0` path string with `net10.0` in `build.ps1` — line 219 (`$dllPath = "./bin/Release/net8.0/EdFi.Ods.AdminApi.dll"`) and line 550 (`$source = "$solutionRoot/EdFi.Ods.AdminApi/bin/Release/net8.0/."`)
-- [ ] T019 [US1] Run `./build.ps1 -Command build` and resolve ALL compilation errors, API obsoletions (SYSLIB diagnostics), and nullable annotation warnings (CS8618) introduced by the .NET 8 → .NET 10 upgrade; zero errors and zero framework-targeting warnings must remain when complete (per FR-012, FR-014, SC-001)
-- [ ] T020 [US1] Run `./build.ps1 -Command UnitTest` and confirm all previously-passing tests continue to pass with zero new failures; test output paths must appear under `net10.0` (per FR-013, SC-002)
+- [X] T008 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi/EdFi.Ods.AdminApi.csproj`; also add `<DisableImplicitOpenApiGeneration>true</DisableImplicitOpenApiGeneration>` to suppress the ASP.NET Core 10 built-in OpenAPI generator (prevents duplicate schema routes alongside Swashbuckle 10.2.0)
+- [X] T009 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.Common/EdFi.Ods.AdminApi.Common.csproj`
+- [X] T010 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.Common.UnitTests/EdFi.Ods.AdminApi.Common.UnitTests.csproj`
+- [X] T011 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.DBTests/EdFi.Ods.AdminApi.DBTests.csproj`
+- [X] T012 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.InstanceManagement/EdFi.Ods.AdminApi.InstanceManagement.csproj`
+- [X] T013 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.InstanceManagement.UnitTests/EdFi.Ods.AdminApi.InstanceManagement.UnitTests.csproj`
+- [X] T014 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.UnitTests/EdFi.Ods.AdminApi.UnitTests.csproj`
+- [X] T015 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.V1/EdFi.Ods.AdminApi.V1.csproj`
+- [X] T016 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.V1.DBTests/EdFi.Ods.AdminApi.DBTests.csproj` (note: duplicate project name; this is the V1 folder copy)
+- [X] T017 [P] [US1] Update `<TargetFramework>` from `net8.0` to `net10.0` in `Application/EdFi.Ods.AdminApi.V1.DBTests/EdFi.Ods.AdminApi.V1.DBTests.csproj`
+- [X] T018 [US1] Replace both occurrences of the `net8.0` path string with `net10.0` in `build.ps1` — line 219 (`$dllPath = "./bin/Release/net8.0/EdFi.Ods.AdminApi.dll"`) and line 550 (`$source = "$solutionRoot/EdFi.Ods.AdminApi/bin/Release/net8.0/."`)
+- [X] T019 [US1] Run `./build.ps1 -Command build` and resolve ALL compilation errors, API obsoletions (SYSLIB diagnostics), and nullable annotation warnings (CS8618) introduced by the .NET 8 → .NET 10 upgrade; zero errors and zero framework-targeting warnings must remain when complete (per FR-012, FR-014, SC-001)
+- [X] T020 [US1] Run `./build.ps1 -Command UnitTest` and confirm all previously-passing tests continue to pass with zero new failures; test output paths must appear under `net10.0` (per FR-013, SC-002)
 
 **Checkpoint**: Solution builds and all unit tests pass on .NET 10 — User Story 1 is complete and independently validated
 
@@ -94,11 +94,11 @@ and `curl` the health endpoint — HTTP 200 Healthy.
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Update `Docker/dev.pgsql.Dockerfile`: replace the SDK base image with `mcr.microsoft.com/dotnet/sdk:10.0.202-alpine3.23` and the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-009 and FR-010
-- [ ] T022 [P] [US2] Update `Docker/dev.mssql.Dockerfile`: replace the SDK base image with `mcr.microsoft.com/dotnet/sdk:10.0.202-alpine3.23` and the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-009 and FR-010
-- [ ] T023 [P] [US2] Update `Docker/api.pgsql.Dockerfile`: replace the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-010
-- [ ] T024 [P] [US2] Update `Docker/api.mssql.Dockerfile`: replace the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-010
-- [ ] T025 [US2] Build all four Docker images (`docker build -f Docker/dev.pgsql.Dockerfile`, `dev.mssql.Dockerfile`, `api.pgsql.Dockerfile`, `api.mssql.Dockerfile`) and confirm all four build without base-image-related errors; base image pull logs must reference `.NET 10` tags (per SC-003)
+- [X] T021 [P] [US2] Update `Docker/dev.pgsql.Dockerfile`: replace the SDK base image with `mcr.microsoft.com/dotnet/sdk:10.0.202-alpine3.23` and the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-009 and FR-010
+- [X] T022 [P] [US2] Update `Docker/dev.mssql.Dockerfile`: replace the SDK base image with `mcr.microsoft.com/dotnet/sdk:10.0.202-alpine3.23` and the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-009 and FR-010
+- [X] T023 [P] [US2] Update `Docker/api.pgsql.Dockerfile`: replace the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-010
+- [X] T024 [P] [US2] Update `Docker/api.mssql.Dockerfile`: replace the ASP.NET runtime base image with `mcr.microsoft.com/dotnet/aspnet:10.0.6-alpine3.23` per FR-010
+- [X] T025 [US2] Build all four Docker images (`docker build -f Docker/dev.pgsql.Dockerfile`, `dev.mssql.Dockerfile`, `api.pgsql.Dockerfile`, `api.mssql.Dockerfile`) and confirm all four build without base-image-related errors; base image pull logs must reference `.NET 10` tags (per SC-003)
 
 **Checkpoint**: All four Docker images build successfully from .NET 10 base images — User Story 2 is complete and independently validated
 
@@ -117,7 +117,7 @@ verification — generated migrations are empty. Run `./build.ps1 -Command Integ
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Add inline XML comments in `Application/Directory.Packages.props` for the two retained-version packages explaining why they are not upgraded: `Asp.Versioning.Http` at 8.1.1 (no .NET 10 release published; runtime-compatible) and `Microsoft.Extensions.Logging.Log4Net.AspNetCore` at 8.0.0 (no .NET 10 release published; runtime-compatible) — per FR-007, FR-008, and US3 acceptance scenario 4
+- [X] T026 [US3] Add inline XML comments in `Application/Directory.Packages.props` for the two retained-version packages explaining why they are not upgraded: `Asp.Versioning.Http` at 8.1.1 (no .NET 10 release published; runtime-compatible) and `Microsoft.Extensions.Logging.Log4Net.AspNetCore` at 8.0.0 (no .NET 10 release published; runtime-compatible) — per FR-007, FR-008, and US3 acceptance scenario 4
 - [ ] T027 [US3] Validate EF Core model drift for `UsersContext`: from the `Application/` directory run `dotnet ef migrations add _VerifyNoChanges --project EdFi.Ods.AdminApi --startup-project EdFi.Ods.AdminApi --context UsersContext`; confirm the generated migration file has empty `Up()` and `Down()` methods; then remove it with `dotnet ef migrations remove --project EdFi.Ods.AdminApi --startup-project EdFi.Ods.AdminApi --context UsersContext` (per data-model.md migration discipline checklist)
 - [ ] T028 [US3] Validate EF Core model drift for `SecurityContext`: from the `Application/` directory run `dotnet ef migrations add _VerifyNoChanges --project EdFi.Ods.AdminApi --startup-project EdFi.Ods.AdminApi --context SecurityContext`; confirm the generated migration file has empty `Up()` and `Down()` methods; then remove it (per data-model.md migration discipline checklist)
 - [ ] T029 [US3] Run `./build.ps1 -Command IntegrationTest` against a live PostgreSQL instance and confirm 100% pass rate for all DB tests (covers Npgsql 10.x type-mapping, EFCore.NamingConventions snake_case column resolution, and Quartz 4.x job scheduling) per SC-005
@@ -130,9 +130,9 @@ verification — generated migrations are empty. Run `./build.ps1 -Command Integ
 
 **Purpose**: Documentation updates and final end-to-end validation across all stories.
 
-- [ ] T030 [P] Update `docs/developer.md` line 21 (change `.NET 8.0 SDK` download link to `.NET 10.0 SDK` pointing to `https://dotnet.microsoft.com/download/dotnet/10.0`) and line 38 (change ".NET 8.0 SDK or newer" to ".NET 10.0 SDK or newer") per CA-005 and research.md §5 documentation delta
-- [ ] T031 [P] Review `AGENTS.md` for any remaining `.NET 8`, `net8.0`, SDK version, or Docker image tag references; update all found references to `.NET 10` equivalents per CA-005
-- [ ] T032 Update `.specify/memory/constitution.md` §Technology & Runtime Constraints to replace `net8.0` with `net10.0` as the approved primary runtime; add a note referencing this feature branch as the governance amendment per plan.md Constitution Exception
+- [X] T030 [P] Update `docs/developer.md` line 21 (change `.NET 8.0 SDK` download link to `.NET 10.0 SDK` pointing to `https://dotnet.microsoft.com/download/dotnet/10.0`) and line 38 (change ".NET 8.0 SDK or newer" to ".NET 10.0 SDK or newer") per CA-005 and research.md §5 documentation delta
+- [X] T031 [P] Review `AGENTS.md` for any remaining `.NET 8`, `net8.0`, SDK version, or Docker image tag references; update all found references to `.NET 10` equivalents per CA-005
+- [X] T032 Update `.specify/memory/constitution.md` §Technology & Runtime Constraints to replace `net8.0` with `net10.0` as the approved primary runtime; add a note referencing this feature branch as the governance amendment per plan.md Constitution Exception
 - [ ] T033 Run the quickstart.md validation end-to-end (Steps 1–8: SDK verify → build → unit tests → EF model drift check → integration tests → Docker image builds → container health check → documentation review) to confirm the complete upgrade workflow is reproducible and correct
 
 ---

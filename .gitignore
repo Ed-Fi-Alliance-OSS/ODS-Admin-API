@@ -75,3 +75,10 @@ coveragereport/
 
 # Bruno test results
 **/E2E Tests/**/results.html
+
+# Universal OS/editor temp files
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
