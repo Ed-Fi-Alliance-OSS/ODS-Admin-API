@@ -5,4 +5,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("EdFi.Ods.AdminApi.UnitTests.V3")]
+[assembly: InternalsVisibleTo("EdFi.Ods.AdminApi.V3.UnitTests")]

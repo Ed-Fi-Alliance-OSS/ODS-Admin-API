@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi.UnitTests", "EdFi.Ods.AdminApi.UnitTests\EdFi.Ods.AdminApi.UnitTests.csproj", "{F62C9CF6-A632-4894-B61A-674198DAB86E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi.UnitTests.V3", "EdFi.Ods.AdminApi.UnitTests.V3\EdFi.Ods.AdminApi.UnitTests.V3.csproj", "{694F830D-62F7-49F6-AF86-67DBEA056734}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi.V3.UnitTests", "EdFi.Ods.AdminApi.V3.UnitTests\EdFi.Ods.AdminApi.V3.UnitTests.csproj", "{694F830D-62F7-49F6-AF86-67DBEA056734}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi", "EdFi.Ods.AdminApi\EdFi.Ods.AdminApi.csproj", "{FBFFA828-316C-43C8-B52A-4D64C51DF6EB}"
 EndProject
@@ -22,7 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "Integra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi.DBTests", "EdFi.Ods.AdminApi.DBTests\EdFi.Ods.AdminApi.DBTests.csproj", "{73259EC2-4AA0-40C2-9C60-8AB1BF369CF5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi.DBTests.V3", "EdFi.Ods.AdminApi.DBTests.V3\EdFi.Ods.AdminApi.DBTests.V3.csproj", "{430C083F-8FD2-466D-83FF-1E9748E2286C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EdFi.Ods.AdminApi.V3.DBTests", "EdFi.Ods.AdminApi.V3.DBTests\EdFi.Ods.AdminApi.V3.DBTests.csproj", "{430C083F-8FD2-466D-83FF-1E9748E2286C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.Common", "EdFi.Ods.AdminApi.Common\EdFi.Ods.AdminApi.Common.csproj", "{C9C86866-562B-4EA3-9AAC-F3297F0754D6}"
 EndProject
