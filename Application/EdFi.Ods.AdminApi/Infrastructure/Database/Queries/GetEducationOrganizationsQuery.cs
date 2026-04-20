@@ -8,9 +8,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Features.OdsInstances;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
-using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -94,7 +92,16 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
                 Id = group.Key.InstanceId,
                 Name = group.Key.InstanceName ?? string.Empty,
                 InstanceType = null,
-                EducationOrganizations = EducationOrganizationMapper.ToModelList(group.ToList())
+                EducationOrganizations = group
+                    .Select(e => new EducationOrganizationItemModel
+                    {
+                        EducationOrganizationId = e.EducationOrganizationId,
+                        NameOfInstitution = e.NameOfInstitution,
+                        ShortNameOfInstitution = e.ShortNameOfInstitution,
+                        Discriminator = e.Discriminator,
+                        ParentId = e.ParentId,
+                    })
+                    .ToList()
             })
             .OrderBy(i => i.Id)
             .ToList();

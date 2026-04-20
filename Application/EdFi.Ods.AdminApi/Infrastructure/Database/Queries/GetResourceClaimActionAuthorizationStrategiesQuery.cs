@@ -6,8 +6,8 @@
 using System.Linq.Expressions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Features.ResourceClaimActionAuthStrategies;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Security.DataAccess.Contexts;
