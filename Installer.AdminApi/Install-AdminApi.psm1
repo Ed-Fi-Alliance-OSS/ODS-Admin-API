@@ -13,7 +13,7 @@ function Set-TlsVersion {
 }
 
 $appCommonDirectory = "$PSScriptRoot/AppCommon"
-$RequiredDotNetHostingBundleVersion = "6.0.0"
+$RequiredDotNetHostingBundleVersion = "10.0.0"
 
 Import-Module -Force "$appCommonDirectory/Environment/Prerequisites.psm1" -Scope Global
 Set-TlsVersion

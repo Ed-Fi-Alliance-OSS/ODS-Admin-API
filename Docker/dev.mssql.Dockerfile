@@ -7,8 +7,8 @@
 # code. The next two layers use the dotnet/aspnet image to run the built code.
 # The extra layers in the middle support caching of base layers.
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0.415-alpine3.21@sha256:f308a8fe0941a318421d18a0917b344d15d18996173a2db6f908a12b8db6b074 AS build
-RUN apk upgrade --no-cache && apk add --no-cache musl=~1.2.5-r11
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine3.22@sha256:ddae163c8bd4d12df3bd767bdea4afc248abfd1148cdbb8ac549fa80bbb397dc AS build
+RUN apk upgrade --no-cache && apk add --no-cache musl=~1.2.5-r12
 ARG ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-"Production"}
 
 WORKDIR /source
@@ -29,9 +29,9 @@ RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 RUN dotnet restore && dotnet build -c Release
 RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-build -o /app/EdFi.Ods.AdminApi
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.21-alpine3.21-amd64@sha256:61adf767314cc4b6a298dd3bdba46a2f10be37d67c75ad64dc7a89a44df8a228 AS runtimebase
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine3.22-amd64@sha256:86b43b7250c683781587f9e8d30a2315c5684f1b1fb788a9aa74e86bc06df4a5 AS runtimebase
 RUN apk upgrade --no-cache && \
-    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~74 curl musl=~1.2.5-r11 && \
+    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~76.1-r1 curl openssl=3.5.6-r0 musl=~1.2.5-r12 && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
 FROM runtimebase AS setup
