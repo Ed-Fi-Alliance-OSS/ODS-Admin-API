@@ -463,3 +463,23 @@ Document the known race condition and defer remediation. Acceptable only for low
 ### Recommendation
 
 **Option A** is the recommended remediation. It is the smallest change, uses the standard .NET mechanism for ambient async context (`AsyncLocal`), and fixes all identified races simultaneously — both HTTP and job paths — without changing any interfaces or DI registrations beyond swapping one class. The existing test suite does not need changes because tests mock `IContextProvider<TenantConfiguration>` directly.
+
+---
+
+## Pending work and known limitations
+
+### E2E test: `DELETE - DbInstance - Success` is skipped in CI
+
+**Status**: skipped (`skip: true` in `meta` block)
+
+**File**: `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/DbInstances/DELETE - DbInstance - Success.bru`
+
+**Root cause**: The test's pre-request script creates a `DbInstance` using the `Minimal` database template and polls until provisioning completes. In the CI pipeline, neither the `Minimal` template database (`EdFi_Ods_Minimal_Template`) nor the `Sample` template database (`EdFi_Ods_Populated_Template`) is seeded into the target PostgreSQL instance before the test suite runs. The provisioner finds no source database to copy and transitions the `DbInstance` to `Error` status, causing the pre-request assertion to fail before the DELETE request is even issued.
+
+**Resolution required**: Seed the Minimal and/or Sample template databases in the CI Docker environment before running the E2E suite, then remove `skip: true` from the affected test file.
+
+### `HashtableContextStorage` concurrency (ambient context isolation)
+
+**Status**: documented, pending team decision
+
+See [Context isolation risk and remediation options](#context-isolation-risk-and-remediation-options) above and the four implementation plan files (`PLAN-A` through `PLAN-D`) in `docs/design/`. Recommendation is **Option A** (`AsyncLocalContextStorage`).
