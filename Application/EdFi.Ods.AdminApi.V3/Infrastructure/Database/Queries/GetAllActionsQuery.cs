@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Linq.Expressions;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -22,41 +23,17 @@ public interface IGetAllActionsQuery
     IReadOnlyList<Action> Execute(CommonQueryParams commonQueryParams, int? id, string? name);
 }
 
-public class GetAllActionsQuery : IGetAllActionsQuery
+public class GetAllActionsQuery(ISecurityContext securityContext, IOptions<AppSettings> options)
+    : GetAllActionsQueryBase(securityContext, options), IGetAllActionsQuery
 {
-    private readonly ISecurityContext _securityContext;
-    private readonly IOptions<AppSettings> _options;
-    private readonly Dictionary<string, Expression<Func<Action, object>>> _orderByColumnActions;
-
-    public GetAllActionsQuery(ISecurityContext securityContext, IOptions<AppSettings> options)
-    {
-        _securityContext = securityContext;
-        _options = options;
-        var isSQLServerEngine = _options.Value.DatabaseEngine?.ToLowerInvariant() == DatabaseEngineEnum.SqlServer.ToLowerInvariant();
-        _orderByColumnActions = new Dictionary<string, Expression<Func<Action, object>>>
-        (StringComparer.OrdinalIgnoreCase)
-        {
-            { SortingColumns.DefaultNameColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ActionName, DatabaseEngineEnum.SqlServerCollation) : x.ActionName },
-            { SortingColumns.ActionUriColumn, x => x.ActionUri },
-            { SortingColumns.DefaultIdColumn, x => x.ActionId }
-        };
-    }
-
     public IReadOnlyList<Action> Execute()
     {
-        return _securityContext.Actions.ToList();
+        return ExecuteCore();
     }
 
     public IReadOnlyList<Action> Execute(CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        Expression<Func<Action, object>> columnToOrderBy = _orderByColumnActions.GetColumnToOrderBy(commonQueryParams.OrderBy);
-
-        return _securityContext.Actions
-        .Where(a => id == null || a.ActionId == id)
-        .Where(a => name == null || a.ActionName == name)
-        .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
-        .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
-        .ToList();
+        return ExecuteCore(commonQueryParams, id, name);
     }
 }
 

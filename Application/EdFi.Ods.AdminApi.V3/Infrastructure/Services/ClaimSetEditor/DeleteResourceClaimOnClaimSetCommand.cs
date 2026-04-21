@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 
@@ -12,29 +13,12 @@ public interface IDeleteResouceClaimOnClaimSetCommand
     void Execute(int claimSetId, int resourceClaimId);
 }
 
-public class DeleteResouceClaimOnClaimSetCommand : IDeleteResouceClaimOnClaimSetCommand
+public class DeleteResouceClaimOnClaimSetCommand(ISecurityContext context)
+    : DeleteResourceClaimOnClaimSetCommandBase(context), IDeleteResouceClaimOnClaimSetCommand
 {
-    private readonly ISecurityContext _context;
-
-    public DeleteResouceClaimOnClaimSetCommand(ISecurityContext context)
-    {
-        _context = context;
-    }
-
     public void Execute(int claimSetId, int resourceClaimId)
     {
-        var resourceClaimsForClaimSetId =
-                  _context.ClaimSetResourceClaimActions.Where(x => x.ClaimSetId == claimSetId && x.ResourceClaimId == resourceClaimId).ToList();
-        foreach (var resourceClaimAction in resourceClaimsForClaimSetId)
-        {
-            var resourceClaimActionAuthorizationStrategyOverrides = _context.ClaimSetResourceClaimActionAuthorizationStrategyOverrides.
-                Where(x => x.ClaimSetResourceClaimActionId == resourceClaimAction.ClaimSetResourceClaimActionId);
-
-            _context.ClaimSetResourceClaimActionAuthorizationStrategyOverrides.RemoveRange(resourceClaimActionAuthorizationStrategyOverrides);
-        }
-
-        _context.ClaimSetResourceClaimActions.RemoveRange(resourceClaimsForClaimSetId);
-        _context.SaveChanges();
+        ExecuteCore(claimSetId, resourceClaimId);
     }
     
 }

@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 using EdFi.Security.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor
@@ -14,55 +15,16 @@ namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor
         int Execute(IEditClaimSetModel claimSet);
     }
 
-    public class EditClaimSetCommand : IEditClaimSetCommand
+    public class EditClaimSetCommand(ISecurityContext securityContext, IUsersContext usersContext)
+        : EditClaimSetCommandBase(securityContext, usersContext), IEditClaimSetCommand
     {
-        private readonly ISecurityContext _securityContext;
-        private readonly IUsersContext _usersContext;
-
-        public EditClaimSetCommand(ISecurityContext securityContext, IUsersContext usersContext)
-        {
-            _securityContext = securityContext;
-            _usersContext = usersContext;
-        }
-
         public int Execute(IEditClaimSetModel claimSet)
         {
-            var existingClaimSet = _securityContext.ClaimSets.Single(x => x.ClaimSetId == claimSet.ClaimSetId);
-
-            if (existingClaimSet.ForApplicationUseOnly || existingClaimSet.IsEdfiPreset)
-            {
-                throw new AdminApiException($"Claim set ({existingClaimSet.ClaimSetName}) is system reserved. May not be modified.");
-            }
-
-            if (claimSet.ClaimSetName is null) throw new InvalidOperationException("Cannot have a null ClaimSetName");
-            if (!claimSet.ClaimSetName.Equals(existingClaimSet.ClaimSetName, StringComparison.InvariantCultureIgnoreCase))
-            {
-                ReAssociateApplicationsToRenamedClaimSet(existingClaimSet.ClaimSetName, claimSet.ClaimSetName);
-            }
-
-            existingClaimSet.ClaimSetName = claimSet.ClaimSetName;
-
-            _securityContext.SaveChanges();
-            _usersContext.SaveChanges();
-
-            return existingClaimSet.ClaimSetId;
-
-            void ReAssociateApplicationsToRenamedClaimSet(string existingClaimSetName, string newClaimSetName)
-            {
-                var associatedApplications = _usersContext.Applications
-                    .Where(x => x.ClaimSetName == existingClaimSetName);
-
-                foreach (var application in associatedApplications)
-                {
-                    application.ClaimSetName = newClaimSetName;
-                }
-            }
+            return ExecuteCore(claimSet);
         }
     }
 
-    public interface IEditClaimSetModel
+    public interface IEditClaimSetModel : IEditClaimSetModelCommon
     {
-        string? ClaimSetName { get; }
-        int ClaimSetId { get; }
     }
 }

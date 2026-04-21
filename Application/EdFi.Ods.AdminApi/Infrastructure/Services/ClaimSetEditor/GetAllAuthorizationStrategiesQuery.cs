@@ -4,6 +4,8 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
+using CommonAuthorizationStrategy = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.AuthorizationStrategy;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 public interface IGetAllAuthorizationStrategiesQuery
@@ -11,23 +13,28 @@ public interface IGetAllAuthorizationStrategiesQuery
     IReadOnlyList<AuthorizationStrategy> Execute();
 }
 
-public class GetAllAuthorizationStrategiesQuery : IGetAllAuthorizationStrategiesQuery
+public class GetAllAuthorizationStrategiesQuery(ISecurityContext securityContext)
+    : GetAllAuthorizationStrategiesQueryBase(securityContext), IGetAllAuthorizationStrategiesQuery, IGetAllAuthorizationStrategiesQueryCommon
 {
-    private readonly ISecurityContext _securityContext;
-
-    public GetAllAuthorizationStrategiesQuery(ISecurityContext securityContext)
+    IReadOnlyList<CommonAuthorizationStrategy> IGetAllAuthorizationStrategiesQueryCommon.Execute()
     {
-        _securityContext = securityContext;
+        return base.Execute();
     }
 
-    public IReadOnlyList<AuthorizationStrategy> Execute()
+    public new IReadOnlyList<AuthorizationStrategy> Execute()
     {
-        return _securityContext.AuthorizationStrategies
-            .OrderBy(x => x.AuthorizationStrategyName)
-            .Select(x => new AuthorizationStrategy
-            {
-                AuthStrategyId = x.AuthorizationStrategyId,
-                AuthStrategyName = x.AuthorizationStrategyName
-            }).ToList();
+        return base.Execute()
+            .Select(Map)
+            .ToList();
+    }
+
+    private static AuthorizationStrategy Map(CommonAuthorizationStrategy strategy)
+    {
+        return new AuthorizationStrategy
+        {
+            AuthStrategyId = strategy.AuthStrategyId,
+            AuthStrategyName = strategy.AuthStrategyName,
+            IsInheritedFromParent = strategy.IsInheritedFromParent
+        };
     }
 }

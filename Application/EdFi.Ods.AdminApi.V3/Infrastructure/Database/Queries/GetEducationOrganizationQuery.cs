@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -16,29 +17,13 @@ public interface IGetEducationOrganizationQuery
     List<EducationOrganization> Execute(int[] odsInstanceIds);
 }
 
-public class GetEducationOrganizationQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext adminApiDbContext) : IGetEducationOrganizationQuery
+public class GetEducationOrganizationQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext adminApiDbContext)
+    : GetEducationOrganizationQueryBase(adminApiDbContext), IGetEducationOrganizationQuery
 {
-    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _adminApiDbContext = adminApiDbContext;
+    public List<EducationOrganization> Execute() => ExecuteCore();
 
-    public List<EducationOrganization> Execute()
-    {
-        return _adminApiDbContext.EducationOrganizations.ToList();
-    }
+    public List<EducationOrganization> Execute(int odsInstanceId) => ExecuteCore(odsInstanceId);
 
-    public List<EducationOrganization> Execute(int odsInstanceId)
-    {
-        return _adminApiDbContext.EducationOrganizations
-                .Where(edOrgs => edOrgs.InstanceId == odsInstanceId)
-                .ToList();
-    }
-
-    public List<EducationOrganization> Execute(int[] odsInstanceIds)
-    {
-        return _adminApiDbContext.EducationOrganizations
-                .Where(edOrgs => odsInstanceIds.Contains(edOrgs.InstanceId))
-                .ToList();
-    }
+    public List<EducationOrganization> Execute(int[] odsInstanceIds) => ExecuteCore(odsInstanceIds);
 }
-
-
 

@@ -3,35 +3,30 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using AuthorizationStrategy = EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.AuthorizationStrategy;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 
-public class AddOrEditResourcesOnClaimSetCommand
+public class AddOrEditResourcesOnClaimSetCommand(
+    EditResourceOnClaimSetCommand editResourceOnClaimSetCommand,
+    IGetResourceClaimsQuery getResourceClaimsQuery,
+    OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand)
 {
-    private readonly EditResourceOnClaimSetCommand _editResourceOnClaimSetCommand;
-    private readonly IGetResourceClaimsQuery _getResourceClaimsQuery;
-    private readonly OverrideDefaultAuthorizationStrategyCommand _overrideDefaultAuthorizationStrategyCommand;
-
-    public AddOrEditResourcesOnClaimSetCommand(EditResourceOnClaimSetCommand editResourceOnClaimSetCommand,
-        IGetResourceClaimsQuery getResourceClaimsQuery,
-        OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand)
-    {
-        _editResourceOnClaimSetCommand = editResourceOnClaimSetCommand;
-        _getResourceClaimsQuery = getResourceClaimsQuery;
-        _overrideDefaultAuthorizationStrategyCommand = overrideDefaultAuthorizationStrategyCommand;
-    }
-
     public void Execute(int claimSetId, List<ResourceClaim> resources)
     {
+        var commonResources = resources.Select(MapToCommon).ToList();
 
         var allResources = GetDbResources();
 
-        var childResources = new List<ResourceClaim>();
-        foreach (var resourceClaims in resources.Select(x => x.Children))
+        var childResources = new List<Common.Infrastructure.ClaimSetEditor.ResourceClaim>();
+        foreach (var resourceClaims in commonResources.Select(x => x.Children))
             childResources.AddRange(resourceClaims);
-        resources.AddRange(childResources);
-        var currentResources = resources.Select(r =>
+        commonResources.AddRange(childResources);
+
+        var currentResources = commonResources
+            .Select(r =>
             {
                 var resource = allResources.Find(dr => (dr.Name ?? string.Empty).Equals(r.Name, StringComparison.Ordinal));
                 if (resource != null)
@@ -40,7 +35,8 @@ public class AddOrEditResourcesOnClaimSetCommand
                     resource.AuthorizationStrategyOverridesForCRUD = r.AuthorizationStrategyOverridesForCRUD;
                 }
                 return resource;
-            }).ToList();
+            })
+            .ToList();
 
         currentResources.RemoveAll(x => x is null);
 
@@ -49,28 +45,100 @@ public class AddOrEditResourcesOnClaimSetCommand
             var editResourceModel = new EditResourceOnClaimSetModel
             {
                 ClaimSetId = claimSetId,
-                ResourceClaim = resource
+                ResourceClaim = MapFromCommon(resource)
             };
 
-            _editResourceOnClaimSetCommand.Execute(editResourceModel);
+            editResourceOnClaimSetCommand.Execute(editResourceModel);
 
             if (resource!.AuthorizationStrategyOverridesForCRUD != null && resource.AuthorizationStrategyOverridesForCRUD.Any())
             {
-                var overrideAuthStrategyModel = new OverrideAuthorizationStrategyModel
-                {
-                    ClaimSetId = claimSetId,
-                    ResourceClaimId = resource.Id,
-                    ClaimSetResourceClaimActionAuthStrategyOverrides = resource.AuthorizationStrategyOverridesForCRUD
-                };
-                _overrideDefaultAuthorizationStrategyCommand.Execute(overrideAuthStrategyModel);
+                var overrideAuthStrategyModel = new OverrideModel(
+                    claimSetId,
+                    resource.Id,
+                    MapFromCommonStrategies(resource.AuthorizationStrategyOverridesForCRUD));
+                overrideDefaultAuthorizationStrategyCommand.Execute(overrideAuthStrategyModel);
             }
         }
     }
 
-    private List<ResourceClaim> GetDbResources()
+    private static ResourceClaim? MapFromCommon(Common.Infrastructure.ClaimSetEditor.ResourceClaim? commonClaim)
     {
-        var allResources = new List<ResourceClaim>();
-        var parentResources = _getResourceClaimsQuery.Execute().ToList();
+        if (commonClaim == null)
+            return null;
+
+        return new ResourceClaim
+        {
+            Id = commonClaim.Id,
+            Name = commonClaim.Name,
+            ParentId = commonClaim.ParentId,
+            ParentName = commonClaim.ParentName,
+            IsParent = commonClaim.IsParent,
+            Actions = commonClaim.Actions?.Select(a => new ResourceClaimAction
+            {
+                Name = a.Name,
+                Enabled = a.Enabled
+            }).ToList(),
+            DefaultAuthorizationStrategiesForCRUD = commonClaim.DefaultAuthorizationStrategiesForCRUD
+                .Select(x => x == null ? null : MapStrategyFromCommon(x))
+                .ToList(),
+            AuthorizationStrategyOverridesForCRUD = commonClaim.AuthorizationStrategyOverridesForCRUD
+                .Select(x => x == null ? null : MapStrategyFromCommon(x))
+                .ToList(),
+            Children = commonClaim.Children?.Select(MapFromCommon).Where(c => c != null).Cast<ResourceClaim>().ToList() ?? []
+        };
+    }
+
+    private static ClaimSetResourceClaimActionAuthStrategies MapStrategyFromCommon(
+        Common.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies commonStrategy)
+    {
+        return new ClaimSetResourceClaimActionAuthStrategies
+        {
+            ActionId = commonStrategy.ActionId,
+            ActionName = commonStrategy.ActionName,
+            AuthorizationStrategies = commonStrategy.AuthorizationStrategies?.Select(a => new AuthorizationStrategy
+            {
+                AuthStrategyId = a.AuthStrategyId,
+                AuthStrategyName = a.AuthStrategyName
+            }).ToList()
+        };
+    }
+
+    private static List<ClaimSetResourceClaimActionAuthStrategies?>? MapFromCommonStrategies(
+        List<Common.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies?>? commonStrategies)
+    {
+        if (commonStrategies == null)
+            return null;
+
+        return commonStrategies
+            .Select(x => x == null ? null : MapStrategyFromCommon(x))
+            .ToList();
+    }
+
+    private sealed class OverrideModel : IOverrideDefaultAuthorizationStrategyModel
+    {
+        private readonly int _claimSetId;
+        private readonly int _resourceClaimId;
+        private readonly List<ClaimSetResourceClaimActionAuthStrategies?>? _strategies;
+
+        public OverrideModel(
+            int claimSetId,
+            int resourceClaimId,
+            List<ClaimSetResourceClaimActionAuthStrategies?>? strategies)
+        {
+            _claimSetId = claimSetId;
+            _resourceClaimId = resourceClaimId;
+            _strategies = strategies;
+        }
+
+        public int ClaimSetId => _claimSetId;
+        public int ResourceClaimId => _resourceClaimId;
+        public List<ClaimSetResourceClaimActionAuthStrategies?>? ClaimSetResourceClaimActionAuthStrategyOverrides => _strategies;
+    }
+
+    private List<Common.Infrastructure.ClaimSetEditor.ResourceClaim> GetDbResources()
+    {
+        var allResources = new List<Common.Infrastructure.ClaimSetEditor.ResourceClaim>();
+        var parentResources = getResourceClaimsQuery.Execute().Select(MapToCommon).ToList();
 
         foreach (var resource in parentResources)
         {
@@ -80,7 +148,7 @@ public class AddOrEditResourcesOnClaimSetCommand
         return allResources;
     }
 
-    private void AddResourceWithChildren(ResourceClaim resource, List<ResourceClaim> allResources)
+    private static void AddResourceWithChildren(Common.Infrastructure.ClaimSetEditor.ResourceClaim resource, List<Common.Infrastructure.ClaimSetEditor.ResourceClaim> allResources)
     {
         allResources.Add(resource);
 
@@ -92,22 +160,42 @@ public class AddOrEditResourcesOnClaimSetCommand
             }
         }
     }
-}
 
-public class AddClaimSetModel : IAddClaimSetModel
-{
-    public string? ClaimSetName { get; set; }
-}
+    private static Common.Infrastructure.ClaimSetEditor.ResourceClaim MapToCommon(ResourceClaim local)
+    {
+        return new Common.Infrastructure.ClaimSetEditor.ResourceClaim
+        {
+            Id = local.Id,
+            Name = local.Name,
+            ParentId = local.ParentId,
+            ParentName = local.ParentName,
+            IsParent = local.IsParent,
+            Actions = local.Actions?.Select(a => new Common.Infrastructure.ClaimSetEditor.ResourceClaimAction
+            {
+                Name = a.Name,
+                Enabled = a.Enabled
+            }).ToList(),
+            DefaultAuthorizationStrategiesForCRUD = local.DefaultAuthorizationStrategiesForCRUD
+                .Select(x => x == null ? null : MapStrategyToCommon(x))
+                .ToList(),
+            AuthorizationStrategyOverridesForCRUD = local.AuthorizationStrategyOverridesForCRUD
+                .Select(x => x == null ? null : MapStrategyToCommon(x))
+                .ToList(),
+            Children = local.Children?.Select(MapToCommon).ToList() ?? []
+        };
+    }
 
-public class EditResourceOnClaimSetModel : IEditResourceOnClaimSetModel
-{
-    public int ClaimSetId { get; set; }
-    public ResourceClaim? ResourceClaim { get; set; }
-}
-
-public class OverrideAuthorizationStrategyModel : IOverrideDefaultAuthorizationStrategyModel
-{
-    public int ClaimSetId { get; set; }
-    public int ResourceClaimId { get; set; }
-    public List<ClaimSetResourceClaimActionAuthStrategies?>? ClaimSetResourceClaimActionAuthStrategyOverrides { get; set; }
+    private static Common.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies MapStrategyToCommon(ClaimSetResourceClaimActionAuthStrategies local)
+    {
+        return new Common.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies
+        {
+            ActionId = local.ActionId,
+            ActionName = local.ActionName,
+            AuthorizationStrategies = local.AuthorizationStrategies?.Select(a => new Common.Infrastructure.ClaimSetEditor.AuthorizationStrategy
+            {
+                AuthStrategyId = a.AuthStrategyId,
+                AuthStrategyName = a.AuthStrategyName
+            }).ToList()
+        };
+    }
 }

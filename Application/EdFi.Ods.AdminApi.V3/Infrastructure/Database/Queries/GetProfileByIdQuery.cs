@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
@@ -14,26 +14,10 @@ public interface IGetProfileByIdQuery
     Profile Execute(int profileId);
 }
 
-public class GetProfileByIdQuery : IGetProfileByIdQuery
+public class GetProfileByIdQuery(IUsersContext context) : GetProfileByIdQueryBase(context), IGetProfileByIdQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetProfileByIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Profile Execute(int profileId)
     {
-        var profile = _context.Profiles.SingleOrDefault(app => app.ProfileId == profileId);
-        if (profile == null)
-        {
-            throw new NotFoundException<int>("profile", profileId);
-        }
-
-        return profile;
+        return ExecuteCore(profileId);
     }
 }
-
-
-

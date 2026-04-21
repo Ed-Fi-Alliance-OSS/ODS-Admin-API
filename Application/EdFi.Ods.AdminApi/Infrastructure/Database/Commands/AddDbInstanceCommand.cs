@@ -4,43 +4,17 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
-public class AddDbInstanceCommand
+public class AddDbInstanceCommand(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
+    : AddDbInstanceCommandBase(context)
 {
-    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
-
-    public AddDbInstanceCommand(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
-    {
-        _context = context;
-    }
-
     public DbInstance Execute(IAddDbInstanceModel model)
     {
-        if (string.IsNullOrWhiteSpace(model.Name))
-            throw new ArgumentException("Name is required.", nameof(model));
-        if (string.IsNullOrWhiteSpace(model.DatabaseTemplate))
-            throw new ArgumentException("DatabaseTemplate is required.", nameof(model));
-
-        var now = DateTime.UtcNow;
-
-        var dbInstance = new DbInstance
-        {
-            Name = model.Name.Trim(),
-            DatabaseTemplate = model.DatabaseTemplate.Trim(),
-            Status = DbInstanceStatus.Pending.ToString(),
-            OdsInstanceId = null,
-            OdsInstanceName = null,
-            DatabaseName = null,
-            LastRefreshed = now,
-            LastModifiedDate = now
-        };
-
-        _context.DbInstances.Add(dbInstance);
-        _context.SaveChanges();
-        return dbInstance;
+        return ExecuteCore(model.Name, model.DatabaseTemplate);
     }
 }
 

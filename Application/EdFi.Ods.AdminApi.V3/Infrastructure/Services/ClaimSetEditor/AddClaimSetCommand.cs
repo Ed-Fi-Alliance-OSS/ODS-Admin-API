@@ -4,34 +4,24 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Security.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 
-public class AddClaimSetCommand
+public class AddClaimSetCommand(ISecurityContext context)
+    : AddClaimSetCommandBase(context)
 {
-    private readonly ISecurityContext _context;
-
-    public AddClaimSetCommand(ISecurityContext context)
-    {
-        _context = context;
-    }
-
     public int Execute(IAddClaimSetModel claimSet)
     {
-        var newClaimSet = new EdFi.Security.DataAccess.Models.ClaimSet
-        {
-            ClaimSetName = claimSet.ClaimSetName,
-            IsEdfiPreset = false,
-            ForApplicationUseOnly = false
-        };
-        _context.ClaimSets.Add(newClaimSet);
-        _context.SaveChanges();
-
-        return newClaimSet.ClaimSetId;
+        return ExecuteCore(claimSet);
     }
 }
 
-public interface IAddClaimSetModel
+public interface IAddClaimSetModel : IAddClaimSetModelCommon
 {
-    string? ClaimSetName { get; }
+}
+
+public class AddClaimSetModel : IAddClaimSetModel
+{
+    public string? ClaimSetName { get; set; }
 }
 

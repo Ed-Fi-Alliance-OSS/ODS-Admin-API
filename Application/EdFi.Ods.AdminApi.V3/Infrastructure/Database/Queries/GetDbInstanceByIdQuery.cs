@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
@@ -12,18 +13,12 @@ public interface IGetDbInstanceByIdQuery
     DbInstance? Execute(int id);
 }
 
-public class GetDbInstanceByIdQuery : IGetDbInstanceByIdQuery
+public class GetDbInstanceByIdQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
+    : GetDbInstanceByIdQueryBase(context), IGetDbInstanceByIdQuery
 {
-    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
-
-    public GetDbInstanceByIdQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context)
-    {
-        _context = context;
-    }
-
     public DbInstance? Execute(int id)
     {
-        return _context.DbInstances.SingleOrDefault(d => d.Id == id);
+        return ExecuteCore(id);
     }
 }
 

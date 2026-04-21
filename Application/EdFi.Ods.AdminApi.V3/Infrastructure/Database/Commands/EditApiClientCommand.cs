@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
@@ -14,40 +14,11 @@ public interface IEditApiClientCommand
     ApiClient Execute(IEditApiClientModel model);
 }
 
-public class EditApiClientCommand : IEditApiClientCommand
+public class EditApiClientCommand(IUsersContext context) : EditApiClientCommandBase(context), IEditApiClientCommand
 {
-    private readonly IUsersContext _context;
-
-    public EditApiClientCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public ApiClient Execute(IEditApiClientModel model)
     {
-        var apiClient = _context.ApiClients
-            .SingleOrDefault(a => a.ApiClientId == model.Id) ?? throw new NotFoundException<int>("apiclient", model.Id);
-
-        var newOdsInstances = model.OdsInstanceIds != null
-            ? _context.OdsInstances.Where(p => model.OdsInstanceIds.Contains(p.OdsInstanceId))
-            : null;
-
-        var currentApiClientId = apiClient.ApiClientId;
-        apiClient.Name = model.Name;
-        apiClient.IsApproved = model.IsApproved;
-
-        _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => o.ApiClient.ApiClientId == currentApiClientId));
-
-        if (newOdsInstances != null)
-        {
-            foreach (var newOdsInstance in newOdsInstances)
-            {
-                _context.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = apiClient, OdsInstance = newOdsInstance });
-            }
-        }
-
-        _context.SaveChanges();
-        return apiClient;
+        return ExecuteCore(model.Id, model.Name, model.IsApproved, model.OdsInstanceIds);
     }
 }
 

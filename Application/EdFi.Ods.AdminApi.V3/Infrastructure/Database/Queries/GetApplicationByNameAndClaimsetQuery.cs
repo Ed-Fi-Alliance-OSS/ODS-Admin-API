@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
@@ -14,23 +14,11 @@ public interface IGetApplicationByNameAndClaimsetQuery
     Application? Execute(string applicationName, string claimset);
 }
 
-public class GetApplicationByNameAndClaimsetQuery : IGetApplicationByNameAndClaimsetQuery
+public class GetApplicationByNameAndClaimsetQuery(IUsersContext context) : GetApplicationByNameAndClaimsetQueryBase(context), IGetApplicationByNameAndClaimsetQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetApplicationByNameAndClaimsetQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Application? Execute(string applicationName, string claimset)
     {
-        var application = _context.Applications
-            .Include(a => a.ApplicationEducationOrganizations)
-            .Include(a => a.Profiles)
-            .Include(a => a.Vendor)
-            .SingleOrDefault(app => app.ApplicationName == applicationName && app.ClaimSetName == claimset);
-        return application;
+        return ExecuteCore(applicationName, claimset);
     }
 }
 

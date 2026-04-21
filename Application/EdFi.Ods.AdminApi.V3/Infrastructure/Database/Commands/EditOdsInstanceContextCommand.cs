@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,30 +16,16 @@ public interface IEditOdsInstanceContextCommand
     OdsInstanceContext Execute(IEditOdsInstanceContextModel changedOdsInstanceContextData);
 }
 
-public class EditOdsInstanceContextCommand : IEditOdsInstanceContextCommand
+public class EditOdsInstanceContextCommand(IUsersContext context)
+    : EditOdsInstanceContextCommandBase(context), IEditOdsInstanceContextCommand
 {
-    private readonly IUsersContext _context;
-
-    public EditOdsInstanceContextCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public OdsInstanceContext Execute(IEditOdsInstanceContextModel changedOdsInstanceContextData)
     {
-        var odsInstanceContext = _context.OdsInstanceContexts
-            .Include(oid => oid.OdsInstance)
-            .SingleOrDefault(v => v.OdsInstanceContextId == changedOdsInstanceContextData.Id) ??
-            throw new NotFoundException<int>("odsInstanceContext", changedOdsInstanceContextData.Id);
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == changedOdsInstanceContextData.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", changedOdsInstanceContextData.OdsInstanceId);
-
-        odsInstanceContext.ContextKey = changedOdsInstanceContextData.ContextKey;
-        odsInstanceContext.OdsInstance = odsInstance;
-        odsInstanceContext.ContextValue = changedOdsInstanceContextData.ContextValue;
-
-        _context.SaveChanges();
-        return odsInstanceContext;
+        return ExecuteCore(
+            changedOdsInstanceContextData.Id,
+            changedOdsInstanceContextData.OdsInstanceId,
+            changedOdsInstanceContextData.ContextKey,
+            changedOdsInstanceContextData.ContextValue);
     }
 }
 

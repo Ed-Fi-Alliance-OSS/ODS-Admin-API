@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -13,26 +14,11 @@ public interface IAddOdsInstanceCommand
     OdsInstance Execute(IAddOdsInstanceModel newOdsInstance);
 }
 
-public class AddOdsInstanceCommand : IAddOdsInstanceCommand
+public class AddOdsInstanceCommand(IUsersContext context) : AddOdsInstanceCommandBase(context), IAddOdsInstanceCommand
 {
-    private readonly IUsersContext _context;
-
-    public AddOdsInstanceCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public OdsInstance Execute(IAddOdsInstanceModel newOdsInstance)
     {
-        var odsInstance = new OdsInstance
-        {
-            Name = newOdsInstance.Name,
-            InstanceType = newOdsInstance.InstanceType,
-            ConnectionString = newOdsInstance.ConnectionString
-        };
-        _context.OdsInstances.Add(odsInstance);
-        _context.SaveChanges();
-        return odsInstance;
+        return ExecuteCore(newOdsInstance.Name, newOdsInstance.InstanceType, newOdsInstance.ConnectionString);
     }
 }
 

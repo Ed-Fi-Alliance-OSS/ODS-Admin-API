@@ -5,9 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
@@ -16,92 +14,19 @@ public interface IEditApplicationCommand
     Application Execute(IEditApplicationModel model);
 }
 
-public class EditApplicationCommand : IEditApplicationCommand
+public class EditApplicationCommand(IUsersContext context) : EditApplicationCommandBase(context), IEditApplicationCommand
 {
-    private readonly IUsersContext _context;
-
-    public EditApplicationCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Application Execute(IEditApplicationModel model)
     {
-        var application = _context.Applications
-            .Include(a => a.ApplicationEducationOrganizations)
-            .Include(a => a.Profiles)
-            .Include(a => a.Vendor)
-            .Include(a => a.ApiClients)
-            .SingleOrDefault(a => a.ApplicationId == model.Id) ?? throw new NotFoundException<int>("application", model.Id);
-
-        if (application.Vendor.IsSystemReservedVendor())
-        {
-            throw new AdminApiException("This Application is required for proper system function and may not be modified");
-        }
-
-        var newVendor = _context.Vendors.Single(v => v.VendorId == model.VendorId);
-        var newProfiles = model.ProfileIds != null
-            ? _context.Profiles.Where(p => model.ProfileIds.Contains(p.ProfileId))
-            : null;
-        var newOdsInstances = model.OdsInstanceIds != null
-            ? _context.OdsInstances.Where(p => model.OdsInstanceIds.Contains(p.OdsInstanceId))
-            : null;
-
-        var apiClient = application.ApiClients.Single();
-        var currentApiClientId = apiClient.ApiClientId;
-        apiClient.Name = model.ApplicationName;
-        apiClient.IsApproved = model.Enabled ?? true;
-
-        _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => o.ApiClient.ApiClientId == currentApiClientId));
-        _context.ApplicationEducationOrganizations.RemoveRange(_context.ApplicationEducationOrganizations.Where(aeo => aeo.Application.ApplicationId == application.ApplicationId));
-
-        var currentProfiles = application.Profiles.ToList();
-        foreach (var profile in currentProfiles)
-        {
-            application.Profiles.Remove(profile);
-        }
-
-
-        application.ApplicationName = model.ApplicationName;
-        application.ClaimSetName = model.ClaimSetName;
-        application.Vendor = newVendor;
-
-        var newApplicationEdOrgs = model.EducationOrganizationIds == null
-            ? []
-            : model.EducationOrganizationIds.Select(id => new ApplicationEducationOrganization
-            {
-                ApiClients = new List<ApiClient> { apiClient },
-                EducationOrganizationId = id,
-                Application = application,
-            });
-
-        foreach (var appEdOrg in newApplicationEdOrgs)
-        {
-            application.ApplicationEducationOrganizations.Add(appEdOrg);
-        }
-
-        application.Profiles ??= [];
-
-        application.Profiles.Clear();
-
-        if (newProfiles != null)
-        {
-            foreach (var profile in newProfiles)
-            {
-                application.Profiles.Add(profile);
-            }
-        }
-
-        if (newOdsInstances != null)
-        {
-            foreach (var newOdsInstance in newOdsInstances)
-            {
-                _context.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = apiClient, OdsInstance = newOdsInstance });
-            }
-        }
-
-        _context.SaveChanges();
-        return application;
+        return ExecuteCore(
+            model.Id,
+            model.ApplicationName,
+            model.VendorId,
+            model.ClaimSetName,
+            model.ProfileIds,
+            model.EducationOrganizationIds,
+            model.OdsInstanceIds,
+            model.Enabled);
     }
 }
 

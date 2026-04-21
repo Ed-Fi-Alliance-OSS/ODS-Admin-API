@@ -5,89 +5,80 @@
 
 using EdFi.Security.DataAccess.Contexts;
 using EdFi.Security.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 using Microsoft.EntityFrameworkCore;
+using CommonResourceClaim = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.ResourceClaim;
+using CommonResourceClaimAction = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.ResourceClaimAction;
+using CommonAuthorizationStrategy = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.AuthorizationStrategy;
+using CommonClaimSetResourceClaimActionAuthStrategies = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 
-public class EditResourceOnClaimSetCommand
+public class EditResourceOnClaimSetCommand(ISecurityContext context)
+    : EditResourceOnClaimSetCommandBase(context)
 {
-    private readonly ISecurityContext _context;
-
-    public EditResourceOnClaimSetCommand(ISecurityContext context)
-    {
-        _context = context;
-    }
-
     public void Execute(IEditResourceOnClaimSetModel model)
     {
-        var resourceClaimToEdit = model.ResourceClaim;
-        if (resourceClaimToEdit is null) return;
-
-        var claimSetToEdit = _context.ClaimSets.Single(x => x.ClaimSetId == model.ClaimSetId);
-
-        var claimSetResourceClaimsToEdit = _context.ClaimSetResourceClaimActions
-            .Include(x => x.ResourceClaim)
-            .Include(x => x.Action)
-            .Include(x => x.ClaimSet)
-            .Where(x => x.ResourceClaim.ResourceClaimId == resourceClaimToEdit.Id && x.ClaimSet.ClaimSetId == claimSetToEdit.ClaimSetId)
-            .ToList();
-
-        AddEnabledActionsToClaimSet(resourceClaimToEdit, claimSetResourceClaimsToEdit, claimSetToEdit);
-
-        RemoveDisabledActionsFromClaimSet(resourceClaimToEdit, claimSetResourceClaimsToEdit);
-
-        _context.SaveChanges();
+        ExecuteCore(new EditResourceOnClaimSetModelCommonAdapter
+        {
+            ClaimSetId = model.ClaimSetId,
+            ResourceClaim = model.ResourceClaim == null ? null : Map(model.ResourceClaim)
+        });
     }
 
-    private void RemoveDisabledActionsFromClaimSet(ResourceClaim modelResourceClaim, IEnumerable<ClaimSetResourceClaimAction> resourceClaimsToEdit)
+    private sealed class EditResourceOnClaimSetModelCommonAdapter : IEditResourceOnClaimSetModelCommon
     {
-        var recordsToRemove = new List<ClaimSetResourceClaimAction>();
-
-        foreach (var claimSetResourceClaim in resourceClaimsToEdit)
-        {
-            if(modelResourceClaim.Actions != null &&
-                modelResourceClaim.Actions.Exists(x => x.Name != null && x.Name.Equals(claimSetResourceClaim.Action.ActionName,
-                StringComparison.InvariantCultureIgnoreCase) && !x.Enabled))
-            {
-                recordsToRemove.Add(claimSetResourceClaim);
-            }
-        }
-
-        if (recordsToRemove.Any())
-        {
-            _context.ClaimSetResourceClaimActions.RemoveRange(recordsToRemove);
-        }
+        public int ClaimSetId { get; set; }
+        public CommonResourceClaim? ResourceClaim { get; set; }
     }
 
-    private void AddEnabledActionsToClaimSet(ResourceClaim modelResourceClaim,
-        IReadOnlyCollection<ClaimSetResourceClaimAction> claimSetResourceClaimsToEdit, EdFi.Security.DataAccess.Models.ClaimSet claimSetToEdit)
+    private static CommonResourceClaim Map(ResourceClaim resourceClaim)
     {
-        var actionsFromDb = _context.Actions.ToList();
-
-        var resourceClaimFromDb = _context.ResourceClaims.Single(x => x.ResourceClaimId == modelResourceClaim.Id);
-
-        var recordsToAdd = new List<ClaimSetResourceClaimAction>();
-
-        if(modelResourceClaim.Actions != null)
+        return new CommonResourceClaim
         {
-            foreach (var action in modelResourceClaim.Actions)
-            {
-                if (action.Enabled && claimSetResourceClaimsToEdit.All(x => !x.Action.ActionName.Equals(action.Name,
-                    StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    recordsToAdd.Add(new ClaimSetResourceClaimAction
-                    {
-                        Action = actionsFromDb.Single(x => x.ActionName.Equals(action.Name, StringComparison.InvariantCultureIgnoreCase)),
-                        ClaimSet = claimSetToEdit,
-                        ResourceClaim = resourceClaimFromDb
-                    });
-                }
-            }
-        }
-        if (recordsToAdd.Any())
+            Id = resourceClaim.Id,
+            ParentId = resourceClaim.ParentId,
+            ParentName = resourceClaim.ParentName,
+            Name = resourceClaim.Name,
+            IsParent = resourceClaim.IsParent,
+            Actions = resourceClaim.Actions?.Select(Map).ToList(),
+            DefaultAuthorizationStrategiesForCRUD = resourceClaim.DefaultAuthorizationStrategiesForCRUD
+                .Select(x => x == null ? null : Map(x))
+                .ToList(),
+            AuthorizationStrategyOverridesForCRUD = resourceClaim.AuthorizationStrategyOverridesForCRUD
+                .Select(x => x == null ? null : Map(x))
+                .ToList(),
+            Children = resourceClaim.Children.Select(Map).ToList()
+        };
+    }
+
+    private static CommonResourceClaimAction Map(ResourceClaimAction action)
+    {
+        return new CommonResourceClaimAction
         {
-            _context.ClaimSetResourceClaimActions.AddRange(recordsToAdd);
-        }
+            Name = action.Name,
+            Enabled = action.Enabled
+        };
+    }
+
+    private static CommonClaimSetResourceClaimActionAuthStrategies Map(ClaimSetResourceClaimActionAuthStrategies authorizationStrategy)
+    {
+        return new CommonClaimSetResourceClaimActionAuthStrategies
+        {
+            ActionId = authorizationStrategy.ActionId,
+            ActionName = authorizationStrategy.ActionName,
+            AuthorizationStrategies = authorizationStrategy.AuthorizationStrategies?.Select(Map).ToList()
+        };
+    }
+
+    private static CommonAuthorizationStrategy Map(AuthorizationStrategy strategy)
+    {
+        return new CommonAuthorizationStrategy
+        {
+            AuthStrategyId = strategy.AuthStrategyId,
+            AuthStrategyName = strategy.AuthStrategyName,
+            IsInheritedFromParent = strategy.IsInheritedFromParent
+        };
     }
 }
 
@@ -95,5 +86,11 @@ public interface IEditResourceOnClaimSetModel
 {
     int ClaimSetId { get; }
     ResourceClaim? ResourceClaim { get; }
+}
+
+public class EditResourceOnClaimSetModel : IEditResourceOnClaimSetModel
+{
+    public int ClaimSetId { get; set; }
+    public ResourceClaim? ResourceClaim { get; set; }
 }
 

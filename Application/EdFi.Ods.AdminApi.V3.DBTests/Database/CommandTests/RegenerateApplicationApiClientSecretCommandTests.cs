@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using NUnit.Framework;

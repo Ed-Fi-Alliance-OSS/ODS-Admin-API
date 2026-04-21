@@ -5,34 +5,14 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public class GetApiClientByIdQuery : IGetApiClientByIdQuery
+public class GetApiClientByIdQuery(IUsersContext context) : GetApiClientByIdQueryBase(context), IGetApiClientByIdQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetApiClientByIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public ApiClient Execute(int apiClientId)
     {
-        var apiClient = _context.ApiClients
-            .Include(a => a.Application)
-            .SingleOrDefault(app => app.ApiClientId == apiClientId);
-
-        if (apiClient == null)
-        {
-            throw new NotFoundException<int>("apiclient", apiClientId);
-        }
-
-        return apiClient;
+        return ExecuteCore(apiClientId);
     }
 }
-
-
-

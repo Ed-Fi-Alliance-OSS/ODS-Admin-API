@@ -5,8 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
@@ -15,31 +14,16 @@ public interface IEditOdsInstanceDerivativeCommand
     OdsInstanceDerivative Execute(IEditOdsInstanceDerivativeModel changedOdsInstanceDerivativeData);
 }
 
-public class EditOdsInstanceDerivativeCommand : IEditOdsInstanceDerivativeCommand
+public class EditOdsInstanceDerivativeCommand(IUsersContext context)
+    : EditOdsInstanceDerivativeCommandBase(context), IEditOdsInstanceDerivativeCommand
 {
-    private readonly IUsersContext _context;
-
-    public EditOdsInstanceDerivativeCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public OdsInstanceDerivative Execute(IEditOdsInstanceDerivativeModel changedOdsInstanceDerivativeData)
     {
-        var odsInstance = _context.OdsInstances
-            .SingleOrDefault(v => v.OdsInstanceId == changedOdsInstanceDerivativeData.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", changedOdsInstanceDerivativeData.OdsInstanceId);
-        var odsInstanceDerivative = _context.OdsInstanceDerivatives
-            .Include(oid => oid.OdsInstance)
-            .SingleOrDefault(v => v.OdsInstanceDerivativeId == changedOdsInstanceDerivativeData.Id) ??
-            throw new NotFoundException<int>("odsInstanceDerivative", changedOdsInstanceDerivativeData.Id);
-
-        odsInstanceDerivative.DerivativeType = changedOdsInstanceDerivativeData.DerivativeType;
-        odsInstanceDerivative.OdsInstance = odsInstance;
-        odsInstanceDerivative.ConnectionString = changedOdsInstanceDerivativeData.ConnectionString;
-
-        _context.SaveChanges();
-        return odsInstanceDerivative;
+        return ExecuteCore(
+            changedOdsInstanceDerivativeData.Id,
+            changedOdsInstanceDerivativeData.OdsInstanceId,
+            changedOdsInstanceDerivativeData.DerivativeType,
+            changedOdsInstanceDerivativeData.ConnectionString);
     }
 }
 

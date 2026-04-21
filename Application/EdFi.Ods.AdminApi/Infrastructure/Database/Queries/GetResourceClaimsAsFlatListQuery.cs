@@ -4,7 +4,9 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 using EdFi.Security.DataAccess.Contexts;
+using CommonResourceClaim = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.ResourceClaim;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
@@ -13,27 +15,25 @@ public interface IGetResourceClaimsAsFlatListQuery
     IReadOnlyList<ResourceClaim> Execute();
 }
 
-public class GetResourceClaimsAsFlatListQuery : IGetResourceClaimsAsFlatListQuery
+public class GetResourceClaimsAsFlatListQuery(ISecurityContext securityContext)
+    : GetResourceClaimsAsFlatListQueryBase(securityContext), IGetResourceClaimsAsFlatListQuery
 {
-    private readonly ISecurityContext _securityContext;
-
-    public GetResourceClaimsAsFlatListQuery(ISecurityContext securityContext)
-    {
-        _securityContext = securityContext;
-    }
-
     public IReadOnlyList<ResourceClaim> Execute()
     {
-        return _securityContext.ResourceClaims
-            .Select(x => new ResourceClaim
-            {
-                Id = x.ResourceClaimId,
-                Name = x.ResourceName,
-                ParentId = x.ParentResourceClaimId ?? 0,
-                ParentName = x.ParentResourceClaim.ResourceName
-            })
-            .Distinct()
-            .OrderBy(x => x.Name)
+        return ExecuteCore()
+            .Select(Map)
             .ToList();
+    }
+
+    private static ResourceClaim Map(CommonResourceClaim resourceClaim)
+    {
+        return new ResourceClaim
+        {
+            Id = resourceClaim.Id,
+            Name = resourceClaim.Name,
+            ParentId = resourceClaim.ParentId,
+            ParentName = resourceClaim.ParentName,
+            Children = resourceClaim.Children.Select(Map).ToList()
+        };
     }
 }

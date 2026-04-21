@@ -5,46 +5,15 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using VendorUser = EdFi.Admin.DataAccess.Models.User;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public class AddVendorCommand
+public class AddVendorCommand(IUsersContext context) : AddVendorCommandBase(context)
 {
-    private readonly IUsersContext _context;
-
-    public AddVendorCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Vendor Execute(IAddVendorModel newVendor)
     {
-        var namespacePrefixes = newVendor.NamespacePrefixes?.Split(",")
-            .Where(namespacePrefix => !string.IsNullOrWhiteSpace(namespacePrefix))
-            .Select(namespacePrefix => new VendorNamespacePrefix
-            {
-                NamespacePrefix = namespacePrefix.Trim()
-            })
-            .ToList();
-
-        var vendor = new Vendor
-        {
-            VendorName = newVendor.Company?.Trim(),
-            VendorNamespacePrefixes = namespacePrefixes
-        };
-
-        var user = new VendorUser
-        {
-            FullName = newVendor.ContactName?.Trim(),
-            Email = newVendor.ContactEmailAddress?.Trim()
-        };
-
-        vendor.Users.Add(user);
-
-        _context.Vendors.Add(vendor);
-        _context.SaveChanges();
-        return vendor;
+        return ExecuteCore(newVendor.Company, newVendor.NamespacePrefixes, newVendor.ContactName, newVendor.ContactEmailAddress);
     }
 }
 

@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
@@ -16,25 +17,12 @@ public interface IGetDbInstancesQuery
     List<DbInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name);
 }
 
-public class GetDbInstancesQuery : IGetDbInstancesQuery
+public class GetDbInstancesQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context, IOptions<AppSettings> options)
+    : GetDbInstancesQueryBase(context, options), IGetDbInstancesQuery
 {
-    private readonly EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext _context;
-    private readonly IOptions<AppSettings> _options;
-
-    public GetDbInstancesQuery(EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext context, IOptions<AppSettings> options)
-    {
-        _context = context;
-        _options = options;
-    }
-
     public List<DbInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        return _context.DbInstances
-            .Where(d => id == null || d.Id == id)
-            .Where(d => name == null || d.Name == name)
-            .OrderBy(d => d.Id)
-            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
-            .ToList();
+        return ExecuteCore(commonQueryParams, id, name);
     }
 }
 

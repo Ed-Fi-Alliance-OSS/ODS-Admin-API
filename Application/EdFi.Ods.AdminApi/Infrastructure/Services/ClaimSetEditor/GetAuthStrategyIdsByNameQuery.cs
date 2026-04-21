@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 
@@ -12,40 +13,11 @@ public interface IGetAuthStrategyIdsByNameQuery
     List<int> Execute(IEnumerable<string> authStrategyNames);
 }
 
-public class GetAuthStrategyIdsByNameQuery : IGetAuthStrategyIdsByNameQuery
+public class GetAuthStrategyIdsByNameQuery(IGetAllAuthorizationStrategiesQueryCommon getAllAuthorizationStrategiesQuery)
+    : GetAuthStrategyIdsByNameQueryBase(getAllAuthorizationStrategiesQuery), IGetAuthStrategyIdsByNameQuery
 {
-    private readonly IGetAllAuthorizationStrategiesQuery _getAllAuthorizationStrategiesQuery;
-
-    public GetAuthStrategyIdsByNameQuery(IGetAllAuthorizationStrategiesQuery getAllAuthorizationStrategiesQuery)
-    {
-        _getAllAuthorizationStrategiesQuery = getAllAuthorizationStrategiesQuery;
-    }
-
     public List<int> Execute(IEnumerable<string> authStrategyNames)
     {
-        var allStrategies = _getAllAuthorizationStrategiesQuery.Execute();
-        var ids = new List<int>();
-        var unavailableAuthStrategies = new List<string>();
-
-        foreach (var authStrategyName in authStrategyNames)
-        {
-            var authStrategy = allStrategies.FirstOrDefault(a =>
-                authStrategyName.Equals(a.AuthStrategyName, StringComparison.InvariantCultureIgnoreCase));
-
-            if (authStrategy is null)
-            {
-                unavailableAuthStrategies.Add(authStrategyName);
-                continue;
-            }
-
-            ids.Add(authStrategy.AuthStrategyId);
-        }
-
-        if (unavailableAuthStrategies.Count > 0)
-        {
-            throw new AdminApiException($"Error transforming the ID for the AuthStrategyNames {string.Join(",", unavailableAuthStrategies)}");
-        }
-
-        return ids;
+        return ExecuteCore(authStrategyNames);
     }
 }

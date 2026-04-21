@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
@@ -14,21 +14,10 @@ public interface IGetVendorByIdQuery
     Vendor? Execute(int vendorId);
 }
 
-public class GetVendorByIdQuery : IGetVendorByIdQuery
+public class GetVendorByIdQuery(IUsersContext context) : GetVendorByIdQueryBase(context), IGetVendorByIdQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetVendorByIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Vendor? Execute(int vendorId)
     {
-        return _context.Vendors
-            .Include(v => v.Users)
-            .Include(v => v.VendorNamespacePrefixes)
-            .Include(v => v.Applications)
-            .SingleOrDefault(v => v.VendorId == vendorId);
+        return ExecuteCore(vendorId);
     }
 }

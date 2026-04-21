@@ -4,36 +4,29 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
 using EdFi.Security.DataAccess.Contexts;
+using CommonClaimSet = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.ClaimSet;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 
-public class GetClaimSetByIdQuery : IGetClaimSetByIdQuery
+public class GetClaimSetByIdQuery(ISecurityContext securityContext)
+    : GetClaimSetByIdQueryBase(securityContext), IGetClaimSetByIdQuery
 {
-    private readonly ISecurityContext _securityContext;
-
-    public GetClaimSetByIdQuery(ISecurityContext securityContext)
-    {
-        _securityContext = securityContext;
-    }
-
     public ClaimSet Execute(int securityContextClaimSetId)
     {
-        var securityContextClaimSet = _securityContext.ClaimSets
-          .SingleOrDefault(x => x.ClaimSetId == securityContextClaimSetId);
+        return Map(ExecuteCore(securityContextClaimSetId));
+    }
 
-        if (securityContextClaimSet != null)
+    private static ClaimSet Map(CommonClaimSet claimSet)
+    {
+        return new ClaimSet
         {
-            return new ClaimSet
-            {
-                Id = securityContextClaimSet.ClaimSetId,
-                Name = securityContextClaimSet.ClaimSetName,
-                IsEditable = !securityContextClaimSet.ForApplicationUseOnly && !securityContextClaimSet.IsEdfiPreset
-            };
-        }
-
-        throw new NotFoundException<int>("claimset", securityContextClaimSetId);
-
+            Id = claimSet.Id,
+            Name = claimSet.Name,
+            IsEditable = claimSet.IsEditable,
+            ApplicationsCount = claimSet.ApplicationsCount
+        };
     }
 }
 

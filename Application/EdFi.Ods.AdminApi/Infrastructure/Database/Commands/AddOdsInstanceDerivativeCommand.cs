@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -14,29 +14,15 @@ public interface IAddOdsInstanceDerivativeCommand
     OdsInstanceDerivative Execute(IAddOdsInstanceDerivativeModel newOdsInstanceDerivative);
 }
 
-public class AddOdsInstanceDerivativeCommand : IAddOdsInstanceDerivativeCommand
+public class AddOdsInstanceDerivativeCommand(IUsersContext context)
+    : AddOdsInstanceDerivativeCommandBase(context), IAddOdsInstanceDerivativeCommand
 {
-    private readonly IUsersContext _context;
-
-    public AddOdsInstanceDerivativeCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public OdsInstanceDerivative Execute(IAddOdsInstanceDerivativeModel newOdsInstanceDerivative)
     {
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newOdsInstanceDerivative.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", newOdsInstanceDerivative.OdsInstanceId);
-
-        var odsInstanceDerivative = new OdsInstanceDerivative
-        {
-           ConnectionString = newOdsInstanceDerivative.ConnectionString,
-           DerivativeType = newOdsInstanceDerivative.DerivativeType,
-           OdsInstance = odsInstance
-        };
-        _context.OdsInstanceDerivatives.Add(odsInstanceDerivative);
-        _context.SaveChanges();
-        return odsInstanceDerivative;
+        return ExecuteCore(
+            newOdsInstanceDerivative.OdsInstanceId,
+            newOdsInstanceDerivative.DerivativeType,
+            newOdsInstanceDerivative.ConnectionString);
     }
 }
 

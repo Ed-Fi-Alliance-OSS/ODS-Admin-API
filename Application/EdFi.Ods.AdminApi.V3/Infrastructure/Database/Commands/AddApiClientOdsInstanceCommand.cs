@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
@@ -14,26 +14,11 @@ public interface IAddApiClientOdsInstanceCommand
     ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientOdsInstance);
 }
 
-public class AddApiClientOdsInstanceCommand : IAddApiClientOdsInstanceCommand
+public class AddApiClientOdsInstanceCommand(IUsersContext context) : AddApiClientOdsInstanceCommandBase(context), IAddApiClientOdsInstanceCommand
 {
-    private readonly IUsersContext _context;
-
-    public AddApiClientOdsInstanceCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientOdsInstance)
     {
-
-        var apiClientOdsInstance = new ApiClientOdsInstance
-        {
-            ApiClient = newApiClientOdsInstance.ApiClient,
-            OdsInstance = newApiClientOdsInstance.OdsInstance
-        };
-        _context.ApiClientOdsInstances.Add(apiClientOdsInstance);
-        _context.SaveChanges();
-        return apiClientOdsInstance;
+        return ExecuteCore(newApiClientOdsInstance);
     }
 }
 

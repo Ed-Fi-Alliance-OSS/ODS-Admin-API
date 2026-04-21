@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -13,19 +13,10 @@ public interface IDeleteOdsInstanceCommand
     void Execute(int id);
 }
 
-public class DeleteOdsInstanceCommand : IDeleteOdsInstanceCommand
+public class DeleteOdsInstanceCommand(IUsersContext context) : DeleteOdsInstanceCommandBase(context), IDeleteOdsInstanceCommand
 {
-    private readonly IUsersContext _context;
-
-    public DeleteOdsInstanceCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public void Execute(int id)
     {
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == id) ?? throw new NotFoundException<int>("odsInstance", id);
-        _context.OdsInstances.Remove(odsInstance);
-        _context.SaveChanges();
+        ExecuteCore(id);
     }
 }

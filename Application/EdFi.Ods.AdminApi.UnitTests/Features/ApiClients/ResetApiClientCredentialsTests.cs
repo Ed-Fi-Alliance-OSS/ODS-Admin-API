@@ -5,6 +5,7 @@
 
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Features.ApiClients;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using FakeItEasy;

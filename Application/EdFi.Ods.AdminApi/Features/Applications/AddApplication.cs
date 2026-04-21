@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Options;

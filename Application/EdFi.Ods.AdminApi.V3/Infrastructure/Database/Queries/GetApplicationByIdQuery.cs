@@ -5,34 +5,15 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public class GetApplicationByIdQuery
+public class GetApplicationByIdQuery(IUsersContext context) : GetApplicationByIdQueryBase(context)
 {
-    private readonly IUsersContext _context;
-
-    public GetApplicationByIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Application Execute(int applicationId)
     {
-        var application = _context.Applications
-            .Include(a => a.ApplicationEducationOrganizations)
-            .Include(a => a.Profiles)
-            .Include(a => a.Vendor)
-            .Include(a => a.ApiClients)
-            .SingleOrDefault(app => app.ApplicationId == applicationId);
-        if (application == null)
-        {
-            throw new NotFoundException<int>("application", applicationId);
-        }
-
-        return application;
+        return ExecuteCore(applicationId);
     }
 }
 

@@ -7,7 +7,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 
 public static class ValidationConstants
 {
-    public const int MaximumApplicationNameLength = 50;
-    public const int MaximumApiClientNameLength = 50;
+    public const int MaximumApplicationNameLength = EdFi.Ods.AdminApi.Common.Infrastructure.Commands.ValidationConstants.MaximumApplicationNameLength;
+    public const int MaximumApiClientNameLength = EdFi.Ods.AdminApi.Common.Infrastructure.Commands.ValidationConstants.MaximumApiClientNameLength;
 }
 

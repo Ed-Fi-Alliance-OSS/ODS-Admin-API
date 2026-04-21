@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
@@ -23,41 +24,17 @@ public interface IGetOdsInstanceContextsQuery
     List<OdsInstanceContext> Execute(CommonQueryParams commonQueryParams);
 }
 
-public class GetOdsInstanceContextsQuery : IGetOdsInstanceContextsQuery
+public class GetOdsInstanceContextsQuery(IUsersContext usersContext, IOptions<AppSettings> options)
+    : GetOdsInstanceContextsQueryBase(usersContext, options), IGetOdsInstanceContextsQuery
 {
-    private readonly IUsersContext _usersContext;
-    private readonly IOptions<AppSettings> _options;
-    private readonly Dictionary<string, Expression<Func<OdsInstanceContext, object>>> _orderByColumnOds;
-    public GetOdsInstanceContextsQuery(IUsersContext usersContext, IOptions<AppSettings> options)
-    {
-        _usersContext = usersContext;
-        _options = options;
-        var isSQLServerEngine = _options.Value.DatabaseEngine?.ToLowerInvariant() == DatabaseEngineEnum.SqlServer.ToLowerInvariant();
-        _orderByColumnOds = new Dictionary<string, Expression<Func<OdsInstanceContext, object>>>
-            (StringComparer.OrdinalIgnoreCase)
-        {
-            { SortingColumns.OdsInstanceContextKeyColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ContextKey, DatabaseEngineEnum.SqlServerCollation) : x.ContextKey },
-            { SortingColumns.OdsInstanceContextValueColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ContextValue, DatabaseEngineEnum.SqlServerCollation) : x.ContextValue },
-            { SortingColumns.DefaultIdColumn, x => x.OdsInstanceContextId }
-        };
-    }
-
     public List<OdsInstanceContext> Execute()
     {
-        return _usersContext.OdsInstanceContexts
-            .Include(oid => oid.OdsInstance)
-            .OrderBy(p => p.ContextKey).ToList();
+        return ExecuteCore();
     }
 
     public List<OdsInstanceContext> Execute(CommonQueryParams commonQueryParams)
     {
-        Expression<Func<OdsInstanceContext, object>> columnToOrderBy = _orderByColumnOds.GetColumnToOrderBy(commonQueryParams.OrderBy);
-
-        return _usersContext.OdsInstanceContexts
-            .Include(oid => oid.OdsInstance)
-            .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
-            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
-            .ToList();
+        return ExecuteCore(commonQueryParams);
     }
 }
 

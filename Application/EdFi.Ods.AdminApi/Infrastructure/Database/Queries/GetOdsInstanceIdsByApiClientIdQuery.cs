@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
@@ -14,46 +15,15 @@ public interface IGetOdsInstanceIdsByApiClientIdQuery
     IReadOnlyDictionary<int, IList<int>> Execute(IEnumerable<int> apiClientIds);
 }
 
-public class GetOdsInstanceIdsByApiClientIdQuery : IGetOdsInstanceIdsByApiClientIdQuery
+public class GetOdsInstanceIdsByApiClientIdQuery(IUsersContext context) : GetOdsInstanceIdsByApiClientIdQueryBase(context), IGetOdsInstanceIdsByApiClientIdQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetOdsInstanceIdsByApiClientIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public IList<int> Execute(int apiClientId)
     {
-        return _context.ApiClientOdsInstances
-            .Where(p => p.ApiClient.ApiClientId == apiClientId)
-            .Select(p => p.OdsInstance.OdsInstanceId)
-            .ToList();
+        return ExecuteCore(apiClientId);
     }
 
     public IReadOnlyDictionary<int, IList<int>> Execute(IEnumerable<int> apiClientIds)
     {
-        var ids = apiClientIds.Distinct().ToList();
-
-        if (ids.Count == 0)
-        {
-            return new Dictionary<int, IList<int>>();
-        }
-
-        var groupedOdsInstanceIds = _context.ApiClientOdsInstances
-            .Where(p => ids.Contains(p.ApiClient.ApiClientId))
-            .Select(p => new
-            {
-                ApiClientId = p.ApiClient.ApiClientId,
-                p.OdsInstance.OdsInstanceId
-            })
-            .Distinct()
-            .AsEnumerable()
-            .GroupBy(x => x.ApiClientId)
-            .ToDictionary(
-                group => group.Key,
-                group => (IList<int>)group.Select(x => x.OdsInstanceId).ToList());
-
-        return groupedOdsInstanceIds;
+        return ExecuteCore(apiClientIds);
     }
 }

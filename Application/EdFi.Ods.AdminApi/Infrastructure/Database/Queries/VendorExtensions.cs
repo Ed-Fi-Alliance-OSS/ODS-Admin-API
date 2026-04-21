@@ -4,24 +4,21 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure;
+using CommonVendorExtensions = EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries.VendorExtensions;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
 public static class VendorExtensions
 {
-    public static readonly string[] ReservedNames =
-    {
-        Constants.VendorName
-    };
+    public static readonly string[] ReservedNames = CommonVendorExtensions.ReservedNames;
 
     public static bool IsSystemReservedVendorName(string? vendorName)
     {
-        return ReservedNames.Contains(vendorName?.Trim());
+        return CommonVendorExtensions.IsSystemReservedVendorName(vendorName);
     }
 
     public static bool IsSystemReservedVendor(this Vendor vendor)
     {
-        return IsSystemReservedVendorName(vendor?.VendorName);
+        return CommonVendorExtensions.IsSystemReservedVendor(vendor);
     }
 }

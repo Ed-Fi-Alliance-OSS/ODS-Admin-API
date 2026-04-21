@@ -4,8 +4,9 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 using EdFi.Security.DataAccess.Contexts;
+using CommonResourceClaim = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.ResourceClaim;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
@@ -14,35 +15,23 @@ public interface IGetResourceClaimByResourceClaimIdQuery
     ResourceClaim Execute(int id);
 }
 
-public class GetResourceClaimByResourceClaimIdQuery : IGetResourceClaimByResourceClaimIdQuery
+public class GetResourceClaimByResourceClaimIdQuery(ISecurityContext securityContext)
+    : GetResourceClaimByResourceClaimIdQueryBase(securityContext), IGetResourceClaimByResourceClaimIdQuery
 {
-    private readonly ISecurityContext _securityContext;
-
-    public GetResourceClaimByResourceClaimIdQuery(ISecurityContext securityContext)
-    {
-        _securityContext = securityContext;
-    }
-
     public ResourceClaim Execute(int id)
     {
-        var resource = _securityContext.ResourceClaims.FirstOrDefault(x => x.ResourceClaimId == id);
-        if (resource == null)
-        {
-            throw new NotFoundException<int>("resourceclaim", id);
-        }
+        return Map(ExecuteCore(id));
+    }
 
-        var children = _securityContext.ResourceClaims.Where(x => x.ParentResourceClaimId == resource.ResourceClaimId);
+    private static ResourceClaim Map(CommonResourceClaim resourceClaim)
+    {
         return new ResourceClaim
         {
-            Children = children.Select(child => new ResourceClaim()
-            {
-                Id = child.ResourceClaimId,
-                Name = child.ResourceName,
-                ParentId = resource.ResourceClaimId,
-                ParentName = resource.ResourceName,
-            }).ToList(),
-            Name = resource.ResourceName,
-            Id = resource.ResourceClaimId
+            Id = resourceClaim.Id,
+            Name = resourceClaim.Name,
+            ParentId = resourceClaim.ParentId,
+            ParentName = resourceClaim.ParentName,
+            Children = resourceClaim.Children.Select(Map).ToList()
         };
     }
 }

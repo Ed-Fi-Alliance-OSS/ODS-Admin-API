@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -13,25 +14,11 @@ public interface IAddProfileCommand
     Profile Execute(IAddProfileModel newProfile);
 }
 
-public class AddProfileCommand : IAddProfileCommand
+public class AddProfileCommand(IUsersContext context) : AddProfileCommandBase(context), IAddProfileCommand
 {
-    private readonly IUsersContext _context;
-
-    public AddProfileCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Profile Execute(IAddProfileModel newProfile)
-    {      
-        var profile = new Profile
-        {
-           ProfileName = newProfile.Name,
-           ProfileDefinition = newProfile.Definition
-        };
-        _context.Profiles.Add(profile);
-        _context.SaveChanges();
-        return profile;
+    {
+        return ExecuteCore(newProfile.Name, newProfile.Definition);
     }
 }
 

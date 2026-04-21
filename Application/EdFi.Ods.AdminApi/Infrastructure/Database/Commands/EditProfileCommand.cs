@@ -5,7 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -14,25 +14,11 @@ public interface IEditProfileCommand
     Profile Execute(IEditProfileModel changedProfileData);
 }
 
-public class EditProfileCommand : IEditProfileCommand
+public class EditProfileCommand(IUsersContext context) : EditProfileCommandBase(context), IEditProfileCommand
 {
-    private readonly IUsersContext _context;
-
-    public EditProfileCommand(IUsersContext context)
-    {
-        _context = context;
-    }
-
     public Profile Execute(IEditProfileModel changedProfileData)
     {
-        var profile = _context.Profiles.SingleOrDefault(v => v.ProfileId == changedProfileData.Id) ??
-            throw new NotFoundException<int>("profile", changedProfileData.Id);
-
-        profile.ProfileName = changedProfileData.Name;
-        profile.ProfileDefinition = changedProfileData.Definition;
-
-        _context.SaveChanges();
-        return profile;
+        return ExecuteCore(changedProfileData.Id, changedProfileData.Name, changedProfileData.Definition);
     }
 }
 
