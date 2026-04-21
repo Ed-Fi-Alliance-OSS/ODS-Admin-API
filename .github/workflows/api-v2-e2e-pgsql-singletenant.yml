@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: Admin API Single Tenant E2E Tests + ODS 7 + Mssql
+name: Admin API V2 Single Tenant E2E Tests + ODS 7 + Pgsql
 
 on:
   push:
@@ -39,15 +39,9 @@ jobs:
         run: |
           mkdir ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi ../../Docker/Application
-
-      - name: Copy admin api common folder to docker context
-        run: cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
-
-      - name: Copy admin api instance management folder to docker context
-        run: cp -r ../EdFi.Ods.AdminApi.InstanceManagement ../../Docker/Application
-
-      - name: Copy adminApi V1 folder to docker context
-        run: cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
+          cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
+          cp -r ../EdFi.Ods.AdminApi.InstanceManagement ../../Docker/Application
+          cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
 
       - name: Copy nuget config to docker context
         run: cp ../NuGet.Config ../../Docker/Application
@@ -58,8 +52,8 @@ jobs:
       - name: Run Admin API
         run: |
           docker compose \
-            -f '../../Docker/V2/Compose/mssql/SingleTenant/compose-build-dev.yml' \
-            --env-file './E2E Tests/V2/gh-action-setup/.automation_mssql.env' \
+            -f '../../Docker/V2/Compose/pgsql/SingleTenant/compose-build-dev.yml' \
+            --env-file './E2E Tests/V2/gh-action-setup/.automation_pgsql.env' \
             up -d
 
       - name: Verify containers are running
@@ -74,7 +68,7 @@ jobs:
 
       - name: Get Token and Set Variables
         run: |
-          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' singletenant mssql
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' singletenant pgsql
 
       - name: Run Tests
         run: |
@@ -127,4 +121,3 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #v4.1.8
-

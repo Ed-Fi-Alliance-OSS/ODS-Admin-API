@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: Admin API Multi Tenant E2E Tests + ODS 7 + Pgsql
+name: Admin API V2 Single Tenant E2E Tests + ODS 7 + Mssql
 
 on:
   push:
@@ -26,7 +26,7 @@ env:
 permissions: read-all
 
 jobs:
-  run-e2e-multitenant-tests:
+  run-e2e-tests:
     defaults:
       run:
         working-directory: ./Application/EdFi.Ods.AdminApi/
@@ -58,8 +58,8 @@ jobs:
       - name: Run Admin API
         run: |
           docker compose \
-            -f '../../Docker/V2/Compose/pgsql/MultiTenant/compose-build-dev-multi-tenant.yml' \
-            --env-file './E2E Tests/V2/gh-action-setup/.automation_pgsql.env' \
+            -f '../../Docker/V2/Compose/mssql/SingleTenant/compose-build-dev.yml' \
+            --env-file './E2E Tests/V2/gh-action-setup/.automation_mssql.env' \
             up -d
 
       - name: Verify containers are running
@@ -74,7 +74,7 @@ jobs:
 
       - name: Get Token and Set Variables
         run: |
-          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' multitenant pgsql
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' singletenant mssql
 
       - name: Run Tests
         run: |
@@ -87,8 +87,7 @@ jobs:
         if: failure()
         run: |
           mkdir docker-logs
-          docker logs ed-fi-db-admin-adminapi-tenant1 > docker-logs/ed-fi-db-admin-adminapi-tenant1.log
-          docker logs ed-fi-db-admin-adminapi-tenant2 > docker-logs/ed-fi-db-admin-adminapi-tenant2.log
+          docker logs ed-fi-db-admin-adminapi > docker-logs/ed-fi-db-admin-adminapi.log
           docker logs adminapi > docker-logs/adminapi.log
 
       - name: Upload Docker logs
@@ -120,7 +119,7 @@ jobs:
       run:
         shell: pwsh
     needs:
-      - run-e2e-multitenant-tests
+      - run-e2e-tests
 
     runs-on: ubuntu-latest
     steps:
@@ -128,3 +127,4 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #v4.1.8
+

@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: Admin API Multi Tenant E2E Tests + ODS 7 + Mssql
+name: Admin API V2 Multi Tenant E2E Tests + ODS 7 + Pgsql
 
 on:
   push:
@@ -58,8 +58,8 @@ jobs:
       - name: Run Admin API
         run: |
           docker compose \
-            -f '../../Docker/V2/Compose/mssql/MultiTenant/compose-build-dev-multi-tenant.yml' \
-            --env-file './E2E Tests/V2/gh-action-setup/.automation_mssql.env' \
+            -f '../../Docker/V2/Compose/pgsql/MultiTenant/compose-build-dev-multi-tenant.yml' \
+            --env-file './E2E Tests/V2/gh-action-setup/.automation_pgsql.env' \
             up -d
 
       - name: Verify containers are running
@@ -74,7 +74,7 @@ jobs:
 
       - name: Get Token and Set Variables
         run: |
-          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' multitenant mssql
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' multitenant pgsql
 
       - name: Run Tests
         run: |

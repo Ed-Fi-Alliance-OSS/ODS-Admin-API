@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: Admin API Single Tenant E2E Tests + ODS 7 + Pgsql
+name: Admin API V2 Multi Tenant E2E Tests + ODS 7 + Mssql
 
 on:
   push:
@@ -26,7 +26,7 @@ env:
 permissions: read-all
 
 jobs:
-  run-e2e-tests:
+  run-e2e-multitenant-tests:
     defaults:
       run:
         working-directory: ./Application/EdFi.Ods.AdminApi/
@@ -39,9 +39,15 @@ jobs:
         run: |
           mkdir ../../Docker/Application
           cp -r ../EdFi.Ods.AdminApi ../../Docker/Application
-          cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
-          cp -r ../EdFi.Ods.AdminApi.InstanceManagement ../../Docker/Application
-          cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
+
+      - name: Copy admin api common folder to docker context
+        run: cp -r ../EdFi.Ods.AdminApi.Common ../../Docker/Application
+
+      - name: Copy admin api instance management folder to docker context
+        run: cp -r ../EdFi.Ods.AdminApi.InstanceManagement ../../Docker/Application
+
+      - name: Copy adminApi V1 folder to docker context
+        run: cp -r ../EdFi.Ods.AdminApi.V1 ../../Docker/Application
 
       - name: Copy nuget config to docker context
         run: cp ../NuGet.Config ../../Docker/Application
@@ -52,8 +58,8 @@ jobs:
       - name: Run Admin API
         run: |
           docker compose \
-            -f '../../Docker/V2/Compose/pgsql/SingleTenant/compose-build-dev.yml' \
-            --env-file './E2E Tests/V2/gh-action-setup/.automation_pgsql.env' \
+            -f '../../Docker/V2/Compose/mssql/MultiTenant/compose-build-dev-multi-tenant.yml' \
+            --env-file './E2E Tests/V2/gh-action-setup/.automation_mssql.env' \
             up -d
 
       - name: Verify containers are running
@@ -68,7 +74,7 @@ jobs:
 
       - name: Get Token and Set Variables
         run: |
-          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' singletenant pgsql
+          bash './E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/get_token.sh' multitenant mssql
 
       - name: Run Tests
         run: |
@@ -81,7 +87,8 @@ jobs:
         if: failure()
         run: |
           mkdir docker-logs
-          docker logs ed-fi-db-admin-adminapi > docker-logs/ed-fi-db-admin-adminapi.log
+          docker logs ed-fi-db-admin-adminapi-tenant1 > docker-logs/ed-fi-db-admin-adminapi-tenant1.log
+          docker logs ed-fi-db-admin-adminapi-tenant2 > docker-logs/ed-fi-db-admin-adminapi-tenant2.log
           docker logs adminapi > docker-logs/adminapi.log
 
       - name: Upload Docker logs
@@ -113,7 +120,7 @@ jobs:
       run:
         shell: pwsh
     needs:
-      - run-e2e-tests
+      - run-e2e-multitenant-tests
 
     runs-on: ubuntu-latest
     steps:
