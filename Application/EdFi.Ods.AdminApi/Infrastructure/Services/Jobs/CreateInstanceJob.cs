@@ -7,9 +7,11 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Features.DbInstances;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
@@ -27,6 +29,8 @@ public class CreateInstanceJob(
     IJobStatusService jobStatusService,
     AdminApiDbContext dbContext,
     IUsersContext usersContext,
+    ITenantConfigurationProvider tenantConfigurationProvider,
+    IContextProvider<TenantConfiguration> tenantConfigurationContextProvider,
     ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
     ISymmetricStringEncryptionProvider encryptionProvider,
     ISandboxProvisioner sandboxProvisioner,
@@ -39,6 +43,8 @@ public class CreateInstanceJob(
 
     private readonly AdminApiDbContext _dbContext = dbContext;
     private readonly IUsersContext _usersContext = usersContext;
+    private readonly ITenantConfigurationProvider _tenantConfigurationProvider = tenantConfigurationProvider;
+    private readonly IContextProvider<TenantConfiguration> _tenantConfigurationContextProvider = tenantConfigurationContextProvider;
     private readonly ITenantSpecificDbContextProvider _tenantSpecificDbContextProvider = tenantSpecificDbContextProvider;
     private readonly ISymmetricStringEncryptionProvider _encryptionProvider = encryptionProvider;
     private readonly ISandboxProvisioner _sandboxProvisioner = sandboxProvisioner;
@@ -65,8 +71,11 @@ public class CreateInstanceJob(
         var multiTenancyEnabled = _options.Value.MultiTenancy;
         var tenantName = GetTenantName(context, multiTenancyEnabled);
 
+        // Separate variables for tenant-specific contexts so they can be explicitly disposed in finally.
+        // In single-tenant mode these remain null and the injected _dbContext/_usersContext are used directly.
         AdminApiDbContext? tenantAdminApiDbContext = null;
         IUsersContext? tenantUsersContext = null;
+        TenantConfiguration? tenantConfiguration = null;
         var adminApiDbContext = _dbContext;
         var resolvedUsersContext = _usersContext;
         DbInstance? dbInstance = null;
@@ -75,6 +84,19 @@ public class CreateInstanceJob(
         {
             if (multiTenancyEnabled)
             {
+                if (!_tenantConfigurationProvider.Get().TryGetValue(tenantName!, out tenantConfiguration)
+                    || tenantConfiguration is null)
+                {
+                    throw new InvalidOperationException($"Tenant '{tenantName}' is not configured.");
+                }
+
+                // Quartz jobs execute outside the HTTP pipeline, so TenantResolverMiddleware never runs.
+                // We must set the tenant context manually here so that downstream services that depend
+                // on IContextProvider<TenantConfiguration> (e.g. ConfigConnectionStringsProvider) resolve
+                // the correct per-tenant connection strings (EdFi_Master, EdFi_Ods, etc.).
+                // The tenant name is always known at this point because it was stored in the job data map
+                // when CreatePendingDbInstancesDispatcherJob scheduled this job.
+                _tenantConfigurationContextProvider.Set(tenantConfiguration);
                 tenantAdminApiDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName!);
                 tenantUsersContext = _tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
                 adminApiDbContext = tenantAdminApiDbContext;
@@ -158,6 +180,13 @@ public class CreateInstanceJob(
         }
         finally
         {
+            // Always clear the tenant context regardless of success or failure.
+            // This is the job-level equivalent of what TenantResolverMiddleware does at the end of an HTTP request.
+            // Note: the current IContextStorage (HashtableContextStorage) is a singleton with a shared Hashtable —
+            // it does not use AsyncLocal, so concurrent jobs for different tenants would race on this slot.
+            // This is an accepted limitation of the current implementation; a proper fix would replace
+            // HashtableContextStorage with an AsyncLocal-based implementation.
+            _tenantConfigurationContextProvider.Set(null);
             tenantUsersContext?.Dispose();
 
             if (tenantAdminApiDbContext is not null)

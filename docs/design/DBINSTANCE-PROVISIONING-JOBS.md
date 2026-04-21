@@ -210,7 +210,7 @@ The feature works correctly only when these prerequisites are in place:
 * `AppSettings:EncryptionKey` is configured with a valid base64-encoded key because `CreateInstanceJob` encrypts the final `OdsInstance.ConnectionString`.
 * `ConnectionStrings:EdFi_Ods` points at the normal ODS server shape used to build per-sandbox connection strings.
 * `ConnectionStrings:EdFi_Master` points at the maintenance database used by provisioning. For PostgreSQL this should be the `postgres` database, not an ODS database.
-* When multi-tenancy is enabled, the active tenant must have tenant-specific `EdFi_Admin`, `EdFi_Security`, and `EdFi_Ods` connection strings available before the job runs.
+* When multi-tenancy is enabled, the active tenant must have tenant-specific `EdFi_Admin`, `EdFi_Security`, `EdFi_Ods`, and `EdFi_Master` connection strings available before the job runs.
 
 ## Configuration reference
 
@@ -224,6 +224,8 @@ The feature works correctly only when these prerequisites are in place:
 | `ConnectionStrings:EdFi_Ods` | `CreateInstanceJob` | Provides the connection-string shape used to build the final encrypted ODS connection string in single-tenant mode. |
 | `Tenants:{tenant}:ConnectionStrings:EdFi_Ods` | `CreateInstanceJob` | Provides the tenant-specific ODS connection-string shape when multi-tenancy is enabled. |
 | `ConnectionStrings:EdFi_Master` | `ISandboxProvisioner` | Provides the maintenance-database connection used during sandbox create and recreate operations. |
+| `Tenants:{tenant}:ConnectionStrings:EdFi_Ods` | `CreateInstanceJob` | Provides the tenant-specific ODS connection-string shape when multi-tenancy is enabled. |
+| `Tenants:{tenant}:ConnectionStrings:EdFi_Master` | `ISandboxProvisioner` via `ConfigConnectionStringsProvider` | Provides the per-tenant maintenance-database connection when multi-tenancy is enabled. Overrides the top-level `ConnectionStrings:EdFi_Master` for that tenant's provisioning job. |
 
 ## Technical decisions and rationale
 
@@ -275,6 +277,41 @@ Multi-tenancy is a job payload concern as well as a configuration concern:
 * worker and dispatcher resolve tenant-specific contexts before reading or writing state
 * tenant-specific `EdFi_Ods` connection-string shape is used when building the encrypted `OdsInstance.ConnectionString`
 
+#### How the job sets tenant context
+
+HTTP requests have `TenantResolverMiddleware` running automatically for every request, which calls `IContextProvider<TenantConfiguration>.Set(tenantConfig)` so downstream services always see the right tenant.
+
+Quartz jobs run **outside the HTTP pipeline** — no middleware runs. `CreateInstanceJob` therefore mimics the middleware by calling `Set(tenantConfiguration)` explicitly at the start of execution and `Set(null)` in the `finally` block. This is what allows `ConfigConnectionStringsProvider` and `SandboxProvisionerBase` to resolve the correct per-tenant `EdFi_Master` and `EdFi_Ods` connection strings during provisioning.
+
+```
+HTTP request path:
+  TenantResolverMiddleware.Set(tenantConfig) → Controller → Provisioner reads EdFi_Master ✓
+
+Quartz job path (no middleware):
+  CreateInstanceJob.Set(tenantConfig) → Provisioner reads EdFi_Master ✓
+  CreateInstanceJob.Set(null) [in finally]
+```
+
+#### How connection strings are resolved
+
+`ConfigConnectionStringsProvider` builds the connection string map dynamically on every call (registered as `Transient`). In multi-tenant mode it reads the current ambient `TenantConfiguration` from `IContextProvider<TenantConfiguration>` and overlays per-tenant values on top of the base `ConnectionStrings` config section:
+
+| Priority | Source | Applies when |
+| --- | --- | --- |
+| 1 (highest) | `Tenants:{tenant}:ConnectionStrings:*` via `TenantConfiguration` | Multi-tenancy enabled and tenant context is set |
+| 2 (fallback) | Top-level `ConnectionStrings:*` in config / environment | Always present as base |
+
+#### Known limitation: ambient context isolation
+
+The current `IContextStorage` implementation (`HashtableContextStorage`) is a singleton backed by a plain `Hashtable` — one slot per type, shared across all threads. This means concurrent operations (two HTTP requests for different tenants, or a job and an HTTP request running simultaneously) can overwrite each other's context slot, causing a service to read the wrong tenant's connection strings.
+
+This is a **pre-existing** architectural limitation that was present before this feature was introduced. In a purely HTTP-driven system it was latent: the middleware always set the slot at the very start of each request, so in practice the window between a wrong `Set()` and the downstream read was narrow and rarely triggered in low-traffic deployments. The provisioning job makes it materially worse for two reasons:
+
+* **A new, non-HTTP writer exists.** Quartz threads call `Set()` and `Set(null)` from outside the HTTP pipeline. A job running during an in-flight HTTP request can overwrite the slot mid-request and then null it out in the `finally` block, leaving the HTTP request with no tenant context for the remainder of its execution.
+* **The race window is much longer.** Provisioning jobs run for seconds to minutes (database creation, template copying). During that entire span the shared slot is held by the job, making collisions with concurrent HTTP requests far more likely than the sub-millisecond window between two rapid HTTP middleware calls.
+
+See the [Context isolation risk and remediation options](#context-isolation-risk-and-remediation-options) section for the full analysis and remediation plans.
+
 ### Restart recovery strategy
 
 Restart recovery depends on the recurring dispatcher, not on a persistent Quartz job store. If the process restarts, the next sweep reconstructs work from `DbInstances` state and the persisted `JobStatuses` history.
@@ -296,3 +333,133 @@ The expected behaviors covered by tests and manual verification include:
 * recurring dispatcher pickup of `Pending` rows
 * capped retries for `Error` rows
 * reconciliation by reusing an existing final-name `OdsInstance`
+
+---
+
+## Context isolation risk and remediation options
+
+### Discovery
+
+This issue was discovered while investigating a CI failure where `CreateInstanceJob` provisioned a `DbInstance` to `Error` status in the multi-tenant PostgreSQL Docker pipeline. The root cause traced through three layers:
+
+1. **Docker compose** — the multi-tenant compose file did not set `ConnectionStrings__EdFi_Master` or `ConnectionStrings__EdFi_Ods`, so the fallback values from `appsettings.json` pointed to `localhost`, which is unreachable from inside the container.
+2. **ConfigConnectionStringsProvider** — it was registered as a singleton and read the config section once at startup, so even with correct env vars it could not pick up per-tenant connection strings at runtime.
+3. **HashtableContextStorage** — deeper analysis of how the tenant context is stored revealed a shared-state concurrency problem that affects both HTTP and job paths in multi-tenant deployments.
+
+Items 1 and 2 were fixed as part of the CI investigation (Docker compose updated, `ConfigConnectionStringsProvider` made transient and dynamic, `CreateInstanceJob` now sets tenant context explicitly). Item 3 is described below and is pending a team decision.
+
+### How `HashtableContextStorage` works today
+
+`IContextProvider<TenantConfiguration>` is the mechanism both `TenantResolverMiddleware` (HTTP) and `CreateInstanceJob` (Quartz) use to communicate the active tenant to downstream services. Its backing store is `HashtableContextStorage`:
+
+```csharp
+// Registered as Singleton — one instance for the lifetime of the application
+public class HashtableContextStorage : IContextStorage
+{
+    public Hashtable UnderlyingHashtable { get; } = [];      // shared by ALL threads
+
+    public void SetValue(string key, object value) => UnderlyingHashtable[key] = value;
+    public T? GetValue<T>(string key) => (T?) UnderlyingHashtable[key];
+}
+```
+
+The key is `typeof(TenantConfiguration).FullName` — a single string constant. Every call to `Set()` from any thread overwrites the same slot for every other thread.
+
+### Race condition: two concurrent HTTP requests
+
+```mermaid
+sequenceDiagram
+    participant T1 as Thread A (tenant1 request)
+    participant T2 as Thread B (tenant2 request)
+    participant Store as HashtableContextStorage (singleton)
+    participant CSP as ConfigConnectionStringsProvider
+
+    T1->>Store: Set("TenantConfiguration", tenant1Config)
+    T2->>Store: Set("TenantConfiguration", tenant2Config)
+    Note over Store: tenant1Config is gone
+    T1->>CSP: GetConnectionString("EdFi_Master")
+    CSP->>Store: Get("TenantConfiguration") → tenant2Config
+    Note over T1: Thread A reads tenant2's EdFi_Master ❌
+```
+
+### Race condition: Quartz job overlapping with HTTP request
+
+```mermaid
+sequenceDiagram
+    participant HTTP as HTTP Thread (tenant1)
+    participant JOB as Quartz Thread (tenant2 job)
+    participant Store as HashtableContextStorage (singleton)
+    participant Prov as SandboxProvisionerBase
+
+    HTTP->>Store: Middleware.Set(tenant1Config)
+    JOB->>Store: Job.Set(tenant2Config)
+    Note over Store: tenant1Config overwritten
+    HTTP->>Store: Get("TenantConfiguration") → tenant2Config
+    Note over HTTP: HTTP request for tenant1 uses tenant2's connection strings ❌
+    JOB->>Prov: AddSandboxAsync → reads EdFi_Master for tenant2 ✓
+    JOB->>Store: Job.Set(null) [finally]
+    Note over HTTP: Slot is now null mid-request ❌
+```
+
+### Why this matters
+
+* **Silent data corruption**: no exception is thrown. The provisioner connects to the wrong host and creates a database on the wrong tenant's server. The `OdsInstance.ConnectionString` encrypted at the end of the job points to the wrong database.
+* **Non-deterministic**: the race depends on timing. It does not reproduce on every run, which makes debugging difficult.
+* **Invisible in tests**: unit tests mock `IContextProvider<TenantConfiguration>` and never exercise the singleton `HashtableContextStorage`.
+
+### Remediation options
+
+#### Option A — Replace `HashtableContextStorage` with `AsyncLocal` storage (recommended)
+
+`AsyncLocal<T>` is isolated per async execution context. Each HTTP request and each Quartz task has its own logical call chain, so reads and writes are invisible to other chains.
+
+```csharp
+public class AsyncLocalContextStorage : IContextStorage
+{
+    private static readonly AsyncLocal<Dictionary<string, object?>> _storage = new();
+
+    private static Dictionary<string, object?> Current =>
+        _storage.Value ??= new Dictionary<string, object?>();
+
+    public void SetValue(string key, object value) => Current[key] = value;
+    public T? GetValue<T>(string key) => Current.TryGetValue(key, out var v) ? (T?) v : default;
+}
+```
+
+Registration change: `AddSingleton<IContextStorage, AsyncLocalContextStorage>` (can stay singleton because `AsyncLocal` manages isolation itself).
+
+**Implementation plan**: [PLAN-A-ASYNC-LOCAL-CONTEXT-STORAGE.md](PLAN-A-ASYNC-LOCAL-CONTEXT-STORAGE.md)
+
+#### Option B — `IHttpContextAccessor` for HTTP, shared hashtable for jobs
+
+Use `IHttpContextAccessor.HttpContext.Items` as storage for HTTP requests (per-request isolation guaranteed by ASP.NET Core) and keep `HashtableContextStorage` only for Quartz jobs. Both `CreateInstanceJob` and `CreatePendingDbInstancesDispatcherJob` already carry `[DisallowConcurrentExecution]`, which prevents a second fire of the same job key from overlapping with the first. This partially limits the race window for the job path without any additional code change.
+
+**Implementation plan**: [PLAN-B-HTTPACCESSOR-SPLIT-STORAGE.md](PLAN-B-HTTPACCESSOR-SPLIT-STORAGE.md)
+
+#### Option C — Remove ambient context from provisioning; pass connection strings explicitly
+
+Remove `IContextProvider<TenantConfiguration>` from `ConfigConnectionStringsProvider` and `SandboxProvisionerBase`. Pass the master connection string as a parameter through the `ISandboxProvisioner` interface. The job already has `tenantConfiguration.MasterConnectionString` in hand, so no ambient context is needed.
+
+**Implementation plan**: [PLAN-C-EXPLICIT-CONNECTION-STRING-PARAM.md](PLAN-C-EXPLICIT-CONNECTION-STRING-PARAM.md)
+
+#### Option D — Accept the risk (no change)
+
+Document the known race condition and defer remediation. Acceptable only for low-traffic deployments where concurrent multi-tenant provisioning is practically impossible.
+
+**Implementation plan**: [PLAN-D-ACCEPT-RISK.md](PLAN-D-ACCEPT-RISK.md)
+
+### Comparison
+
+| Criterion | A — AsyncLocal | B — HttpContext split | C — Explicit param | D — Accept risk |
+| --- | --- | --- | --- | --- |
+| Fixes HTTP request races | ✅ Yes | ✅ Yes | ⚠️ Partial (only for provisioning path) | ❌ No |
+| Fixes job races | ✅ Yes | ⚠️ Partial (`[DisallowConcurrentExecution]` already present; still races across different tenant job keys) | ✅ Yes (no shared state) | ❌ No |
+| Code change size | Small (1 class, 1 registration) | Medium (2 storage paths, conditional logic) | Large (interface change, 4+ call sites) | None |
+| Risk of regression | Low | Medium | Medium-High | N/A |
+| Test change required | No (mocks bypass storage) | No | Yes (interface signature changes) | No |
+| Removes ambient context pattern | ❌ No | ❌ No | ✅ Yes (maximally explicit) | ❌ No |
+| Standard .NET pattern | ✅ Yes ([`AsyncLocal<T>`](https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1) is the idiomatic ambient-context pattern; used internally by ASP.NET Core's own [`IHttpContextAccessor`](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-context)) | ⚠️ Mixed ([`IHttpContextAccessor`](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-context) is standard for the HTTP path; the fallback hashtable for jobs is not) | ✅ Yes ([explicit dependencies via DI](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations) is the recommended guideline over ambient context) | — |
+
+### Recommendation
+
+**Option A** is the recommended remediation. It is the smallest change, uses the standard .NET mechanism for ambient async context (`AsyncLocal`), and fixes all identified races simultaneously — both HTTP and job paths — without changing any interfaces or DI registrations beyond swapping one class. The existing test suite does not need changes because tests mock `IContextProvider<TenantConfiguration>` directly.

@@ -774,7 +774,7 @@ public static class WebApplicationBuilderExtensions
 
         if (parsedDatabaseEngine == DatabaseEngineEnum.PostgreSql)
         {
-            webApplicationBuilder.Services.AddSingleton<
+            webApplicationBuilder.Services.AddTransient<
                 IConfigConnectionStringsProvider,
                 ConfigConnectionStringsProvider
             >();
@@ -791,7 +791,7 @@ public static class WebApplicationBuilderExtensions
         }
         else if (parsedDatabaseEngine == DatabaseEngineEnum.SqlServer)
         {
-            webApplicationBuilder.Services.AddSingleton<
+            webApplicationBuilder.Services.AddTransient<
                 IConfigConnectionStringsProvider,
                 ConfigConnectionStringsProvider
             >();

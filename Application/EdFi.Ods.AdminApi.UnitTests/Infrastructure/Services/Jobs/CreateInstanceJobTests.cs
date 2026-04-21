@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Features.DbInstances;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
@@ -99,7 +101,9 @@ public class CreateInstanceJobTests
             .AddInMemoryCollection(new Dictionary<string, string>
             {
                 ["ConnectionStrings:EdFi_Ods"] = "Data Source=(local);Initial Catalog=EdFi_Admin;Integrated Security=True;",
-                ["Tenants:tenant1:ConnectionStrings:EdFi_Ods"] = "Data Source=(local);Initial Catalog=TenantTemplateDb;Integrated Security=True;"
+                ["ConnectionStrings:EdFi_Master"] = "Data Source=(local);Initial Catalog=master;Integrated Security=True;",
+                ["Tenants:tenant1:ConnectionStrings:EdFi_Ods"] = "Data Source=(local);Initial Catalog=TenantTemplateDb;Integrated Security=True;",
+                ["Tenants:tenant1:ConnectionStrings:EdFi_Master"] = "Data Source=(local);Initial Catalog=TenantMaster;Integrated Security=True;"
             })
             .Build();
 
@@ -110,6 +114,28 @@ public class CreateInstanceJobTests
             EncryptionKey = Convert.ToBase64String(new byte[32]),
             MultiTenancy = multiTenancy
         });
+
+    private static ITenantConfigurationProvider CreateTenantConfigurationProvider(string tenantIdentifier = null)
+    {
+        var provider = A.Fake<ITenantConfigurationProvider>();
+        var configurations = new Dictionary<string, TenantConfiguration>(StringComparer.OrdinalIgnoreCase);
+
+        if (!string.IsNullOrWhiteSpace(tenantIdentifier))
+        {
+            configurations[tenantIdentifier] = new TenantConfiguration
+            {
+                TenantIdentifier = tenantIdentifier,
+                AdminConnectionString = "Data Source=(local);Initial Catalog=TenantAdmin;Integrated Security=True;",
+                SecurityConnectionString = "Data Source=(local);Initial Catalog=TenantSecurity;Integrated Security=True;",
+                OdsConnectionString = "Data Source=(local);Initial Catalog=TenantTemplateDb;Integrated Security=True;",
+                MasterConnectionString = "Data Source=(local);Initial Catalog=TenantMaster;Integrated Security=True;"
+            };
+        }
+
+        A.CallTo(() => provider.Get()).Returns(configurations);
+
+        return provider;
+    }
 
     [Test]
     public void CreateInstanceJob_ShouldPreventConcurrentExecution()
@@ -136,6 +162,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -162,6 +190,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -195,6 +225,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -216,6 +248,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -235,6 +269,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -263,6 +299,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -285,6 +323,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -306,6 +346,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -328,6 +370,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -352,6 +396,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -374,6 +420,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -397,6 +445,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -422,6 +472,8 @@ public class CreateInstanceJobTests
         using var tenantAdminApiContext = CreateAdminApiContext($"Admin_Tenant_{Guid.NewGuid()}", configuration);
         using var tenantUsersContext = CreateUsersContext($"Users_Tenant_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider("tenant1");
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -452,6 +504,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             defaultAdminApiContext,
             defaultUsersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
@@ -472,6 +526,10 @@ public class CreateInstanceJobTests
         plaintextConnectionString.ShouldContain($"Initial Catalog={expectedDatabaseName}");
         plaintextConnectionString.ShouldNotContain("Initial Catalog=EdFi_Admin");
         plaintextConnectionString.ShouldNotContain("Initial Catalog=TenantTemplateDb");
+        A.CallTo(() => tenantConfigurationContextProvider.Set(A<TenantConfiguration>.That.Matches(tc => tc != null && tc.TenantIdentifier == "tenant1")))
+            .MustHaveHappenedOnceExactly();
+        A.CallTo(() => tenantConfigurationContextProvider.Set(null))
+            .MustHaveHappenedOnceExactly();
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(expectedDatabaseName, SandboxType.Sample))
             .MustHaveHappenedOnceExactly();
     }
@@ -483,6 +541,8 @@ public class CreateInstanceJobTests
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
+        var tenantConfigurationProvider = CreateTenantConfigurationProvider();
+        var tenantConfigurationContextProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
@@ -516,6 +576,8 @@ public class CreateInstanceJobTests
             jobStatusService,
             adminApiContext,
             usersContext,
+            tenantConfigurationProvider,
+            tenantConfigurationContextProvider,
             tenantSpecificDbContextProvider,
             encryptionProvider,
             sandboxProvisioner,
