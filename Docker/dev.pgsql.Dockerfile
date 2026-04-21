@@ -11,7 +11,7 @@
 FROM alpine:3.22@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601 AS assets
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine3.22@sha256:ddae163c8bd4d12df3bd767bdea4afc248abfd1148cdbb8ac549fa80bbb397dc AS build
-RUN apk add --no-cache musl=1.2.5-r11 && \
+RUN apk add --no-cache musl=1.2.5-r12 && \
     rm -rf /var/cache/apk/*
 
 ARG ASPNETCORE_ENVIRONMENT="Production"
@@ -40,9 +40,9 @@ RUN apk add --no-cache \
         bash=5.2.37-r0 \
         dos2unix=7.5.2-r0 \
         gettext=0.22.5-r0 \
-        icu=74.2-r1 \
-        musl=1.2.5-r11 \
-        openssl=3.3.7-r0 \
+        icu=76.1-r1 \
+        musl=1.2.5-r12 \
+        openssl=3.5.6-r0 \
         postgresql15-client=15.17-r0 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
