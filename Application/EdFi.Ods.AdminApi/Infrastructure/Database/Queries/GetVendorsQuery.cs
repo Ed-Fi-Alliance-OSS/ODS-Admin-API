@@ -57,7 +57,7 @@ public class GetVendorsQuery : IGetVendorsQuery
                 .ThenInclude(a => a.ApiClients)
             .Include(v => v.Users)
             .Include(v => v.VendorNamespacePrefixes)
-            .OrderBy(v => v.VendorName).Where(v => !VendorExtensions.ReservedNames.Contains(v.VendorName.Trim())).ToList();
+            .OrderBy(v => v.VendorName).Where(v => !Enumerable.Contains(VendorExtensions.ReservedNames, v.VendorName.Trim())).ToList();
     }
 
     public List<Vendor> Execute(CommonQueryParams commonQueryParams, int? id, string? company, string? namespacePrefixes, string? contactName, string? contactEmailAddress)
@@ -73,7 +73,7 @@ public class GetVendorsQuery : IGetVendorsQuery
                 .ThenInclude(a => a.ApiClients)
             .Include(v => v.Users)
             .Include(v => v.VendorNamespacePrefixes)
-            .Where(v => !VendorExtensions.ReservedNames.Contains(v.VendorName.Trim()))
+            .Where(v => !Enumerable.Contains(VendorExtensions.ReservedNames, v.VendorName.Trim()))
             .Where(c => id == null || id < 1 || c.VendorId == id)
             .Where(c => company == null || c.VendorName == company)
             .Where(c => namespacePrefixes == null || c.VendorNamespacePrefixes.Any(v => v.NamespacePrefix == namespacePrefixes))
