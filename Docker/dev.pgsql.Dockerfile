@@ -7,8 +7,8 @@
 # code. The next two layers use the dotnet/aspnet image to run the built code.
 # The extra layers in the middle support caching of base layers.
 
-# Define assets stage using Alpine 3.21 to match the version used in other stages
-FROM alpine:3.21@sha256:5405e8f36ce1878720f71217d664aa3dea32e5e5df11acbf07fc78ef5661465b AS assets
+# Define assets stage using Alpine 3.22 to match the version used in other stages
+FROM alpine:3.22@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601 AS assets
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine3.22@sha256:ddae163c8bd4d12df3bd767bdea4afc248abfd1148cdbb8ac549fa80bbb397dc AS build
 RUN apk add --no-cache musl=1.2.5-r11 && \
