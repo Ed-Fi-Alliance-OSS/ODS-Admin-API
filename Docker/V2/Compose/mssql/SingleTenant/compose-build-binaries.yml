@@ -6,7 +6,7 @@
 services:
   nginx:
     build:
-      context: ../../../../Settings/V2/gateway/
+      context: ../../../../Settings/shared/gateway/
       dockerfile: Dockerfile
     environment:
       ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
@@ -18,7 +18,7 @@ services:
     hostname: nginx
     volumes:
       - ../../../../Settings/ssl:/ssl/
-      - ../../../../Settings/V2/gateway/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../../../Settings/shared/gateway/default.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
       - adminapi
 
@@ -75,7 +75,7 @@ services:
 
   db-admin:
     build:
-      context: ../../../../Settings/V2/DB-Admin/mssql/
+      context: ../../../../Settings/shared/DB-Admin/mssql/
       dockerfile: Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
@@ -103,3 +103,4 @@ volumes:
   vol-db-admin-adminapi:
     driver: local
     name: vol-db-admin-adminapi
+

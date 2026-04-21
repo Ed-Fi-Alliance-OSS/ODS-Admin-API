@@ -6,7 +6,7 @@
 services:
   nginx:
     build:
-      context: ../../../../Settings/V2/gateway/
+      context: ../../../../Settings/shared/gateway/
       dockerfile: Dockerfile
     environment:
       ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
@@ -125,3 +125,4 @@ volumes:
   vol-db-admin-adminapi-tenant2:
     driver: local
     name: vol-db-admin-adminapi-tenant2
+

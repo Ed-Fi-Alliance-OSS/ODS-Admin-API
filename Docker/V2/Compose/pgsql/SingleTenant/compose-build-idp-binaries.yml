@@ -6,7 +6,7 @@
 services:
   nginx:
     build:
-      context: ../../../../Settings/V2/gateway/
+      context: ../../../../Settings/shared/gateway/
       dockerfile: IDP.Dockerfile
     environment:
       ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
@@ -19,7 +19,7 @@ services:
     hostname: nginx
     volumes:
       - ../../../../Settings/ssl:/ssl/
-      - ../../../../Settings/V2/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../../../Settings/shared/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
       - adminapi
       - idp-keycloak
@@ -132,3 +132,4 @@ volumes:
   vol-db-idp-keycloak:
     driver: local
     name: vol-db-idp-keycloak
+
