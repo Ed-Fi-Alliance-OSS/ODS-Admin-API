@@ -16,12 +16,12 @@ public class OverrideDefaultAuthorizationStrategyCommand(ISecurityContext contex
         ExecuteCore(WrapToCommonModel(model));
     }
 
-    public void ExecuteOnSpecificAction(OverrideAuthStrategyOnClaimSetModel model)
+    public void ExecuteOnSpecificAction(Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel model)
     {
         ExecuteOnSpecificActionCore(model);
     }
 
-    public void ResetAuthorizationStrategyOverrides(OverrideAuthStrategyOnClaimSetModel model)
+    public void ResetAuthorizationStrategyOverrides(Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel model)
     {
         ResetAuthorizationStrategyOverridesCore(model);
     }
@@ -75,10 +75,6 @@ public interface IOverrideDefaultAuthorizationStrategyModel
     int ClaimSetId { get; }
     int ResourceClaimId { get; }
     List<ClaimSetResourceClaimActionAuthStrategies?>? ClaimSetResourceClaimActionAuthStrategyOverrides { get; }
-}
-
-public class OverrideAuthStrategyOnClaimSetModel : Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel
-{
 }
 
 public class OverrideAuthorizationStrategyModel : IOverrideDefaultAuthorizationStrategyModel

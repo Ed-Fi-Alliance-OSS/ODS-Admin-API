@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ClaimSet = EdFi.Security.DataAccess.Models.ClaimSet;
+using CommonOverrideAuthStrategyOnClaimSetModel = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.ClaimSetEditorTests;
 
@@ -83,7 +84,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
                 overrides.Add(appAuthorizationStrategy.AuthorizationStrategyId);
             }
         }
-        var overrideModel = new OverrideAuthStrategyOnClaimSetModel
+        var overrideModel = new CommonOverrideAuthStrategyOnClaimSetModel
         {
             ResourceClaimId = testResource1ToEdit.ResourceClaimId,
             ClaimSetId = testClaimSet.ClaimSetId,
@@ -125,7 +126,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
 
         overrides.Add(resourceClaimActionAuthStrategiesParent.AuthorizationStrategyId);
 
-        var overrideModel = new OverrideAuthStrategyOnClaimSetModel
+        var overrideModel = new CommonOverrideAuthStrategyOnClaimSetModel
         {
             ResourceClaimId = testResource1ToEdit.ResourceClaimId,
             ClaimSetId = testClaimSet.ClaimSetId,
@@ -147,7 +148,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
         resultResourceClaim1.AuthorizationStrategyOverridesForCRUD.Count.ShouldBe(1);
         resultResourceClaim1.AuthorizationStrategyOverridesForCRUD[0].ActionName.ShouldBe("Create");
 
-        var resourceClaimActionAuthorizationStrategies = new GetResourceClaimActionAuthorizationStrategiesQuery(securityContext, null).Execute(new Common.Infrastructure.CommonQueryParams(), null);
+        var resourceClaimActionAuthorizationStrategies = new GetResourceClaimActionAuthorizationStrategiesQuery(securityContext, null).Execute(new EdFi.Ods.AdminApi.Common.Infrastructure.CommonQueryParams(), null);
         var authStrategyName = resourceClaimActionAuthorizationStrategies
             .FirstOrDefault(p => p.ResourceClaimId == overrideModel.ResourceClaimId).AuthorizationStrategiesForActions
             .FirstOrDefault(s => s.ActionName.Equals(overrideModel.ActionName, StringComparison.CurrentCultureIgnoreCase)).AuthorizationStrategies.FirstOrDefault().AuthStrategyName;
@@ -173,7 +174,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
                 overrides.Add(appAuthorizationStrategy.AuthorizationStrategyId);
             }
         }
-        var overrideModel = new OverrideAuthStrategyOnClaimSetModel
+        var overrideModel = new CommonOverrideAuthStrategyOnClaimSetModel
         {
             ResourceClaimId = testResource1ToEdit.ResourceClaimId,
             ClaimSetId = testClaimSet.ClaimSetId,
