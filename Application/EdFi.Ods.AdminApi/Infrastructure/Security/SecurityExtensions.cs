@@ -5,6 +5,7 @@
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Features.Connect;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,7 +40,7 @@ public static class SecurityExtensions
             .AddCore(opt =>
             {
                 opt.UseEntityFrameworkCore()
-                    .UseDbContext<AdminApiDbContext>()
+                    .UseDbContext<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>()
                     .ReplaceDefaultEntities<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
             })
             .AddServer(opt =>

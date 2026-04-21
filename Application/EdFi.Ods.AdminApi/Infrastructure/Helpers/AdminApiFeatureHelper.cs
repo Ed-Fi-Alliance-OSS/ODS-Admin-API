@@ -4,12 +4,12 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Features;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using System.Reflection;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Helpers;
 
 public static class AdminApiFeatureHelper
 {
-    public static List<IFeature> GetFeatures() => FeatureHelper.GetFeatures(Assembly.GetExecutingAssembly());
+    public static List<IFeature> GetFeatures()
+        => EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.AdminApiFeatureHelper.GetFeatures(Assembly.GetExecutingAssembly());
 }

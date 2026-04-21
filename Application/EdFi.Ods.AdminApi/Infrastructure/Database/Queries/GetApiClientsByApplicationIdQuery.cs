@@ -4,29 +4,11 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Admin.DataAccess.Models;
-using EdFi.Common.Extensions;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
-public class GetApiClientsByApplicationIdQuery : IGetApiClientsByApplicationIdQuery
+public class GetApiClientsByApplicationIdQuery(IUsersContext context)
+    : GetApiClientsByApplicationIdQueryCore(context), IGetApiClientsByApplicationIdQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetApiClientsByApplicationIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
-    public IReadOnlyList<ApiClient> Execute(int applicationId)
-    {
-        var apiClients = _context.ApiClients
-            .Include(ac => ac.Application)
-            .Include(ac => ac.User)
-            .Where(app => applicationId == 0 || app.Application.ApplicationId == applicationId);
-
-        return apiClients.ToReadOnlyList();
-    }
 }

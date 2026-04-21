@@ -11,7 +11,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;

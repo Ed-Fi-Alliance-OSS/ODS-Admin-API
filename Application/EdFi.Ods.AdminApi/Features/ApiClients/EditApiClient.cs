@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
-using EdFi.Ods.AdminApi.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
 using FluentValidation.Results;
 using Swashbuckle.AspNetCore.Annotations;

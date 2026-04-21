@@ -14,34 +14,16 @@ public static class IEnumerableExtensions
 {
     public static string ToCommaSeparated(this IEnumerable<VendorNamespacePrefix> vendorNamespacePrefixes)
     {
-        return vendorNamespacePrefixes != null && vendorNamespacePrefixes.Any()
-                        ? ToDelimiterSeparated([.. vendorNamespacePrefixes.Select(x => x.NamespacePrefix).OrderBy(f => f)])
-                        : string.Empty;
+        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IEnumerableExtensions.ToCommaSeparated(vendorNamespacePrefixes);
     }
 
     public static string ToDelimiterSeparated(this IEnumerable<string> inputStrings, string separator = ",")
     {
-        var listOfStrings = inputStrings.ToList();
-
-        return listOfStrings.Count != 0
-            ? string.Join(separator, listOfStrings)
-            : string.Empty;
+        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IEnumerableExtensions.ToDelimiterSeparated(inputStrings, separator);
     }
 
     public static IEnumerable<T> Paginate<T>(this IEnumerable<T> source, int? offset, int? limit, IOptions<AppSettings> settings)
     {
-        try
-        {
-            offset ??= settings.Value.DefaultPageSizeOffset;
-
-            limit ??= settings.Value.DefaultPageSizeLimit;
-
-            return source.Skip(offset.Value).Take(limit.Value);
-        }
-        catch (Exception)
-        {
-            // If this throws an exception simply don't paginate.
-            return source;
-        }
+        return EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IEnumerableExtensions.Paginate(source, offset, limit, settings);
     }
 }

@@ -5,21 +5,7 @@
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Helpers;
 
-public interface IAppSettingsFileProvider
-{
-    string ReadAllText();
-    void WriteAllText(string content);
-}
+public interface IAppSettingsFileProvider : EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.IAppSettingsFileProvider;
 
-public class FileSystemAppSettingsFileProvider(string filePath) : IAppSettingsFileProvider
-{
-    public string ReadAllText()
-    {
-        return File.ReadAllText(filePath);
-    }
-
-    public void WriteAllText(string content)
-    {
-        File.WriteAllText(filePath, content);
-    }
-}
+public class FileSystemAppSettingsFileProvider(string filePath)
+    : EdFi.Ods.AdminApi.Common.Infrastructure.Helpers.FileSystemAppSettingsFileProvider(filePath), IAppSettingsFileProvider;

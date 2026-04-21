@@ -21,9 +21,9 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class AddDbInstanceCommandTests
 {
-    private static AdminApiDbContext CreateContext()
+    private static EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<AdminApiDbContext>()
+        var options = new DbContextOptionsBuilder<EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext>()
             .UseInMemoryDatabase(databaseName: $"AddDbInstanceCommand_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
@@ -32,7 +32,7 @@ public class AddDbInstanceCommandTests
                 ["AppSettings:DatabaseEngine"] = "SqlServer"
             })
             .Build();
-        return new AdminApiDbContext(options, configuration);
+        return new EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext(options, configuration);
     }
 
     [Test]

@@ -197,17 +197,6 @@ internal class TenantServiceTests
             }
         };
 
-        var tenantEducationOrganizationModels = new List<EducationOrganizationModel>
-        {
-            new()
-            {
-                EducationOrganizationId = 100,
-                NameOfInstitution = "Test School",
-                ShortNameOfInstitution = "Test",
-                Discriminator = "School"
-            }
-        };
-
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
         A.CallTo(() => _getEducationOrganizationQuery.Execute(A<int[]>.That.Matches(ids => ids.Length == 1 && ids[0] == 101)))
             .Returns([educationOrganization]);
