@@ -1,0 +1,52 @@
+meta {
+  name: OdsInstances - Tenant1
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/v2/odsInstances/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Tenant: Tenant1
+}
+
+body:json {
+  {
+      "name": "Test-OdsInstance-{{OdsInstanceGUID}}",
+      "instanceType": "postgresql",
+      "connectionString": "{{connectionString}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("OdsInstanceGUID", bru.interpolate('{{$guid}}'));
+  
+}
+
+script:post-response {
+  if (bru.getEnvVar("isMultitenant") == "true") {
+      test("POST OdsInstances: Status code is Created", function () {
+          expect(res.getStatus()).to.equal(201);
+      });
+  
+      test("POST OdsInstances: Response includes location in header", function () {
+
+          expect(res.getHeaders()).to.have.property("location".toLowerCase());
+          const id = res.getHeader("location").split("/")[2];
+          if(id)
+          {
+              bru.setEnvVar("CreatedOdsInstanceId", id);
+          }
+      });
+  }
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

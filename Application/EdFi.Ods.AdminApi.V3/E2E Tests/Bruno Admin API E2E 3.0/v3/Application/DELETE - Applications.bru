@@ -1,0 +1,55 @@
+meta {
+  name: Applications
+  type: http
+  seq: 24
+}
+
+delete {
+  url: {{API_URL}}/v2/applications/{{CreatedApplicationId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE Applications: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("DELETE Applications: Response matches success format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("DELETE Applications: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("application");
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const DeleteApplicationsSchema = {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title"
+    ]
+  }
+  
+  test("DELETE Applications: Validation Schema Response", () => {
+      const valid = ajv.validate(DeleteApplicationsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

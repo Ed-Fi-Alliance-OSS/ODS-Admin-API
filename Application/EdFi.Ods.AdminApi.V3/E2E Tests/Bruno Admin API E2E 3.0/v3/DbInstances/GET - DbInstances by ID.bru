@@ -1,0 +1,57 @@
+meta {
+  name: DbInstances by ID
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{API_URL}}/v2/dbinstances/{{CreatedDbInstanceId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET DbInstance by ID: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  const result = res.getBody();
+
+  test("GET DbInstance by ID: Response id matches", function () {
+    expect(result.id).to.equal(parseInt(bru.getVar("CreatedDbInstanceId")));
+  });
+
+  test("GET DbInstance by ID: Response contains expected fields", function () {
+    expect(result).to.have.property("name");
+    expect(result).to.have.property("status");
+    expect(result).to.have.property("databaseTemplate");
+  });
+
+  const Ajv = require("ajv");
+  const ajv = new Ajv();
+
+  const schema = {
+    type: "object",
+    properties: {
+      id: { type: "integer" },
+      name: { type: "string" },
+      odsInstanceId: { type: ["integer", "null"] },
+      odsInstanceName: { type: ["string", "null"] },
+      status: { type: "string" },
+      databaseTemplate: { type: "string" },
+      databaseName: { type: ["string", "null"] },
+      lastRefreshed: { type: "string" },
+      lastModifiedDate: { type: ["string", "null"] }
+    },
+    required: ["id", "name", "status", "databaseTemplate"]
+  };
+
+  test("GET DbInstance by ID: Response matches schema", function () {
+    const valid = ajv.validate(schema, result);
+    expect(valid).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+}

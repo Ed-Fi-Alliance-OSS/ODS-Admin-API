@@ -1,0 +1,31 @@
+meta {
+  name: Applications by IDs
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{API_URL}}/v2/applications?ids={{FirstTwoApplicationIdsCSV}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ids: {{FirstTwoApplicationIdsCSV}}
+}
+
+script:post-response {
+  test("GET ApplicationID: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const result = res.getBody();
+  
+  test("GET ApplicationID: Ensures the number of returned applications matches the number of requested IDs", function () {
+      expect(result.length).to.equal(2);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

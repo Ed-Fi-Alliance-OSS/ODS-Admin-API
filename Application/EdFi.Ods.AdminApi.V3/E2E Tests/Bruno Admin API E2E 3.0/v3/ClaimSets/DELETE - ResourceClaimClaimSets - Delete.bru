@@ -1,0 +1,21 @@
+meta {
+  name: ResourceClaimClaimSets - Delete
+  type: http
+  seq: 38
+}
+
+delete {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4
+  body: json
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE ResourceClaimOnClaimSet: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

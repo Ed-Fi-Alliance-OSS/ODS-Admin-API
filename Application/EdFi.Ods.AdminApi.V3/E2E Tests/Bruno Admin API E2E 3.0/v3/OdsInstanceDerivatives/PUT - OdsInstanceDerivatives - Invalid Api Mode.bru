@@ -1,0 +1,39 @@
+meta {
+  name: OdsInstanceDerivatives - Invalid Api Mode
+  type: http
+  seq: 17
+}
+
+put {
+  url: {{API_URL}}/v1/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "derivativeType": "ReadReplica",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("Response matches error format", function () {
+      expect(response).to.have.property("message");
+  });
+  
+  test("Response title is helpful and accurate", function () {
+      expect(response.message.toLowerCase()).to.contain("wrong api version for this instance mode.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

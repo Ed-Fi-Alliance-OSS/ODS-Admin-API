@@ -1,0 +1,109 @@
+meta {
+  name: ClaimSets - System Reserved
+  type: http
+  seq: 50
+}
+
+put {
+  url: {{API_URL}}/v2/claimSets/{{SystemReservedClaimSetId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Update System Reserved ClaimSet"
+  }
+  
+}
+
+script:pre-request {
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    let offsetVar = bru.getEnvVar("offset");
+    let limitVar = bru.getEnvVar("limit");
+    const claimSetResponse = await axios.get(`${API_URL}/v2/claimSets?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+
+    if (claimSetResponse.status === 200 && claimSetResponse.data) {
+      console.log("✅ ClaimSets Returned:", claimSetResponse.data.length);
+            const claimSets = claimSetResponse.data;
+            const systemReservedClaimSetIds = claimSets.map(
+            function(claimSet) { 
+                if(claimSet._isSystemReserved)
+                {
+                    return claimSet.id;
+                } 
+            }
+        );
+      if(!systemReservedClaimSetIds) { console.log('Error in Pre-request: System Reserved claimset IDs not found. Response is:', claimSets); }
+      bru.setVar("SystemReservedClaimSetId", systemReservedClaimSetIds[0]);
+    } else {
+      console.log("❌ Failed to get claimsets:");
+      console.log("Status:", claimSetResponse.status);
+      console.log("Response data:", JSON.stringify(claimSetResponse.data, null, 2));
+      throw new Error(`Failed to get claimsets - Status: ${claimSetResponse.status}, Data: ${JSON.stringify(claimSetResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+}
+
+script:post-response {
+  test("PUT ClaimSets System Reserved: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT ClaimSets System Reserved: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT ClaimSets System Reserved: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT ClaimSets System Reserved: Response errors include messages by property", function () {
+      expect(response.errors["id"].length).to.equal(1);
+      ["AB Connect", "system reserved"].forEach((substring) => {
+          expect(response.errors.id[0]).to.contain(substring);
+      });
+  });
+}
+
+settings {
+  encodeUrl: true
+}

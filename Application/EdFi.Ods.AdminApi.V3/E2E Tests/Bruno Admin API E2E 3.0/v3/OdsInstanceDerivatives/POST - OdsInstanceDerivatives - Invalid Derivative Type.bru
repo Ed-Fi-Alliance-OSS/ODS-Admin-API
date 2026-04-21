@@ -1,0 +1,41 @@
+meta {
+  name: OdsInstanceDerivatives - Invalid Derivative Type
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v2/OdsInstanceDerivatives/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "derivativeType": "another-derivative-type",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("POST ODS Instance Derivatives Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ODS Instance Derivatives Invalid: DerivativeType included", function () {
+      expect(response.errors).to.have.property('DerivativeType');
+  });
+  
+  test("POST ODS Instance Derivatives Invalid: DerivativeType value allowed", function () {
+       expect(response.errors.DerivativeType[0]).to.contain("The value for the Derivative type is not allowed. The only accepted values are: 'ReadReplica' or 'Snapshot'");
+  });
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,29 @@
+meta {
+  name: DbInstances - Without Limit
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{API_URL}}/v2/dbinstances?offset={{offset}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+}
+
+script:post-response {
+  test("GET DbInstances Without Limit: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("GET DbInstances Without Limit: Response is an array", function () {
+    expect(res.getBody()).to.be.an("array");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

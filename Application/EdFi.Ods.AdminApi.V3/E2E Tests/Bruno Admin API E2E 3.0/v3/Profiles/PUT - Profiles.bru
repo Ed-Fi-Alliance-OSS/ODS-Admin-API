@@ -1,0 +1,81 @@
+meta {
+  name: Profiles
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{API_URL}}/v2/profiles/{{CreatedProfileId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "Name": "Updated-Test-Profile",
+      "Definition": "<Profile name=\"Updated-Test-Profile\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
+  }
+}
+
+script:post-response {
+  test("PUT Profiles: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  console.log("🔧 Setting post environment to ignore SSL certificates...");
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const profileCreated = bru.getVar("CreatedProfileId");
+    const profileResponse = await axios.get(`${API_URL}/v2/profiles/${profileCreated}`, axiosConfig);
+
+    if (profileResponse.status === 200) {
+      console.log("✅ Profile List loaded");
+      const updatedProfileJson = profileResponse.data;
+      test("PUT Profiles: Response includes updated profile", function () {
+        expect(updatedProfileJson.name).to.equal("Updated-Test-Profile");
+        expect(updatedProfileJson.definition).to.not.be.empty;
+       });
+    } else {
+      console.log("❌ Failed to get profile");
+      console.log("Status:", profileResponse.status);
+      console.log("Response data:", JSON.stringify(profileResponse.data, null, 2));
+      throw new Error(`Failed to get profile - Status: ${profileResponse.status}, Data: ${JSON.stringify(profileResponse.data)}`);
+    }    
+  } catch (error) {
+    console.log("Error in post-request setup:", error.message);
+  }  
+  
+}
+
+settings {
+  encodeUrl: true
+}

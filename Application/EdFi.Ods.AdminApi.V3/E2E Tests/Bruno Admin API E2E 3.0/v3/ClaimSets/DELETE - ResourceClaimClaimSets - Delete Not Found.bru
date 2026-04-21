@@ -1,0 +1,21 @@
+meta {
+  name: ResourceClaimClaimSets - Delete Not Found
+  type: http
+  seq: 40
+}
+
+delete {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4000
+  body: json
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE ResourceClaimOnClaimSet: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

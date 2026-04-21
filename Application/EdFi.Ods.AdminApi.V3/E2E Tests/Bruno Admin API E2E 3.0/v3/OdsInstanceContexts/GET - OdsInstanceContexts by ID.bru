@@ -1,0 +1,66 @@
+meta {
+  name: OdsInstanceContexts by ID
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{API_URL}}/v2/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstanceContextById: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+  
+  test("GET OdsInstanceContextId: Response result matches OdsInstancesContext", function () {
+      const result = res.getBody();
+      expect(result.contextKey).to.not.be.empty;
+      expect(result.contextValue).to.not.be.empty;
+      expect(result.odsInstanceId).to.not.equal(0);
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetOdsInstanceContextsSchema = {
+    "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "contextKey": {
+            "type": "string"
+          },
+          "contextValue": {
+            "type": "string"
+          },
+          "odsInstanceId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "contextKey",
+          "contextValue",
+          "odsInstanceId"     
+        ]
+  }
+  
+  test("GET OdsInstancesContext: Validation Schema Response", () => {
+      const valid = ajv.validate(GetOdsInstanceContextsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

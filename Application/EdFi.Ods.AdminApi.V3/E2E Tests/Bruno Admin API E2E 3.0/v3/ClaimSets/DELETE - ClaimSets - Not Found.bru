@@ -1,0 +1,40 @@
+meta {
+  name: ClaimSets - Not Found
+  type: http
+  seq: 58
+}
+
+delete {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DEL ClaimSet NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("DEL ClaimSet NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("DEL ClaimSet NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("claimset");
+      expect(response.title).to.contain(bru.getVar("CreatedClaimSetId"));
+  });
+  
+  bru.deleteVar("CreatedClaimSetId");
+  bru.deleteVar("OtherExistingClaimSetId");
+  bru.deleteVar("ClaimSetGUID");
+  bru.deleteVar("OtherClaimSetGUID");
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,44 @@
+meta {
+  name: OdsInstanceContexts - Not Found
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{API_URL}}/v2/OdsInstanceContexts/{{NotExistOdsInstancesContextId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "odsInstanceId": {{ODSInstanceId}},
+    "contextKey": "ckey3",
+    "contextValue": "cvalue3"
+  }
+}
+
+script:post-response {
+  test("PUT OdsInstanceContexts NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("PUT OdsInstanceContexts NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT OdsInstanceContexts NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("odsInstanceContext");
+      expect(response.title).to.contain(bru.getEnvVar("NotExistOdsInstancesContextId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

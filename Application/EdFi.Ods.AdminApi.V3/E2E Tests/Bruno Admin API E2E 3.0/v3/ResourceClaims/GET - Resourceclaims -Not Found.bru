@@ -1,0 +1,35 @@
+meta {
+  name: Resourceclaims -Not Found
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v2/resourceClaims/00
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Resourceclaim NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("GET Resourceclaim NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET Resourceclaim NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("resourceclaim");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

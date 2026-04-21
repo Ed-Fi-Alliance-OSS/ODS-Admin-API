@@ -1,0 +1,179 @@
+meta {
+  name: ClaimSets by ID
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ClaimSetsId: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody();
+  
+  test("GET ClaimSetsId: Response result matches claimset", function () {
+      const claimSetId = bru.getVar("CreatedClaimSetId");
+      expect(result.id).to.equal(parseInt(claimSetId));
+      expect(result.name).to.equal(`Test ClaimSet ${bru.getVar("ClaimSetGUID")}`);
+      expect(result._isSystemReserved).to.equal(false);
+      expect(result._applications).to.be.empty;
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetClaimSetsIdSchema = {
+    "type": "object",
+    "properties": {
+      "resourceClaims": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+               "actions": {
+               "type": "array",
+               "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "enabled": {
+                        "type": "boolean"
+                      }
+                  } 
+                  } ]
+              },
+              "_defaultAuthorizationStrategiesForCRUD": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "actionId": {
+                        "type": "integer"
+                      },
+                      "actionName": {
+                        "type": "string"
+                      },
+                      "authorizationStrategies": {
+                        "type": "array",
+                        "items": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                  "authStrategyId": {
+                                  "type": "integer"
+                                  },
+                                  "authStrategyName": {
+                                  "type": "string"
+                                  },
+                                  "isInheritedFromParent": {
+                                  "type": "boolean"
+                                  }                      
+  
+                              }
+                            }
+                        ]
+                      }                    
+                    }
+                  }
+                ]
+              },
+              "authorizationStrategyOverridesForCRUD": {
+                "type": "array",
+                 "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "actionId": {
+                        "type": "integer"
+                      },
+                      "actionName": {
+                        "type": "string"
+                      },
+                      "authorizationStrategies": {
+                        "type": "array",
+                        "items": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                  "authStrategyId": {
+                                  "type": "integer"
+                                  },
+                                  "authStrategyName": {
+                                  "type": "string"
+                                  },
+                                  "isInheritedFromParent": {
+                                  "type": "boolean"
+                                  }
+                              }
+                            }
+                        ]
+                      }                    
+                    }
+                  }
+                ]
+              },
+              "children": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "required": [
+              "name",
+              "actions",
+              "_defaultAuthorizationStrategiesForCRUD",
+              "authorizationStrategyOverridesForCRUD",
+              "children"
+            ]
+          }
+        ]
+      },
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "string"
+      },
+      "_isSystemReserved": {
+        "type": "boolean"
+      },
+      "_applications": {
+        "type": "array",
+        "items": {}
+      }
+    },
+    "required": [
+      "resourceClaims",
+      "id",
+      "name",
+      "_isSystemReserved",
+      "_applications"
+    ]
+  }
+  
+  test("GET ClaimSetId: Validation Schema Response", () => {
+      const valid = ajv.validate(GetClaimSetsIdSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

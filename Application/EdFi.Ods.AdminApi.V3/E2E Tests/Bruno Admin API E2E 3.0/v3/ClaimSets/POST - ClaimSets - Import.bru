@@ -1,0 +1,225 @@
+meta {
+  name: ClaimSets - Import
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v2/claimSets/import
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaims": [
+      {     
+        "name": "educationStandards",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],      
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {     
+        "name": "academicSubjectDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }  
+     
+        ],
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {
+        "name": "gradeLevelDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],
+       
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {      
+        "name": "publicationStatusDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],     
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {      
+        "name": "candidatePreparation",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],     
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      }
+    ],
+    "name": "Test ClaimSet import {{ImportClaimSetGUID}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("ImportClaimSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("POST ClaimSets - Import: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST ClaimSets - Import: Response includes location in header", function () {
+      let headers = res.getHeaders(); 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location || headers["location"];
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("ImportedClaimSetId", id);
+          }
+      }
+  });
+  
+  console.log("🔧 Setting post environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  let importedClaimSetData = "";
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  try {
+    const claimSetCreated = bru.getVar("ImportedClaimSetId");
+    const claimsetsResponse = await axios.get(`${API_URL}/v2/claimSets/${claimSetCreated}` , axiosConfig);
+
+    if (claimsetsResponse.status === 200 && claimsetsResponse.data) {
+      console.log("✅ ClaimSets found with ID:", claimsetsResponse.data.id);
+      importedClaimSetData = claimsetsResponse.data;
+    } else {
+      console.log("❌ Failed to get claimsets:");
+      console.log("Status:", claimsetsResponse.status);
+      console.log("Response data:", JSON.stringify(claimsetsResponse.data, null, 2));
+      throw new Error(`Failed to get claimsets - Status: ${claimsetsResponse.status}, Data: ${JSON.stringify(claimsetsResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in post-request setup:", error.message);
+  }
+
+  test("POST ClaimSets - Import: Verify all resourceClaims were imported send request", function(done){ // Added done parameter
+      let requestBody = req.getBody() ? req.getBody().raw : null;
+      let requestData = requestBody ? JSON.parse(requestBody) : null;
+
+        test("POST ClaimSets - Import: Verify all resourceClaims were imported",function(){
+        // Check that the number of resourceClaims matches the original request
+        if (requestData && requestData.resourceClaims) {
+            expect(importedClaimSetData.resourceClaims.length).to.equal(requestData.resourceClaims.length);
+        }
+        // Check that the grandchild resourceClaim "candidatePreparation" was created
+        const hasCandidatePreparation = importedClaimSetData.resourceClaims.some(rc => rc.name === "candidatePreparation");
+        expect(hasCandidatePreparation).to.be.true;
+    });
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

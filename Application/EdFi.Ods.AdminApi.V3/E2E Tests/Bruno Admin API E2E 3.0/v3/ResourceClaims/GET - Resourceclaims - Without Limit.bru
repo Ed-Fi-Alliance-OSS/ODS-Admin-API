@@ -1,0 +1,215 @@
+meta {
+  name: Resourceclaims - Without Limit
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{API_URL}}/v2/resourceClaims?offset={{offset}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+}
+
+script:post-response {
+  test("GET ResourceClaims: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("GET ResourceClaims: Response matches success format", function () {
+      expect(response[0]).to.have.property("id");
+      expect(response[0]).to.have.property("name");
+      expect(response[0]).to.have.property("parentId");
+      expect(response[0]).to.have.property("parentName");
+      expect(response[0]).to.have.property("children");
+  });
+  
+  const GetResourceClaimsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "integer"
+          },
+          "parentName": {
+            "type": "null"
+          },
+          "children": {
+            "type": "array",
+            "items": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "type": "integer"
+                  },
+                  "parentName": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "parentId",
+                  "parentName",
+                  "children"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "type": "integer"
+                  },
+                  "parentName": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "parentId",
+                  "parentName",
+                  "children"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "type": "integer"
+                  },
+                  "parentName": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "parentId",
+                  "parentName",
+                  "children"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "type": "integer"
+                  },
+                  "parentName": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "parentId",
+                  "parentName",
+                  "children"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "type": "integer"
+                  },
+                  "parentName": {
+                    "type": "string"
+                  },
+                  "children": {
+                    "type": "array",
+                    "items": {}
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "parentId",
+                  "parentName",
+                  "children"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parentId",
+          "parentName",
+          "children"
+        ]
+      }
+    ]
+  }
+  
+  test("GET ResourceClaims: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetResourceClaimsSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,56 @@
+meta {
+  name: Vendors
+  type: http
+  seq: 16
+}
+
+delete {
+  url: {{API_URL}}/v2/vendors/{{CreatedVendorId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE Vendors: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  
+  test("DELETE Vendors: Response matches success format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("DELETE Vendors: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("vendor");
+      expect(response.title.toLowerCase()).to.contain("deleted");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const DeleteVendorSchema = {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title"
+    ]
+  }
+  
+  test("DELETE Vendors: Validation Schema Response", () => {
+      const valid = ajv.validate(DeleteVendorSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}
