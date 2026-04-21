@@ -76,6 +76,10 @@ coveragereport/
 # Bruno test results
 **/E2E Tests/**/results.html
 
+# Keep V3 workflow automation env files tracked
+!Application/EdFi.Ods.AdminApi.V3/E2E Tests/gh-action-setup/.automation_mssql.env
+!Application/EdFi.Ods.AdminApi.V3/E2E Tests/gh-action-setup/.automation_pgsql.env
+
 # Git worktrees
 .claude/worktrees/
 .claude/settings.local.json
