@@ -39,7 +39,7 @@ public static class SecurityExtensions
 
         var validateIssuerSigningKey = configuration.Get<bool>("Authentication:ValidateIssuerSigningKey");
 
-        if (adminApiMode == AdminApiMode.V2)
+        if (adminApiMode == AdminApiMode.V2 || adminApiMode == AdminApiMode.V1)
         {
             services
             .AddOpenIddict()
