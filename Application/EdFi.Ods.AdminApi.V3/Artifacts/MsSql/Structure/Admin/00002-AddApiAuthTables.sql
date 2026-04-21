@@ -51,7 +51,7 @@ BEGIN
         [Properties] NVARCHAR(MAX) NULL,
         [CreationDate] DATETIME NULL,
         CONSTRAINT PK_Authorizations PRIMARY KEY (Id),
-        CONSTRAINT FK_AuthorizationsId_ApplicationId FOREIGN KEY (ApplicationId) REFERENCES adminapi.Applications (Id) ON DELETE NO ACTION,
+        CONSTRAINT FK_AuthorizationsId_ApplicationId FOREIGN KEY (ApplicationId) REFERENCES adminapi.Applications (Id) ON DELETE NO ACTION
     );
 END
 

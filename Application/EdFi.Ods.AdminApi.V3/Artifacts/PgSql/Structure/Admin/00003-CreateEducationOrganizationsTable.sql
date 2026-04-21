@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS adminapi.EducationOrganizations (
     ParentId BIGINT,
     OdsDatabaseName VARCHAR(255),
     LastRefreshed TIMESTAMP DEFAULT NOW(),
-    LastModifiedDate TIMESTAMP
+    LastModifiedDate TIMESTAMP,
+    CONSTRAINT PK_EducationOrganizations PRIMARY KEY (Id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_educationorganizations_instanceid

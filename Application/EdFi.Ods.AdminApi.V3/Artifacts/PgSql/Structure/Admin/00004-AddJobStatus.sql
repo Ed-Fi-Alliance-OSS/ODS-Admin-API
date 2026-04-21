@@ -11,5 +11,15 @@ CREATE TABLE IF NOT EXISTS adminapi.JobStatuses (
 );
 
 -- Unique constraint to prevent duplicate JobId
-ALTER TABLE adminapi.JobStatuses
-ADD CONSTRAINT UQ_JobStatuses_JobId UNIQUE (JobId);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'uq_jobstatuses_jobid'
+          AND conrelid = 'adminapi.jobstatuses'::regclass
+    ) THEN
+        ALTER TABLE adminapi.JobStatuses
+        ADD CONSTRAINT UQ_JobStatuses_JobId UNIQUE (JobId);
+    END IF;
+END $$;
