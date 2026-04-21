@@ -40,6 +40,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Quartz;
+using V3AdminApiDbContext = EdFi.Ods.AdminApi.V3.Infrastructure.AdminApiDbContext;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -77,6 +78,15 @@ public static class WebApplicationBuilderExtensions
             var adminApiV2Types = typeof(IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
             RegisterAdminApiServices(webApplicationBuilder, adminApiV2Types);
         }
+        else if (adminApiMode == AdminApiMode.V3)
+        {
+            assembly = Assembly.Load("EdFi.Ods.AdminApi.V3");
+
+            var adminApiV3Types = typeof(EdFi.Ods.AdminApi.V3.Infrastructure.IMarkerForEdFiOdsAdminApiManagement)
+                .Assembly
+                .GetTypes();
+            RegisterAdminApiServices(webApplicationBuilder, adminApiV3Types);
+        }
         else
         {
             assembly = Assembly.Load("EdFi.Ods.AdminApi.V1");
@@ -94,13 +104,23 @@ public static class WebApplicationBuilderExtensions
             opt.AssumeDefaultVersionWhenUnspecified = false;
         });
 
-        if (adminApiMode is AdminApiMode.V2)
+        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
         {
             // Add Quartz services
-            RegisterQuartzServices(webApplicationBuilder);
+            RegisterQuartzServices(webApplicationBuilder, adminApiMode);
             RegisterSandboxProvisioningServices(webApplicationBuilder, config);
 
-            webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
+            if (adminApiMode == AdminApiMode.V2)
+            {
+                webApplicationBuilder.Services.AddTransient<IEducationOrganizationService, EducationOrganizationService>();
+            }
+            else
+            {
+                webApplicationBuilder.Services.AddTransient<
+                    EdFi.Ods.AdminApi.V3.Infrastructure.Services.EducationOrganizationService.IEducationOrganizationService,
+                    EdFi.Ods.AdminApi.V3.Infrastructure.Services.EducationOrganizationService.EducationOrganizationService
+                >();
+            }
         }
 
         webApplicationBuilder.Services.Configure<SwaggerSettings>(config.GetSection("SwaggerSettings"));
@@ -220,9 +240,23 @@ public static class WebApplicationBuilderExtensions
 
         webApplicationBuilder.Services.Configure<AppSettingsFile>(webApplicationBuilder.Configuration);
 
-        webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
+        if (adminApiMode == AdminApiMode.V3)
+        {
+            webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.ITenantsService,
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.TenantService
+            >();
 
-        webApplicationBuilder.Services.AddHostedService<DefaultTenantContextInitializer>();
+            webApplicationBuilder.Services.AddHostedService<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.DefaultTenantContextInitializer
+            >();
+        }
+        else
+        {
+            webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
+
+            webApplicationBuilder.Services.AddHostedService<DefaultTenantContextInitializer>();
+        }
     }
 
     public static void AddLoggingServices(this WebApplicationBuilder webApplicationBuilder)
@@ -413,9 +447,78 @@ public static class WebApplicationBuilderExtensions
                     );
                 }
                 break;
+            case AdminApiMode.V3:
+                if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
+                {
+                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                        (sp, options) =>
+                        {
+                            options.UseNpgsql(
+                                AdminConnectionString(sp),
+                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                            );
+                            options.UseLowerCaseNamingConvention();
+                            options.UseOpenIddict<
+                                ApiApplication,
+                                ApiAuthorization,
+                                ApiScope,
+                                ApiToken,
+                                int
+                            >();
+                        }
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(
+                        sp => new PostgresSecurityContext(
+                            SecurityDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                        )
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(sp => new PostgresUsersContext(
+                        AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
+                    ));
+                }
+                else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
+                {
+                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                        (sp, options) =>
+                        {
+                            options.UseSqlServer(
+                                AdminConnectionString(sp),
+                                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                            );
+                            options.UseOpenIddict<
+                                ApiApplication,
+                                ApiAuthorization,
+                                ApiScope,
+                                ApiToken,
+                                int
+                            >();
+                        }
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<ISecurityContext>(
+                        (sp) =>
+                            new SqlServerSecurityContext(
+                                SecurityDbContextOptions(sp, DatabaseEngineEnum.SqlServer)
+                            )
+                    );
+
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(
+                        (sp) =>
+                            new SqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
+                    );
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        $"Unexpected DB setup error. Engine '{databaseEngine}' was parsed as valid but is not configured for startup."
+                    );
+                }
+                break;
             default:
                 throw new InvalidOperationException(
-                    $"Invalid adminApiMode: {adminApiMode}. Must be 'v1' or 'v2'"
+                    $"Invalid adminApiMode: {adminApiMode}. Must be 'v1' or 'v2' or 'v3'"
                 );
         }
 
@@ -633,16 +736,34 @@ public static class WebApplicationBuilderExtensions
         });
     }
 
-    private static void RegisterQuartzServices(WebApplicationBuilder webApplicationBuilder)
+    private static void RegisterQuartzServices(WebApplicationBuilder webApplicationBuilder, AdminApiMode adminApiMode)
     {
         webApplicationBuilder.Services.AddQuartz();
         webApplicationBuilder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
-        webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
-        webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
-        webApplicationBuilder.Services.AddTransient<
-            ITenantSpecificDbContextProvider,
-            TenantSpecificDbContextProvider
-        >();
+
+        if (adminApiMode == AdminApiMode.V3)
+        {
+            webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.RefreshEducationOrganizationsJob
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                IJobStatusService,
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.JobStatusService
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.ITenantSpecificDbContextProvider,
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.TenantSpecificDbContextProvider
+            >();
+        }
+        else
+        {
+            webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
+            webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
+            webApplicationBuilder.Services.AddTransient<
+                ITenantSpecificDbContextProvider,
+                TenantSpecificDbContextProvider
+            >();
+        }
     }
     private static void RegisterSandboxProvisioningServices(WebApplicationBuilder webApplicationBuilder, ConfigurationManager config)
     {

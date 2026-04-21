@@ -1394,6 +1394,36 @@
           "log4net": "[3.3.0, )"
         }
       },
+      "edfi.ods.adminapi.v3": {
+        "type": "Project",
+        "dependencies": {
+          "Asp.Versioning.Http": "[8.1.1, )",
+          "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
+          "AspNetCore.HealthChecks.SqlServer": "[9.0.0, )",
+          "Azure.Identity": "[1.12.0, )",
+          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.InstanceManagement": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.V1": "[0.1.0.1, )",
+          "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
+          "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
+          "FluentValidation.AspNetCore": "[11.3.1, )",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.25, )",
+          "Microsoft.EntityFrameworkCore.Abstractions": "[8.0.8, )",
+          "Microsoft.Extensions.Caching.Memory": "[10.0.5, )",
+          "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
+          "Microsoft.Identity.Client": "[4.63.0, )",
+          "NJsonSchema": "[11.0.2, )",
+          "Npgsql": "[8.0.6, )",
+          "OpenIddict.AspNetCore": "[4.10.1, )",
+          "OpenIddict.EntityFrameworkCore": "[4.10.1, )",
+          "Quartz": "[3.15.1, )",
+          "Quartz.Extensions.Hosting": "[3.15.1, )",
+          "Swashbuckle.AspNetCore": "[7.1.0, )",
+          "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )",
+          "Swashbuckle.AspNetCore.Filters": "[8.0.2, )",
+          "System.Text.Json": "[9.0.0, )"
+        }
+      },
       "Autofac.Extras.DynamicProxy": {
         "type": "CentralTransitive",
         "requested": "[7.1.0, )",

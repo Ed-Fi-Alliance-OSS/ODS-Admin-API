@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: Apache-2.0
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+
+using EdFi.Ods.AdminApi.Common.Features;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.V3.Infrastructure;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Extensions;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
+
+namespace EdFi.Ods.AdminApi.V3.Features.Actions;
+
+public class ReadActions : IFeature
+{
+    public void MapEndpoints(IEndpointRouteBuilder endpoints)
+    {
+        AdminApiEndpointBuilder.MapGet(endpoints, "/actions", GetActions)
+           .WithDefaultSummaryAndDescription()
+           .WithRouteOptions(b => b.WithResponse<ActionModel[]>(200))
+           .BuildForVersions(AdminApiVersions.V3);
+    }
+
+    internal static Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)
+    {
+        var actions = ActionMapper.ToModelList(
+            getAllActionsQuery.Execute(
+                new CommonQueryParams(offset, limit, orderBy, direction),
+                id,
+                name));
+        return Task.FromResult(Results.Ok(actions));
+    }
+}
+
+
+

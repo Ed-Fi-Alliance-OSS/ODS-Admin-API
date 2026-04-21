@@ -25,6 +25,7 @@ COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Comm
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.InstanceManagement EdFi.Ods.AdminApi.InstanceManagement/
 
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.V1 EdFi.Ods.AdminApi.V1/
+COPY --from=assets ./Application/EdFi.Ods.AdminApi.V3 EdFi.Ods.AdminApi.V3/
 
 WORKDIR /source/EdFi.Ods.AdminApi
 RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT

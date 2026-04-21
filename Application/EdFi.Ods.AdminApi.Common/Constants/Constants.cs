@@ -57,6 +57,7 @@ public enum AdminApiMode
 {
     V2,
     V1,
+    V3,
     Unversioned
 }
 
