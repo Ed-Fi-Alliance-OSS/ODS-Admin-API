@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ClaimSet = EdFi.Security.DataAccess.Models.ClaimSet;
+using CommonOverrideAuthStrategyOnClaimSetModel = EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel;
 
 namespace EdFi.Ods.AdminApi.DBTests.ClaimSetEditorTests;
 
@@ -83,7 +84,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
                 overrides.Add(appAuthorizationStrategy.AuthorizationStrategyId);
             }
         }
-        var overrideModel = new OverrideAuthStrategyOnClaimSetModel
+        var overrideModel = new CommonOverrideAuthStrategyOnClaimSetModel
         {
             ResourceClaimId = testResource1ToEdit.ResourceClaimId,
             ClaimSetId = testClaimSet.ClaimSetId,
@@ -125,7 +126,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
 
         overrides.Add(resourceClaimActionAuthStrategiesParent.AuthorizationStrategyId);
 
-        var overrideModel = new OverrideAuthStrategyOnClaimSetModel
+        var overrideModel = new CommonOverrideAuthStrategyOnClaimSetModel
         {
             ResourceClaimId = testResource1ToEdit.ResourceClaimId,
             ClaimSetId = testClaimSet.ClaimSetId,
@@ -173,7 +174,7 @@ public class OverrideDefaultAuthorizationStrategyCommandTests : SecurityDataTest
                 overrides.Add(appAuthorizationStrategy.AuthorizationStrategyId);
             }
         }
-        var overrideModel = new OverrideAuthStrategyOnClaimSetModel
+        var overrideModel = new CommonOverrideAuthStrategyOnClaimSetModel
         {
             ResourceClaimId = testResource1ToEdit.ResourceClaimId,
             ClaimSetId = testClaimSet.ClaimSetId,

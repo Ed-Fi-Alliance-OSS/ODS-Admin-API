@@ -77,10 +77,6 @@ public interface IOverrideDefaultAuthorizationStrategyModel
     List<ClaimSetResourceClaimActionAuthStrategies?>? ClaimSetResourceClaimActionAuthStrategyOverrides { get; }
 }
 
-public class OverrideAuthStrategyOnClaimSetModel : Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel
-{
-}
-
 public class OverrideAuthorizationStrategyModel : IOverrideDefaultAuthorizationStrategyModel
 {
     public int ClaimSetId { get; set; }

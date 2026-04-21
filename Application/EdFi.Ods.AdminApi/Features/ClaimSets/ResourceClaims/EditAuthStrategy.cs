@@ -75,7 +75,7 @@ public class EditAuthStrategy : IFeature
         else
         {
             overrideDefaultAuthorizationStrategyCommand.ResetAuthorizationStrategyOverrides(
-                new OverrideAuthStrategyOnClaimSetModel()
+                new Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel()
                 {
                     ClaimSetId = claimSetId,
                     ResourceClaimId = resourceClaimId
@@ -136,7 +136,7 @@ public class EditAuthStrategy : IFeature
 
 
     [SwaggerSchema(Title = "OverrideAuthStategyOnClaimSetRequest")]
-    public class OverrideAuthStategyOnClaimSetRequest : OverrideAuthStrategyOnClaimSetModel
+    public class OverrideAuthStategyOnClaimSetRequest : Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel
     {
         [SwaggerSchema(Description = "AuthorizationStrategy Names", Nullable = false)]
         public IEnumerable<string>? AuthorizationStrategies { get; set; }

@@ -101,11 +101,11 @@ public static class ClaimSetMapper
         };
     }
 
-    public static OverrideAuthStrategyOnClaimSetModel ToOverrideAuthStrategyOnClaimSetModel(
+    public static Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel ToOverrideAuthStrategyOnClaimSetModel(
         ResourceClaims.EditAuthStrategy.OverrideAuthStategyOnClaimSetRequest source,
         List<int> authStrategyIds)
     {
-        return new OverrideAuthStrategyOnClaimSetModel
+        return new Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel
         {
             ClaimSetId = source.ClaimSetId,
             ResourceClaimId = source.ResourceClaimId,
