@@ -5,8 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
@@ -15,27 +14,9 @@ public interface IGetOdsInstanceContextByIdQuery
     OdsInstanceContext Execute(int odsInstanceContextId);
 }
 
-public class GetOdsInstanceContextByIdQuery : IGetOdsInstanceContextByIdQuery
+public class GetOdsInstanceContextByIdQuery(IUsersContext context)
+    : GetOdsInstanceContextByIdQueryCore(context), IGetOdsInstanceContextByIdQuery
 {
-    private readonly IUsersContext _context;
-
-    public GetOdsInstanceContextByIdQuery(IUsersContext context)
-    {
-        _context = context;
-    }
-
-    public OdsInstanceContext Execute(int odsInstanceContextId)
-    {
-        var odsInstanceContext = _context.OdsInstanceContexts
-            .Include(oid => oid.OdsInstance)
-            .SingleOrDefault(app => app.OdsInstanceContextId == odsInstanceContextId);
-        if (odsInstanceContext == null)
-        {
-            throw new NotFoundException<int>("odsInstanceContext", odsInstanceContextId);
-        }
-
-        return odsInstanceContext;
-    }
 }
 
 

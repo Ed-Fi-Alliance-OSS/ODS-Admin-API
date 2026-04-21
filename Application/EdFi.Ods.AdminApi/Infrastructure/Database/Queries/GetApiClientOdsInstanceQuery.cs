@@ -5,8 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
@@ -15,18 +14,7 @@ public interface IGetApiClientOdsInstanceQuery
     ApiClientOdsInstance? Execute(int apiClientId, int odsInstanceId);
 }
 
-public class GetApiClientOdsInstanceQuery : IGetApiClientOdsInstanceQuery
+public class GetApiClientOdsInstanceQuery(IUsersContext userContext)
+    : GetApiClientOdsInstanceQueryCore(userContext), IGetApiClientOdsInstanceQuery
 {
-    private readonly IUsersContext _usersContext;
-
-    public GetApiClientOdsInstanceQuery(IUsersContext userContext)
-    {
-        _usersContext = userContext;
-    }
-    public ApiClientOdsInstance? Execute(int apiClientId, int odsInstanceId)
-    {
-        var result = _usersContext.ApiClientOdsInstances
-            .SingleOrDefault(odsInstance => odsInstance.ApiClient.ApiClientId == apiClientId && odsInstance.OdsInstance.OdsInstanceId == odsInstanceId);
-        return result;
-    }
 }
