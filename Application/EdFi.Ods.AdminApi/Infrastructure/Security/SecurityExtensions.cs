@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
@@ -33,8 +34,14 @@ public static class SecurityExtensions
         var signingKey = string.IsNullOrEmpty(signingKeyValue)
             ? null
             : new SymmetricSecurityKey(Convert.FromBase64String(signingKeyValue));
+
+        var adminApiMode = configuration.GetValue<AdminApiMode>("AppSettings:adminApiMode", AdminApiMode.V2);
+
         var validateIssuerSigningKey = configuration.Get<bool>("Authentication:ValidateIssuerSigningKey");
-        services
+
+        if (adminApiMode == AdminApiMode.V2)
+        {
+            services
             .AddOpenIddict()
             .AddCore(opt =>
             {
@@ -83,6 +90,60 @@ public static class SecurityExtensions
                 options.UseAspNetCore();
                 options.Configure(options => options.TokenValidationParameters.IssuerSigningKey = signingKey);
             });
+        }
+        else if (adminApiMode == AdminApiMode.V3)
+        {
+            services
+            .AddOpenIddict()
+            .AddCore(opt =>
+            {
+                opt.UseEntityFrameworkCore()
+                    .UseDbContext<V3.Infrastructure.AdminApiDbContext>()
+                    .ReplaceDefaultEntities<V3.Infrastructure.Security.ApiApplication, V3.Infrastructure.Security.ApiAuthorization, V3.Infrastructure.Security.ApiScope, V3.Infrastructure.Security.ApiToken, int>();
+            })
+            .AddServer(opt =>
+            {
+                opt.AllowClientCredentialsFlow();
+                opt.SetAccessTokenLifetime(TimeSpan.FromMinutes(30));
+                opt.SetTokenEndpointUris(SecurityConstants.TokenEndpoint);
+
+                opt.AddEphemeralEncryptionKey();
+                opt.AddEphemeralSigningKey();
+                opt.DisableAccessTokenEncryption();
+                opt.SetIssuer(new Uri(issuer));
+
+                if (!webHostEnvironment.IsDevelopment()) //Keys below will override Ephemeral / Dev Keys
+                {
+                    if (signingKey == null)
+                    {
+                        throw new AdminApiException("Invalid Configuration: Authentication:SigningKey is required.");
+                    }
+                    opt.AddSigningKey(signingKey);
+                }
+                foreach (var scope in SecurityConstants.Scopes.AllScopes)
+                {
+                    opt.RegisterScopes(scope.Scope);
+                }
+                var aspNetCoreBuilder = opt.UseAspNetCore().EnableTokenEndpointPassthrough();
+                if (isDockerEnvironment)
+                {
+                    aspNetCoreBuilder.DisableTransportSecurityRequirement();
+                }
+
+                opt.AddEventHandler<ApplyTokenResponseContext>(builder =>
+                    builder
+                        .UseSingletonHandler<DefaultTokenResponseHandler>()
+                        .SetType(OpenIddictServerHandlerType.Custom)
+                );
+            })
+            .AddValidation(options =>
+            {
+                options.UseLocalServer();
+                options.UseAspNetCore();
+                options.Configure(options => options.TokenValidationParameters.IssuerSigningKey = signingKey);
+            });
+        }
+
 
         //Application Security
         var authenticationBuilder = services.
