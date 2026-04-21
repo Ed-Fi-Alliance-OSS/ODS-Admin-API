@@ -18,7 +18,7 @@
 
 ## Development Pre-Requisites
 
-* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+* [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 * Suggested to have either:
   * [Visual Studio 2022](https://visualstudio.microsoft.com/downloads), or
   * [Visual Studio 2022 Build
@@ -35,7 +35,7 @@
 
 The PowerShell script [build.ps1](/build.ps1) in the root directory contains functions for
 running standard build operations at the command line. This script assumes that
-.NET 8.0 SDK or newer is installed. Other dependency tools are downloaded
+.NET 10.0 SDK or newer is installed. Other dependency tools are downloaded
 as needed (NuGet, NUnit).
 
 Available commands (e.g., `./build.ps1 clean`) (commands are not case sensitive):
