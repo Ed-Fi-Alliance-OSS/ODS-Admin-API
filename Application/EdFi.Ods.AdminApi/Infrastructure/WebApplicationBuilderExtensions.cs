@@ -255,7 +255,7 @@ public static class WebApplicationBuilderExtensions
         {
             webApplicationBuilder.Services.AddTransient<ITenantsService, TenantService>();
 
-            webApplicationBuilder.Services.AddHostedService<DefaultTenantContextInitializer>();
+            webApplicationBuilder.Services.AddHostedService<EdFi.Ods.AdminApi.Infrastructure.Services.DefaultTenantContextInitializer>();
         }
     }
 

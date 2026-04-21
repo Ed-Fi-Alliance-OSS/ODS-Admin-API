@@ -11,6 +11,16 @@ namespace EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 
 public static class ClaimSetMapper
 {
+    public static ClaimSetModel ToModel(EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ClaimSet source)
+    {
+        return new ClaimSetModel
+        {
+            Id = source.Id,
+            Name = source.Name,
+            IsSystemReserved = !source.IsEditable
+        };
+    }
+
     public static ClaimSetModel ToModel(ClaimSet source)
     {
         return new ClaimSetModel
@@ -18,6 +28,19 @@ public static class ClaimSetMapper
             Id = source.Id,
             Name = source.Name,
             IsSystemReserved = !source.IsEditable
+        };
+    }
+
+    public static ClaimSetDetailsModel ToDetailsModel(EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ClaimSet source)
+    {
+        var model = ToModel(source);
+
+        return new ClaimSetDetailsModel
+        {
+            Id = model.Id,
+            Name = model.Name,
+            IsSystemReserved = model.IsSystemReserved,
+            Applications = model.Applications
         };
     }
 
@@ -32,6 +55,11 @@ public static class ClaimSetMapper
             IsSystemReserved = model.IsSystemReserved,
             Applications = model.Applications
         };
+    }
+
+    public static List<ClaimSetModel> ToModelList(IEnumerable<EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ClaimSet> source)
+    {
+        return source.Select(ToModel).ToList();
     }
 
     public static List<ClaimSetModel> ToModelList(IEnumerable<ClaimSet> source)
@@ -52,6 +80,27 @@ public static class ClaimSetMapper
         return source.Select(ToSimpleApplicationModel).ToList();
     }
 
+    public static ClaimSetResourceClaimModel ToClaimSetResourceClaimModel(EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim source)
+    {
+        return new ClaimSetResourceClaimModel
+        {
+            Id = source.Id,
+            Name = source.Name,
+            Actions = source.Actions?.Select(a => new ResourceClaimAction
+            {
+                Name = a.Name,
+                Enabled = a.Enabled
+            }).ToList(),
+            DefaultAuthorizationStrategiesForCRUD = source.DefaultAuthorizationStrategiesForCRUD
+                .Select(MapClaimSetResourceClaimActionAuthStrategies)
+                .ToList(),
+            AuthorizationStrategyOverridesForCRUD = source.AuthorizationStrategyOverridesForCRUD
+                .Select(MapClaimSetResourceClaimActionAuthStrategies)
+                .ToList(),
+            Children = ToClaimSetResourceClaimModelList(source.Children)
+        };
+    }
+
     public static ClaimSetResourceClaimModel ToClaimSetResourceClaimModel(ResourceClaim source)
     {
         return new ClaimSetResourceClaimModel
@@ -63,6 +112,11 @@ public static class ClaimSetMapper
             AuthorizationStrategyOverridesForCRUD = source.AuthorizationStrategyOverridesForCRUD,
             Children = ToClaimSetResourceClaimModelList(source.Children)
         };
+    }
+
+    public static List<ClaimSetResourceClaimModel> ToClaimSetResourceClaimModelList(IEnumerable<EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim> source)
+    {
+        return source.Select(ToClaimSetResourceClaimModel).ToList();
     }
 
     public static List<ClaimSetResourceClaimModel> ToClaimSetResourceClaimModelList(IEnumerable<ResourceClaim> source)
@@ -101,11 +155,11 @@ public static class ClaimSetMapper
         };
     }
 
-    public static Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel ToOverrideAuthStrategyOnClaimSetModel(
+    public static OverrideAuthStrategyOnClaimSetModel ToOverrideAuthStrategyOnClaimSetModel(
         ResourceClaims.EditAuthStrategy.OverrideAuthStategyOnClaimSetRequest source,
         List<int> authStrategyIds)
     {
-        return new Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel
+        return new OverrideAuthStrategyOnClaimSetModel
         {
             ClaimSetId = source.ClaimSetId,
             ResourceClaimId = source.ResourceClaimId,
@@ -127,6 +181,27 @@ public static class ClaimSetMapper
     public static List<AuthorizationStrategy> ToAuthorizationStrategyList(IEnumerable<SecurityAuthorizationStrategy> source, bool isInheritedFromParent = false)
     {
         return source.Select(item => ToAuthorizationStrategy(item, isInheritedFromParent)).ToList();
+    }
+
+    private static ClaimSetResourceClaimActionAuthStrategies? MapClaimSetResourceClaimActionAuthStrategies(
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies? source)
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        return new ClaimSetResourceClaimActionAuthStrategies
+        {
+            ActionId = source.ActionId,
+            ActionName = source.ActionName,
+            AuthorizationStrategies = source.AuthorizationStrategies?.Select(a => new AuthorizationStrategy
+            {
+                AuthStrategyId = a.AuthStrategyId,
+                AuthStrategyName = a.AuthStrategyName,
+                IsInheritedFromParent = a.IsInheritedFromParent
+            }).ToList()
+        };
     }
 }
 

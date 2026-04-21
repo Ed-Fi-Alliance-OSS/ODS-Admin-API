@@ -3,8 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.Common.Infrastructure.ClaimSetEditor;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database.Queries;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 
@@ -14,8 +13,7 @@ public class AddOrEditResourcesOnClaimSetCommand
     private readonly IGetResourceClaimsQuery _getResourceClaimsQuery;
     private readonly OverrideDefaultAuthorizationStrategyCommand _overrideDefaultAuthorizationStrategyCommand;
 
-    public AddOrEditResourcesOnClaimSetCommand(
-        EditResourceOnClaimSetCommand editResourceOnClaimSetCommand,
+    public AddOrEditResourcesOnClaimSetCommand(EditResourceOnClaimSetCommand editResourceOnClaimSetCommand,
         IGetResourceClaimsQuery getResourceClaimsQuery,
         OverrideDefaultAuthorizationStrategyCommand overrideDefaultAuthorizationStrategyCommand)
     {
@@ -26,13 +24,13 @@ public class AddOrEditResourcesOnClaimSetCommand
 
     public void Execute(int claimSetId, List<ResourceClaim> resources)
     {
+
         var allResources = GetDbResources();
 
         var childResources = new List<ResourceClaim>();
         foreach (var resourceClaims in resources.Select(x => x.Children))
             childResources.AddRange(resourceClaims);
         resources.AddRange(childResources);
-
         var currentResources = resources.Select(r =>
             {
                 var resource = allResources.Find(dr => (dr.Name ?? string.Empty).Equals(r.Name, StringComparison.Ordinal));
@@ -58,31 +56,15 @@ public class AddOrEditResourcesOnClaimSetCommand
 
             if (resource!.AuthorizationStrategyOverridesForCRUD != null && resource.AuthorizationStrategyOverridesForCRUD.Any())
             {
-                var overrideAuthStrategyModel = new LocalOverrideModel(
-                    claimSetId,
-                    resource.Id,
-                    resource.AuthorizationStrategyOverridesForCRUD);
+                var overrideAuthStrategyModel = new OverrideAuthorizationStrategyModel
+                {
+                    ClaimSetId = claimSetId,
+                    ResourceClaimId = resource.Id,
+                    ClaimSetResourceClaimActionAuthStrategyOverrides = resource.AuthorizationStrategyOverridesForCRUD
+                };
                 _overrideDefaultAuthorizationStrategyCommand.Execute(overrideAuthStrategyModel);
             }
         }
-    }
-
-    private sealed class LocalOverrideModel : IOverrideDefaultAuthorizationStrategyModel
-    {
-        private readonly int _claimSetId;
-        private readonly int _resourceClaimId;
-        private readonly List<ClaimSetResourceClaimActionAuthStrategies?>? _strategies;
-
-        public LocalOverrideModel(int claimSetId, int resourceClaimId, List<ClaimSetResourceClaimActionAuthStrategies?>? strategies)
-        {
-            _claimSetId = claimSetId;
-            _resourceClaimId = resourceClaimId;
-            _strategies = strategies;
-        }
-
-        public int ClaimSetId => _claimSetId;
-        public int ResourceClaimId => _resourceClaimId;
-        public List<ClaimSetResourceClaimActionAuthStrategies?>? ClaimSetResourceClaimActionAuthStrategyOverrides => _strategies;
     }
 
     private List<ResourceClaim> GetDbResources()
@@ -92,13 +74,58 @@ public class AddOrEditResourcesOnClaimSetCommand
 
         foreach (var resource in parentResources)
         {
-            AddResourceWithChildren(resource, allResources);
+            AddResourceWithChildren(ToResourceClaim(resource), allResources);
         }
 
         return allResources;
     }
 
-    private static void AddResourceWithChildren(ResourceClaim resource, List<ResourceClaim> allResources)
+    private static ResourceClaim ToResourceClaim(EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim source)
+    {
+        return new ResourceClaim
+        {
+            Id = source.Id,
+            ParentId = source.ParentId,
+            ParentName = source.ParentName,
+            Name = source.Name,
+            Actions = source.Actions?.Select(a => new ResourceClaimAction
+            {
+                Name = a.Name,
+                Enabled = a.Enabled
+            }).ToList(),
+            IsParent = source.IsParent,
+            DefaultAuthorizationStrategiesForCRUD = source.DefaultAuthorizationStrategiesForCRUD
+                .Select(MapClaimSetResourceClaimActionAuthStrategies)
+                .ToList(),
+            AuthorizationStrategyOverridesForCRUD = source.AuthorizationStrategyOverridesForCRUD
+                .Select(MapClaimSetResourceClaimActionAuthStrategies)
+                .ToList(),
+            Children = source.Children.Select(ToResourceClaim).ToList()
+        };
+    }
+
+    private static ClaimSetResourceClaimActionAuthStrategies? MapClaimSetResourceClaimActionAuthStrategies(
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ClaimSetResourceClaimActionAuthStrategies? source)
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        return new ClaimSetResourceClaimActionAuthStrategies
+        {
+            ActionId = source.ActionId,
+            ActionName = source.ActionName,
+            AuthorizationStrategies = source.AuthorizationStrategies?.Select(a => new AuthorizationStrategy
+            {
+                AuthStrategyId = a.AuthStrategyId,
+                AuthStrategyName = a.AuthStrategyName,
+                IsInheritedFromParent = a.IsInheritedFromParent
+            }).ToList()
+        };
+    }
+
+    private void AddResourceWithChildren(ResourceClaim resource, List<ResourceClaim> allResources)
     {
         allResources.Add(resource);
 
@@ -111,3 +138,23 @@ public class AddOrEditResourcesOnClaimSetCommand
         }
     }
 }
+
+public class AddClaimSetModel : IAddClaimSetModel
+{
+    public string? ClaimSetName { get; set; }
+}
+
+public class EditResourceOnClaimSetModel : IEditResourceOnClaimSetModel
+{
+    public int ClaimSetId { get; set; }
+    public ResourceClaim? ResourceClaim { get; set; }
+}
+
+public class OverrideAuthorizationStrategyModel : IOverrideDefaultAuthorizationStrategyModel
+{
+    public int ClaimSetId { get; set; }
+    public int ResourceClaimId { get; set; }
+    public List<ClaimSetResourceClaimActionAuthStrategies?>? ClaimSetResourceClaimActionAuthStrategyOverrides { get; set; }
+}
+
+
