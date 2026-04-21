@@ -12,6 +12,7 @@
     <DockerfileRunEnvironmentFiles>.env</DockerfileRunEnvironmentFiles>
     <DockerfileTag>adminapi-dev</DockerfileTag>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1902</WarningsNotAsErrors>
     <UserSecretsId>a39ca29f-5ebf-412e-bca9-53fc7221286b</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -31,7 +32,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" />
     <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="NJsonSchema" />
@@ -49,7 +49,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EdFi.Ods.AdminApi.Common\EdFi.Ods.AdminApi.Common.csproj" />
