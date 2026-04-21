@@ -26,7 +26,8 @@ public class DeleteVendorCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, null);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
             deleteVendorCommand.Execute(vendorId);
         });
 
@@ -69,7 +70,8 @@ public class DeleteVendorCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, null);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
             deleteVendorCommand.Execute(vendorId);
         });
 

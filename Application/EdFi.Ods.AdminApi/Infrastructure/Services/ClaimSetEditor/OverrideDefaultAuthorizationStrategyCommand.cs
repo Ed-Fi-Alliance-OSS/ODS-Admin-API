@@ -79,13 +79,6 @@ public interface IOverrideDefaultAuthorizationStrategyModel
 
 public class OverrideAuthStrategyOnClaimSetModel : Common.Infrastructure.ClaimSetEditor.OverrideAuthStrategyOnClaimSetModel
 {
-    [SwaggerExclude]
-    public new int ClaimSetId { get; set; }
-    [SwaggerExclude]
-    public new int ResourceClaimId { get; set; }
-    public new string? ActionName { get; set; }
-    [SwaggerExclude]
-    public new List<int>? AuthStrategyIds { get; set; }
 }
 
 public class OverrideAuthorizationStrategyModel : IOverrideDefaultAuthorizationStrategyModel
