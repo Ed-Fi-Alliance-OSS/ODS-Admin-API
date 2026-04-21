@@ -12,7 +12,6 @@
     <DockerfileRunEnvironmentFiles>.env</DockerfileRunEnvironmentFiles>
     <DockerfileTag>adminapi-dev</DockerfileTag>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1902</WarningsNotAsErrors>
     <UserSecretsId>a39ca29f-5ebf-412e-bca9-53fc7221286b</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
