@@ -757,8 +757,8 @@ public static class WebApplicationBuilderExtensions
         }
         else
         {
-        	webApplicationBuilder.Services.AddTransient<CreateInstanceJob>();
-        	webApplicationBuilder.Services.AddTransient<CreatePendingDbInstancesDispatcherJob>();
+            webApplicationBuilder.Services.AddTransient<CreateInstanceJob>();
+            webApplicationBuilder.Services.AddTransient<CreatePendingDbInstancesDispatcherJob>();
             webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
             webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
             webApplicationBuilder.Services.AddTransient<

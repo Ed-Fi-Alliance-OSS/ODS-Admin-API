@@ -72,7 +72,17 @@ public class AddDbInstance : IFeature
             .Build();
 
         var scheduler = await schedulerFactory.GetScheduler();
-        await scheduler.ScheduleJob(jobBuilder.Build(), trigger);
+
+        try
+        {
+            await scheduler.ScheduleJob(jobBuilder.Build(), trigger);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // The CreatePendingDbInstancesDispatcherJob may have already scheduled this job
+            // (e.g. it fired between the DB insert and this ScheduleJob call). Treat duplicate
+            // scheduling as success — the job is already queued and will process the DbInstance.
+        }
 
         return Results.Accepted($"/dbinstances/{added.Id}", null);
     }
