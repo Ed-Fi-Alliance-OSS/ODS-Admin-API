@@ -3,8 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -26,10 +28,9 @@ public class ImportClaimSet : IFeature
     internal async Task<IResult> Handle(Validator validator, AddClaimSetCommand addClaimSetCommand,
         AddOrEditResourcesOnClaimSetCommand addOrEditResourcesOnClaimSetCommand,
         IGetClaimSetByIdQuery getClaimSetByIdQuery,
-        IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
-        IGetApplicationsByClaimSetIdQuery getApplications,
         IAuthStrategyResolver strategyResolver,
-        ImportClaimSetRequest request)
+        ImportClaimSetRequest request,
+        HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var addedClaimSetId = addClaimSetCommand.Execute(new AddClaimSetModel
@@ -44,7 +45,8 @@ public class ImportClaimSet : IFeature
 
         var claimSet = getClaimSetByIdQuery.Execute(addedClaimSetId);
 
-        return Results.Created($"/claimSets/{claimSet.Id}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/claimSets/{claimSet.Id}");
+        return Results.Created(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "ImportClaimSetRequest")]

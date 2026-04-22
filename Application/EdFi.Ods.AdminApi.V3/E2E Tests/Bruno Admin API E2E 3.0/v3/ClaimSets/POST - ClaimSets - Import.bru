@@ -156,6 +156,11 @@ script:post-response {
           }
       }
   });
+
+    test("POST ClaimSets - Import: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
   console.log("🔧 Setting post environment to ignore SSL certificates...");
   

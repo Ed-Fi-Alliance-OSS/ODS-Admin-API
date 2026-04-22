@@ -4,8 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -27,13 +29,14 @@ public class AddApplication : IFeature
             .BuildForVersions(string.Empty, true, AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IUsersContext db, AddApplicationRequest request, IOptions<AppSettings> options)
+    public static async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IUsersContext db, AddApplicationRequest request, IOptions<AppSettings> options, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
         var addedApplicationResult = addApplicationCommand.Execute(request, options);
         var model = ApplicationMapper.ToResult(addedApplicationResult);
-        return Results.Created($"/applications/{model.Id}", model);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/applications/{model.Id}");
+        return Results.Created(absoluteLocation, model);
     }
 
     private static void GuardAgainstInvalidEntityReferences(AddApplicationRequest request, IUsersContext db)

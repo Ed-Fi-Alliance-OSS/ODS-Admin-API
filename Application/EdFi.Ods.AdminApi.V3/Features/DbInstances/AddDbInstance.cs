@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
@@ -23,11 +24,12 @@ public class AddDbInstance : IFeature
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public async static Task<IResult> Handle(Validator validator, AddDbInstanceCommand addDbInstanceCommand, AddDbInstanceRequest request)
+    public async static Task<IResult> Handle(Validator validator, AddDbInstanceCommand addDbInstanceCommand, AddDbInstanceRequest request, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var added = addDbInstanceCommand.Execute(request);
-        return Results.Accepted($"/dbinstances/{added.Id}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dbinstances/{added.Id}");
+        return Results.Accepted(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "AddDbInstanceRequest")]

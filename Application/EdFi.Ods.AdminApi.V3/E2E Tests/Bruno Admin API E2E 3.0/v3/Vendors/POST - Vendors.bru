@@ -32,6 +32,11 @@ script:post-response {
           bru.setVar("CreatedVendorId", id);
       }
   });
+
+    test("POST Vendors: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 

@@ -4,8 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -26,13 +28,14 @@ public class AddApiClient : IFeature
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options)
+    public static async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
         var addedApiClientResult = addApiClientCommand.Execute(request, options);
         var model = ApiClientMapper.ToResult(addedApiClientResult);
-        return Results.Created($"/apiclients/{model.Id}", model);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/apiclients/{model.Id}");
+        return Results.Created(absoluteLocation, model);
     }
 
     private static void GuardAgainstInvalidEntityReferences(AddApiClientRequest request, IUsersContext db)

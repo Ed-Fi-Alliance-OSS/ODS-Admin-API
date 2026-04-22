@@ -40,6 +40,11 @@ script:post-response {
           bru.setVar("CreatedOdsInstanceId", id);
       }
   });
+
+    test("POST OdsInstances: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 

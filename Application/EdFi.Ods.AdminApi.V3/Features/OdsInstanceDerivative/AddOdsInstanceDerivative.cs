@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -26,11 +27,12 @@ public class AddOdsInstanceDerivative : IFeature
            .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceDerivativeCommand addOdsInstanceDerivativeCommand, AddOdsInstanceDerivativeRequest request)
+    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceDerivativeCommand addOdsInstanceDerivativeCommand, AddOdsInstanceDerivativeRequest request, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var addedOdsInstanceDerivative = addOdsInstanceDerivativeCommand.Execute(request);
-        return Results.Created($"/odsInstanceDerivatives/{addedOdsInstanceDerivative.OdsInstanceDerivativeId}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/odsInstanceDerivatives/{addedOdsInstanceDerivative.OdsInstanceDerivativeId}");
+        return Results.Created(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "AddOdsInstanceDerivativeRequest")]

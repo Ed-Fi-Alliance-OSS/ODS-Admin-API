@@ -4,8 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FluentValidation;
@@ -24,11 +26,12 @@ public class AddVendor : IFeature
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public async static Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, AddVendorRequest request)
+    public async static Task<IResult> Handle(Validator validator, AddVendorCommand addVendorCommand, AddVendorRequest request, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var addedVendor = addVendorCommand.Execute(request);
-        return Results.Created($"/vendors/{addedVendor.VendorId}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/vendors/{addedVendor.VendorId}");
+        return Results.Created(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "AddVendorRequest")]

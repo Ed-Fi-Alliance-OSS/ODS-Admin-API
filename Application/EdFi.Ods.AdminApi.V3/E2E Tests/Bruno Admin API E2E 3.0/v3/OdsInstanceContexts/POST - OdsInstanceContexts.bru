@@ -84,6 +84,11 @@ script:post-response {
           bru.setVar("CreatedOdsInstanceContextId", id);
       }
   });
+
+    test("POST ODS Instance Contexts: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 

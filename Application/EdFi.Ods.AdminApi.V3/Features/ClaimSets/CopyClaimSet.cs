@@ -3,8 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -29,12 +31,14 @@ public class CopyClaimSet : IFeature
         IGetClaimSetByIdQuery getClaimSetByIdQuery,
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         IGetApplicationsByClaimSetIdQuery getApplications,
-        CopyClaimSetRequest request)
+        CopyClaimSetRequest request,
+        HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var copiedClaimSetId = copyClaimSetCommand.Execute(request);
 
-        return Results.Created($"/claimSets/{copiedClaimSetId}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/claimSets/{copiedClaimSetId}");
+        return Results.Created(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "CopyClaimSetRequest")]

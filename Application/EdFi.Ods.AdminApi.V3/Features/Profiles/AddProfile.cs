@@ -3,8 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -26,11 +28,12 @@ public class AddProfile : IFeature
     }
 
     [ProfileRequestExample]
-    public async Task<IResult> Handle(Validator validator, IAddProfileCommand addProfileCommand, AddProfileRequest request)
+    public async Task<IResult> Handle(Validator validator, IAddProfileCommand addProfileCommand, AddProfileRequest request, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var addedProfile = addProfileCommand.Execute(request);
-        return Results.Created($"/profiles/{addedProfile.ProfileId}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/profiles/{addedProfile.ProfileId}");
+        return Results.Created(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "AddProfileRequest")]

@@ -84,6 +84,11 @@ script:post-response {
           bru.setVar("CreatedOdsInstanceDerivativeId", id);
       }
   });
+
+    test("POST ODS Instance Derivatives: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 
