@@ -18,7 +18,7 @@ body:json {
 }
 
 script:post-response {
-  test("PUT ClaimSet NotFound: Status code is Bad Request", function () {
+  test("PUT ClaimSet NotFound: Status code is Not Found", function () {
       expect(res.getStatus()).to.equal(404);
   });
   

@@ -28,7 +28,7 @@ script:post-response {
       expect(results.length).to.be.greaterThan(0);   
   });
   
-  test("GET ODS Instances: Response result is ordered by Namne desc", function () {
+  test("GET ODS Instances: Response result is ordered by Name desc", function () {
       const results = res.getBody();
       var expectedSortedOrder = _.orderBy(results, [odsInstance => odsInstance.name],['desc']);
       
