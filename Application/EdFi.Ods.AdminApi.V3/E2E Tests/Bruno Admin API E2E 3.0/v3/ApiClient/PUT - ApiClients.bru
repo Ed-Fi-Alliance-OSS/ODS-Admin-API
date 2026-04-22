@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/apiclients/{{CreatedApiClientId}}
+  url: {{API_URL}}/v3/apiclients/{{CreatedApiClientId}}
   body: json
   auth: inherit
 }
@@ -51,7 +51,7 @@ script:post-response {
   }
 
   try {
-    const response = await axios.get(`${API_URL}/v2/apiclients/${bru.getVar("CreatedApiClientId")}`, axiosConfig);
+    const response = await axios.get(`${API_URL}/v3/apiclients/${bru.getVar("CreatedApiClientId")}`, axiosConfig);
     
     if (response.status === 200 && response.data) {
       const updated = response.data;

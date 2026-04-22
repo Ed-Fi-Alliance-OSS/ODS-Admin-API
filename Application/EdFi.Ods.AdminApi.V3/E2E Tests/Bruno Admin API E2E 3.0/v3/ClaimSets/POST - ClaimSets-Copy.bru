@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/claimSets/copy
+  url: {{API_URL}}/v3/claimSets/copy
   body: json
   auth: inherit
 }
@@ -53,7 +53,7 @@ script:pre-request {
 
   try {
     let previouscreatedClaimSetId = bru.getVar("CreatedClaimSetId");
-    const claimSetResponse = await axios.post(`${API_URL}/v2/claimSets/${previouscreatedClaimSetId}/resourceClaimActions`, {
+    const claimSetResponse = await axios.post(`${API_URL}/v3/claimSets/${previouscreatedClaimSetId}/resourceClaimActions`, {
       "resourceClaimId": 9,
       "resourceClaimActions": [ 
           {
@@ -134,7 +134,7 @@ script:post-response {
 
   try {
     let copiedClaimSetId = bru.getVar("CopiedClaimSetId");
-    const copiedClaimSetResponse = await axios.get(`${API_URL}/v2/claimSets/${copiedClaimSetId}`, axiosConfig);
+    const copiedClaimSetResponse = await axios.get(`${API_URL}/v3/claimSets/${copiedClaimSetId}`, axiosConfig);
 
     if (copiedClaimSetResponse.status === 200 && copiedClaimSetResponse.data) {
       console.log("✅ ClaimSets Returned:", copiedClaimSetResponse.data.id);

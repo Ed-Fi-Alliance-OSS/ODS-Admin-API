@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{API_URL}}/v2/tenants/default/OdsInstances/edOrgs
+  url: {{API_URL}}/v3/tenants/default/OdsInstances/edOrgs
   body: none
   auth: inherit
 }
@@ -43,7 +43,7 @@ script:pre-request {
     
     try {
       const objectName = "OdsInstance";
-      const response = await axios.post(`${API_URL}/v2/odsInstances`, {
+      const response = await axios.post(`${API_URL}/v3/odsInstances`, {
         "name": `OdsInstance-E2E-${timestamp}`,
         "instanceType": "OdsInstance",
         "connectionString": `${bru.getEnvVar("connectionString")}`
@@ -167,7 +167,7 @@ script:post-response {
     
     try {
       const objectName = "OdsInstance";
-      const response = await axios.delete(`${API_URL}/v2/odsInstances/${bru.getVar("created-odsInstanceId")}`, axiosConfig);
+      const response = await axios.delete(`${API_URL}/v3/odsInstances/${bru.getVar("created-odsInstanceId")}`, axiosConfig);
   
       if (response.status === 200) {
         console.log(`✅ ${objectName} with ID ${bru.getVar("created-odsInstanceId")} removed successfully`);

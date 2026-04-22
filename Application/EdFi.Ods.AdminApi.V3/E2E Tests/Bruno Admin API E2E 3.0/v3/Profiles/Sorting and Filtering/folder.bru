@@ -53,7 +53,7 @@ script:pre-request {
         bru.setEnvVar("FILTEPROFILENAME", timestamp);
        
 
-        const profileResponse = await axios.post(`${API_URL}/v2/profiles`, {
+        const profileResponse = await axios.post(`${API_URL}/v3/profiles`, {
              "name": `${timestamp}`, 
              "definition": `<Profile name=\"${timestamp}\"><Resource name=\"Resource1\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"Collection1\" memberSelection=\"IncludeOnly\"><Property name=\"Property1\" /><Property name=\"Property2\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"Collection2\" memberSelection=\"IncludeOnly\"><Property name=\"Property1\" /><Property name=\"Property2\" /></Collection></WriteContentType></Resource></Profile>`
         }, axiosConfig);
@@ -118,7 +118,7 @@ script:post-response {
   try {
 
     async function deleteProfileById(id) {
-        const profileResponse = await axios.delete(`${API_URL}/v2/profiles/${id}`, axiosConfig);
+        const profileResponse = await axios.delete(`${API_URL}/v3/profiles/${id}`, axiosConfig);
 
         if (profileResponse.status === 200) {
           console.log(`✅ Profile ${id} deleted successfully`);

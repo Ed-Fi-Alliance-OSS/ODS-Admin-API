@@ -63,7 +63,7 @@ script:pre-request {
         bru.setEnvVar("FILTERAPPLICATIONNAME", applicationName);
         bru.setEnvVar("FILTERCLAIMSETNAME", claimsetName);
 
-        const schemaResponse = await axios.post(`${API_URL}/v2/claimSets`, {
+        const schemaResponse = await axios.post(`${API_URL}/v3/claimSets`, {
           "name": `ClaimSet Pre ${uniqueId}`
         }, axiosConfig);
 
@@ -81,7 +81,7 @@ script:pre-request {
           throw new Error(`Failed to create schema - Status: ${schemaResponse.status}, Data: ${JSON.stringify(schemaResponse.data)}`);
         }
 
-        const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+        const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
           "company": `Company ${timestamp}`,
           "namespacePrefixes": `uri://${timestamp}.org`,
           "contactName": `Application ${timestamp}`,
@@ -102,7 +102,7 @@ script:pre-request {
           throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
         }
 
-        const odsResponse = await axios.post(`${API_URL}/v2/odsInstances`, {
+        const odsResponse = await axios.post(`${API_URL}/v3/odsInstances`, {
              "name": `Ods Instance ${timestamp}`, 
              "instanceType": 'postgresql', 
              "connectionString": bru.getEnvVar("connectionString")
@@ -122,7 +122,7 @@ script:pre-request {
           throw new Error(`Failed to post odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
         } 
 
-        const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+        const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
             "applicationName": `${applicationName}`,
             "vendorId": vendorId,
             "claimSetName": `${claimsetName}`,
@@ -195,7 +195,7 @@ script:post-response {
   try {
 
     async function deleteClaimsetById(id) {
-        const schemaResponse = await axios.delete(`${API_URL}/v2/claimSets/${id}`, axiosConfig);
+        const schemaResponse = await axios.delete(`${API_URL}/v3/claimSets/${id}`, axiosConfig);
 
         if (schemaResponse.status === 200) {
           console.log(`✅ Schema ${id} deleted successfully`);
@@ -208,7 +208,7 @@ script:post-response {
     }
 
     async function deleteODSInstanceById(id) {
-        const odsResponse = await axios.delete(`${API_URL}/v2/odsInstances/${id}`, axiosConfig);
+        const odsResponse = await axios.delete(`${API_URL}/v3/odsInstances/${id}`, axiosConfig);
 
         if (odsResponse.status === 200) {
           console.log(`✅ OdsInstance ${id} deleted successfully`);
@@ -221,7 +221,7 @@ script:post-response {
     }
 
     async function deleteVendorById(id) {
-        const schemaResponse = await axios.delete(`${API_URL}/v2/vendors/${id}`, axiosConfig);
+        const schemaResponse = await axios.delete(`${API_URL}/v3/vendors/${id}`, axiosConfig);
 
         if (schemaResponse.status === 200) {
           console.log(`✅ Vendor ${id} deleted successfully`);

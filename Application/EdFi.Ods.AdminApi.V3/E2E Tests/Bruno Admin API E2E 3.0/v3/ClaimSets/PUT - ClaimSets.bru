@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/claimSets/{{CreatedClaimSetId}}
+  url: {{API_URL}}/v3/claimSets/{{CreatedClaimSetId}}
   body: json
   auth: inherit
 }
@@ -56,7 +56,7 @@ script:post-response {
 
   try {
     let createdClaimSetId = bru.getVar("CreatedClaimSetId")
-    const claimSetResponse = await axios.get(`${API_URL}/v2/claimSets/${createdClaimSetId}`, axiosConfig);
+    const claimSetResponse = await axios.get(`${API_URL}/v3/claimSets/${createdClaimSetId}`, axiosConfig);
 
     if (claimSetResponse.status === 200 && claimSetResponse.data) {
       console.log("✅ ClaimSets Returned:", claimSetResponse.data.id);

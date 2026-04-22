@@ -51,7 +51,7 @@ AdminApiVersions.Initialize(app);
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<AdminApiModeValidationMiddleware>();
 
-if (adminApiMode == AdminApiMode.V2)
+if (adminApiMode == AdminApiMode.V2 || adminApiMode == AdminApiMode.V3)
     app.UseMiddleware<TenantResolverMiddleware>();
 
 app.UseRouting();

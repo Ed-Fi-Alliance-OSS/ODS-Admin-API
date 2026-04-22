@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
+  url: {{API_URL}}/v3/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
   body: json
   auth: inherit
 }
@@ -57,7 +57,7 @@ script:post-response {
 
   try {
     const odsInstanceDerivativeCreated = bru.getVar("CreatedOdsInstanceDerivativeId")
-    const odsInstanceDerivativeResponse = await axios.get(`${API_URL}/v2/OdsInstanceDerivatives/${odsInstanceDerivativeCreated}`, axiosConfig);
+    const odsInstanceDerivativeResponse = await axios.get(`${API_URL}/v3/OdsInstanceDerivatives/${odsInstanceDerivativeCreated}`, axiosConfig);
 
     if (odsInstanceDerivativeResponse.status === 200) {
       console.log("✅ odsInstanceContexts created successfully");

@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/claimSets/import
+  url: {{API_URL}}/v3/claimSets/import
   body: json
   auth: inherit
 }
@@ -149,7 +149,7 @@ script:pre-request {
 
   try {
     // Create a claimsets for the application test
-    const claimsetResponse = await axios.post(`${API_URL}/v2/claimSets`, {
+    const claimsetResponse = await axios.post(`${API_URL}/v3/claimSets`, {
       "name": `Other Test ClaimSet ${bru.getVar("OtherClaimSetGUID")}`,
       "resourceClaims": []
     }, axiosConfig);

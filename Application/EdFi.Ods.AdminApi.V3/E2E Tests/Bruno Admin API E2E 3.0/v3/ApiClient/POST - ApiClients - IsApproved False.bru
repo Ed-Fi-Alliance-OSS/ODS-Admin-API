@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/apiclients
+  url: {{API_URL}}/v3/apiclients
   body: json
   auth: inherit
 }
@@ -61,7 +61,7 @@ script:pre-request {
 
   try {
     // Create a vendor for the application test
-    const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+    const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
       "company": `Application Company ${timestamp}`,
       "namespacePrefixes": "uri://ed-fi.org",
       "contactName": `Application User ${uniqueId}`,
@@ -80,7 +80,7 @@ script:pre-request {
     }
 
     // Get first ODS instance
-    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances?offset=0&limit=1`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=0&limit=1`, axiosConfig);
 
     if (odsResponse.status === 200 && odsResponse.data && odsResponse.data.length > 0 && odsResponse.data[0].id) {
       bru.setVar("ODSInstanceId", odsResponse.data[0].id);
@@ -93,7 +93,7 @@ script:pre-request {
     }
 
     // Create application
-    const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+    const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
       "applicationName": `Test Application ${uniqueId}`,
       "vendorId": bru.getVar("ApplicationVendorId"),
       "claimSetName": "Ed-Fi Sandbox",
@@ -165,7 +165,7 @@ script:post-response {
   }
 
   try {
-    const response = await axios.get(`${API_URL}/v2/apiclients/${bru.getVar("CreatedApiClientIdIsApprovedFalse")}`, axiosConfig);
+    const response = await axios.get(`${API_URL}/v3/apiclients/${bru.getVar("CreatedApiClientIdIsApprovedFalse")}`, axiosConfig);
 
     test("POST ApiClients IsApproved False: GET verification returns OK", function () {
       expect(response.status).to.equal(200);

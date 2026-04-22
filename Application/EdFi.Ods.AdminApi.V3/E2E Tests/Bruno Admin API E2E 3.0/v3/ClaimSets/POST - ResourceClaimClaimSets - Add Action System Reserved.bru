@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/claimSets/{{SystemReservedClaimSetId}}/resourceClaimActions
+  url: {{API_URL}}/v3/claimSets/{{SystemReservedClaimSetId}}/resourceClaimActions
   body: json
   auth: inherit
 }
@@ -70,7 +70,7 @@ script:pre-request {
   try {
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const claimSetResponse = await axios.get(`${API_URL}/v2/claimSets?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+    const claimSetResponse = await axios.get(`${API_URL}/v3/claimSets?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
 
     if (claimSetResponse.status === 200 && claimSetResponse.data) {
       console.log("✅ ClaimSets Returned:", claimSetResponse.data.length);

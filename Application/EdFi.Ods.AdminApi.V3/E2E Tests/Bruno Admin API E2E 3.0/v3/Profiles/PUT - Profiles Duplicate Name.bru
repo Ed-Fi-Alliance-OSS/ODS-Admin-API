@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/profiles/{{OtherCreatedProfileId}}
+  url: {{API_URL}}/v3/profiles/{{OtherCreatedProfileId}}
   body: json
   auth: inherit
 }
@@ -50,7 +50,7 @@ script:pre-request {
   }
 
   try {
-    const profileResponse = await axios.post(`${API_URL}/v2/profiles`, {
+    const profileResponse = await axios.post(`${API_URL}/v3/profiles`, {
         "Name": `Other-Test-Profile`,
         "Definition": "<Profile name=\"Other-Test-Profile\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
     }, axiosConfig);
@@ -135,7 +135,7 @@ script:post-response {
 
   try {
     const profileCreated = bru.getVar("OtherCreatedProfileId")
-    const profileResponse = await axios.delete(`${API_URL}/v2/profiles/${profileCreated}`, axiosConfig);
+    const profileResponse = await axios.delete(`${API_URL}/v3/profiles/${profileCreated}`, axiosConfig);
 
     if (profileResponse.status === 200) {
       console.log("✅ Profile deleted successfully");

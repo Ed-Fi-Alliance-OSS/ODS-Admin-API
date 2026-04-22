@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{API_URL}}/v2/vendors/{{OtherApplicationVendorIdWithVendor}}/applications
+  url: {{API_URL}}/v3/vendors/{{OtherApplicationVendorIdWithVendor}}/applications
   body: json
   auth: inherit
 }
@@ -47,7 +47,7 @@ script:pre-request {
   try {
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances?offset=${offsetVar}&limit=${limitVar}&direction=Ascending`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=${offsetVar}&limit=${limitVar}&direction=Ascending`, axiosConfig);
 
     if (odsResponse.status === 200) {
       console.log("✅ OdsInstance List loaded");
@@ -59,7 +59,7 @@ script:pre-request {
       throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     } 
 
-    const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+    const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
       "company": "Other Company With Application",
       "namespacePrefixes": "uri://ed-fi.org",
       "contactName": "Other Company with Application User",
@@ -84,7 +84,7 @@ script:pre-request {
       console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
       throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
     }
-    const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+    const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
           "applicationName": "Other Vendor with Application",
           "vendorId": bru.getVar("OtherApplicationVendorIdWithVendor"),
           "claimSetName": "Ed-Fi Sandbox",

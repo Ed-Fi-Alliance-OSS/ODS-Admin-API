@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/profiles/{{CreatedProfileId}}
+  url: {{API_URL}}/v3/profiles/{{CreatedProfileId}}
   body: json
   auth: inherit
 }
@@ -55,7 +55,7 @@ script:post-response {
 
   try {
     const profileCreated = bru.getVar("CreatedProfileId");
-    const profileResponse = await axios.get(`${API_URL}/v2/profiles/${profileCreated}`, axiosConfig);
+    const profileResponse = await axios.get(`${API_URL}/v3/profiles/${profileCreated}`, axiosConfig);
 
     if (profileResponse.status === 200) {
       console.log("✅ Profile List loaded");

@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{API_URL}}/v2/vendors/{{ApplicationVendorId}}/applications
+  url: {{API_URL}}/v3/vendors/{{ApplicationVendorId}}/applications
   body: none
   auth: inherit
 }
@@ -44,7 +44,7 @@ script:pre-request {
   }
 
   try {
-    const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+    const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
       "company": "Other Company",
       "namespacePrefixes": "uri://ed-fi.org",
       "contactName": "Other Application User",
@@ -70,7 +70,7 @@ script:pre-request {
       throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
     }
 
-    const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+    const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
         "applicationName": "Other Vendor Application",
         "vendorId": bru.getVar("OtherApplicationVendorId"),
         "claimSetName": "Ed-Fi Sandbox",

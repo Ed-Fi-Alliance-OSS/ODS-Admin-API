@@ -52,7 +52,7 @@ script:pre-request {
         const uniqueId = Math.random().toString(36).substring(2, 8);
         bru.setEnvVar("FILTERCLAIMSETSNAME", uniqueId);
         
-        const schemaResponse = await axios.post(`${API_URL}/v2/claimSets`, {
+        const schemaResponse = await axios.post(`${API_URL}/v3/claimSets`, {
           "name": `${uniqueId}`
         }, axiosConfig);
 
@@ -117,7 +117,7 @@ script:post-response {
   try {
 
     async function deleteClaimsetById(id) {
-        const schemaResponse = await axios.delete(`${API_URL}/v2/claimSets/${id}`, axiosConfig);
+        const schemaResponse = await axios.delete(`${API_URL}/v3/claimSets/${id}`, axiosConfig);
 
         if (schemaResponse.status === 200) {
           console.log(`✅ Schema ${id} deleted successfully`);

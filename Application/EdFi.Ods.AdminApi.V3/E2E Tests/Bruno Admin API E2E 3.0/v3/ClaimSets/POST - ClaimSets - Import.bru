@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/claimSets/import
+  url: {{API_URL}}/v3/claimSets/import
   body: json
   auth: inherit
 }
@@ -187,7 +187,7 @@ script:post-response {
 
   try {
     const claimSetCreated = bru.getVar("ImportedClaimSetId");
-    const claimsetsResponse = await axios.get(`${API_URL}/v2/claimSets/${claimSetCreated}` , axiosConfig);
+    const claimsetsResponse = await axios.get(`${API_URL}/v3/claimSets/${claimSetCreated}` , axiosConfig);
 
     if (claimsetsResponse.status === 200 && claimsetsResponse.data) {
       console.log("✅ ClaimSets found with ID:", claimsetsResponse.data.id);

@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
+  url: {{API_URL}}/v3/OdsInstanceDerivatives/{{CreatedOdsInstanceDerivativeId}}
   body: json
   auth: inherit
 }
@@ -52,7 +52,7 @@ script:pre-request {
   }
 
   try {
-    const odsInstanceDerivativesResponse = await axios.post(`${API_URL}/v2/odsInstanceDerivatives`, {
+    const odsInstanceDerivativesResponse = await axios.post(`${API_URL}/v3/odsInstanceDerivatives`, {
       "odsInstanceId": `${bru.getVar("ODSInstanceId")}`,
       "derivativeType": "Snapshot",
       "connectionString": `${bru.getEnvVar("connectionString")}`

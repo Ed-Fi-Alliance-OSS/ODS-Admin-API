@@ -52,7 +52,7 @@ script:pre-request {
 
   try {
     let previouscreatedClaimSetId = bru.getVar("CreatedClaimSetId");
-    const claimSetResponse = await axios.post(`${API_URL}/v2/claimSets/${previouscreatedClaimSetId}/resourceClaimActions`, {
+    const claimSetResponse = await axios.post(`${API_URL}/v3/claimSets/${previouscreatedClaimSetId}/resourceClaimActions`, {
       "resourceClaimId": 9,
       "resourceClaimActions": [ 
           {

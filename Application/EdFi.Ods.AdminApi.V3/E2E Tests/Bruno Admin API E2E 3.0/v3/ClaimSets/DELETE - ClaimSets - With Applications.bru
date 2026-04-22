@@ -5,7 +5,7 @@ meta {
 }
 
 delete {
-  url: {{API_URL}}/v2/claimSets/{{OtherExistingClaimSetId}}
+  url: {{API_URL}}/v3/claimSets/{{OtherExistingClaimSetId}}
   body: none
   auth: inherit
 }
@@ -44,7 +44,7 @@ script:pre-request {
   }
 
   try {
-    const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+    const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
       "company": "Other Company",
       "namespacePrefixes": "uri://ed-fi.org",
       "contactName": "Other Application User",
@@ -72,7 +72,7 @@ script:pre-request {
 
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
 
     if (odsResponse.status === 200) {
       console.log("✅ OdsInstance List loaded");
@@ -84,7 +84,7 @@ script:pre-request {
       throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     }
 
-    const applicationResponse = await axios.post(`${API_URL}/v2/applications`, {
+    const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
           "applicationName": "Other Vendor Application",
           "vendorId": bru.getVar("OtherApplicationVendorId"),
           "claimSetName": "Ed-Fi Sandbox",
@@ -113,7 +113,7 @@ script:pre-request {
     }
 
      let applicationId = bru.getVar("OtherApplicationId");
-     const applicationUpdatedResponse = await axios.put(`${API_URL}/v2/applications/${applicationId}`, {
+     const applicationUpdatedResponse = await axios.put(`${API_URL}/v3/applications/${applicationId}`, {
             "applicationName": "ClaimSet Test Vendor Application",
             "vendorId": bru.getVar("OtherApplicationVendorId"),
             "claimSetName": `Other Test ClaimSet ${bru.getVar("OtherClaimSetGUID")}`,

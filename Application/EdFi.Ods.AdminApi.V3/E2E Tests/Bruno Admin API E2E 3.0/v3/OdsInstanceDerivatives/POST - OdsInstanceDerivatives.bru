@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/OdsInstanceDerivatives/
+  url: {{API_URL}}/v3/OdsInstanceDerivatives/
   body: json
   auth: inherit
 }
@@ -54,7 +54,7 @@ script:pre-request {
   try {
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
 
     if (odsResponse.status === 200) {
       console.log("✅ OdsInstance List loaded");

@@ -36,7 +36,7 @@ public class ReadInformation : IFeature
 
         TenancyResult? tenancy = null;
 
-        if (adminApiMode is AdminApiMode.V2)
+        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
         {
             var isMultiTenant = options.Value.MultiTenancy;
             List<string> tenantNames;
@@ -58,6 +58,7 @@ public class ReadInformation : IFeature
         {
             AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, tenancy),
             AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, tenancy),
+            AdminApiMode.V3 => new InformationResult(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Version, EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Build, tenancy),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

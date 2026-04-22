@@ -63,7 +63,7 @@ script:pre-request {
         bru.setEnvVar("FILTERCONTACTNAME", contactName);
         bru.setEnvVar("FILTERCONTACTEMAILADDRESS", contactEmailAddress);
 
-        const vendorResponse = await axios.post(`${API_URL}/v2/vendors`, {
+        const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
           "company": `${company}`,
           "namespacePrefixes": `${namespacePrefixes}`,
           "contactName": `${contactName}`,
@@ -130,7 +130,7 @@ script:post-response {
 
   try {
     async function deleteVendorById(id) {
-        const schemaResponse = await axios.delete(`${API_URL}/v2/vendors/${id}`, axiosConfig);
+        const schemaResponse = await axios.delete(`${API_URL}/v3/vendors/${id}`, axiosConfig);
 
         if (schemaResponse.status === 200) {
           console.log(`✅ Vendor ${id} deleted successfully`);

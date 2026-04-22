@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}
+  url: {{API_URL}}/v3/OdsInstanceContexts/{{CreatedOdsInstanceContextId}}
   body: json
   auth: inherit
 }
@@ -57,7 +57,7 @@ script:post-response {
 
   try {
     const odsInstancesContextCreatedId = bru.getVar("CreatedOdsInstanceContextId");
-    const odsInstancesContextResponse = await axios.get(`${API_URL}/v2/OdsInstanceContexts/${odsInstancesContextCreatedId}`, axiosConfig);
+    const odsInstancesContextResponse = await axios.get(`${API_URL}/v3/OdsInstanceContexts/${odsInstancesContextCreatedId}`, axiosConfig);
 
     if (odsInstancesContextResponse.status === 200) {
       console.log("✅ odsInstancesContext created successfully");

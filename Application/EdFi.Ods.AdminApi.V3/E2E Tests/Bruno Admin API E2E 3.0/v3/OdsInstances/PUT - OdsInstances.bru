@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/odsInstances/{{CreatedOdsInstanceId}}
+  url: {{API_URL}}/v3/odsInstances/{{CreatedOdsInstanceId}}
   body: json
   auth: inherit
 }
@@ -57,7 +57,7 @@ script:post-response {
 
   try {
     const createdOdsId = bru.getVar("CreatedOdsInstanceId");
-    const odsResponse = await axios.get(`${API_URL}/v2/odsInstances/${createdOdsId}`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances/${createdOdsId}`, axiosConfig);
 
     if (odsResponse.status === 200) {
       console.log("✅ OdsInstance List loaded");

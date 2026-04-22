@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/vendors/{{CreatedVendorId}}
+  url: {{API_URL}}/v3/vendors/{{CreatedVendorId}}
   body: json
   auth: inherit
 }
@@ -57,7 +57,7 @@ script:post-response {
 
   try {
     const vendorCreated = bru.getVar("CreatedVendorId");
-    const vendorResponse = await axios.get(`${API_URL}/v2/vendors/${vendorCreated}`, axiosConfig);
+    const vendorResponse = await axios.get(`${API_URL}/v3/vendors/${vendorCreated}`, axiosConfig);
 
     if (vendorResponse.status === 200) {
       console.log("✅ Vendor loaded");

@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{API_URL}}/v2/applications/{{CreatedApplicationId}}
+  url: {{API_URL}}/v3/applications/{{CreatedApplicationId}}
   body: json
   auth: inherit
 }
@@ -63,7 +63,7 @@ script:post-response {
 
   try {
      let applicationId = bru.getVar("CreatedApplicationId");
-     const applicationResponse = await axios.get(`${API_URL}/v2/applications/${applicationId}`, axiosConfig);
+     const applicationResponse = await axios.get(`${API_URL}/v3/applications/${applicationId}`, axiosConfig);
 
     if (applicationResponse.status === 200) {
       console.log("✅ Application found successfully");
@@ -89,7 +89,7 @@ script:post-response {
     }
 
     let vendorId = bru.getVar("ApplicationVendorId");
-    const vendorResponse = await axios.get(`${API_URL}/v2/vendors/${vendorId}/applications`, axiosConfig);
+    const vendorResponse = await axios.get(`${API_URL}/v3/vendors/${vendorId}/applications`, axiosConfig);
 
     if (vendorResponse.status === 200) {
       console.log("✅ Vendor Not have an application associated");
