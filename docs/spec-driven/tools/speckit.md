@@ -1,5 +1,7 @@
 # Speckit Evaluation Details
 
+https://github.com/github/spec-kit
+
 ## Snapshot
 
 - Classification: AI-driven specification workflow tool

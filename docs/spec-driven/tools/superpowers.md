@@ -1,5 +1,7 @@
 # Superpowers Evaluation Details
 
+https://github.com/obra/superpowers
+
 ## Snapshot
 
 - Classification: Skill-based development framework with integrated quality gates

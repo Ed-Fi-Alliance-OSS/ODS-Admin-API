@@ -1,5 +1,7 @@
 # OpenSpec Evaluation Details
 
+https://github.com/Fission-AI/OpenSpec
+
 ## Snapshot
 
 - Classification: Specification proposal and application tool
