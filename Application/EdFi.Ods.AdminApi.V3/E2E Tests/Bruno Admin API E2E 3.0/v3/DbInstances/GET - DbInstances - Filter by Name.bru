@@ -1,0 +1,36 @@
+meta {
+  name: DbInstances - Filter by Name
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{API_URL}}/v3/dbinstances?name=Test DB Instance
+  body: none
+  auth: inherit
+}
+
+params:query {
+  name: Test DB Instance
+}
+
+script:post-response {
+  test("GET DbInstances Filter by Name: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("GET DbInstances Filter by Name: Response is an array", function () {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("GET DbInstances Filter by Name: All results match the name filter", function () {
+    const results = res.getBody();
+    results.forEach(function (item) {
+      expect(item.name).to.equal("Test DB Instance");
+    });
+  });
+}
+
+settings {
+  encodeUrl: true
+}

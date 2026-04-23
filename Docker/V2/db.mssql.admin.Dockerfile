@@ -27,13 +27,13 @@ FROM base AS setup
 
 USER root
 
-COPY Settings/V2/DB-Admin/mssql/healthcheck.sh /usr/local/bin/healthcheck.sh
+COPY Settings/shared/DB-Admin/mssql/healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN chmod +x /usr/local/bin/healthcheck.sh
 
-COPY Settings/V2/DB-Admin/mssql/init-database.sh /tmp/init/3-init-database.sh
-COPY Settings/V2/DB-Admin/mssql/entrypoint.sh /tmp/init/entrypoint.sh
+COPY Settings/shared/DB-Admin/mssql/init-database.sh /tmp/init/3-init-database.sh
+COPY Settings/shared/DB-Admin/mssql/entrypoint.sh /tmp/init/entrypoint.sh
 
-COPY Settings/V2/DB-Admin/mssql/run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
+COPY Settings/shared/DB-Admin/mssql/run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
 COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/MsSql/Structure/Admin/ /tmp/AdminApiScripts/Admin/MsSql
 COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/MsSql/Structure/Security/ /tmp/AdminApiScripts/Security/MsSql
 COPY Settings/dev/adminapi-test-seeddata.sql /tmp/AdminApiScripts/Admin/MsSql/adminapi-test-seeddata.sql
@@ -61,3 +61,4 @@ EXPOSE 1433
 USER edfi
 
 CMD ["/bin/bash", "/tmp/init/entrypoint.sh"]
+

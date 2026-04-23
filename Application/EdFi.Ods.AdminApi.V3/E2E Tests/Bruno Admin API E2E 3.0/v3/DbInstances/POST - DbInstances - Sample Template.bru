@@ -1,0 +1,36 @@
+meta {
+  name: DbInstances - Sample Template
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v3/dbinstances
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Test DB Instance - Sample",
+    "databaseTemplate": "Sample"
+  }
+}
+
+script:post-response {
+  test("POST DbInstances Sample: Status code is Accepted", function () {
+    expect(res.getStatus()).to.equal(202);
+  });
+
+  test("POST DbInstances Sample: Response includes location in header", function () {
+    expect(res.getHeaders()).to.have.property("location");
+    const id = res.getHeader("location").split("/")[2];
+    if (id) {
+      bru.setVar("CreatedDbInstanceIdSample", id);
+    }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

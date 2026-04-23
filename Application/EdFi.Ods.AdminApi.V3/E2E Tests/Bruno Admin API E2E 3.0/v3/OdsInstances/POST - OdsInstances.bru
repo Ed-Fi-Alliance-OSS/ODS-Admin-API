@@ -1,0 +1,48 @@
+meta {
+  name: OdsInstances
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v3/odsInstances/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Test-OdsInstance-{{OdsInstanceGUID}}",
+      "instanceType": "OdsInstance",
+      "connectionString": "{{connectionString}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("OdsInstanceGUID", bru.interpolate('{{$guid}}'));
+  
+}
+
+script:post-response {
+  test("POST OdsInstances: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST OdsInstances: Response includes location in header", function () {
+      expect(res.getHeaders()).to.have.property("location");
+      const location = res.getHeader("location");
+      const segments = location.split("/").filter(function (segment) {
+          return segment;
+      });
+      const id = segments[segments.length - 1];
+      if(id)
+      {
+          bru.setVar("CreatedOdsInstanceId", id);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

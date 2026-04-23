@@ -6,7 +6,7 @@
 services:
   db-ods-tenant1:
     build:
-      context: ../../../../Settings/V2/DB-Ods/mssql/
+      context: ../../../../Settings/shared/DB-Ods/mssql/
       dockerfile: Dockerfile
       args:
         ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}
@@ -32,7 +32,7 @@ services:
 
   db-ods-tenant2:
     build:
-      context: ../../../../Settings/V2/DB-Ods/mssql/
+      context: ../../../../Settings/shared/DB-Ods/mssql/
       dockerfile: Dockerfile
       args:
         ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}

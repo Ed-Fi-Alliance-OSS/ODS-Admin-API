@@ -1,0 +1,31 @@
+meta {
+  name: DbInstances - Delete - Not Found
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{API_URL}}/v3/dbinstances/0
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE DbInstance Not Found: Status code is Not Found", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  const response = res.getBody();
+
+  test("DELETE DbInstance Not Found: Response matches error format", function () {
+    expect(response).to.have.property("title");
+  });
+
+  test("DELETE DbInstance Not Found: Response title is helpful and accurate", function () {
+    expect(response.title.toLowerCase()).to.contain("not found");
+  });
+}
+
+settings {
+  encodeUrl: true
+}
