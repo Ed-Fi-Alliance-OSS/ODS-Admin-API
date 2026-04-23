@@ -24,7 +24,7 @@ script:post-response {
 
   test("POST DbInstances Sample: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
-    const id = res.getHeader("location").split("/")[2];
+    const id = res.getHeader("location").split("/").pop();
     if (id) {
       bru.setVar("CreatedDbInstanceIdSample", id);
     }

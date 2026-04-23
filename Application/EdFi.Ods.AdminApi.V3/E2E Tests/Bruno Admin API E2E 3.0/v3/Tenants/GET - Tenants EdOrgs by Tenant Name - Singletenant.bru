@@ -50,7 +50,7 @@ script:pre-request {
       }, axiosConfig);
   
       if (response.status === 201 && response.headers.location) {
-        const id = response.headers.location.split("/")[2];
+        const id = response.headers.location.split("/").pop();
         bru.setVar("created-odsInstanceId", id);
         console.log(`✅ ${objectName} created successfully with ID:`, id);
       } else {

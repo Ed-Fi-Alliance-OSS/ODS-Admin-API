@@ -25,8 +25,7 @@ script:post-response {
   test("POST DbInstances For Delete Test: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
     const location = res.getHeader("location");
-    const parts = location.split("/");
-    const id = parts[parts.length - 1];
+      const id = location.split("/").pop();
     if (id) {
       bru.setVar("FreshPendingDbInstanceId", id);
     }
