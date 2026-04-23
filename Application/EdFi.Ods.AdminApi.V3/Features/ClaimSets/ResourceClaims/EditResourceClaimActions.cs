@@ -39,7 +39,7 @@ public class EditResourceClaimActions : IFeature
         request.ClaimSetId = claimSetId;
         await validator.GuardAsync(request);
         await ExecuteHandle(editResourcesOnClaimSetCommand, request);
-        return Results.Ok();
+        return Results.Created($"/claimSets/{claimSetId}/resourceClaimActions/{request.ResourceClaimId}", null);
     }
 
     internal static async Task<IResult> HandleEditResourceClaims(ResourceClaimClaimSetValidator validator,

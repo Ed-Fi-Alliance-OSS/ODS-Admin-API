@@ -27,8 +27,8 @@ body:json {
 }
 
 script:post-response {
-  test("POST ResourceClaimAction: Status code is OK", function () {
-      expect(res.getStatus()).to.equal(200);
+  test("POST ResourceClaimAction: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
   });
   
 }

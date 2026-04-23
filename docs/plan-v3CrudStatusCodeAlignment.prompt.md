@@ -32,6 +32,46 @@ Align Application/EdFi.Ods.AdminApi.V3 standard CRUD endpoints to consistent suc
 27. Documentation handoff
 28. Create a repository plan/summary markdown artifact (recommended path: docs/v3-status-code-alignment-plan.md) that records: endpoints changed, intentional exceptions retained, Bruno files updated, and per-phase verification evidence. *depends on completion of phases 1-4*
 
+**Phase 1 Execution Pack (POST -> 201)**
+
+Goal
+- Ensure all standard create endpoints in V3 return 201 Created.
+
+In scope
+- Standard CRUD POST endpoints only under Application/EdFi.Ods.AdminApi.V3/Features.
+
+Out of scope (preserve)
+- POST /v3/dbInstances -> 202 Accepted.
+- POST /v3/odsInstances/edOrgs/refresh -> 202 Accepted.
+- POST /v3/odsInstances/{instanceId}/edOrgs/refresh -> 202 Accepted.
+- ClaimSet authorization-strategy action POST endpoints -> 200 OK.
+
+Execution steps
+1. Audit MapPost handlers for response metadata and returned result type.
+2. If any standard CRUD create endpoint is not 201, correct endpoint mapping and response result.
+3. Update matching Bruno success assertions under Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3.
+4. Re-run affected POST Bruno requests plus related negative-path checks (400/404).
+
+Expected outcome
+- No behavioral drift in non-POST endpoints.
+- Standard CRUD POST success responses are uniformly 201.
+- Known async/action exceptions unchanged.
+
+Checkpoint gate
+- Stop after Phase 1 for user validation/tests and commit before Phase 2.
+
+**Exception cases to preserve**
+- POST /v3/dbInstances remains 202 Accepted because it is an async/queued long-running operation, not synchronous resource creation.
+- POST /v3/odsInstances/edOrgs/refresh remains 202 Accepted because it triggers async refresh processing.
+- POST /v3/odsInstances/{instanceId}/edOrgs/refresh remains 202 Accepted because it triggers async refresh processing for a scoped instance.
+- POST /v3/claimSets/{claimSetId}/resourceClaimActions/{resourceClaimId}/overrideAuthorizationStrategy remains 200 OK because it is a command/action endpoint with non-CRUD behavior.
+- POST /v3/claimSets/{claimSetId}/resourceClaimActions/{resourceClaimId}/resetAuthorizationStrategies remains 200 OK because it is a command/action endpoint with non-CRUD behavior.
+
+**How to treat exceptions during phases**
+- Do not modify response codes or response bodies for these endpoints in phases 1-4.
+- Do not change corresponding Bruno assertions for these endpoints unless there is an unrelated defect.
+- If additional non-CRUD endpoints are discovered, classify them before changing status codes and add them to this list.
+
 **Relevant files**
 - c:/GAP/EdFi/ODS-Admin-API/ODS-Admin-API/Application/EdFi.Ods.AdminApi.V3/Features/Applications/EditApplication.cs - PUT currently mapped as 200; expected Phase 3 update to 204.
 - c:/GAP/EdFi/ODS-Admin-API/ODS-Admin-API/Application/EdFi.Ods.AdminApi.V3/Features/ApiClients/EditApiClient.cs - PUT currently mapped as 200; expected Phase 3 update to 204.
