@@ -26,12 +26,17 @@ script:post-response {
   
   test("POST Vendors: Response includes location in header", function () {
       expect(res.getHeaders()).to.have.property("location");
-      const id = res.getHeader("location").split("/")[2];
+      const id = res.getHeader("location").split("/").pop();
       if(id)
       {
           bru.setVar("CreatedVendorId", id);
       }
   });
+
+    test("POST Vendors: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 

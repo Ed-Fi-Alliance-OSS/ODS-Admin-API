@@ -8,8 +8,10 @@ using Swashbuckle.AspNetCore.Annotations;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 namespace EdFi.Ods.AdminApi.V3.Features.OdsInstanceContext;
 
 public class AddOdsInstanceContext : IFeature
@@ -23,11 +25,12 @@ public class AddOdsInstanceContext : IFeature
            .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, AddOdsInstanceContextRequest request)
+    public static async Task<IResult> Handle(Validator validator, IAddOdsInstanceContextCommand addOdsInstanceContextCommand, AddOdsInstanceContextRequest request, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         var addedOdsInstanceContext = addOdsInstanceContextCommand.Execute(request);
-        return Results.Created($"/odsInstanceContexts/{addedOdsInstanceContext.OdsInstanceContextId}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/odsInstanceContexts/{addedOdsInstanceContext.OdsInstanceContextId}");
+        return Results.Created(absoluteLocation, null);
     }
 
 

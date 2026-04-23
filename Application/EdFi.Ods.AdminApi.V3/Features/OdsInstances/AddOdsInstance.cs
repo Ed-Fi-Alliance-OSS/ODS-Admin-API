@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -33,13 +34,15 @@ public class AddOdsInstance : IFeature
         IAddOdsInstanceCommand addOdsInstanceCommand,
         ISymmetricStringEncryptionProvider encryptionProvider,
         IOptions<AppSettings> options,
-        AddOdsInstanceRequest request)
+        AddOdsInstanceRequest request,
+        HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         string encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
         request.ConnectionString = encryptionProvider.Encrypt(request.ConnectionString, Convert.FromBase64String(encryptionKey));
         var addedProfile = addOdsInstanceCommand.Execute(request);
-        return Results.Created($"/odsInstances/{addedProfile.OdsInstanceId}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/odsInstances/{addedProfile.OdsInstanceId}");
+        return Results.Created(absoluteLocation, null);
     }
 
     [SwaggerSchema(Title = "AddOdsInstanceRequest")]

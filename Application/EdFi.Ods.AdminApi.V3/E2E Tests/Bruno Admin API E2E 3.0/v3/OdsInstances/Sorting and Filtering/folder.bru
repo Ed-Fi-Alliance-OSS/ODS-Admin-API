@@ -62,8 +62,7 @@ script:pre-request {
         if (odsResponse.status === 201) {
           console.log(`✅ OdsInstance ${i} Created Successfully`);
           let location = odsResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          let odsInstanceId = parseInt(matches[0], 10);
+          let odsInstanceId = parseInt(location.split("/").pop(), 10);
           odsInstancesToDelete.push(odsInstanceId);
         } else {
           console.log(`❌ Failed to post odsInstances ${i}`);

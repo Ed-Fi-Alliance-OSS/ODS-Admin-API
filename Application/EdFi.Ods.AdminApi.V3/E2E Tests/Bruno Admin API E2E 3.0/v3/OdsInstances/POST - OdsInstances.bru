@@ -31,15 +31,17 @@ script:post-response {
   test("POST OdsInstances: Response includes location in header", function () {
       expect(res.getHeaders()).to.have.property("location");
       const location = res.getHeader("location");
-      const segments = location.split("/").filter(function (segment) {
-          return segment;
-      });
-      const id = segments[segments.length - 1];
+      const id = location.split("/").pop();
       if(id)
       {
           bru.setVar("CreatedOdsInstanceId", id);
       }
   });
+
+    test("POST OdsInstances: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 

@@ -25,11 +25,15 @@ script:post-response {
   test("POST DbInstances: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
     const location = res.getHeader("location");
-    const pathSegments = location.split("?")[0].split("/").filter(Boolean);
-    const id = pathSegments[pathSegments.length - 1];
+      const id = location.split("/").pop();
     if (id) {
       bru.setVar("CreatedDbInstanceId", id);
     }
+  });
+
+  test("POST DbInstances: Location header is absolute url", function () {
+    const location = res.getHeaders().location;
+    expect(location).to.match(/^https?:\/\/.+/);
   });
 }
 

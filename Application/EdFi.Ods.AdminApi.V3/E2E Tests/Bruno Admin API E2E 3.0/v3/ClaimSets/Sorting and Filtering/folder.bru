@@ -59,8 +59,7 @@ script:pre-request {
         if (schemaResponse.status === 201) {
           console.log(`✅ Schema ${i} created successfully`);
           let location = schemaResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          id = parseInt(matches[0], 10);
+          id = parseInt(location.split("/").pop(), 10);
           claimsetsToDelete.push(id)
 
         } else {

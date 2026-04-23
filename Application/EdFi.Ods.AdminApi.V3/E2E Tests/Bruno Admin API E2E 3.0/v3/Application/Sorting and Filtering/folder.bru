@@ -70,8 +70,7 @@ script:pre-request {
         if (schemaResponse.status === 201) {
           console.log(`✅ Schema ${i} created successfully`);
           let location = schemaResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          id = parseInt(matches[0], 10);
+          id = parseInt(location.split("/").pop(), 10);
           claimsetsToDelete.push(id)
 
         } else {
@@ -91,8 +90,7 @@ script:pre-request {
         if (vendorResponse.status === 201) {
           console.log(`✅ Vendor ${i} created successfully`);
           let location = vendorResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          id = parseInt(matches[0], 10);
+          id = parseInt(location.split("/").pop(), 10);
           vendorId = id;
           vendorsToDelete.push(id)
         } else {
@@ -111,8 +109,7 @@ script:pre-request {
         if (odsResponse.status === 201) {
           console.log(`✅ OdsInstance ${i} Created Successfully`);
           let location = odsResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          id = parseInt(matches[0], 10);
+          id = parseInt(location.split("/").pop(), 10);
           odsInstanceId = id;
           odsintancesToDelete.push(id)
         } else {
@@ -135,8 +132,7 @@ script:pre-request {
         if (applicationResponse.status === 201) {
           console.log(`✅ Application ${i} created successfully`);
           let location = applicationResponse.headers.get('location');
-          let matches = location.match(/(\d+)/);
-          let id = parseInt(matches[0], 10);
+          let id = parseInt(location.split("/").pop(), 10);
           applicationsToDelete.push(id)
         } else {
           console.log(`❌ Failed to create application ${i}`);

@@ -10,6 +10,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.V3.Features.Vendors;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -19,6 +20,14 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
     [TestFixture]
     public class AddVendorTests
     {
+        private static HttpContext CreateHttpContext()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("localhost", 7214);
+            return httpContext;
+        }
+
         [Test]
         public async Task Handle_WithValidRequest_ReturnsCreatedAndPersistsVendor()
         {
@@ -36,8 +45,9 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
                 ContactName = "Alice",
                 ContactEmailAddress = "alice@acme.org"
             };
+            var httpContext = CreateHttpContext();
 
-            var result = await AddVendor.Handle(validator, command, request);
+            var result = await AddVendor.Handle(validator, command, request, httpContext);
 
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Created>();
             (await usersContext.Vendors.AnyAsync(v => v.VendorName == "Acme Vendor")).ShouldBeTrue();
@@ -60,8 +70,9 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
                 ContactName = "Alice",
                 ContactEmailAddress = "alice@acme.org"
             };
+            var httpContext = CreateHttpContext();
 
-            Should.ThrowAsync<ValidationException>(async () => await AddVendor.Handle(validator, command, request));
+            Should.ThrowAsync<ValidationException>(async () => await AddVendor.Handle(validator, command, request, httpContext));
         }
     }
 }

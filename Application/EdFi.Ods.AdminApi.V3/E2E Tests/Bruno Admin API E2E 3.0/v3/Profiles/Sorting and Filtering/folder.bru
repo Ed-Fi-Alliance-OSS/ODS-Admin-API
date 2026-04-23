@@ -61,8 +61,7 @@ script:pre-request {
         if (profileResponse.status === 201) {
           console.log(`✅ Profile ${i} Created Successfully`);
           let location = profileResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          let profileId = parseInt(matches[0], 10);
+          let profileId = parseInt(location.split("/").pop(), 10);
           profilesToDelete.push(profileId);
         } else {
           console.log(`❌ Failed to post profile ${i}`);

@@ -73,8 +73,7 @@ script:pre-request {
         if (vendorResponse.status === 201) {
           console.log(`✅ Vendor ${i} created successfully`);
           let location = vendorResponse.headers.get('Location');
-          let matches = location.match(/(\d+)/);
-          id = parseInt(matches[0], 10);
+          id = parseInt(location.split("/").pop(), 10);
           vendorId = id;
           vendorsToDelete.push(id)
         } else {

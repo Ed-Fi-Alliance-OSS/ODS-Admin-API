@@ -112,6 +112,11 @@ script:post-response {
   test("POST Applications: Response includes location in header", function () {
       expect(res.getHeaders()).to.have.property("location");
   });
+
+    test("POST Applications: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
   test("POST Applications: Response result includes application key and secret", function () {
       expect(result).to.have.property("id");

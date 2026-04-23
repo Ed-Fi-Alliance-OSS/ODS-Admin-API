@@ -78,12 +78,17 @@ script:post-response {
   
   test("POST ODS Instance Derivatives: Response includes location in header", function () {
       expect(res.getHeaders()).to.have.property("location".toLowerCase());
-      const id = res.getHeader("location").split("/")[2];
+      const id = res.getHeader("location").split("/").pop();
       if(id)
       {
           bru.setVar("CreatedOdsInstanceDerivativeId", id);
       }
   });
+
+    test("POST ODS Instance Derivatives: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
   
 }
 

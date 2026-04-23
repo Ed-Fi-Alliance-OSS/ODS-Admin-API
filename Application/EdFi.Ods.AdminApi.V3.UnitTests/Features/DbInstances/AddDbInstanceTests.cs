@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.V3.Features.DbInstances;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,14 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DbInstances;
 [TestFixture]
 public class AddDbInstanceTests
 {
+    private static HttpContext CreateHttpContext()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("localhost", 7214);
+        return httpContext;
+    }
+
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
@@ -49,8 +58,9 @@ public class AddDbInstanceTests
             Name = "My DB Instance",
             DatabaseTemplate = "Minimal"
         };
+        var httpContext = CreateHttpContext();
 
-        var result = await AddDbInstance.Handle(validator, command, request);
+        var result = await AddDbInstance.Handle(validator, command, request, httpContext);
 
         result.ShouldBeOfType<Accepted>();
     }
@@ -66,8 +76,9 @@ public class AddDbInstanceTests
             Name = "My DB Instance",
             DatabaseTemplate = "Sample"
         };
+        var httpContext = CreateHttpContext();
 
-        await AddDbInstance.Handle(validator, command, request);
+        await AddDbInstance.Handle(validator, command, request, httpContext);
 
         context.DbInstances.Any(d => d.Name == "My DB Instance").ShouldBeTrue();
     }
@@ -83,8 +94,9 @@ public class AddDbInstanceTests
             Name = string.Empty,
             DatabaseTemplate = "Minimal"
         };
+        var httpContext = CreateHttpContext();
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request, httpContext));
     }
 
     [Test]
@@ -98,8 +110,9 @@ public class AddDbInstanceTests
             Name = null,
             DatabaseTemplate = "Minimal"
         };
+        var httpContext = CreateHttpContext();
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request, httpContext));
     }
 
     [Test]
@@ -113,8 +126,9 @@ public class AddDbInstanceTests
             Name = new string('a', 101),
             DatabaseTemplate = "Minimal"
         };
+        var httpContext = CreateHttpContext();
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request, httpContext));
     }
 
     [Test]
@@ -128,8 +142,9 @@ public class AddDbInstanceTests
             Name = "My DB Instance",
             DatabaseTemplate = string.Empty
         };
+        var httpContext = CreateHttpContext();
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request, httpContext));
     }
 
     [Test]
@@ -143,8 +158,9 @@ public class AddDbInstanceTests
             Name = "My DB Instance",
             DatabaseTemplate = null
         };
+        var httpContext = CreateHttpContext();
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request, httpContext));
     }
 
     [Test]
@@ -158,8 +174,9 @@ public class AddDbInstanceTests
             Name = "My DB Instance",
             DatabaseTemplate = "InvalidTemplate"
         };
+        var httpContext = CreateHttpContext();
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDbInstance.Handle(validator, command, request, httpContext));
     }
 }
 

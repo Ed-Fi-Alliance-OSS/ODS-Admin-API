@@ -129,6 +129,11 @@ script:post-response {
   test("POST ApiClients: Response includes location in header", function () {
       expect(res.getHeaders()).to.have.property("location");
   });
+
+  test("POST ApiClients: Location header is absolute url", function () {
+    const location = res.getHeaders().location;
+    expect(location).to.match(/^https?:\/\/.+/);
+  });
   
   test("POST ApiClients: Response result includes api client key and secret", function () {
       expect(result).to.have.property("id");
