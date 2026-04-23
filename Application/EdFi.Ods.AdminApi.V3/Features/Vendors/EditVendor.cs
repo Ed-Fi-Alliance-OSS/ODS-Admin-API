@@ -20,7 +20,7 @@ public class EditVendor : IFeature
     {
         AdminApiEndpointBuilder.MapPut(endpoints, "/vendors/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -30,7 +30,7 @@ public class EditVendor : IFeature
         request.Id = id;
         await validator.GuardAsync(request);
         editVendorCommand.Execute(request);
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     [SwaggerSchema(Title = "EditVendorRequest")]

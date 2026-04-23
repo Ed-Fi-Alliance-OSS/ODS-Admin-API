@@ -22,16 +22,11 @@ public class EditClaimSet : IFeature
     {
         AdminApiEndpointBuilder.MapPut(endpoints, "/claimSets/{id}", Handle)
         .WithDefaultSummaryAndDescription()
-        .WithRouteOptions(b => b.WithResponseCode(200))
+        .WithRouteOptions(b => b.WithResponseCode(204))
         .BuildForVersions(AdminApiVersions.V3);
     }
 
     public async Task<IResult> Handle(Validator validator, IEditClaimSetCommand editClaimSetCommand,
-        UpdateResourcesOnClaimSetCommand updateResourcesOnClaimSetCommand,
-        IGetClaimSetByIdQuery getClaimSetByIdQuery,
-        IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
-        IGetApplicationsByClaimSetIdQuery getApplications,
-        IAuthStrategyResolver strategyResolver,
         EditClaimSetRequest request, int id)
     {
         request.Id = id;
@@ -51,7 +46,7 @@ public class EditClaimSet : IFeature
         {
             throw new ValidationException(new[] { new ValidationFailure(nameof(id), exception.Message) });
         }
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     [SwaggerSchema(Title = "EditClaimSetRequest")]

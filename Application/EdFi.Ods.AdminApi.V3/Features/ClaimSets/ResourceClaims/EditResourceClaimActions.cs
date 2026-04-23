@@ -25,7 +25,7 @@ public class EditResourceClaimActions : IFeature
 
         AdminApiEndpointBuilder.MapPut(endpoints, "/claimSets/{claimSetId}/resourceClaimActions/{resourceClaimId}", HandleEditResourceClaims)
        .WithSummaryAndDescription("Updates the ResourceClaimActions to a specific resource claim on a claimset.", "Updates  the resourceClaimActions to a  specific resource claim on a claimset. At least one action should be enabled. Valid actions are read, create, update, delete, readchanges.")
-       .WithRouteOptions(b => b.WithResponseCode(200))
+        .WithRouteOptions(b => b.WithResponseCode(204))
        .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -54,7 +54,7 @@ public class EditResourceClaimActions : IFeature
 
         await ExecuteHandle(editResourcesOnClaimSetCommand, request);
 
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     private static async Task ExecuteHandle(EditResourceOnClaimSetCommand editResourcesOnClaimSetCommand, IResourceClaimOnClaimSetRequest request)

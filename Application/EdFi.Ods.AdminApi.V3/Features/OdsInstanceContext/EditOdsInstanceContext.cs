@@ -21,7 +21,7 @@ public class EditOdsInstanceContext : IFeature
         AdminApiEndpointBuilder
             .MapPut(endpoints, "/odsInstanceContexts/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -30,7 +30,7 @@ public class EditOdsInstanceContext : IFeature
         request.Id = id;
         await validator.GuardAsync(request);
         editOdsInstanceContextCommand.Execute(request);
-        return Results.Ok();
+        return Results.NoContent();
     }
 
 

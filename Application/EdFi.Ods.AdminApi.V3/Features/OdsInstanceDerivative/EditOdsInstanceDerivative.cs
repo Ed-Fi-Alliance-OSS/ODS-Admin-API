@@ -24,7 +24,7 @@ public class EditOdsInstanceDerivative : IFeature
         AdminApiEndpointBuilder
             .MapPut(endpoints, "/odsInstanceDerivatives/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -34,7 +34,7 @@ public class EditOdsInstanceDerivative : IFeature
         SetCurrentConnectionString(db, request, id);
         await validator.GuardAsync(request);
         editOdsInstanceDerivativeCommand.Execute(request);
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     private static void SetCurrentConnectionString(IUsersContext db, EditOdsInstanceDerivativeRequest request, int id)
