@@ -26,13 +26,14 @@ public abstract class SandboxProvisionerBase : ISandboxProvisioner
         CommandTimeout = int.TryParse(_configuration.GetSection("SandboxAdminSQLCommandTimeout").Value, out int timeout)
             ? timeout
             : 30;
-
-        ConnectionString = _connectionStringsProvider.GetConnectionString("EdFi_Master");
     }
 
     protected int CommandTimeout { get; }
 
-    protected string ConnectionString { get; }
+    // Evaluated at call time (not cached in a field) so that multi-tenant jobs, which set the tenant
+    // context immediately before provisioning, always receive the connection string for the active tenant.
+    // Using a field would capture the startup value (typically localhost), which is wrong in Docker.
+    protected string ConnectionString => _connectionStringsProvider.GetConnectionString("EdFi_Master");
 
     public void AddSandbox(string sandboxKey, SandboxType sandboxType)
         => AddSandboxAsync(sandboxKey, sandboxType).WaitSafely();

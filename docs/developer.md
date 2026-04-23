@@ -15,6 +15,7 @@
   * [Application Architecture](#application-architecture)
     * [Database Layer](#database-layer)
     * [Validation](#validation)
+    * [DbInstance Provisioning Jobs](#dbinstance-provisioning-jobs)
 
 ## Development Pre-Requisites
 
@@ -236,3 +237,20 @@ credentials.
 
 Validation of API requests is configured via
 [FluentValidation](https://docs.fluentvalidation.net/en/latest/).
+
+### DbInstance Provisioning Jobs
+
+The `POST /v2/dbinstances` flow is asynchronous. The endpoint persists a `Pending` `DbInstance`, schedules `CreateInstanceJob`, and returns `202 Accepted` immediately. A separate recurring `CreatePendingDbInstancesDispatcherJob` handles sweep-based recovery and capped retries for records that remain in `Pending` or move to `Error`.
+
+Use [design/DBINSTANCE-PROVISIONING-JOBS.md](design/DBINSTANCE-PROVISIONING-JOBS.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
+
+Feature-specific prerequisites and configuration:
+
+* `AppSettings:adminApiMode` must be `v2` so startup scheduling registers the recurring dispatcher.
+* Admin API DB migrations must be applied because the flow relies on `adminapi.DbInstances` and `adminapi.JobStatuses`.
+* `AppSettings:EncryptionKey` must be a valid base64-encoded key.
+* `ConnectionStrings:EdFi_Ods` supplies the connection-string shape used to generate encrypted `OdsInstance.ConnectionString` values.
+* For PostgreSQL, `ConnectionStrings:EdFi_Master` should point at the maintenance database `postgres`, not an ODS database.
+* `AppSettings:CreateDbInstancesSweepIntervalInMins` controls dispatcher cadence.
+* `AppSettings:CreateDbInstancesMaxRetryAttempts` controls retry capping.
+* When `AppSettings:MultiTenancy` is enabled, the active tenant must have tenant-specific connection strings available before the worker runs.

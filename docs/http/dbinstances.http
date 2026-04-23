@@ -1,12 +1,14 @@
 @adminapi_url=https://localhost:7214
 @adminapi_client=adminapi_client2
 @adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+@tenant=tenant2
 
 ### Get a token
 # @name tokenRequest
 POST {{adminapi_url}}/connect/token
 Content-Type: application/x-www-form-urlencoded
 Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+Tenant: {{tenant}}
 
 grant_type=client_credentials&scope=edfi_admin_api/full_access
 
@@ -15,69 +17,99 @@ grant_type=client_credentials&scope=edfi_admin_api/full_access
 
 
 ### Create a DB instance (Minimal template)
-# @name createDbInstance
+# @name createDbInstanceMinimal
 POST {{adminapi_url}}/v2/dbinstances
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 {
-  "name": "My DB Instance",
+  "name": "My DB Instance 5",
   "databaseTemplate": "Minimal"
 }
 
 ### Create a DB instance (Sample template)
+# @name createDbInstanceSample
 POST {{adminapi_url}}/v2/dbinstances
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 {
-  "name": "My Sample DB Instance",
+  "name": "My Sample DB Instance 3",
   "databaseTemplate": "Sample"
 }
 
-###
-@createdDbInstanceId={{createDbInstance.response.headers.location.split('/')[2]}}
+### DELETE a DB instance (Minimal)
+DELETE {{adminapi_url}}/v2{{createDbInstanceMinimal.response.headers.location}}
+
+### DELETE a DB instance (Sample)
+DELETE {{adminapi_url}}/v2{{createDbInstanceSample.response.headers.location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 
 ### Get all DB instances
 GET {{adminapi_url}}/v2/dbinstances
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 ### Get all DB instances with pagination
 GET {{adminapi_url}}/v2/dbinstances?offset=0&limit=10
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 ### Get all DB instances filtered by name
 GET {{adminapi_url}}/v2/dbinstances?name=My DB Instance
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
-### Get DB instance by ID
-GET {{adminapi_url}}/v2/dbinstances/{{createdDbInstanceId}}
+### Get DB instance by ID (Minimal)
+GET {{adminapi_url}}/v2{{createDbInstanceMinimal.response.headers.location}}
+
+### Get DB instance by ID (Sample)
+GET {{adminapi_url}}/v2{{createDbInstanceSample.response.headers.location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 ### Get DB instance by ID - not found
 GET {{adminapi_url}}/v2/dbinstances/0
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 ### Create DB instance - invalid (missing required fields)
 POST {{adminapi_url}}/v2/dbinstances
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 {
   "name": "",
   "databaseTemplate": ""
 }
 
+### Create DB instance - invalid (invalid name)
+POST {{adminapi_url}}/v2/dbinstances
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: {{tenant}}
+
+{
+  "name": "with-invalid.characters",
+  "databaseTemplate": "Minimal"
+}
+
 ### Create DB instance - invalid template
 POST {{adminapi_url}}/v2/dbinstances
 Content-Type: application/json
 Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 {
   "name": "My DB Instance",

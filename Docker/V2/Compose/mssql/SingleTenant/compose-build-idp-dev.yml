@@ -55,6 +55,8 @@ services:
       Authentication__SigningKey: ${SIGNING_KEY}
       ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Ods: "Data Source=db-admin,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Master: "Data Source=db-admin,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       EnableDockerEnvironment: true
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}

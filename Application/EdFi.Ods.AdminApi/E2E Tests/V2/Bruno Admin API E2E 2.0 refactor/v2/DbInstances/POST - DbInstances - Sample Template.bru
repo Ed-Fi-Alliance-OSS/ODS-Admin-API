@@ -4,6 +4,12 @@ meta {
   seq: 4
 }
 
+script:pre-request {
+  const sampleDbInstanceName = `Test DB Instance Sample ${Date.now()}`;
+  bru.setVar("SampleDbInstanceName", sampleDbInstanceName);
+  console.log(`Using unique Sample DbInstance name: ${sampleDbInstanceName}`);
+}
+
 post {
   url: {{API_URL}}/v2/dbinstances
   body: json
@@ -12,19 +18,28 @@ post {
 
 body:json {
   {
-    "name": "Test DB Instance - Sample",
+    "name": "{{SampleDbInstanceName}}",
     "databaseTemplate": "Sample"
   }
 }
 
 script:post-response {
-  test("POST DbInstances Sample: Status code is Accepted", function () {
-    expect(res.getStatus()).to.equal(202);
-  });
+  const expectedStatus = 202;
+  const responseStatus = res.getStatus();
 
+  if (responseStatus !== expectedStatus) {
+    console.log("❌ POST DbInstances Sample request failed");
+    console.log("Status:", responseStatus);
+    console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
+  }
+
+  test("POST DbInstances Sample: Status code is Accepted", function () {
+    expect(responseStatus).to.equal(expectedStatus);
+  });
+  
   test("POST DbInstances Sample: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
-    const id = res.getHeader("location").split("/")[2];
+    const id = res.getHeader("location").split("/").pop();
     if (id) {
       bru.setVar("CreatedDbInstanceIdSample", id);
     }
@@ -33,4 +48,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

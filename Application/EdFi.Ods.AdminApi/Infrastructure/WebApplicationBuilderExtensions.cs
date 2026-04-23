@@ -757,6 +757,8 @@ public static class WebApplicationBuilderExtensions
         }
         else
         {
+            webApplicationBuilder.Services.AddTransient<CreateInstanceJob>();
+            webApplicationBuilder.Services.AddTransient<CreatePendingDbInstancesDispatcherJob>();
             webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
             webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
             webApplicationBuilder.Services.AddTransient<
@@ -772,7 +774,7 @@ public static class WebApplicationBuilderExtensions
 
         if (parsedDatabaseEngine == DatabaseEngineEnum.PostgreSql)
         {
-            webApplicationBuilder.Services.AddSingleton<
+            webApplicationBuilder.Services.AddTransient<
                 IConfigConnectionStringsProvider,
                 ConfigConnectionStringsProvider
             >();
@@ -789,7 +791,7 @@ public static class WebApplicationBuilderExtensions
         }
         else if (parsedDatabaseEngine == DatabaseEngineEnum.SqlServer)
         {
-            webApplicationBuilder.Services.AddSingleton<
+            webApplicationBuilder.Services.AddTransient<
                 IConfigConnectionStringsProvider,
                 ConfigConnectionStringsProvider
             >();
