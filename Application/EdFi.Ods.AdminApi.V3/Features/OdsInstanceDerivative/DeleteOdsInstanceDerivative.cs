@@ -16,14 +16,14 @@ public class DeleteOdsInstanceDerivative : IFeature
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstanceDerivatives/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static Task<IResult> Handle(IDeleteOdsInstanceDerivativeCommand deleteOdsInstanceDerivativeCommand, int id)
     {
         deleteOdsInstanceDerivativeCommand.Execute(id);
-        return Task.FromResult(Results.Ok());
+        return Task.FromResult(Results.NoContent());
     }
 }
 

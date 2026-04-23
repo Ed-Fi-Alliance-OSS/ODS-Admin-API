@@ -11,34 +11,19 @@ delete {
 }
 
 script:post-response {
-  test("DELETE ApiClients: Status code is OK", function () {
-      expect(res.getStatus()).to.equal(200);
+  test("DELETE ApiClients: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
   });
-  
+
   const response = res.getBody();
-  
-  test("DELETE ApiClients: Response matches success format", function () {
-      expect(response).to.have.property("title");
-  });
-  
-  test("DELETE ApiClients: Response title is helpful and accurate", function () {
-      expect(response.title.toLowerCase()).to.contain("apiclient");
-      expect(response.title.toLowerCase()).to.contain("deleted");
-  });
-  
   const Ajv = require('ajv');
   const ajv = new Ajv();
   const DeleteApiClientsSchema = {
-    "type": "object",
-    "properties": {
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "title"
+    oneOf: [
+      { type: "null" },
+      { type: "string", maxLength: 0 }
     ]
-  }
+  };
   
   test("DELETE ApiClients: Validation Schema Response", () => {
       const valid = ajv.validate(DeleteApiClientsSchema, response);

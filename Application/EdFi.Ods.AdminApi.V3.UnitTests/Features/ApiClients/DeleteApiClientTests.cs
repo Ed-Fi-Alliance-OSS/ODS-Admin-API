@@ -16,7 +16,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
     public class DeleteApiClientTests
     {
         [Test]
-        public async Task Handle_ExecutesDeleteCommandAndReturnsOk()
+        public async Task Handle_ExecutesDeleteCommandAndReturnsNoContent()
         {
             // Arrange    
             var fakeCommand = A.Fake<IDeleteApiClientCommand>();
@@ -28,7 +28,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             // Assert    
             A.CallTo(() => fakeCommand.Execute(testId)).MustHaveHappenedOnceExactly();
             result.ShouldNotBeNull();
-            result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<object>>();
+            result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NoContent>();
         }
 
         [Test]

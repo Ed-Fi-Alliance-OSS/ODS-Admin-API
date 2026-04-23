@@ -22,7 +22,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
     public class DeleteVendorTests
     {
         [Test]
-        public async Task Handle_WithExistingVendor_DeletesVendorAndReturnsOk()
+        public async Task Handle_WithExistingVendor_DeletesVendorAndReturnsNoContent()
         {
             var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
                 .UseInMemoryDatabase(databaseName: $"DeleteVendor_{Guid.NewGuid()}")
@@ -45,7 +45,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
 
             var result = await DeleteVendor.Handle(deleteVendorCommand, vendor.VendorId);
 
-            result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<object>>();
+            result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NoContent>();
             usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeFalse();
             usersContext.Users.Any().ShouldBeFalse();
         }

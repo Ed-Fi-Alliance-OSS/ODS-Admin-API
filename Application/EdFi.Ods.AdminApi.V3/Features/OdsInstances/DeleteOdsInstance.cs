@@ -6,7 +6,6 @@
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FluentValidation;
@@ -19,7 +18,7 @@ public class DeleteOdsInstance : IFeature
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstances/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -28,7 +27,7 @@ public class DeleteOdsInstance : IFeature
         var request = new Request() { Id = id };
         await validator.GuardAsync(request);
         deleteOdsInstanceCommand.Execute(request.Id);
-        return await Task.FromResult(Results.Ok("Ods Instance".ToJsonObjectResponseDeleted()));
+        return await Task.FromResult(Results.NoContent());
     }
 
     public class Validator : AbstractValidator<Request>
