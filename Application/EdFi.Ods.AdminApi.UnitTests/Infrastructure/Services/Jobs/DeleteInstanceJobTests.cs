@@ -145,7 +145,7 @@ public class DeleteInstanceJobTests
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var odsInstance = new OdsInstance { Name = "Sandbox", InstanceType = "Minimal" };
+        var odsInstance = new OdsInstance { Name = "Sandbox", InstanceType = "Minimal", ConnectionString = "Server=localhost;Database=EdFi_Ods;" };
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
@@ -332,7 +332,7 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions());
 
-        await Should.ThrowAsync<InvalidOperationException>(() => job.Execute(CreateJobExecutionContext(dbInstance.Id)));
+        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
 
         adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.DeleteFailed.ToString());
     }

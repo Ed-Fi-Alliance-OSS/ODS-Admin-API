@@ -249,7 +249,7 @@ public class DeletePendingDbInstancesDispatcherJobTests
     }
 
     [Test]
-    public void Execute_Throws_WhenTenantNameMissingAndMultiTenancyEnabled()
+    public async Task Execute_Throws_WhenTenantNameMissingAndMultiTenancyEnabled()
     {
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
@@ -263,8 +263,14 @@ public class DeletePendingDbInstancesDispatcherJobTests
             tenantSpecificDbContextProvider,
             CreateOptions(multiTenancy: true));
 
-        // Context has no TenantNameKey — should throw InvalidOperationException
-        Should.Throw<InvalidOperationException>(
-            () => job.Execute(CreateJobExecutionContext(scheduler, tenantName: null)));
+        // Context has no TenantNameKey — base class swallows the exception and records Error status
+        await job.Execute(CreateJobExecutionContext(scheduler, tenantName: null));
+
+        A.CallTo(() => jobStatusService.SetStatusAsync(
+                A<string>._,
+                QuartzJobStatus.Error,
+                A<string>._,
+                A<string>._))
+            .MustHaveHappenedOnceExactly();
     }
 }
