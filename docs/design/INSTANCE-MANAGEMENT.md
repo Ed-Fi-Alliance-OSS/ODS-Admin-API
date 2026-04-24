@@ -75,9 +75,20 @@ CREATE TABLE [adminapi].[DbInstances] (
 )
 ```
 
-All operations update the `Status` field in `adminapi.DbInstances` to reflect
-the current state (e.g., "Pending", "Completed", "InProgress", "Pending_Delete",
-"Deleted", "Delete_Failed", "Error").
+All operations update the `Status` field in `adminapi.DbInstances` to reflect the current state. Status values are pipeline-scoped and self-describing:
+
+| Status | Pipeline | Meaning |
+| --- | --- | --- |
+| `PendingCreate` | Create | Queued for provisioning |
+| `CreateInProgress` | Create | Worker is actively provisioning |
+| `Created` | Create | Provisioning succeeded |
+| `CreateFailed` | Create | Last attempt failed — retryable by dispatcher |
+| `CreateError` | Create | Max retries exhausted — terminal |
+| `PendingDelete` | Delete | Queued for deletion |
+| `DeleteInProgress` | Delete | Worker is actively deleting |
+| `Deleted` | Delete | Deletion succeeded |
+| `DeleteFailed` | Delete | Last attempt failed — retryable by dispatcher |
+| `DeleteError` | Delete | Max retries exhausted — terminal |
 
 ## DbInstances Endpoint Operations
 
@@ -99,13 +110,14 @@ Authorization: Bearer <token>
 ### Creating DbInstance
 
 `POST /DbInstances` creates a new entry in the `adminapi.DbInstances` table with
-a status of "Pending". This action triggers the "Create-DbInstance-{InstanceId}"
-job, which runs immediately or is queued according to the configured schedule.
-When the job starts, the status is updated to "InProgress". If the database
-creation fails, the status changes to "Failed" and the failure details are
-logged. On successful completion, the status is set to "Completed". After a
-successful job, a new record is added to the `dbo.OdsInstances` table with the
-generated connection string.
+a status of `PendingCreate`. This action schedules the `CreateInstanceJob` Quartz job,
+which runs immediately. When the job starts, the status is updated to `CreateInProgress`.
+If the database creation fails, the status changes to `CreateFailed` and the failure
+details are logged. The `CreatePendingDbInstancesDispatcherJob` sweeps for `CreateFailed`
+records and re-queues them up to the configured `CreateDbInstancesMaxRetryAttempts` limit;
+once that limit is exceeded the status is set to `CreateError` (terminal). On successful
+completion, the status is set to `Created` and a new record is added to the
+`dbo.OdsInstances` table with the generated connection string.
 
 ```mermaid
 sequenceDiagram
@@ -116,12 +128,13 @@ sequenceDiagram
 
   ClientApp->>AdminAPI: POST /DbInstances (includes Name, DatabaseTemplate)
   AdminAPI->>AdminAPI: Validate input data
-  AdminAPI->>AdminAPI: Record job metadata and add instance entry to "DbInstances" table with status "Pending"
-  AdminAPI->>AdminAPI: Schedule Quartz job - "CreateDbInstanceJob{model.id}"
+  AdminAPI->>EdFiAdminDB: Insert DbInstances row with status PendingCreate
+  AdminAPI->>AdminAPI: Schedule CreateInstanceJob (StartNow)
+  AdminAPI-->>ClientApp: 202 Accepted
+  AdminAPI->>EdFiAdminDB: Update DbInstances status to CreateInProgress
   AdminAPI->>ODSDatabase: Provision new ODS database (clone from template)
   ODSDatabase-->>AdminAPI: Confirm database creation
-  AdminAPI->>EdFiAdminDB: Begin transaction to update "DbInstances" status to "Completed" and insert record into OdsInstance table
-  AdminAPI->>EdFiAdminDB: Commit transaction
+  AdminAPI->>EdFiAdminDB: Update DbInstances status to Created, insert OdsInstance row
 ```
 
 ### Creating OdsInstance
@@ -152,28 +165,32 @@ Authorization: Bearer <token>
 
 ```
 
-### Deleting DbInstance
+### Deleting DbInstance (V2 — async pipeline)
 
-Deleting a `DbInstance` will remove the associated database only if there is no
-corresponding record in the `dbo.OdsInstances` table. To delete the database,
-first delete the record from `dbo.OdsInstances`, then send a delete request to
-the `/DbInstances` endpoint. If no associated record exists in
-`dbo.OdsInstances`, the delete request will trigger the
-`Delete-DbInstance-{InstanceId}` job, updating the DbInstance status to
-"Pending-Delete". Upon successful database deletion, the status will be set to
-`Deleted`. If the deletion fails, the status will be updated to `Delete-Failed`
-and failure details will be logged.
+`DELETE /v2/DbInstances/{id}` is an asynchronous operation. The endpoint validates the current
+status, marks the record `PendingDelete`, schedules `DeleteInstanceJob`, and returns `202 Accepted`.
+The physical database drop and `OdsInstance` row removal happen in the background job.
 
-### Deleting OdsInstance
+**Only `Created` instances are deletable via the endpoint.** Every other status is blocked:
 
-Deleting an OdsInstance removes the record from the `dbo.OdsInstances` table and
-sets the corresponding `adminapi.DbInstances` record to "Orphaned" status. To
-completely remove both the OdsInstance and its database, first delete the record
-from `dbo.OdsInstances`, then send a delete request to `adminapi.DbInstances`.
+| Status | Response | Reason |
+| --- | --- | --- |
+| `PendingCreate` | 422 | Create is in progress; deleting now would race with the create job. |
+| `CreateInProgress` | 422 | Same race risk as `PendingCreate`. |
+| `CreateFailed` | 422 | Create may have partially provisioned the database; requires human inspection before deletion. |
+| `CreateError` | 422 | Same partial-provisioning risk as `CreateFailed`. |
+| `PendingDelete` | 422 | Already queued for deletion. |
+| `DeleteInProgress` | 422 | Deletion is actively executing. |
+| `DeleteFailed` | 422 | Previous attempt failed; the dispatcher retries automatically. |
+| `DeleteError` | 422 | Max retries exhausted; requires manual DB-level intervention. |
+| `Deleted` | 404 | Treated as not found. |
 
->[!NOTE]
-> If the database does not exist on the data server, the delete request will
-> return "not found".
+On failure, `DeleteInstanceJob` sets the status to `DeleteFailed`. The `DeletePendingDbInstancesDispatcherJob`
+sweeps for `DeleteFailed` records and re-queues them up to `DeleteDbInstancesMaxRetryAttempts`; once that
+limit is exceeded the status is set to `DeleteError` (terminal).
+
+Manual recovery from `CreateError` or `DeleteError`: fix the underlying database condition and reset the
+row directly to `PendingCreate` or `PendingDelete` in the database.
 
 ```mermaid
 sequenceDiagram
@@ -182,19 +199,25 @@ sequenceDiagram
   participant EdFi_Admin
   participant DbServer
 
-  ClientApp ->> AdminAPI: DELETE /DbInstances/{id}
-  AdminAPI ->> EdFi_Admin: Check for associated record in dbo.OdsInstances
-  alt OdsInstance record exists
-    AdminAPI -->> ClientApp: Error - Must delete OdsInstance first
-  else No OdsInstance record
-    AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = "PENDING_DELETE"
-    AdminAPI -->> ClientApp: 204 Ok
-    AdminAPI ->> AdminAPI: Schedule Delete-DbInstance job (Quartz.NET)
-    AdminAPI ->> DbServer: Drop database
-    alt Drop successful
-      AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = "DELETED"
-    else Drop failed
-      AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = "DELETE_FAILED" (log details)
+  ClientApp ->> AdminAPI: DELETE /v2/DbInstances/{id}
+  AdminAPI ->> EdFi_Admin: Load DbInstance row
+  alt Status is not Created
+    AdminAPI -->> ClientApp: 422 Unprocessable Entity (status-specific message)
+  else Status is Deleted
+    AdminAPI -->> ClientApp: 404 Not Found
+  else Status is Created
+    AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = PendingDelete
+    AdminAPI ->> AdminAPI: Schedule DeleteInstanceJob (StartNow)
+    AdminAPI -->> ClientApp: 202 Accepted
+    AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = DeleteInProgress
+    AdminAPI ->> DbServer: Drop database (if DatabaseName is set)
+    AdminAPI ->> EdFi_Admin: DELETE dbo.OdsInstances (if OdsInstanceId is set)
+    alt All steps succeeded
+      AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = Deleted
+    else Exception
+      AdminAPI ->> EdFi_Admin: UPDATE adminapi.DbInstances SET status = DeleteFailed
+      Note over AdminAPI: Dispatcher retries up to DeleteDbInstancesMaxRetryAttempts
+      Note over AdminAPI: On exhaustion: status set to DeleteError (terminal)
     end
   end
 ```

@@ -123,7 +123,7 @@ public class CreateInstanceJob(
             var existingOdsInstance = await GetExistingOdsInstanceByNameAsync(resolvedUsersContext, finalName);
 
             var now = DateTime.UtcNow;
-            dbInstance.Status = DbInstanceStatus.InProgress.ToString();
+            dbInstance.Status = DbInstanceStatus.CreateInProgress.ToString();
             if (string.IsNullOrWhiteSpace(dbInstance.DatabaseName))
             {
                 dbInstance.DatabaseName = DbInstanceDatabaseNameFormatter.Build(
@@ -160,7 +160,7 @@ public class CreateInstanceJob(
 
             dbInstance.OdsInstanceId = odsInstance.OdsInstanceId;
             dbInstance.OdsInstanceName = finalName;
-            dbInstance.Status = DbInstanceStatus.Completed.ToString();
+            dbInstance.Status = DbInstanceStatus.Created.ToString();
             dbInstance.LastModifiedDate = DateTime.UtcNow;
             dbInstance.LastRefreshed = DateTime.UtcNow;
 
@@ -170,7 +170,7 @@ public class CreateInstanceJob(
         {
             if (dbInstance is not null)
             {
-                dbInstance.Status = DbInstanceStatus.Error.ToString();
+                dbInstance.Status = DbInstanceStatus.CreateFailed.ToString();
                 dbInstance.LastModifiedDate = DateTime.UtcNow;
                 dbInstance.LastRefreshed = DateTime.UtcNow;
                 await adminApiDbContext.SaveChangesAsync();
@@ -182,10 +182,6 @@ public class CreateInstanceJob(
         {
             // Always clear the tenant context regardless of success or failure.
             // This is the job-level equivalent of what TenantResolverMiddleware does at the end of an HTTP request.
-            // Note: the current IContextStorage (HashtableContextStorage) is a singleton with a shared Hashtable —
-            // it does not use AsyncLocal, so concurrent jobs for different tenants would race on this slot.
-            // This is an accepted limitation of the current implementation; a proper fix would replace
-            // HashtableContextStorage with an AsyncLocal-based implementation.
             _tenantConfigurationContextProvider.Set(null);
             tenantUsersContext?.Dispose();
 
@@ -274,7 +270,7 @@ public class CreateInstanceJob(
                 $"DbInstance '{dbInstance.Id}' has unsupported status '{dbInstance.Status}'.");
         }
 
-        return status == DbInstanceStatus.Pending;
+        return status == DbInstanceStatus.PendingCreate;
     }
 
     private static void ValidatePendingState(DbInstance dbInstance)

@@ -63,11 +63,14 @@ public enum AdminApiMode
 
 public enum DbInstanceStatus
 {
-    Pending,
-    Completed,
-    InProgress,
+    PendingCreate,
+    Created,
+    CreateInProgress,
+    CreateFailed,
+    CreateError,
     PendingDelete,
+    DeleteInProgress,
     Deleted,
     DeleteFailed,
-    Error
+    DeleteError
 }

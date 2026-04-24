@@ -50,7 +50,7 @@ public class DeleteDbInstanceTests
         {
             Id = 1,
             Name = "Test",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
         };
         A.CallTo(() => _getDbInstanceByIdQuery.Execute(1)).Returns(dbInstance);
@@ -70,7 +70,7 @@ public class DeleteDbInstanceTests
         {
             Id = 2,
             Name = "Test",
-            Status = DbInstanceStatus.InProgress.ToString(),
+            Status = DbInstanceStatus.CreateInProgress.ToString(),
             DatabaseTemplate = "Minimal",
         };
         A.CallTo(() => _getDbInstanceByIdQuery.Execute(2)).Returns(dbInstance);
@@ -90,7 +90,7 @@ public class DeleteDbInstanceTests
         {
             Id = 3,
             Name = "Test",
-            Status = DbInstanceStatus.Completed.ToString(),
+            Status = DbInstanceStatus.Created.ToString(),
             DatabaseTemplate = "Minimal",
         };
         A.CallTo(() => _getDbInstanceByIdQuery.Execute(3)).Returns(dbInstance);
@@ -146,7 +146,7 @@ public class DeleteDbInstanceTests
         {
             Id = 6,
             Name = "Test",
-            Status = DbInstanceStatus.Error.ToString(),
+            Status = DbInstanceStatus.CreateError.ToString(),
             DatabaseTemplate = "Minimal",
         };
         A.CallTo(() => _getDbInstanceByIdQuery.Execute(6)).Returns(dbInstance);

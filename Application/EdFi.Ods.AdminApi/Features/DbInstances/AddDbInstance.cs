@@ -14,6 +14,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using FluentValidation;
@@ -132,7 +133,7 @@ public class AddDbInstance : IFeature
 
                 var normalizedName = request.Name.Trim();
 
-                if (await _adminApiDbContext.DbInstances.AnyAsync(instance => instance.Name == normalizedName, cancellationToken))
+                if (await _adminApiDbContext.DbInstances.AnyAsync(instance => instance.Name == normalizedName && instance.Status != DbInstanceStatus.Deleted.ToString(), cancellationToken))
                 {
                     context.AddFailure(
                         nameof(AddDbInstanceRequest.Name),

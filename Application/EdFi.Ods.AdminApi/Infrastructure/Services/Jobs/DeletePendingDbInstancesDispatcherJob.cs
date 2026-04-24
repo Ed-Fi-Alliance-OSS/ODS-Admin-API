@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
@@ -16,8 +15,8 @@ using Quartz;
 namespace EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 
 [DisallowConcurrentExecution]
-public class CreatePendingDbInstancesDispatcherJob(
-    ILogger<CreatePendingDbInstancesDispatcherJob> logger,
+public class DeletePendingDbInstancesDispatcherJob(
+    ILogger<DeletePendingDbInstancesDispatcherJob> logger,
     IJobStatusService jobStatusService,
     AdminApiDbContext dbContext,
     ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
@@ -46,33 +45,34 @@ public class CreatePendingDbInstancesDispatcherJob(
             }
 
             var eligibleDbInstances = await adminApiDbContext.DbInstances
-                .Where(instance => instance.Status == DbInstanceStatus.PendingCreate.ToString() || instance.Status == DbInstanceStatus.CreateFailed.ToString())
+                .Where(instance => instance.Status == DbInstanceStatus.PendingDelete.ToString()
+                                || instance.Status == DbInstanceStatus.DeleteFailed.ToString())
                 .OrderBy(instance => instance.Id)
                 .ToListAsync();
 
             foreach (var dbInstance in eligibleDbInstances)
             {
-                if (string.Equals(dbInstance.Status, DbInstanceStatus.PendingCreate.ToString(), StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(dbInstance.Status, DbInstanceStatus.PendingDelete.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    await ScheduleCreateJobAsync(context, dbInstance.Id, tenantName);
+                    await ScheduleDeleteJobAsync(context, dbInstance.Id, tenantName);
                     continue;
                 }
 
                 if (!await IsRetryEligibleAsync(adminApiDbContext, dbInstance, tenantName))
                 {
-                    dbInstance.Status = DbInstanceStatus.CreateError.ToString();
+                    dbInstance.Status = DbInstanceStatus.DeleteError.ToString();
                     dbInstance.LastModifiedDate = DateTime.UtcNow;
                     dbInstance.LastRefreshed = DateTime.UtcNow;
                     await adminApiDbContext.SaveChangesAsync();
                     continue;
                 }
 
-                dbInstance.Status = DbInstanceStatus.PendingCreate.ToString();
+                dbInstance.Status = DbInstanceStatus.PendingDelete.ToString();
                 dbInstance.LastModifiedDate = DateTime.UtcNow;
                 dbInstance.LastRefreshed = DateTime.UtcNow;
                 await adminApiDbContext.SaveChangesAsync();
 
-                await ScheduleCreateJobAsync(context, dbInstance.Id, tenantName);
+                await ScheduleDeleteJobAsync(context, dbInstance.Id, tenantName);
             }
         }
         finally
@@ -86,18 +86,18 @@ public class CreatePendingDbInstancesDispatcherJob(
 
     private async Task<bool> IsRetryEligibleAsync(AdminApiDbContext adminApiDbContext, DbInstance dbInstance, string? tenantName)
     {
-        var maxRetryAttempts = _options.Value.CreateDbInstancesMaxRetryAttempts > 0
-            ? _options.Value.CreateDbInstancesMaxRetryAttempts
+        var maxRetryAttempts = _options.Value.DeleteDbInstancesMaxRetryAttempts > 0
+            ? _options.Value.DeleteDbInstancesMaxRetryAttempts
             : DefaultMaxRetryAttempts;
 
-        var jobIdPrefix = $"{CreateInstanceJob.BuildJobIdentity(dbInstance.Id, tenantName)}_";
+        var jobIdPrefix = $"{DeleteInstanceJob.BuildJobIdentity(dbInstance.Id, tenantName)}_";
         var errorCount = await adminApiDbContext.JobStatuses
             .CountAsync(status => status.JobId.StartsWith(jobIdPrefix) && status.Status == QuartzJobStatus.Error.ToString());
 
         return errorCount < maxRetryAttempts;
     }
 
-    private static async Task ScheduleCreateJobAsync(IJobExecutionContext context, int dbInstanceId, string? tenantName)
+    private static async Task ScheduleDeleteJobAsync(IJobExecutionContext context, int dbInstanceId, string? tenantName)
     {
         var jobData = new Dictionary<string, object>
         {
@@ -109,9 +109,9 @@ public class CreatePendingDbInstancesDispatcherJob(
             jobData[JobConstants.TenantNameKey] = tenantName;
         }
 
-        await QuartzJobScheduler.ScheduleJob<CreateInstanceJob>(
+        await QuartzJobScheduler.ScheduleJob<DeleteInstanceJob>(
             context.Scheduler,
-            CreateInstanceJob.CreateJobKey(dbInstanceId, tenantName),
+            DeleteInstanceJob.CreateJobKey(dbInstanceId, tenantName),
             jobData,
             startImmediately: true);
     }
@@ -123,16 +123,8 @@ public class CreatePendingDbInstancesDispatcherJob(
             return null;
         }
 
-        var tenantName = context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey)
+        return context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey)
             ? context.MergedJobDataMap.GetString(JobConstants.TenantNameKey)
             : null;
-
-        if (string.IsNullOrWhiteSpace(tenantName))
-        {
-            throw new InvalidOperationException(
-                $"{JobConstants.TenantNameKey} must be provided when multi-tenancy is enabled.");
-        }
-
-        return tenantName;
     }
 }

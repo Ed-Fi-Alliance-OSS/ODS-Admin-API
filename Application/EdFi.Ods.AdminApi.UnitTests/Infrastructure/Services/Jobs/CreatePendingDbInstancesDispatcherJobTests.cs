@@ -109,7 +109,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         });
@@ -140,7 +140,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Error.ToString(),
+            Status = DbInstanceStatus.CreateFailed.ToString(),
             DatabaseName = "existingdb",
             LastRefreshed = DateTime.UtcNow.AddMinutes(-10),
             LastModifiedDate = DateTime.UtcNow.AddMinutes(-10)
@@ -164,12 +164,12 @@ public class CreatePendingDbInstancesDispatcherJobTests
 
         await job.Execute(CreateJobExecutionContext(scheduler));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Pending.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
         scheduledJobs.Count.ShouldBe(1);
     }
 
     [Test]
-    public async Task Execute_LeavesErrorDbInstanceUnchanged_WhenRetryLimitIsReached()
+    public async Task Execute_SetsCreateError_WhenRetryLimitIsReached()
     {
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
@@ -180,7 +180,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Error.ToString(),
+            Status = DbInstanceStatus.CreateFailed.ToString(),
             LastRefreshed = DateTime.UtcNow.AddMinutes(-10),
             LastModifiedDate = DateTime.UtcNow.AddMinutes(-10)
         };
@@ -208,7 +208,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
 
         await job.Execute(CreateJobExecutionContext(scheduler));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Error.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.CreateError.ToString());
         scheduledJobs.ShouldBeEmpty();
     }
 
@@ -228,7 +228,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Sample",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         });

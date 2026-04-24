@@ -52,10 +52,10 @@ public class DeleteDbInstance : IFeature
         {
             return parsed switch
             {
-                DbInstanceStatus.Pending => "DbInstance is being provisioned. Wait for the creation job to complete before deleting.",
-                DbInstanceStatus.InProgress => "DbInstance is currently being provisioned. Wait for the creation job to complete before deleting.",
+                DbInstanceStatus.PendingCreate => "DbInstance is being provisioned. Wait for the creation job to complete before deleting.",
+                DbInstanceStatus.CreateInProgress => "DbInstance is currently being provisioned. Wait for the creation job to complete before deleting.",
                 DbInstanceStatus.PendingDelete => "DbInstance is already queued for deletion.",
-                DbInstanceStatus.Error => "DbInstance encountered an error during provisioning. Check job status before retrying.",
+                DbInstanceStatus.CreateError => "DbInstance encountered an error during provisioning. Check job status before retrying.",
                 _ => null,
             };
         }

@@ -13,5 +13,7 @@ public class JobConstants
     public const string OdsInstanceIdKey = "OdsInstanceId";
     public const string CreateInstanceJobName = "CreateInstanceJob";
     public const string CreatePendingDbInstancesDispatcherJobName = "CreatePendingDbInstancesDispatcherJob";
+    public const string DeleteInstanceJobName = "DeleteInstanceJob";
+    public const string DeletePendingDbInstancesDispatcherJobName = "DeletePendingDbInstancesDispatcherJob";
     public const string RefreshEducationOrganizationsJobName = "RefreshEducationOrganizationsJob";
 }
