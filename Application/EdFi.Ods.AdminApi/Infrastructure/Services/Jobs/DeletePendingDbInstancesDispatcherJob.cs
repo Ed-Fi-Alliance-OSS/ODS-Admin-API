@@ -123,8 +123,16 @@ public class DeletePendingDbInstancesDispatcherJob(
             return null;
         }
 
-        return context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey)
+        var tenantName = context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey)
             ? context.MergedJobDataMap.GetString(JobConstants.TenantNameKey)
             : null;
+
+        if (string.IsNullOrWhiteSpace(tenantName))
+        {
+            throw new InvalidOperationException(
+                $"{JobConstants.TenantNameKey} must be provided when multi-tenancy is enabled.");
+        }
+
+        return tenantName;
     }
 }

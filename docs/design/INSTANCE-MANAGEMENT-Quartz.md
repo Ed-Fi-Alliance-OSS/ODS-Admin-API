@@ -64,14 +64,14 @@ A single `Error` value would require a secondary mechanism — such as an error-
 
 | Status | HTTP response | Reason blocked |
 | --- | --- | --- |
-| `PendingCreate` | 422 | Create is pending; deleting now would race with the create job and leave the database and `OdsInstance` row in an unknown state. |
-| `CreateInProgress` | 422 | Create is actively executing; same race risk as `PendingCreate`. |
-| `CreateFailed` | 422 | Create did not fully succeed; the database may be partially provisioned. Safe deletion requires a human to inspect what actually exists on the server. |
-| `CreateError` | 422 | Max create retries exhausted; same partial-provisioning risk as `CreateFailed`. |
-| `PendingDelete` | 422 | Already queued for deletion; a second request would duplicate work. |
-| `DeleteInProgress` | 422 | Deletion is actively executing; a concurrent second delete would conflict. |
-| `DeleteFailed` | 422 | Previous delete attempt failed; the dispatcher handles retry automatically — re-triggering from the endpoint would duplicate the retry. |
-| `DeleteError` | 422 | Max delete retries exhausted; requires manual intervention, not an API retry. |
+| `PendingCreate` | 400 | Create is pending; deleting now would race with the create job and leave the database and `OdsInstance` row in an unknown state. |
+| `CreateInProgress` | 400 | Create is actively executing; same race risk as `PendingCreate`. |
+| `CreateFailed` | 400 | Create did not fully succeed; the database may be partially provisioned. Safe deletion requires a human to inspect what actually exists on the server. |
+| `CreateError` | 400 | Max create retries exhausted; same partial-provisioning risk as `CreateFailed`. |
+| `PendingDelete` | 400 | Already queued for deletion; a second request would duplicate work. |
+| `DeleteInProgress` | 400 | Deletion is actively executing; a concurrent second delete would conflict. |
+| `DeleteFailed` | 400 | Previous delete attempt failed; the dispatcher handles retry automatically — re-triggering from the endpoint would duplicate the retry. |
+| `DeleteError` | 400 | Max delete retries exhausted; requires manual intervention, not an API retry. |
 | `Deleted` | 404 | Treated as not found — existing behaviour. |
 
 This constraint makes the API the single safe, human-initiated entry point to the delete pipeline and keeps all retry logic inside the dispatcher where it can be governed and audited.

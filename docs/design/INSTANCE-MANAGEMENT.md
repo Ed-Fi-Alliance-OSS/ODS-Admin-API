@@ -175,14 +175,14 @@ The physical database drop and `OdsInstance` row removal happen in the backgroun
 
 | Status | Response | Reason |
 | --- | --- | --- |
-| `PendingCreate` | 422 | Create is in progress; deleting now would race with the create job. |
-| `CreateInProgress` | 422 | Same race risk as `PendingCreate`. |
-| `CreateFailed` | 422 | Create may have partially provisioned the database; requires human inspection before deletion. |
-| `CreateError` | 422 | Same partial-provisioning risk as `CreateFailed`. |
-| `PendingDelete` | 422 | Already queued for deletion. |
-| `DeleteInProgress` | 422 | Deletion is actively executing. |
-| `DeleteFailed` | 422 | Previous attempt failed; the dispatcher retries automatically. |
-| `DeleteError` | 422 | Max retries exhausted; requires manual DB-level intervention. |
+| `PendingCreate` | 400 | Create is in progress; deleting now would race with the create job. |
+| `CreateInProgress` | 400 | Same race risk as `PendingCreate`. |
+| `CreateFailed` | 400 | Create may have partially provisioned the database; requires human inspection before deletion. |
+| `CreateError` | 400 | Same partial-provisioning risk as `CreateFailed`. |
+| `PendingDelete` | 400 | Already queued for deletion. |
+| `DeleteInProgress` | 400 | Deletion is actively executing. |
+| `DeleteFailed` | 400 | Previous attempt failed; the dispatcher retries automatically. |
+| `DeleteError` | 400 | Max retries exhausted; requires manual DB-level intervention. |
 | `Deleted` | 404 | Treated as not found. |
 
 On failure, `DeleteInstanceJob` sets the status to `DeleteFailed`. The `DeletePendingDbInstancesDispatcherJob`
@@ -202,7 +202,7 @@ sequenceDiagram
   ClientApp ->> AdminAPI: DELETE /v2/DbInstances/{id}
   AdminAPI ->> EdFi_Admin: Load DbInstance row
   alt Status is not Created
-    AdminAPI -->> ClientApp: 422 Unprocessable Entity (status-specific message)
+    AdminAPI -->> ClientApp: 400 Bad Request (status-specific message)
   else Status is Deleted
     AdminAPI -->> ClientApp: 404 Not Found
   else Status is Created

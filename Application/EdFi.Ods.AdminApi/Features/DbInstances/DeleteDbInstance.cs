@@ -55,7 +55,9 @@ public class DeleteDbInstance : IFeature
 
         deleteDbInstanceCommand.Execute(id);
 
-        var tenantName = tenantConfigurationProvider.Get()?.TenantIdentifier;
+        var tenantName = options.Value.MultiTenancy
+            ? tenantConfigurationProvider.Get()?.TenantIdentifier
+            : null;
         var jobData = new Dictionary<string, object>
         {
             [JobConstants.DbInstanceIdKey] = id
@@ -87,7 +89,7 @@ public class DeleteDbInstance : IFeature
 
     private static string? GetBlockingStatusMessage(string status)
     {
-        if (Enum.TryParse<DbInstanceStatus>(status, out var parsed))
+        if (Enum.TryParse<DbInstanceStatus>(status, ignoreCase: true, out var parsed))
         {
             return parsed switch
             {
