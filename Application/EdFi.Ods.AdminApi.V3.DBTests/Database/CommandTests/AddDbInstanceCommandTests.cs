@@ -36,7 +36,7 @@ public class AddDbInstanceCommandTests : AdminApiDbContextTestBase
             var instance = context.DbInstances.Single(d => d.Id == id);
             instance.Name.ShouldBe("Test Instance");
             instance.DatabaseTemplate.ShouldBe("Minimal");
-            instance.Status.ShouldBe(DbInstanceStatus.Pending.ToString());
+            instance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
             instance.OdsInstanceId.ShouldBeNull();
             instance.OdsInstanceName.ShouldBeNull();
             instance.DatabaseName.ShouldBeNull();

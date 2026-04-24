@@ -177,7 +177,7 @@ public class CreateInstanceJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -205,7 +205,7 @@ public class CreateInstanceJobTests
         var persistedOdsInstance = usersContext.OdsInstances.Single();
         const string expectedDatabaseName = "EdFi_Ods_Sandbox_Minimal";
 
-        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Completed.ToString());
+        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
         persistedDbInstance.DatabaseName.ShouldBe(expectedDatabaseName);
         persistedDbInstance.OdsInstanceId.ShouldNotBeNull();
         persistedDbInstance.OdsInstanceName.ShouldBe("Sandbox");
@@ -235,7 +235,7 @@ public class CreateInstanceJobTests
         {
             Name = "My District",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -286,7 +286,7 @@ public class CreateInstanceJobTests
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
             DatabaseName = existingDatabaseName,
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -333,7 +333,7 @@ public class CreateInstanceJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Completed.ToString(),
+            Status = DbInstanceStatus.Created.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -357,7 +357,7 @@ public class CreateInstanceJobTests
 
         await job.Execute(CreateJobExecutionContext(dbInstance.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Completed.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Created.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(A<string>._, A<SandboxType>._)).MustNotHaveHappened();
         A.CallTo(() => encryptionProvider.Encrypt(A<string>._, A<byte[]>._)).MustNotHaveHappened();
@@ -383,7 +383,7 @@ public class CreateInstanceJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -407,7 +407,7 @@ public class CreateInstanceJobTests
 
         await job.Execute(CreateJobExecutionContext(dbInstance.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Error.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.CreateFailed.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => jobStatusService.SetStatusAsync(A<string>._, QuartzJobStatus.Error, A<string>._, A<string>.That.Contains("Provisioning failed.")))
             .MustHaveHappenedOnceExactly();
@@ -430,7 +430,7 @@ public class CreateInstanceJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             OdsInstanceId = 42,
             OdsInstanceName = "Sandbox",
             LastRefreshed = DateTime.UtcNow,
@@ -456,7 +456,7 @@ public class CreateInstanceJobTests
 
         await job.Execute(CreateJobExecutionContext(dbInstance.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Error.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.CreateFailed.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(A<string>._, A<SandboxType>._)).MustNotHaveHappened();
         A.CallTo(() => jobStatusService.SetStatusAsync(A<string>._, QuartzJobStatus.Error, A<string>._, A<string>.That.Contains("invalid pending state")))
@@ -491,7 +491,7 @@ public class CreateInstanceJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Sample",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -519,7 +519,7 @@ public class CreateInstanceJobTests
         var persistedOdsInstance = tenantUsersContext.OdsInstances.Single();
         const string expectedDatabaseName = "EdFi_Ods_Sandbox_Sample";
 
-        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Completed.ToString());
+        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
         persistedDbInstance.DatabaseName.ShouldBe(expectedDatabaseName);
         persistedOdsInstance.InstanceType.ShouldBe("Sample");
         plaintextConnectionString.ShouldNotBeNull();
@@ -555,7 +555,7 @@ public class CreateInstanceJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
@@ -591,7 +591,7 @@ public class CreateInstanceJobTests
         var persistedOdsInstance = usersContext.OdsInstances.Single();
         const string expectedDatabaseName = "EdFi_Ods_Sandbox_Minimal";
 
-        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Completed.ToString());
+        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
         persistedDbInstance.DatabaseName.ShouldBe(expectedDatabaseName);
         persistedDbInstance.OdsInstanceId.ShouldBe(persistedOdsInstance.OdsInstanceId);
         persistedDbInstance.OdsInstanceName.ShouldBe("Sandbox");

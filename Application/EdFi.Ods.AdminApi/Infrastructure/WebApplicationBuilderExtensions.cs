@@ -295,7 +295,7 @@ public static class WebApplicationBuilderExtensions
             IContextProvider<TenantConfiguration>,
             ContextProvider<TenantConfiguration>
         >();
-        webApplicationBuilder.Services.AddSingleton<IContextStorage, HashtableContextStorage>();
+        webApplicationBuilder.Services.AddSingleton<IContextStorage, AsyncLocalContextStorage>();
         webApplicationBuilder.Services.AddScoped<TenantResolverMiddleware>();
         webApplicationBuilder.Services.Configure<TenantsSection>(webApplicationBuilder.Configuration);
     }
@@ -537,9 +537,9 @@ public static class WebApplicationBuilderExtensions
                 }
                 else
                 {
-                    throw new ArgumentException(
-                        $"Admin database connection setup error. Tenant not configured correctly."
-                    );
+                    // No tenant in the current async context (e.g. startup, health checks, OpenIddict
+                    // discovery). Fall back to the base config connection string.
+                    adminConnectionString = config.GetConnectionStringByName("EdFi_Admin");
                 }
             }
             else
@@ -581,9 +581,9 @@ public static class WebApplicationBuilderExtensions
                 }
                 else
                 {
-                    throw new ArgumentException(
-                        $"Security database connection setup error. Tenant not configured correctly."
-                    );
+                    // No tenant in the current async context (e.g. startup, health checks, OpenIddict
+                    // discovery). Fall back to the base config connection string.
+                    securityConnectionString = config.GetConnectionStringByName("EdFi_Security");
                 }
             }
             else

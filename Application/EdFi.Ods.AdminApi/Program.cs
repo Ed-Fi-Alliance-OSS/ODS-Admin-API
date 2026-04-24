@@ -96,6 +96,9 @@ var edOrgsRefreshIntervalInMins = app.Configuration.GetValue<string>(
 var createDbInstancesSweepIntervalInMins = app.Configuration.GetValue<string>(
     "AppSettings:CreateDbInstancesSweepIntervalInMins"
 );
+var deleteDbInstancesSweepIntervalInMins = app.Configuration.GetValue<string>(
+    "AppSettings:DeleteDbInstancesSweepIntervalInMins"
+);
 var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
     "AppSettings:MultiTenancy"
 );
@@ -103,9 +106,10 @@ var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
 if (adminApiMode == AdminApiMode.V2)
 {
     var shouldScheduleDispatcher = double.TryParse(createDbInstancesSweepIntervalInMins, out var createDbInstancesSweepInterval);
+    var shouldScheduleDeleteDispatcher = double.TryParse(deleteDbInstancesSweepIntervalInMins, out var deleteDbInstancesSweepInterval);
     var shouldScheduleEdOrgsRefresh = double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval);
 
-    if (isMultiTenancyEnabled && (shouldScheduleDispatcher || shouldScheduleEdOrgsRefresh))
+    if (isMultiTenancyEnabled && (shouldScheduleDispatcher || shouldScheduleDeleteDispatcher || shouldScheduleEdOrgsRefresh))
     {
         using var scope = app.Services.CreateScope();
         var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
@@ -190,6 +194,44 @@ if (adminApiMode == AdminApiMode.V2)
     else
     {
         _logger.Error("Invalid value for CreateDbInstancesSweepIntervalInMins. Please ensure it is a valid number.");
+    }
+
+    if (shouldScheduleDeleteDispatcher)
+    {
+        if (isMultiTenancyEnabled)
+        {
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+            {
+                await QuartzJobScheduler.ScheduleJob<DeletePendingDbInstancesDispatcherJob>(
+                    scheduler,
+                    jobKey: new JobKey($"{JobConstants.DeletePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(deleteDbInstancesSweepInterval)
+                );
+            }
+        }
+        else
+        {
+            await QuartzJobScheduler.ScheduleJob<DeletePendingDbInstancesDispatcherJob>(
+                scheduler,
+                jobKey: new JobKey(JobConstants.DeletePendingDbInstancesDispatcherJobName),
+                jobData: new Dictionary<string, object>(),
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(deleteDbInstancesSweepInterval)
+            );
+        }
+    }
+    else
+    {
+        _logger.Error("Invalid value for DeleteDbInstancesSweepIntervalInMins. Please ensure it is a valid number.");
     }
 }
 

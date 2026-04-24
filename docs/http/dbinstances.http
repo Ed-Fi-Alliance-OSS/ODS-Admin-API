@@ -24,7 +24,7 @@ Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 {
-  "name": "My DB Instance 5",
+  "name": "My DB Instance",
   "databaseTemplate": "Minimal"
 }
 
@@ -36,12 +36,15 @@ Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 {
-  "name": "My Sample DB Instance 3",
+  "name": "My Sample DB Instance",
   "databaseTemplate": "Sample"
 }
 
 ### DELETE a DB instance (Minimal)
 DELETE {{adminapi_url}}/v2{{createDbInstanceMinimal.response.headers.location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 ### DELETE a DB instance (Sample)
 DELETE {{adminapi_url}}/v2{{createDbInstanceSample.response.headers.location}}
@@ -70,6 +73,9 @@ Tenant: {{tenant}}
 
 ### Get DB instance by ID (Minimal)
 GET {{adminapi_url}}/v2{{createDbInstanceMinimal.response.headers.location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: {{tenant}}
 
 ### Get DB instance by ID (Sample)
 GET {{adminapi_url}}/v2{{createDbInstanceSample.response.headers.location}}

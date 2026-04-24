@@ -28,7 +28,7 @@ public class DeleteDbInstanceCommand : IDeleteDbInstanceCommand
             _context.DbInstances.Find(id)
             ?? throw new NotFoundException<int>("dbInstance", id);
 
-        if (dbInstance.Status == DbInstanceStatus.Deleted.ToString())
+        if (dbInstance.Status != DbInstanceStatus.Created.ToString())
             throw new NotFoundException<int>("dbInstance", id);
 
         dbInstance.Status = DbInstanceStatus.PendingDelete.ToString();

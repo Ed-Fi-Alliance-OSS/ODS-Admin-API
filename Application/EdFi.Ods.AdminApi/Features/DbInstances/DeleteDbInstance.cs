@@ -6,11 +6,19 @@
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Quartz;
 
 namespace EdFi.Ods.AdminApi.Features.DbInstances;
 
@@ -21,13 +29,16 @@ public class DeleteDbInstance : IFeature
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/dbInstances/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(204))
+            .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public static Task<IResult> Handle(
+    public static async Task<IResult> Handle(
         IGetDbInstanceByIdQuery getDbInstanceByIdQuery,
         IDeleteDbInstanceCommand deleteDbInstanceCommand,
+        [FromServices] ISchedulerFactory schedulerFactory,
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        [FromServices] IOptions<AppSettings> options,
         int id
     )
     {
@@ -43,19 +54,53 @@ public class DeleteDbInstance : IFeature
             throw new ValidationException([new ValidationFailure(nameof(id), blockingMessage)]);
 
         deleteDbInstanceCommand.Execute(id);
-        return Task.FromResult(Results.NoContent());
+
+        var tenantName = options.Value.MultiTenancy
+            ? tenantConfigurationProvider.Get()?.TenantIdentifier
+            : null;
+        var jobData = new Dictionary<string, object>
+        {
+            [JobConstants.DbInstanceIdKey] = id
+        };
+
+        if (!string.IsNullOrWhiteSpace(tenantName))
+        {
+            jobData[JobConstants.TenantNameKey] = tenantName;
+        }
+
+        var scheduler = await schedulerFactory.GetScheduler();
+
+        try
+        {
+            await QuartzJobScheduler.ScheduleJob<DeleteInstanceJob>(
+                scheduler,
+                DeleteInstanceJob.CreateJobKey(id, tenantName),
+                jobData,
+                startImmediately: true);
+        }
+        catch (ObjectAlreadyExistsException)
+        {
+            // The DeletePendingDbInstancesDispatcherJob may have already scheduled this job.
+            // Treat duplicate scheduling as success — the job is already queued.
+        }
+
+        return Results.Accepted($"/dbinstances/{id}", null);
     }
 
     private static string? GetBlockingStatusMessage(string status)
     {
-        if (Enum.TryParse<DbInstanceStatus>(status, out var parsed))
+        if (Enum.TryParse<DbInstanceStatus>(status, ignoreCase: true, out var parsed))
         {
             return parsed switch
             {
-                DbInstanceStatus.Pending => "DbInstance is being provisioned. Wait for the creation job to complete before deleting.",
-                DbInstanceStatus.InProgress => "DbInstance is currently being provisioned. Wait for the creation job to complete before deleting.",
-                DbInstanceStatus.PendingDelete => "DbInstance is already queued for deletion.",
-                DbInstanceStatus.Error => "DbInstance encountered an error during provisioning. Check job status before retrying.",
+                DbInstanceStatus.PendingCreate    => "DbInstance is being provisioned. Wait for creation to complete.",
+                DbInstanceStatus.CreateInProgress => "DbInstance is currently being provisioned. Wait for creation to complete.",
+                DbInstanceStatus.CreateFailed     => "DbInstance creation failed. It will be retried automatically by the background job.",
+                DbInstanceStatus.CreateError      => "DbInstance creation failed permanently. Manual database intervention required before deleting.",
+                DbInstanceStatus.PendingDelete    => "DbInstance is already queued for deletion.",
+                DbInstanceStatus.DeleteInProgress => "DbInstance is currently being deleted.",
+                DbInstanceStatus.DeleteFailed     => "DbInstance deletion failed. It will be retried automatically by the background job.",
+                DbInstanceStatus.DeleteError      => "DbInstance deletion failed permanently. Manual database intervention required.",
                 _ => null,
             };
         }
@@ -63,3 +108,4 @@ public class DeleteDbInstance : IFeature
         return null;
     }
 }
+

@@ -26,7 +26,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.Jobs;
 
 [TestFixture]
-public class CreatePendingDbInstancesDispatcherJobTests
+public class DeletePendingDbInstancesDispatcherJobTests
 {
     private sealed class NonDisposingAdminApiDbContext(
         DbContextOptions<AdminApiDbContext> options,
@@ -59,7 +59,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             DatabaseEngine = "SqlServer",
             MultiTenancy = multiTenancy,
-            CreateDbInstancesMaxRetryAttempts = maxRetryAttempts
+            DeleteDbInstancesMaxRetryAttempts = maxRetryAttempts
         });
 
     private static IScheduler CreateScheduler(out List<IJobDetail> scheduledJobs)
@@ -88,7 +88,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
             jobDataMap.Put(JobConstants.TenantNameKey, tenantName);
         }
 
-        A.CallTo(() => jobDetail.Key).Returns(new JobKey(JobConstants.CreatePendingDbInstancesDispatcherJobName));
+        A.CallTo(() => jobDetail.Key).Returns(new JobKey(JobConstants.DeletePendingDbInstancesDispatcherJobName));
         A.CallTo(() => jobExecutionContext.JobDetail).Returns(jobDetail);
         A.CallTo(() => jobExecutionContext.FireInstanceId).Returns(Guid.NewGuid().ToString());
         A.CallTo(() => jobExecutionContext.MergedJobDataMap).Returns(jobDataMap);
@@ -98,7 +98,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
     }
 
     [Test]
-    public async Task Execute_SchedulesPendingDbInstance()
+    public async Task Execute_SchedulesPendingDeleteDbInstance()
     {
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
@@ -109,14 +109,14 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = DbInstanceStatus.PendingDelete.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         });
         adminApiContext.SaveChanges();
 
-        var job = new CreatePendingDbInstancesDispatcherJob(
-            A.Fake<ILogger<CreatePendingDbInstancesDispatcherJob>>(),
+        var job = new DeletePendingDbInstancesDispatcherJob(
+            A.Fake<ILogger<DeletePendingDbInstancesDispatcherJob>>(),
             jobStatusService,
             adminApiContext,
             tenantSpecificDbContextProvider,
@@ -125,11 +125,11 @@ public class CreatePendingDbInstancesDispatcherJobTests
         await job.Execute(CreateJobExecutionContext(scheduler));
 
         scheduledJobs.Count.ShouldBe(1);
-        scheduledJobs[0].Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-{adminApiContext.DbInstances.Single().Id}");
+        scheduledJobs[0].Key.Name.ShouldBe($"{JobConstants.DeleteInstanceJobName}-{adminApiContext.DbInstances.Single().Id}");
     }
 
     [Test]
-    public async Task Execute_RequeuesRetryableErrorDbInstance()
+    public async Task Execute_RequeuesRetryableDeleteFailedDbInstance()
     {
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
@@ -140,8 +140,8 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.CreateFailed.ToString(),
-            DatabaseName = "existingdb",
+            Status = DbInstanceStatus.DeleteFailed.ToString(),
+            DatabaseName = "EdFi_Ods_Sandbox_Minimal",
             LastRefreshed = DateTime.UtcNow.AddMinutes(-10),
             LastModifiedDate = DateTime.UtcNow.AddMinutes(-10)
         };
@@ -150,13 +150,13 @@ public class CreatePendingDbInstancesDispatcherJobTests
         adminApiContext.SaveChanges();
         adminApiContext.JobStatuses.Add(new JobStatus
         {
-            JobId = $"{CreateInstanceJob.BuildJobIdentity(dbInstance.Id, null)}_run-1",
+            JobId = $"{DeleteInstanceJob.BuildJobIdentity(dbInstance.Id, null)}_run-1",
             Status = QuartzJobStatus.Error.ToString()
         });
         adminApiContext.SaveChanges();
 
-        var job = new CreatePendingDbInstancesDispatcherJob(
-            A.Fake<ILogger<CreatePendingDbInstancesDispatcherJob>>(),
+        var job = new DeletePendingDbInstancesDispatcherJob(
+            A.Fake<ILogger<DeletePendingDbInstancesDispatcherJob>>(),
             jobStatusService,
             adminApiContext,
             tenantSpecificDbContextProvider,
@@ -164,12 +164,12 @@ public class CreatePendingDbInstancesDispatcherJobTests
 
         await job.Execute(CreateJobExecutionContext(scheduler));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.PendingDelete.ToString());
         scheduledJobs.Count.ShouldBe(1);
     }
 
     [Test]
-    public async Task Execute_SetsCreateError_WhenRetryLimitIsReached()
+    public async Task Execute_SetsDeleteError_WhenRetryLimitIsReached()
     {
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
         var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
@@ -180,7 +180,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.CreateFailed.ToString(),
+            Status = DbInstanceStatus.DeleteFailed.ToString(),
             LastRefreshed = DateTime.UtcNow.AddMinutes(-10),
             LastModifiedDate = DateTime.UtcNow.AddMinutes(-10)
         };
@@ -192,15 +192,15 @@ public class CreatePendingDbInstancesDispatcherJobTests
         {
             adminApiContext.JobStatuses.Add(new JobStatus
             {
-                JobId = $"{CreateInstanceJob.BuildJobIdentity(dbInstance.Id, null)}_run-{attempt}",
+                JobId = $"{DeleteInstanceJob.BuildJobIdentity(dbInstance.Id, null)}_run-{attempt}",
                 Status = QuartzJobStatus.Error.ToString()
             });
         }
 
         adminApiContext.SaveChanges();
 
-        var job = new CreatePendingDbInstancesDispatcherJob(
-            A.Fake<ILogger<CreatePendingDbInstancesDispatcherJob>>(),
+        var job = new DeletePendingDbInstancesDispatcherJob(
+            A.Fake<ILogger<DeletePendingDbInstancesDispatcherJob>>(),
             jobStatusService,
             adminApiContext,
             tenantSpecificDbContextProvider,
@@ -208,7 +208,7 @@ public class CreatePendingDbInstancesDispatcherJobTests
 
         await job.Execute(CreateJobExecutionContext(scheduler));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.CreateError.ToString());
+        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.DeleteError.ToString());
         scheduledJobs.ShouldBeEmpty();
     }
 
@@ -227,15 +227,15 @@ public class CreatePendingDbInstancesDispatcherJobTests
         tenantAdminApiContext.DbInstances.Add(new Common.Infrastructure.Models.DbInstance
         {
             Name = "Sandbox",
-            DatabaseTemplate = "Sample",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            DatabaseTemplate = "Minimal",
+            Status = DbInstanceStatus.PendingDelete.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         });
         tenantAdminApiContext.SaveChanges();
 
-        var job = new CreatePendingDbInstancesDispatcherJob(
-            A.Fake<ILogger<CreatePendingDbInstancesDispatcherJob>>(),
+        var job = new DeletePendingDbInstancesDispatcherJob(
+            A.Fake<ILogger<DeletePendingDbInstancesDispatcherJob>>(),
             jobStatusService,
             defaultAdminApiContext,
             tenantSpecificDbContextProvider,
@@ -244,7 +244,33 @@ public class CreatePendingDbInstancesDispatcherJobTests
         await job.Execute(CreateJobExecutionContext(scheduler, "tenant1"));
 
         scheduledJobs.Count.ShouldBe(1);
-        scheduledJobs[0].Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-tenant1-{tenantAdminApiContext.DbInstances.Single().Id}");
+        scheduledJobs[0].Key.Name.ShouldBe($"{JobConstants.DeleteInstanceJobName}-tenant1-{tenantAdminApiContext.DbInstances.Single().Id}");
         scheduledJobs[0].JobDataMap.GetString(JobConstants.TenantNameKey).ShouldBe("tenant1");
+    }
+
+    [Test]
+    public async Task Execute_Throws_WhenTenantNameMissingAndMultiTenancyEnabled()
+    {
+        using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
+        var tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
+        var jobStatusService = A.Fake<IJobStatusService>();
+        var scheduler = CreateScheduler(out _);
+
+        var job = new DeletePendingDbInstancesDispatcherJob(
+            A.Fake<ILogger<DeletePendingDbInstancesDispatcherJob>>(),
+            jobStatusService,
+            adminApiContext,
+            tenantSpecificDbContextProvider,
+            CreateOptions(multiTenancy: true));
+
+        // Context has no TenantNameKey — base class swallows the exception and records Error status
+        await job.Execute(CreateJobExecutionContext(scheduler, tenantName: null));
+
+        A.CallTo(() => jobStatusService.SetStatusAsync(
+                A<string>._,
+                QuartzJobStatus.Error,
+                A<string>._,
+                A<string>._))
+            .MustHaveHappenedOnceExactly();
     }
 }

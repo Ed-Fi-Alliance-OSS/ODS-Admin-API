@@ -22,7 +22,7 @@ public class DeleteDbInstanceCommandTests : AdminApiDbContextTestBase
         var instance = new DbInstance
         {
             Name = "Delete Test Instance",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
@@ -48,7 +48,7 @@ public class DeleteDbInstanceCommandTests : AdminApiDbContextTestBase
         var instance = new DbInstance
         {
             Name = "Timestamp Test Instance",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
@@ -74,7 +74,7 @@ public class DeleteDbInstanceCommandTests : AdminApiDbContextTestBase
         var instance = new DbInstance
         {
             Name = "No Hard Delete Instance",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
