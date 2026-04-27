@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-FROM alpine:3.20@sha256:187cce89a2fdd4eaf457a0af45f5ce27672f35ce0f6df49b5b0ee835afe0561b AS assets
+FROM alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc AS assets
 
 # Base image for the Ed-Fi ODS/API 6.2 Admin database setup
 FROM edfialliance/ods-api-db-admin:v2.3.5@sha256:c9a3b50f16f60e6a126d3bd37b2cb1d52e1fb0014f88d67193fb03e4414b9d98 AS base

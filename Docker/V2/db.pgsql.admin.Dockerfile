@@ -3,9 +3,9 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-FROM alpine:3.20@sha256:187cce89a2fdd4eaf457a0af45f5ce27672f35ce0f6df49b5b0ee835afe0561b AS assets
+FROM alpine:3.20@sha256:c64c687cbea9300178b30c95835354e34c4e4febc4badfe27102879de0483b5e AS assets
 
-FROM edfialliance/ods-api-db-admin:7.3.1@sha256:9d6c6ad298f5eb2ea58d7b2c1c7ea5f6bdfcd12d90028b98fbfea4237a5610f2 AS base
+FROM edfialliance/ods-api-db-admin:7.3.1@sha256:d8606953fd9489ed61a259038761ac8700e4297cca87399480786cc572f4b624 AS base
 USER root
 RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 && rm -rf /var/cache/apk/*
 

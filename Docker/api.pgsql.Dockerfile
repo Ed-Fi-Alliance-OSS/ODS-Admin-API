@@ -4,9 +4,9 @@
 # See the LICENSE and NOTICES files in the project root for more information.
 
 #tag 8.0-alpine
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.21-alpine3.22@sha256:cb69be896f82e0d73f513c128ece501c7c1f1809c49415a69dc096e013d5314a AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.22-alpine3.21-amd64@sha256:3f24961ffc053875ceef4a9ed3fb085325014111581fc384a6e76b9cb6d718c3 AS base
 RUN apk upgrade --no-cache && \
-    apk add --no-cache bash=~5 dos2unix=~7 gettext=~0 icu=~76.1-r1 jq=~1 musl=~1.2.5-r12 openssl=3.5.6-r0 postgresql15-client=~15 unzip=~6 && \
+    apk add --no-cache bash=~5 dos2unix=~7 gettext=~0 icu=~74 jq=~1 musl=~1.2.5-r11 openssl=3.3.7-r0 postgresql15-client=~15 unzip=~6 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
