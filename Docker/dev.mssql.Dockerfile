@@ -12,15 +12,19 @@ RUN apk upgrade --no-cache && apk add --no-cache musl=~1
 ARG ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-"Production"}
 
 WORKDIR /source
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config ./
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/Directory.Packages.props ./
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
-RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json
-
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
-
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.V1 EdFi.Ods.AdminApi.V1/
 
 WORKDIR /source/EdFi.Ods.AdminApi
