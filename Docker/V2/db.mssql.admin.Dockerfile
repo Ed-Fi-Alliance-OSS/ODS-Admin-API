@@ -34,7 +34,9 @@ COPY Settings/V2/DB-Admin/mssql/init-database.sh /tmp/init/3-init-database.sh
 COPY Settings/V2/DB-Admin/mssql/entrypoint.sh /tmp/init/entrypoint.sh
 
 COPY Settings/V2/DB-Admin/mssql/run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
+# hadolint ignore=DL3022
 COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/MsSql/Structure/Admin/ /tmp/AdminApiScripts/Admin/MsSql
+# hadolint ignore=DL3022
 COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/MsSql/Structure/Security/ /tmp/AdminApiScripts/Security/MsSql
 COPY Settings/dev/adminapi-test-seeddata.sql /tmp/AdminApiScripts/Admin/MsSql/adminapi-test-seeddata.sql
 
