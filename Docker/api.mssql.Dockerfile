@@ -5,7 +5,7 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.22-alpine3.21-amd64@sha256:3f24961ffc053875ceef4a9ed3fb085325014111581fc384a6e76b9cb6d718c3 AS base
 RUN apk upgrade --no-cache && \
-    apk add --no-cache unzip=~6 dos2unix=~7 bash=~5 gettext=~0 jq=~1 icu=~74 openssl=3.5.6-r0 musl=~1.2.5-r11 && \
+    apk add --no-cache unzip=~6 dos2unix=~7 bash=~5 gettext=~0 jq=~1 icu=~74 openssl=~3 musl=~1 && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
 FROM base AS build

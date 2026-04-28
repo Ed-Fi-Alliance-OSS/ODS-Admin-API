@@ -7,26 +7,27 @@
 # code. The next two layers use the dotnet/aspnet image to run the built code.
 # The extra layers in the middle support caching of base layers.
 
-# Define assets stage using Alpine 3.21 to match the version used in other stages
-FROM alpine:3.21@sha256:f27cad9117495d32d067133afff942cb2dc745dfe9163e949f6bfe8a6a245339 AS assets
-
 FROM mcr.microsoft.com/dotnet/sdk:8.0.416-alpine3.21-amd64@sha256:1d9ab6a033ab84655245cc6dd16c536de4edc3c3321c89e4ec53fb5b3580365b AS build
-RUN apk add --no-cache musl=~1.2.5-r11 && \
+RUN apk add --no-cache musl=~1 && \
     rm -rf /var/cache/apk/*
 
 ARG ASPNETCORE_ENVIRONMENT="Production"
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
 
 WORKDIR /source
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config ./
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/Directory.Packages.props ./
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
-RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json
-
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
-
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.V1 EdFi.Ods.AdminApi.V1/
 
 WORKDIR /source/EdFi.Ods.AdminApi
@@ -36,13 +37,13 @@ RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-bu
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.22-alpine3.21-amd64@sha256:3f24961ffc053875ceef4a9ed3fb085325014111581fc384a6e76b9cb6d718c3 AS runtimebase
 RUN apk add --no-cache \
-        bash=5.2.37-r0 \
-        dos2unix=7.5.2-r0 \
-        gettext=0.22.5-r0 \
+        bash=~5 \
+        dos2unix=~7 \
+        gettext=~0.22 \
         icu=~74 \
-        musl=~1.2.5-r11 \
-        openssl=3.3.7-r0 \
-        postgresql15-client=15.17-r0 && \
+        musl=~1 \
+        openssl=~3 \
+        postgresql15-client=~15 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
