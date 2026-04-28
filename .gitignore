@@ -72,3 +72,4 @@ Docker/Settings/ssl/dhparam.pem
 coverage
 coverage.*
 coveragereport/
+.claude/settings.local.json
