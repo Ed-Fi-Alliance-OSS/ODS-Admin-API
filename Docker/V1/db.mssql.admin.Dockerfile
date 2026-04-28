@@ -15,10 +15,13 @@ ARG STANDARD_VERSION="4.0.0"
 ARG ADMIN_VERSION="6.2.536"
 ARG SECURITY_VERSION="6.2.568"
 
+# hadolint ignore=DL3022
 COPY --from=assets Docker/Settings/V1/DB-Admin/mssql/healthcheck.sh /usr/local/bin/healthcheck.sh
+# hadolint ignore=DL3022
 COPY --from=assets Docker/Settings/V1/DB-Admin/mssql/init-database.sh /tmp/init/3-init-database.sh
+# hadolint ignore=DL3022
 COPY --from=assets Docker/Settings/V1/DB-Admin/mssql/entrypoint.sh /tmp/init/entrypoint.sh
-
+# hadolint ignore=DL3022
 COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/MsSql/Structure/Admin/ /tmp/AdminApiScripts/MsSql
 
 RUN useradd -M -s /bin/bash -u 10099 -g 0 edfi  && \

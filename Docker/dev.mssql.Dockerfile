@@ -7,20 +7,24 @@
 # code. The next two layers use the dotnet/aspnet image to run the built code.
 # The extra layers in the middle support caching of base layers.
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0.415-alpine3.21@sha256:f308a8fe0941a318421d18a0917b344d15d18996173a2db6f908a12b8db6b074 AS build
-RUN apk upgrade --no-cache && apk add --no-cache musl=~1.2.5-r9
+FROM mcr.microsoft.com/dotnet/sdk:8.0.416-alpine3.21-amd64@sha256:1d9ab6a033ab84655245cc6dd16c536de4edc3c3321c89e4ec53fb5b3580365b AS build
+RUN apk upgrade --no-cache && apk add --no-cache musl=~1
 ARG ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-"Production"}
 
 WORKDIR /source
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config ./
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/Directory.Packages.props ./
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi/
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi EdFi.Ods.AdminApi/
-RUN rm -f EdFi.Ods.AdminApi/appsettings.Development.json
-
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/NuGet.Config EdFi.Ods.AdminApi.Common/
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Common/
-
+# hadolint ignore=DL3022
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.V1 EdFi.Ods.AdminApi.V1/
 
 WORKDIR /source/EdFi.Ods.AdminApi
@@ -28,9 +32,9 @@ RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 RUN dotnet restore && dotnet build -c Release
 RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-build -o /app/EdFi.Ods.AdminApi
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.21-alpine3.21-amd64@sha256:61adf767314cc4b6a298dd3bdba46a2f10be37d67c75ad64dc7a89a44df8a228 AS runtimebase
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.22-alpine3.21-amd64@sha256:3f24961ffc053875ceef4a9ed3fb085325014111581fc384a6e76b9cb6d718c3 AS runtimebase
 RUN apk upgrade --no-cache && \
-    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~74 curl musl=~1.2.5-r9 && \
+    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~74 curl musl=~1 && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
 FROM runtimebase AS setup
