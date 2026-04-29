@@ -92,7 +92,7 @@ jobs:
           mkdir docker-logs
           docker logs ed-fi-db-admin-adminapi-tenant1 > docker-logs/ed-fi-db-admin-adminapi-tenant1.log
           docker logs ed-fi-db-admin-adminapi-tenant2 > docker-logs/ed-fi-db-admin-adminapi-tenant2.log
-          docker logs adminapi > docker-logs/adminapi.log
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/adminapi.log
 
       - name: Upload Docker logs
         if: failure()
