@@ -193,7 +193,7 @@ script:post-response {
     async function deleteClaimsetById(id) {
         const schemaResponse = await axios.delete(`${API_URL}/v3/claimSets/${id}`, axiosConfig);
 
-        if (schemaResponse.status === 200) {
+        if (schemaResponse.status === 204) {
           console.log(`✅ Schema ${id} deleted successfully`);
         } else {
           console.log(`❌ Failed to delete schema ${id}`);
@@ -206,7 +206,7 @@ script:post-response {
     async function deleteODSInstanceById(id) {
         const odsResponse = await axios.delete(`${API_URL}/v3/odsInstances/${id}`, axiosConfig);
 
-        if (odsResponse.status === 200) {
+        if (odsResponse.status === 204) {
           console.log(`✅ OdsInstance ${id} deleted successfully`);
         } else {
           console.log("❌ Failed to delete odsinstance");
@@ -219,7 +219,7 @@ script:post-response {
     async function deleteVendorById(id) {
         const schemaResponse = await axios.delete(`${API_URL}/v3/vendors/${id}`, axiosConfig);
 
-        if (schemaResponse.status === 200) {
+        if (schemaResponse.status === 204) {
           console.log(`✅ Vendor ${id} deleted successfully`);
         } else {
           console.log(`❌ Failed to delete vendor ${id}`);

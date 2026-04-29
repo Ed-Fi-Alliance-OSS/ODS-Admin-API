@@ -122,7 +122,7 @@ script:pre-request {
             "odsInstanceIds": [bru.getVar("ODSInstanceId")]
     }, axiosConfig);
 
-    if (applicationUpdatedResponse.status === 200) {
+    if (applicationUpdatedResponse.status === 204) {
       console.log("✅ Application updated successfully");
     } else {
       console.log("❌ Failed to update application");

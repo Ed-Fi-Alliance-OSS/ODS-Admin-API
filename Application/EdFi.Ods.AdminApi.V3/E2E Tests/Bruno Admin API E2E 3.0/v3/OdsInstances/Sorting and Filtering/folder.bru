@@ -120,7 +120,7 @@ script:post-response {
     async function deleteODSInstanceById(id) {
         const odsResponse = await axios.delete(`${API_URL}/v3/odsInstances/${id}`, axiosConfig);
 
-        if (odsResponse.status === 200) {
+        if (odsResponse.status === 204) {
           console.log(`✅ OdsInstance ${id} deleted successfully`);
         } else {
           console.log("❌ Failed to delete odsinstance");

@@ -119,7 +119,7 @@ script:post-response {
     async function deleteProfileById(id) {
         const profileResponse = await axios.delete(`${API_URL}/v3/profiles/${id}`, axiosConfig);
 
-        if (profileResponse.status === 200) {
+        if (profileResponse.status === 204) {
           console.log(`✅ Profile ${id} deleted successfully`);
         } else {
           console.log("❌ Failed to delete profile");
