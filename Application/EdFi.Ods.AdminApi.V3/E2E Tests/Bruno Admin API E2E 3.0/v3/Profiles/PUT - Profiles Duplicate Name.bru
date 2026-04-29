@@ -137,7 +137,7 @@ script:post-response {
     const profileCreated = bru.getVar("OtherCreatedProfileId")
     const profileResponse = await axios.delete(`${API_URL}/v3/profiles/${profileCreated}`, axiosConfig);
 
-    if (profileResponse.status === 200) {
+    if (profileResponse.status === 204) {
       console.log("✅ Profile deleted successfully");
     } else {
       console.log("❌ Failed to delete profile");

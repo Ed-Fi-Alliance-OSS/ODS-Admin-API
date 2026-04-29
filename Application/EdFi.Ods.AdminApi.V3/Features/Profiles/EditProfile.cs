@@ -21,7 +21,7 @@ public class EditProfile : IFeature
         AdminApiEndpointBuilder
             .MapPut(endpoints, "/profiles/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -32,7 +32,7 @@ public class EditProfile : IFeature
         await validator.GuardAsync(request);
         request.Id = id;
         editProfileCommand.Execute(request);
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     [SwaggerSchema(Title = "EditProfileRequest")]

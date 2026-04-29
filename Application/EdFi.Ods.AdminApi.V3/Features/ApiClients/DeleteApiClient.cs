@@ -5,7 +5,6 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
 namespace EdFi.Ods.AdminApi.V3.Features.ApiClients;
@@ -16,14 +15,14 @@ public class DeleteApiClient : IFeature
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/apiclients/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static Task<IResult> Handle(IDeleteApiClientCommand deleteApiClientCommand, int id)
     {
         deleteApiClientCommand.Execute(id);
-        return Task.FromResult(Results.Ok("ApiClient".ToJsonObjectResponseDeleted()));
+        return Task.FromResult(Results.NoContent());
     }
 }
 

@@ -7,12 +7,10 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Extensions;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 
 namespace EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 
@@ -22,7 +20,7 @@ public class DeleteClaimSet : IFeature
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/claimSets/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -40,7 +38,7 @@ public class DeleteClaimSet : IFeature
             throw new ValidationException(new[] { new ValidationFailure(nameof(id), exception.Message) });
         }
 
-        return Task.FromResult(Results.Ok("ClaimSet".ToJsonObjectResponseDeleted()));
+        return Task.FromResult(Results.NoContent());
     }
 
     private static void CheckClaimSetExists(int id, IGetClaimSetByIdQuery query)

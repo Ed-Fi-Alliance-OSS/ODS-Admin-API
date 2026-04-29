@@ -25,7 +25,7 @@ public class EditOdsInstance : IFeature
         AdminApiEndpointBuilder
             .MapPut(endpoints, "/odsInstances/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -46,7 +46,7 @@ public class EditOdsInstance : IFeature
         else
             request.ConnectionString = string.Empty;
         editOdsInstanceCommand.Execute(request);
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     [SwaggerSchema(Title = "EditOdsInstanceRequest")]

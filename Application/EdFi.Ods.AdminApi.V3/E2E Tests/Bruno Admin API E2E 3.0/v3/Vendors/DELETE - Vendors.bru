@@ -11,34 +11,19 @@ delete {
 }
 
 script:post-response {
-  test("DELETE Vendors: Status code is OK", function () {
-      expect(res.getStatus()).to.equal(200);
+  test("DELETE Vendors: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
   });
-  
+
   const response = res.getBody();
-  
-  test("DELETE Vendors: Response matches success format", function () {
-      expect(response).to.have.property("title");
-  });
-  
-  test("DELETE Vendors: Response title is helpful and accurate", function () {
-      expect(response.title.toLowerCase()).to.contain("vendor");
-      expect(response.title.toLowerCase()).to.contain("deleted");
-  });
-  
   const Ajv = require('ajv');
   const ajv = new Ajv();
   const DeleteVendorSchema = {
-    "type": "object",
-    "properties": {
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "title"
+    oneOf: [
+      { type: "null" },
+      { type: "string", maxLength: 0 }
     ]
-  }
+  };
   
   test("DELETE Vendors: Validation Schema Response", () => {
       const valid = ajv.validate(DeleteVendorSchema, response);

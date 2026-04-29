@@ -131,7 +131,7 @@ script:post-response {
     async function deleteVendorById(id) {
         const schemaResponse = await axios.delete(`${API_URL}/v3/vendors/${id}`, axiosConfig);
 
-        if (schemaResponse.status === 200) {
+        if (schemaResponse.status === 204) {
           console.log(`✅ Vendor ${id} deleted successfully`);
         } else {
           console.log(`❌ Failed to delete vendor ${id}`);

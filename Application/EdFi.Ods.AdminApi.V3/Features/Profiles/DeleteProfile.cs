@@ -16,14 +16,14 @@ public class DeleteProfile : IFeature
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/profiles/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(200, FeatureCommonConstants.DeletedSuccessResponseDescription))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static Task<IResult> Handle(IDeleteProfileCommand deleteProfileCommand, int id)
     {
         deleteProfileCommand.Execute(id);
-        return Task.FromResult(Results.Ok());
+        return Task.FromResult(Results.NoContent());
     }
 }
 

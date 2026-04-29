@@ -22,7 +22,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
     public class EditVendorTests
     {
         [Test]
-        public async Task Handle_WithValidRequest_ReturnsOkAndUpdatesVendor()
+        public async Task Handle_WithValidRequest_ReturnsNoContentAndUpdatesVendor()
         {
             var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
                 .UseInMemoryDatabase(databaseName: $"EditVendor_{Guid.NewGuid()}")
@@ -56,7 +56,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
 
             var result = await EditVendor.Handle(command, validator, request, vendor.VendorId);
 
-            result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok>();
+            result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NoContent>();
 
             var updatedVendor = usersContext.Vendors
                 .Include(v => v.VendorNamespacePrefixes)

@@ -19,7 +19,7 @@ public class DeleteResourceClaim : IFeature
     {
         AdminApiEndpointBuilder.MapDelete(endpoints, "/claimSets/{claimSetId}/resourceClaimActions/{resourceClaimId}", Handle)
        .WithSummary("Deletes a resource claims association from a claimset")
-       .WithRouteOptions(b => b.WithResponseCode(200))
+         .WithRouteOptions(b => b.WithResponseCode(204))
        .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -46,7 +46,7 @@ public class DeleteResourceClaim : IFeature
             deleteResouceClaimOnClaimSetCommand.Execute(claimSet.Id, resourceClaimId);
         }
 
-        return await Task.FromResult(Results.Ok());
+        return await Task.FromResult(Results.NoContent());
     }
 
 }

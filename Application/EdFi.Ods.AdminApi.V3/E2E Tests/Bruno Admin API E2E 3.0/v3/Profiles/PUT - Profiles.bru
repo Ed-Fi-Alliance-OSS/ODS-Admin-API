@@ -18,8 +18,8 @@ body:json {
 }
 
 script:post-response {
-  test("PUT Profiles: Status code is Created", function () {
-      expect(res.getStatus()).to.equal(200);
+  test("PUT Profiles: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
   });
   
   console.log("🔧 Setting post environment to ignore SSL certificates...");

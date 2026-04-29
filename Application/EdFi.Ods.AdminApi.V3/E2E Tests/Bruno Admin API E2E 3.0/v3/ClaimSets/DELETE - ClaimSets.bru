@@ -11,34 +11,19 @@ delete {
 }
 
 script:post-response {
-  test("DELETE ClaimSets: Status code is OK", function () {
-      expect(res.getStatus()).to.equal(200);
+  test("DELETE ClaimSets: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
   });
-  
+
   const response = res.getBody();
-  
-  test("DELETE ClaimSets: Response matches success format", function () {
-      expect(response).to.have.property("title");
-  });
-  
-  test("DELETE ClaimSets: Response title is helpful and accurate", function () {
-      expect(response.title.toLowerCase()).to.contain("claimset");
-      expect(response.title.toLowerCase()).to.contain("deleted");
-  });
-  
   const Ajv = require('ajv');
   const ajv = new Ajv();
   const DeleteClaimSetsSchema = {
-    "type": "object",
-    "properties": {
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "title"
+    oneOf: [
+      { type: "null" },
+      { type: "string", maxLength: 0 }
     ]
-  }
+  };
   
   test("DELETE ClaimSet: JSON Schema Validation", () => {
       const valid = ajv.validate(DeleteClaimSetsSchema, response);
