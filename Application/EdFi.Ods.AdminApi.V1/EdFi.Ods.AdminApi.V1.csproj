@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" />
+  <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NJsonSchema" />
     <PackageReference Include="Npgsql" />
