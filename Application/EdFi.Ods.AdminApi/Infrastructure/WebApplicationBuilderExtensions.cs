@@ -747,6 +747,18 @@ public static class WebApplicationBuilderExtensions
                 EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.RefreshEducationOrganizationsJob
             >();
             webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.CreateInstanceJob
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.CreatePendingDbInstancesDispatcherJob
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.DeleteInstanceJob
+            >();
+            webApplicationBuilder.Services.AddTransient<
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.DeletePendingDbInstancesDispatcherJob
+            >();
+            webApplicationBuilder.Services.AddTransient<
                 IJobStatusService,
                 EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.JobStatusService
             >();

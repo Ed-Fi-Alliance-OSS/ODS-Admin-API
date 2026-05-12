@@ -11,11 +11,9 @@ namespace EdFi.Ods.AdminApi.V3.Features.ApiClients;
 public class ApiClientModel
 {
     public int Id { get; set; }
-    public string Key { get; set; } = string.Empty;
+    public string ClientId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public bool IsApproved { get; set; } = true;
-    public bool UseSandbox { get; set; } = false;
-    public int SandboxType { get; set; } = 0;
     public int ApplicationId { get; set; } = 0;
     public string KeyStatus { get; set; } = "Active";
     public IList<long>? EducationOrganizationIds { get; set; }

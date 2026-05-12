@@ -18,11 +18,9 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             var model = new ApiClientModel();
             model.Id.ShouldBe(0);
-            model.Key.ShouldBe(string.Empty);
+            model.ClientId.ShouldBe(string.Empty);
             model.Name.ShouldBe(string.Empty);
             model.IsApproved.ShouldBeTrue();
-            model.UseSandbox.ShouldBeFalse();
-            model.SandboxType.ShouldBe(0);
             model.ApplicationId.ShouldBe(0);
             model.KeyStatus.ShouldBe("Active");
             model.EducationOrganizationIds.ShouldBeNull();
@@ -35,11 +33,9 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             var model = new ApiClientModel
             {
                 Id = 1,
-                Key = "TestKey",
+                ClientId = "TestKey",
                 Name = "TestName",
                 IsApproved = false,
-                UseSandbox = true,
-                SandboxType = 2,
                 ApplicationId = 99,
                 KeyStatus = "Inactive",
                 EducationOrganizationIds = new List<long> { 1001, 1002 },
@@ -47,11 +43,9 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             };
 
             model.Id.ShouldBe(1);
-            model.Key.ShouldBe("TestKey");
+            model.ClientId.ShouldBe("TestKey");
             model.Name.ShouldBe("TestName");
             model.IsApproved.ShouldBeFalse();
-            model.UseSandbox.ShouldBeTrue();
-            model.SandboxType.ShouldBe(2);
             model.ApplicationId.ShouldBe(99);
             model.KeyStatus.ShouldBe("Inactive");
             model.EducationOrganizationIds.ShouldBe(new List<long> { 1001, 1002 });

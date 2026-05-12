@@ -39,12 +39,10 @@ public static class ApiClientMapper
         {
             Id = source.ApiClientId,
             Name = source.Name,
-            Key = source.Key,
+            ClientId = source.Key,
             ApplicationId = source.Application?.ApplicationId ?? 0,
             KeyStatus = source.KeyStatus,
             IsApproved = source.IsApproved,
-            UseSandbox = source.UseSandbox,
-            SandboxType = (int)source.SandboxType,
             EducationOrganizationIds = source.ApplicationEducationOrganizations
                 .Select(eu => eu.EducationOrganizationId)
                 .ToList(),
