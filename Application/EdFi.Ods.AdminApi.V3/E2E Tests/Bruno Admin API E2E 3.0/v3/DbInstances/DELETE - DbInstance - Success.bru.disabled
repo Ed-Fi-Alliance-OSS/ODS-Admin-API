@@ -133,7 +133,7 @@ script:post-response {
   // DISABLED: See script:pre-request comment.
   return;
 
-  const expectedStatus = 202;
+  const expectedStatus = 204;
   const responseStatus = res.getStatus();
 
   if (responseStatus !== expectedStatus) {
@@ -144,7 +144,7 @@ script:post-response {
     console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
   }
 
-  test("DELETE DbInstance Success: Status code is Accepted", function () {
+  test("DELETE DbInstance Success: Status code is No Content", function () {
     expect(responseStatus).to.equal(expectedStatus);
   });
 

@@ -29,7 +29,7 @@ public class DeleteDbInstance : IFeature
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/dbInstances/{id}", Handle)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
@@ -84,7 +84,7 @@ public class DeleteDbInstance : IFeature
             // Treat duplicate scheduling as success — the job is already queued.
         }
 
-        return Results.Accepted();
+        return Results.NoContent();
     }
 
     private static string? GetBlockingStatusMessage(string status)

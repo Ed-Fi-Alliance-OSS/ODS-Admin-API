@@ -88,7 +88,7 @@ public class DeleteDbInstanceTests
 
         var result = await Handle(1);
 
-        result.ShouldBeOfType<Accepted>();
+        result.ShouldBeOfType<NoContent>();
         A.CallTo(() => _deleteDbInstanceCommand.Execute(1)).MustHaveHappenedOnceExactly();
     }
 
