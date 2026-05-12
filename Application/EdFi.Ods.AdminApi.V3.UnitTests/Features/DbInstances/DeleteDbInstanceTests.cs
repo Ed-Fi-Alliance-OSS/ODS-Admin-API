@@ -57,14 +57,6 @@ public class DeleteDbInstanceTests
         _options = Options.Create(new AppSettings { DatabaseEngine = "SqlServer" });
     }
 
-    private static HttpContext CreateHttpContext()
-    {
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Scheme = "https";
-        httpContext.Request.Host = new HostString("localhost", 7214);
-        return httpContext;
-    }
-
     private Task<IResult> Handle(int id)
         => DeleteDbInstance.Handle(
             _getDbInstanceByIdQuery,
@@ -72,8 +64,7 @@ public class DeleteDbInstanceTests
             _schedulerFactory,
             _tenantConfigurationProvider,
             _options,
-            id,
-            CreateHttpContext());
+            id);
 
     [Test]
     public async Task Handle_WhenDbInstanceNotFound_ThrowsNotFoundException()

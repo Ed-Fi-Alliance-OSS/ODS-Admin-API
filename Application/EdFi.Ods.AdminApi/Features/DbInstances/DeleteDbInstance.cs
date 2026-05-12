@@ -84,7 +84,7 @@ public class DeleteDbInstance : IFeature
             // Treat duplicate scheduling as success — the job is already queued.
         }
 
-        return Results.Accepted($"/dbinstances/{id}", null);
+        return Results.Accepted();
     }
 
     private static string? GetBlockingStatusMessage(string status)
