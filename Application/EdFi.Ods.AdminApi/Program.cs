@@ -238,9 +238,9 @@ if (adminApiMode == AdminApiMode.V2)
 }
 else if (adminApiMode == AdminApiMode.V3)
 {
-    var shouldScheduleDispatcher = double.TryParse(createDbInstancesSweepIntervalInMins, out var createDbInstancesSweepInterval);
-    var shouldScheduleDeleteDispatcher = double.TryParse(deleteDbInstancesSweepIntervalInMins, out var deleteDbInstancesSweepInterval);
-    var shouldScheduleEdOrgsRefresh = double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval);
+    var shouldScheduleDispatcher = double.TryParse(createDbInstancesSweepIntervalInMins, out var createDbInstancesSweepInterval) && createDbInstancesSweepInterval > 0;
+    var shouldScheduleDeleteDispatcher = double.TryParse(deleteDbInstancesSweepIntervalInMins, out var deleteDbInstancesSweepInterval) && deleteDbInstancesSweepInterval > 0;
+    var shouldScheduleEdOrgsRefresh = double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval) && refreshInterval > 0;
 
     if (isMultiTenancyEnabled && (shouldScheduleDispatcher || shouldScheduleDeleteDispatcher || shouldScheduleEdOrgsRefresh))
     {

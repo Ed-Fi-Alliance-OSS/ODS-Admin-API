@@ -86,7 +86,7 @@ public class AddDbInstance : IFeature
             // scheduling as success — the job is already queued and will process the DbInstance.
         }
 
-        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dbinstances/{added.Id}");
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dbInstances/{added.Id}");
         return Results.Accepted(absoluteLocation, null);
     }
 

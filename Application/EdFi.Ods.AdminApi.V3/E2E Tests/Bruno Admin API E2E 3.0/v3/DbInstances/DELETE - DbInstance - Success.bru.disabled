@@ -11,7 +11,7 @@ script:pre-request {
   // Without those source databases the provisioner cannot copy them and the DbInstance
   // transitions to Error status, causing this pre-request to throw and block the whole run.
   // To re-enable: remove this early-return block and remove 'skip: true' from meta.
-  // See docs/design/DBINSTANCE-PROVISIONING-JOBS.md § Pending work.
+  // See docs/design/INSTANCE-MANAGEMENT-Quartz.md for background on the provisioning job design.
   return;
 
   console.log("🔧 Setting pre environment to ignore SSL certificates...");

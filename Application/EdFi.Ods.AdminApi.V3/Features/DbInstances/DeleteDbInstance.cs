@@ -8,6 +8,7 @@ using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -39,7 +40,8 @@ public class DeleteDbInstance : IFeature
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         [FromServices] IOptions<AppSettings> options,
-        int id
+        int id,
+        HttpContext httpContext
     )
     {
         var dbInstance = getDbInstanceByIdQuery.Execute(id);
@@ -84,7 +86,8 @@ public class DeleteDbInstance : IFeature
             // Treat duplicate scheduling as success — the job is already queued.
         }
 
-        return Results.Accepted($"/dbinstances/{id}", null);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dbInstances/{id}");
+        return Results.Accepted(absoluteLocation, null);
     }
 
     private static string? GetBlockingStatusMessage(string status)
