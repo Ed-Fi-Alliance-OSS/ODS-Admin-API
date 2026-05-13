@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
+  <PackageReference Include="Microsoft.Identity.Client" />
   </ItemGroup>
 
   <ItemGroup>

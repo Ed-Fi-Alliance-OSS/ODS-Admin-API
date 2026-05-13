@@ -141,11 +141,11 @@
       },
       "Microsoft.Identity.Client": {
         "type": "Direct",
-        "requested": "[4.63.0, )",
-        "resolved": "4.63.0",
-        "contentHash": "J+4j85UCu6B6d/tbbYh6u/FsSVmmUhFzkmkY8r1wZObv9fJWmOO+zCb7QJzd6Yq9QrhN1nfGbjM2tI9IAGSOww==",
+        "requested": "[4.84.0, )",
+        "resolved": "4.84.0",
+        "contentHash": "Ac2pabU2W+p9yxPaILnoKhjj3HYefuJpKHcngJSljs8LVS05I19UtsJvbIrphG4fbJSdUcwpnpNzhARz/98SCA==",
         "dependencies": {
-          "Microsoft.IdentityModel.Abstractions": "6.35.0",
+          "Microsoft.IdentityModel.Abstractions": "8.14.0",
           "System.Diagnostics.DiagnosticSource": "6.0.1"
         }
       },
@@ -593,8 +593,8 @@
       },
       "Microsoft.IdentityModel.Abstractions": {
         "type": "Transitive",
-        "resolved": "7.1.2",
-        "contentHash": "33eTIA2uO/L9utJjZWbKsMSVsQf7F8vtd6q5mQX7ZJzNvCpci5fleD6AeANGlbbb7WX7XKxq9+Dkb5e3GNDrmQ=="
+        "resolved": "8.14.0",
+        "contentHash": "iwbCpSjD3ehfTwBhtSNEtKPK0ICun6ov7Ibx6ISNA9bfwIyzI2Siwyi9eJFCJBwxowK9xcA1mj+jBWiigeqgcQ=="
       },
       "Microsoft.IdentityModel.JsonWebTokens": {
         "type": "Transitive",
@@ -1342,6 +1342,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "[8.0.8, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.5, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
+          "Microsoft.Identity.Client": "[4.84.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[8.0.6, )",
           "Quartz": "[3.15.1, )",
@@ -1355,7 +1356,8 @@
         "dependencies": {
           "Dapper": "[2.1.72, )",
           "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
-          "Microsoft.Data.SqlClient": "[5.2.2, )"
+          "Microsoft.Data.SqlClient": "[5.2.2, )",
+          "Microsoft.Identity.Client": "[4.84.0, )"
         }
       },
       "edfi.ods.adminapi.v1": {
@@ -1378,6 +1380,7 @@
           "Microsoft.EntityFrameworkCore.Relational": "[8.0.8, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[8.0.8, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
+          "Microsoft.Identity.Client": "[4.84.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Newtonsoft.Json": "[13.0.3, )",
           "Npgsql": "[8.0.6, )",
@@ -1411,7 +1414,7 @@
           "Microsoft.EntityFrameworkCore.Abstractions": "[8.0.8, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.5, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
-          "Microsoft.Identity.Client": "[4.63.0, )",
+          "Microsoft.Identity.Client": "[4.84.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[8.0.6, )",
           "OpenIddict.AspNetCore": "[4.10.1, )",
