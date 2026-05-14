@@ -37,6 +37,7 @@ public static class WebApplicationExtensions
                 {
                     routeBuilder.MapEndpoints(application);
                 }
+                new Features.Information.ReadInformation().MapEndpoints(application);
                 break;
 
             default:

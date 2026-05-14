@@ -20,7 +20,12 @@ script:post-response {
   test("GET Landing: Response includes expected properties", function () {
       expect(response).to.have.property("version");
       expect(response).to.have.property("build");
+      expect(response).to.have.property("specificationVersion");
       expect(response).to.have.property("tenancy");
+  });
+
+  test("GET Landing: specificationVersion is v2", function () {
+    expect(response.specificationVersion).to.equal("v2");
   });
   
   test("GET Landing: Response tenancy includes expected properties", function () {
@@ -58,12 +63,16 @@ script:post-response {
       },
       "build": {
         "type": "string"
+      },
+      "specificationVersion": {
+        "type": "string"
       }
     },
     "required": [
       "tenancy",
       "version",
-      "build"
+      "build",
+      "specificationVersion"
     ]
   }
   
