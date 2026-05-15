@@ -3,10 +3,15 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
+using System.Linq;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
 
@@ -21,7 +26,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Transaction(usersContext =>
         {
             CreateMultiple(2);
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var results = command.Execute();
             results.Count.ShouldBe(2);
         });
@@ -36,7 +41,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
             var offset = 0;
             var limit = 2;
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(offset, limit), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -71,7 +76,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         {
             CreateMultiple();
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -102,7 +107,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
             CreateMultiple();
             var offset = 0;
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(offset, null), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -138,7 +143,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
             CreateMultiple();
             var limit = 2;
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(null, limit), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -155,7 +160,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Transaction(usersContext =>
         {
             var odsInstances = CreateMultiple();
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(), odsInstances[2].OdsInstanceId, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -171,7 +176,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Transaction(usersContext =>
         {
             var odsInstances = CreateMultiple();
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(), null, odsInstances[2].Name, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -197,6 +202,50 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Save(odsInstances);
 
         return odsInstances;
+    }
+
+    private static readonly string TestEncryptionKey = Convert.ToBase64String(new byte[32]);
+    private static readonly Aes256SymmetricStringEncryptionProvider EncryptionProvider = new();
+    private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
+
+    private static IOptions<AppSettings> OptionsWithKey(string? key = null) =>
+        Options.Create(new AppSettings { EncryptionKey = key });
+
+    [Test]
+    public void ShouldEncryptUnencryptedConnectionStringsOnRead()
+    {
+        Transaction(usersContext =>
+        {
+            var odsInstances = new[]
+            {
+                new OdsInstance { Name = "enc-test-1", InstanceType = "type", ConnectionString = PlainConnectionString },
+                new OdsInstance { Name = "enc-test-2", InstanceType = "type", ConnectionString = PlainConnectionString }
+            };
+            Save(odsInstances);
+
+            var command = new GetOdsInstancesQuery(usersContext, OptionsWithKey(TestEncryptionKey), EncryptionProvider);
+            var results = command.Execute();
+            var encTestResults = results.Where(r => r.Name.StartsWith("enc-test-")).ToList();
+
+            encTestResults.ShouldAllBe(r => EncryptionProvider.IsEncrypted(r.ConnectionString));
+        });
+    }
+
+    [Test]
+    public void ShouldNotReEncryptAlreadyEncryptedConnectionStringsOnRead()
+    {
+        Transaction(usersContext =>
+        {
+            var encrypted = EncryptionProvider.Encrypt(PlainConnectionString, new byte[32]);
+            var odsInstance = new OdsInstance { Name = "no-reencrypt-test", InstanceType = "type", ConnectionString = encrypted };
+            Save(odsInstance);
+
+            var command = new GetOdsInstancesQuery(usersContext, OptionsWithKey(TestEncryptionKey), EncryptionProvider);
+            var results = command.Execute();
+            var result = results.Single(r => r.Name == "no-reencrypt-test");
+
+            result.ConnectionString.ShouldBe(encrypted);
+        });
     }
 }
 
