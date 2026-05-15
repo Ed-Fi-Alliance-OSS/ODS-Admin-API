@@ -169,4 +169,31 @@ public class Aes256SymmetricStringEncryptionProvider : ISymmetricStringEncryptio
             return signatureCheckResult;
         }
     }
+
+    /// <summary>
+    /// Determines whether the specified value already matches the encrypted format
+    /// produced by <see cref="Encrypt"/>: three pipe-separated Base64 segments
+    /// in the form "IV|EncryptedMessage|HMACSignature", where the IV is exactly 16 bytes.
+    /// </summary>
+    public bool IsEncrypted(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        string[] parts = value.Split('|');
+        if (parts.Length != 3)
+            return false;
+
+        try
+        {
+            byte[] iv = Convert.FromBase64String(parts[0]);
+            Convert.FromBase64String(parts[1]);
+            Convert.FromBase64String(parts[2]);
+            return iv.Length == 16;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
 }
