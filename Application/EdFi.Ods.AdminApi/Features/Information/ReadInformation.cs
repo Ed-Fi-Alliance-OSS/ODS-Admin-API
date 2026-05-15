@@ -10,8 +10,10 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
+using V3Tenants = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 
 namespace EdFi.Ods.AdminApi.Features.Information;
 
@@ -27,7 +29,7 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    public static async Task<InformationResult> GetInformation(IOptions<AppSettings> options, ITenantsService tenantsService)
+    public static async Task<InformationResult> GetInformation(IOptions<AppSettings> options, HttpContext httpContext)
     {
         if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
         {
@@ -43,8 +45,16 @@ public class ReadInformation : IFeature
 
             if (isMultiTenant)
             {
-                var tenants = await tenantsService.GetTenantsAsync();
-                tenantNames = tenants.Select(t => t.TenantName).ToList();
+                tenantNames = adminApiMode switch
+                {
+                    AdminApiMode.V2 => (await httpContext.RequestServices.GetRequiredService<ITenantsService>().GetTenantsAsync())
+                        .Select(t => t.TenantName)
+                        .ToList(),
+                    AdminApiMode.V3 => (await httpContext.RequestServices.GetRequiredService<V3Tenants.ITenantsService>().GetTenantsAsync())
+                        .Select(t => t.TenantName)
+                        .ToList(),
+                    _ => []
+                };
             }
             else
             {
@@ -56,9 +66,9 @@ public class ReadInformation : IFeature
 
         return adminApiMode switch
         {
-            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, tenancy),
-            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, tenancy),
-            AdminApiMode.V3 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, tenancy),
+            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, "v1", tenancy),
+            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, "v2", tenancy),
+            AdminApiMode.V3 => new InformationResult(V3.Infrastructure.Helpers.ConstantsHelpers.Version, V3.Infrastructure.Helpers.ConstantsHelpers.Build, "v3", tenancy),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

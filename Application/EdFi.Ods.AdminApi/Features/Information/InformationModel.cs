@@ -11,11 +11,12 @@ namespace EdFi.Ods.AdminApi.Features.Information;
 [SwaggerSchema(Title = "Information")]
 public class InformationResult
 {
-    public InformationResult(string version, string build, TenancyResult? tenancy = null)
+    public InformationResult(string version, string build, string specificationVersion, TenancyResult? tenancy = null)
     {
         Build = build;
         Version = version;
         Tenancy = tenancy;
+        SpecificationVersion = specificationVersion;
     }
 
     [SwaggerSchema("Tenancy information", Nullable = true)]
@@ -25,6 +26,8 @@ public class InformationResult
     public string Version { get; }
     [SwaggerSchema("Build / release version", Nullable = false)]
     public string Build { get; }
+    [SwaggerSchema("Admin API specification version", Nullable = false)]
+    public string SpecificationVersion { get; }
 }
 
 [SwaggerSchema(Title = "Tenancy")]
