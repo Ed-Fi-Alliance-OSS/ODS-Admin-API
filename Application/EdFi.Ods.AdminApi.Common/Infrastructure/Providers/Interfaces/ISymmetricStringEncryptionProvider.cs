@@ -30,4 +30,12 @@ public interface ISymmetricStringEncryptionProvider
     /// <para name="output">TThe decrypted string value</para>
     /// <returns>Indicates if the decryption operation was successful</returns>
     public bool TryDecrypt(string value, byte[] key, out string? output);
+
+    /// <summary>
+    /// Determines whether the specified value already matches the encrypted format
+    /// (three pipe-separated Base64 segments: IV|EncryptedMessage|HMACSignature).
+    /// </summary>
+    /// <param name="value">The string value to check.</param>
+    /// <returns>true if the value matches the encrypted format; otherwise false.</returns>
+    public bool IsEncrypted(string? value);
 }
