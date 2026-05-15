@@ -57,4 +57,11 @@ public class JobStatusService(AdminApiDbContext dbContext,
         }
         await resolvedDbContext.SaveChangesAsync();
     }
+
+    public async Task<JobStatus?> GetStatusAsync(string jobId)
+    {
+        var jobStatus = await dbContext.JobStatuses
+            .FirstOrDefaultAsync(j => j.JobId == jobId);
+        return jobStatus;
+    }
 }

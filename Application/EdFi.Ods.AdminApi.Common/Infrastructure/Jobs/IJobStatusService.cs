@@ -8,4 +8,5 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 public interface IJobStatusService
 {
     Task SetStatusAsync(string jobId, QuartzJobStatus status, string? tenantName, string? errorMessage = null);
+    Task<JobStatus?> GetStatusAsync(string jobId);
 }
