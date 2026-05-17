@@ -5,7 +5,7 @@
 
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using EdFi.Ods.AdminApi.V3.Features.Tenants;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
@@ -23,13 +23,13 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Tenants;
 [TestFixture]
 public class ReadTenantsTest
 {
-    private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
+    private IGetDataStoresQuery _getOdsInstancesQuery = null!;
     private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
 
     [SetUp]
     public void SetUp()
     {
-        _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
+        _getOdsInstancesQuery = A.Fake<IGetDataStoresQuery>();
         _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
     }
 

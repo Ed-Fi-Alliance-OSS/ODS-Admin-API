@@ -5,7 +5,7 @@
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
 [SwaggerSchema(Title = "OdsInstanceWithEducationOrganizations")]
 public class OdsInstanceWithEducationOrganizationsModel
@@ -22,4 +22,3 @@ public class OdsInstanceWithEducationOrganizationsModel
     [SwaggerSchema(Description = "List of education organizations in this instance")]
     public List<EducationOrganizationModel> EducationOrganizations { get; set; } = new();
 }
-

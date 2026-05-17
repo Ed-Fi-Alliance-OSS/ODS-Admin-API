@@ -59,10 +59,10 @@ public class EditOdsInstanceDerivative : IFeature
 
     public class Validator : AbstractValidator<EditOdsInstanceDerivativeRequest>
     {
-        private readonly IGetOdsInstanceQuery _getOdsInstanceQuery;
+        private readonly IGetDataStoreQuery _getOdsInstanceQuery;
         private readonly IGetOdsInstanceDerivativesQuery _getOdsInstanceDerivativesQuery;
         private readonly string _databaseEngine;
-        public Validator(IGetOdsInstanceQuery getOdsInstanceQuery, IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, IOptions<AppSettings> options)
+        public Validator(IGetDataStoreQuery getOdsInstanceQuery, IGetOdsInstanceDerivativesQuery getOdsInstanceDerivativesQuery, IOptions<AppSettings> options)
         {
             _getOdsInstanceQuery = getOdsInstanceQuery;
             _getOdsInstanceDerivativesQuery = getOdsInstanceDerivativesQuery;

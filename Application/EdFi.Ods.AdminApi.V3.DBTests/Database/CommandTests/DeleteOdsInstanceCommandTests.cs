@@ -12,7 +12,7 @@ using System.Linq;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class DeleteOdsInstanceCommandTests : PlatformUsersContextTestBase
+public class DeleteDataStoreCommandTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldDeleteOdsInstance()
@@ -30,8 +30,8 @@ public class DeleteOdsInstanceCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteOdsInstanceCommand = new DeleteOdsInstanceCommand(usersContext);
-            deleteOdsInstanceCommand.Execute(odsInstanceId);
+            var DeleteDataStoreCommand = new DeleteDataStoreCommand(usersContext);
+            DeleteDataStoreCommand.Execute(odsInstanceId);
         });
 
         Transaction(usersContext => usersContext.OdsInstances.Where(oi => oi.OdsInstanceId == odsInstanceId).ToArray()).ShouldBeEmpty();

@@ -10,7 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using EdFi.Ods.AdminApi.V3.Features.Tenants;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using log4net;
@@ -25,7 +25,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, string tenantName);
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -110,7 +110,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
     }
 
     public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
-        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetDataStoresQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
         string tenantName)
     {

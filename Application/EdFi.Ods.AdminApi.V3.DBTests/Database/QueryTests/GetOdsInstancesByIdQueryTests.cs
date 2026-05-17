@@ -26,7 +26,7 @@ public class GetOdsInstanceByIdQueryTests : PlatformUsersContextTestBase
                 ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False"
             };
             Save(odsInstance);
-            var command = new GetOdsInstanceQuery(usersContext);
+            var command = new GetDataStoreQuery(usersContext);
             var result = command.Execute(odsInstance.OdsInstanceId);
             result.OdsInstanceId.ShouldBe(odsInstance.OdsInstanceId);
             result.Name.ShouldBe("test ods instance 1");

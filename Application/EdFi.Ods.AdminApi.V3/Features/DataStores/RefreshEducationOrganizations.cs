@@ -14,14 +14,14 @@ using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Quartz;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
 public class RefreshEducationOrganizations : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/odsInstances/edOrgs/refresh", RefreshAllEducationOrganizations)
+            .MapPost(endpoints, "/dataStores/edOrgs/refresh", RefreshAllEducationOrganizations)
             .WithSummaryAndDescription(
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
@@ -30,7 +30,7 @@ public class RefreshEducationOrganizations : IFeature
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/odsInstances/{instanceId}/edOrgs/refresh", RefreshEducationOrganizationsByInstance)
+            .MapPost(endpoints, "/dataStores/{instanceId}/edOrgs/refresh", RefreshEducationOrganizationsByInstance)
             .WithSummaryAndDescription(
                 "Refreshes education organizations for a specific ODS instance",
                 "Triggers a refresh of education organization data for the specified ODS instance"
@@ -68,14 +68,14 @@ public class RefreshEducationOrganizations : IFeature
 
     public static async Task<IResult> RefreshEducationOrganizationsByInstance(
         [FromServices] ISchedulerFactory schedulerFactory,
-        [FromServices] IGetOdsInstanceQuery getOdsInstanceByIdQuery,
+        [FromServices] IGetDataStoreQuery getDataStoreQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         int instanceId)
     {
-        var odsInstance = getOdsInstanceByIdQuery.Execute(instanceId);
+        var odsInstance = getDataStoreQuery.Execute(instanceId);
         if (odsInstance == null)
         {
-            throw new NotFoundException<int>("OdsInstance", instanceId);
+            throw new NotFoundException<int>("dataStore", instanceId);
         }
 
         var tenantConfiguration = tenantConfigurationProvider.Get();
@@ -100,5 +100,3 @@ public class RefreshEducationOrganizations : IFeature
         });
     }
 }
-
-

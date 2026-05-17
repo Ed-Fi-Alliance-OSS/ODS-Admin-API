@@ -16,14 +16,14 @@ using FluentValidation;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
-public class AddOdsInstance : IFeature
+public class AddDataStore : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-           .MapPost(endpoints, "/odsInstances", Handle)
+           .MapPost(endpoints, "/dataStores", Handle)
            .WithDefaultSummaryAndDescription()
            .WithRouteOptions(b => b.WithResponseCode(201))
            .BuildForVersions(AdminApiVersions.V3);
@@ -31,39 +31,39 @@ public class AddOdsInstance : IFeature
 
     public static async Task<IResult> Handle(
         Validator validator,
-        IAddOdsInstanceCommand addOdsInstanceCommand,
+        IAddDataStoreCommand addDataStoreCommand,
         ISymmetricStringEncryptionProvider encryptionProvider,
         IOptions<AppSettings> options,
-        AddOdsInstanceRequest request,
+        AddDataStoreRequest request,
         HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         string encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
         request.ConnectionString = encryptionProvider.Encrypt(request.ConnectionString, Convert.FromBase64String(encryptionKey));
-        var addedProfile = addOdsInstanceCommand.Execute(request);
-        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/odsInstances/{addedProfile.OdsInstanceId}");
+        var added = addDataStoreCommand.Execute(request);
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dataStores/{added.OdsInstanceId}");
         return Results.Created(absoluteLocation, null);
     }
 
-    [SwaggerSchema(Title = "AddOdsInstanceRequest")]
-    public class AddOdsInstanceRequest : IAddOdsInstanceModel
+    [SwaggerSchema(Title = "AddDataStoreRequest")]
+    public class AddDataStoreRequest : IAddDataStoreModel
     {
         [SwaggerSchema(Description = FeatureConstants.DataStoreName, Nullable = false)]
         public string? Name { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreTypeDescription, Nullable = true)]
-        public string? InstanceType { get; set; }
+        public string? DataStoreType { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreConnectionString, Nullable = false)]
         public string? ConnectionString { get; set; }
-
     }
 
-    public class Validator : AbstractValidator<IAddOdsInstanceModel>
+    public class Validator : AbstractValidator<IAddDataStoreModel>
     {
-        private readonly IGetOdsInstancesQuery _getOdsInstancesQuery;
+        private readonly IGetDataStoresQuery _getDataStoresQuery;
         private readonly string _databaseEngine;
-        public Validator(IGetOdsInstancesQuery getOdsInstancesQuery, IOptions<AppSettings> options)
+
+        public Validator(IGetDataStoresQuery getDataStoresQuery, IOptions<AppSettings> options)
         {
-            _getOdsInstancesQuery = getOdsInstancesQuery;
+            _getDataStoresQuery = getDataStoresQuery;
             _databaseEngine = options.Value.DatabaseEngine ?? throw new NotFoundException<string>("AppSettings", "DatabaseEngine");
 
             RuleFor(m => m.Name)
@@ -71,9 +71,9 @@ public class AddOdsInstance : IFeature
                 .Must(BeAUniqueName)
                 .WithMessage(FeatureConstants.DataStoreAlreadyExistsMessage);
 
-            RuleFor(m => m.InstanceType)
+            RuleFor(m => m.DataStoreType)
                 .MaximumLength(100)
-                .When(m => !string.IsNullOrEmpty(m.InstanceType));
+                .When(m => !string.IsNullOrEmpty(m.DataStoreType));
 
             RuleFor(m => m.ConnectionString)
                 .NotEmpty();
@@ -86,7 +86,7 @@ public class AddOdsInstance : IFeature
 
         private bool BeAUniqueName(string? name)
         {
-            return _getOdsInstancesQuery.Execute().TrueForAll(x => x.Name != name);
+            return _getDataStoresQuery.Execute().TrueForAll(x => x.Name != name);
         }
 
         private bool BeAValidConnectionString(string? connectionString)
@@ -95,7 +95,3 @@ public class AddOdsInstance : IFeature
         }
     }
 }
-
-
-
-

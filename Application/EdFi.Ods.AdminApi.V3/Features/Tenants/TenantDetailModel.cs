@@ -5,7 +5,7 @@
 
 using System.Text.Json.Serialization;
 using EdFi.Ods.AdminApi.Common.Constants;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V3.Features.Tenants;

@@ -13,7 +13,7 @@ using System.Linq;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class EditOdsInstanceCommandTests : PlatformUsersContextTestBase
+public class EditDataStoreCommandTests : PlatformUsersContextTestBase
 {
     private int _odsInstanceId;
 
@@ -38,16 +38,16 @@ public class EditOdsInstanceCommandTests : PlatformUsersContextTestBase
         var name = "new odsinstance name";
         var instanceType = "new odsinstance instance type";
         var connectionString = "new odsinstance connection string";
-        var newOdsInstanceData = new Mock<IEditOdsInstanceModel>();
+        var newOdsInstanceData = new Mock<IEditDataStoreModel>();
         newOdsInstanceData.Setup(v => v.Id).Returns(_odsInstanceId);
         newOdsInstanceData.Setup(v => v.Name).Returns(name);
-        newOdsInstanceData.Setup(v => v.InstanceType).Returns(instanceType);
+        newOdsInstanceData.Setup(v => v.DataStoreType).Returns(instanceType);
         newOdsInstanceData.Setup(v => v.ConnectionString).Returns(connectionString);
 
         Transaction(usersContext =>
         {
-            var editOdsInstanceCommand = new EditOdsInstanceCommand(usersContext);
-            editOdsInstanceCommand.Execute(newOdsInstanceData.Object);
+            var EditDataStoreCommand = new EditDataStoreCommand(usersContext);
+            EditDataStoreCommand.Execute(newOdsInstanceData.Object);
         });
 
         Transaction(usersContext =>
@@ -64,15 +64,15 @@ public class EditOdsInstanceCommandTests : PlatformUsersContextTestBase
     {
         var name = "new odsinstance name";
         var connectionString = "new odsinstance connection string";
-        var newOdsInstanceData = new Mock<IEditOdsInstanceModel>();
+        var newOdsInstanceData = new Mock<IEditDataStoreModel>();
         newOdsInstanceData.Setup(v => v.Id).Returns(_odsInstanceId);
         newOdsInstanceData.Setup(v => v.Name).Returns(name);
         newOdsInstanceData.Setup(v => v.ConnectionString).Returns(connectionString);
 
         Transaction(usersContext =>
         {
-            var editOdsInstanceCommand = new EditOdsInstanceCommand(usersContext);
-            editOdsInstanceCommand.Execute(newOdsInstanceData.Object);
+            var EditDataStoreCommand = new EditDataStoreCommand(usersContext);
+            EditDataStoreCommand.Execute(newOdsInstanceData.Object);
         });
 
         Transaction(usersContext =>

@@ -8,14 +8,14 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
 public class ReadEducationOrganizations : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/odsInstances/edOrgs", GetEducationOrganizations)
+            .MapGet(endpoints, "/dataStores/edOrgs", GetEducationOrganizations)
             .WithSummaryAndDescription(
                 "Retrieves all education organizations grouped by ODS instance",
                 "Returns all education organizations from all ODS instances in a nested structure"
@@ -24,7 +24,7 @@ public class ReadEducationOrganizations : IFeature
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/odsInstances/{instanceId}/edOrgs", GetEducationOrganizationsByInstance)
+            .MapGet(endpoints, "/dataStores/{instanceId}/edOrgs", GetEducationOrganizationsByInstance)
             .WithSummaryAndDescription(
                 "Retrieves education organizations for a specific ODS instance",
                 "Returns all education organizations for the specified ODS instance in a nested structure"
@@ -46,11 +46,11 @@ public class ReadEducationOrganizations : IFeature
 
     public static async Task<IResult> GetEducationOrganizationsByInstance(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
-        [FromServices] IGetOdsInstanceQuery getOdsInstanceQuery,
+        [FromServices] IGetDataStoreQuery getDataStoreQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
         int instanceId)
     {
-        getOdsInstanceQuery.Execute(instanceId);
+        getDataStoreQuery.Execute(instanceId);
 
         var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
             commonQueryParams,
@@ -59,6 +59,3 @@ public class ReadEducationOrganizations : IFeature
         return Results.Ok(educationOrganizations);
     }
 }
-
-
-

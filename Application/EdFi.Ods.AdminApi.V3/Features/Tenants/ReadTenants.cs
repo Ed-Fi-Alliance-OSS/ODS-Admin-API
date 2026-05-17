@@ -24,14 +24,14 @@ public class ReadTenants : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/tenants/{tenantName}/OdsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
+            .MapGet(endpoints, "/tenants/{tenantName}/dataStores/edOrgs", GetTenantEdOrgsByInstancesAsync)
             .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> GetTenantEdOrgsByInstancesAsync(
         HttpRequest request,
         [FromServices] ITenantsService tenantsService,
-        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetDataStoresQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,

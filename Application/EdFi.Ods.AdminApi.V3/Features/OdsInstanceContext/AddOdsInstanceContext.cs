@@ -47,10 +47,10 @@ public class AddOdsInstanceContext : IFeature
 
     public class Validator : AbstractValidator<AddOdsInstanceContextRequest>
     {
-        private readonly IGetOdsInstanceQuery _getOdsInstanceQuery;
+        private readonly IGetDataStoreQuery _getOdsInstanceQuery;
         private readonly IGetOdsInstanceContextsQuery _getOdsInstanceContextsQuery;
 
-        public Validator(IGetOdsInstanceQuery getOdsInstanceQuery, IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery)
+        public Validator(IGetDataStoreQuery getOdsInstanceQuery, IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery)
         {
             _getOdsInstanceQuery = getOdsInstanceQuery;
             _getOdsInstanceContextsQuery = getOdsInstanceContextsQuery;

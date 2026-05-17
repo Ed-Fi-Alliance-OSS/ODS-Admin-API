@@ -10,21 +10,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetOdsInstanceQuery
+public interface IGetDataStoreQuery
 {
-    OdsInstance Execute(int odsInstanceId);
+    OdsInstance Execute(int id);
 }
 
-public class GetOdsInstanceQuery(IUsersContext userContext) : IGetOdsInstanceQuery
+public class GetDataStoreQuery(IUsersContext userContext) : IGetDataStoreQuery
 {
     private readonly IUsersContext _usersContext = userContext;
 
-    public OdsInstance Execute(int odsInstanceId)
+    public OdsInstance Execute(int id)
     {
         return _usersContext.OdsInstances
             .Include(p => p.OdsInstanceContexts)
             .Include(p => p.OdsInstanceDerivatives)
-            .SingleOrDefault(odsInstance => odsInstance.OdsInstanceId == odsInstanceId) ?? throw new NotFoundException<int>("odsInstance", odsInstanceId);
+            .SingleOrDefault(o => o.OdsInstanceId == id)
+            ?? throw new NotFoundException<int>("dataStore", id);
     }
 }
 

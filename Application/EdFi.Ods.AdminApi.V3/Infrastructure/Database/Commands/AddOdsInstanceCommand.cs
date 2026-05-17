@@ -8,27 +8,27 @@ using EdFi.Admin.DataAccess.Models;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IAddOdsInstanceCommand
+public interface IAddDataStoreCommand
 {
-    OdsInstance Execute(IAddOdsInstanceModel newOdsInstance);
+    OdsInstance Execute(IAddDataStoreModel newDataStore);
 }
 
-public class AddOdsInstanceCommand : IAddOdsInstanceCommand
+public class AddDataStoreCommand : IAddDataStoreCommand
 {
     private readonly IUsersContext _context;
 
-    public AddOdsInstanceCommand(IUsersContext context)
+    public AddDataStoreCommand(IUsersContext context)
     {
         _context = context;
     }
 
-    public OdsInstance Execute(IAddOdsInstanceModel newOdsInstance)
+    public OdsInstance Execute(IAddDataStoreModel newDataStore)
     {
         var odsInstance = new OdsInstance
         {
-            Name = newOdsInstance.Name,
-            InstanceType = newOdsInstance.InstanceType,
-            ConnectionString = newOdsInstance.ConnectionString
+            Name = newDataStore.Name,
+            InstanceType = newDataStore.DataStoreType,
+            ConnectionString = newDataStore.ConnectionString
         };
         _context.OdsInstances.Add(odsInstance);
         _context.SaveChanges();
@@ -36,10 +36,10 @@ public class AddOdsInstanceCommand : IAddOdsInstanceCommand
     }
 }
 
-public interface IAddOdsInstanceModel
+public interface IAddDataStoreModel
 {
     string? Name { get; }
-    string? InstanceType { get; }
+    string? DataStoreType { get; }
     string? ConnectionString { get; }
 }
 

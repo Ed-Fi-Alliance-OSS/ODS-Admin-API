@@ -10,35 +10,35 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetApplicationsByOdsInstanceIdQuery
+public interface IGetApplicationsByDataStoreIdQuery
 {
-    List<Application> Execute(int odsInstanceId);
+    List<Application> Execute(int dataStoreId);
 }
 
-public class GetApplicationsByOdsInstanceIdQuery : IGetApplicationsByOdsInstanceIdQuery
+public class GetApplicationsByDataStoreIdQuery : IGetApplicationsByDataStoreIdQuery
 {
     private readonly IUsersContext _context;
 
-    public GetApplicationsByOdsInstanceIdQuery(IUsersContext context)
+    public GetApplicationsByDataStoreIdQuery(IUsersContext context)
     {
         _context = context;
     }
 
-    public List<Application> Execute(int odsInstanceId)
+    public List<Application> Execute(int dataStoreId)
     {
         var applications = _context.ApiClientOdsInstances
-        .Where(aco => aco.OdsInstance.OdsInstanceId == odsInstanceId)
-        .Select(aco => aco.ApiClient.Application)
-        .Distinct()
-        .Include(app => app.ApplicationEducationOrganizations)
-        .Include(app => app.Profiles)
-        .Include(app => app.Vendor)
-        .Include(app => app.ApiClients)
-        .ToList();
+            .Where(aco => aco.OdsInstance.OdsInstanceId == dataStoreId)
+            .Select(aco => aco.ApiClient.Application)
+            .Distinct()
+            .Include(app => app.ApplicationEducationOrganizations)
+            .Include(app => app.Profiles)
+            .Include(app => app.Vendor)
+            .Include(app => app.ApiClients)
+            .ToList();
 
-        if (!applications.Any() && _context.OdsInstances.Find(odsInstanceId) == null)
+        if (!applications.Any() && _context.OdsInstances.Find(dataStoreId) == null)
         {
-            throw new NotFoundException<int>("odsinstance", odsInstanceId);
+            throw new NotFoundException<int>("dataStore", dataStoreId);
         }
 
         return applications;

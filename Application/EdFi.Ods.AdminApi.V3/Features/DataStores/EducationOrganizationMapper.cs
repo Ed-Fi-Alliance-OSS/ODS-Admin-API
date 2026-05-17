@@ -5,7 +5,7 @@
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
 public static class EducationOrganizationMapper
 {
@@ -26,5 +26,3 @@ public static class EducationOrganizationMapper
         return source.Select(ToModel).ToList();
     }
 }
-
-

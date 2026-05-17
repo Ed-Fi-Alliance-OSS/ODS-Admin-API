@@ -16,14 +16,14 @@ using FluentValidation;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
-public class EditOdsInstance : IFeature
+public class EditDataStore : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapPut(endpoints, "/odsInstances/{id}", Handle)
+            .MapPut(endpoints, "/dataStores/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
@@ -31,10 +31,10 @@ public class EditOdsInstance : IFeature
 
     public static async Task<IResult> Handle(
         Validator validator,
-        IEditOdsInstanceCommand editOdsInstanceCommand,
+        IEditDataStoreCommand editDataStoreCommand,
         ISymmetricStringEncryptionProvider encryptionProvider,
         IOptions<AppSettings> options,
-        EditOdsInstanceRequest request,
+        EditDataStoreRequest request,
         int id)
     {
         request.Id = id;
@@ -45,44 +45,44 @@ public class EditOdsInstance : IFeature
             request.ConnectionString = encryptionProvider.Encrypt(request.ConnectionString, Convert.FromBase64String(encryptionKey));
         else
             request.ConnectionString = string.Empty;
-        editOdsInstanceCommand.Execute(request);
+        editDataStoreCommand.Execute(request);
         return Results.NoContent();
     }
 
-    [SwaggerSchema(Title = "EditOdsInstanceRequest")]
-    public class EditOdsInstanceRequest : IEditOdsInstanceModel
+    [SwaggerSchema(Title = "EditDataStoreRequest")]
+    public class EditDataStoreRequest : IEditDataStoreModel
     {
         [SwaggerSchema(Description = FeatureConstants.DataStoreName, Nullable = false)]
         public string? Name { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreTypeDescription, Nullable = true)]
-        public string? InstanceType { get; set; }
+        public string? DataStoreType { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreConnectionString, Nullable = true)]
         public string? ConnectionString { get; set; }
         [SwaggerExclude]
         public int Id { get; set; }
     }
 
-    public class Validator : AbstractValidator<IEditOdsInstanceModel>
+    public class Validator : AbstractValidator<IEditDataStoreModel>
     {
-        private readonly IGetOdsInstancesQuery _getOdsInstancesQuery;
-        private readonly IGetOdsInstanceQuery _getOdsInstanceQuery;
+        private readonly IGetDataStoresQuery _getDataStoresQuery;
+        private readonly IGetDataStoreQuery _getDataStoreQuery;
         private readonly string _databaseEngine;
 
-        public Validator(IGetOdsInstancesQuery getOdsInstancesQuery, IGetOdsInstanceQuery getOdsInstanceQuery, IOptions<AppSettings> options)
+        public Validator(IGetDataStoresQuery getDataStoresQuery, IGetDataStoreQuery getDataStoreQuery, IOptions<AppSettings> options)
         {
-            _getOdsInstancesQuery = getOdsInstancesQuery;
-            _getOdsInstanceQuery = getOdsInstanceQuery;
+            _getDataStoresQuery = getDataStoresQuery;
+            _getDataStoreQuery = getDataStoreQuery;
             _databaseEngine = options.Value.DatabaseEngine ?? throw new NotFoundException<string>("AppSettings", "DatabaseEngine");
 
             RuleFor(m => m.Name)
                 .NotEmpty()
                 .Must(BeAUniqueName)
                 .WithMessage(FeatureConstants.ClaimSetAlreadyExistsMessage)
-                .When(m => BeAnExistingOdsInstance(m.Id) && NameIsChanged(m));
+                .When(m => BeAnExistingDataStore(m.Id) && NameIsChanged(m));
 
-            RuleFor(m => m.InstanceType)
+            RuleFor(m => m.DataStoreType)
                 .MaximumLength(100)
-                .When(m => !string.IsNullOrEmpty(m.InstanceType));
+                .When(m => !string.IsNullOrEmpty(m.DataStoreType));
 
             RuleFor(m => m.ConnectionString)
                 .Must(BeAValidConnectionString)
@@ -90,30 +90,25 @@ public class EditOdsInstance : IFeature
                 .When(m => !string.IsNullOrEmpty(m.ConnectionString));
         }
 
-        private bool BeAnExistingOdsInstance(int id)
+        private bool BeAnExistingDataStore(int id)
         {
-            _getOdsInstanceQuery.Execute(id);
+            _getDataStoreQuery.Execute(id);
             return true;
         }
 
-        private bool NameIsChanged(IEditOdsInstanceModel model)
+        private bool NameIsChanged(IEditDataStoreModel model)
         {
-            return _getOdsInstanceQuery.Execute(model.Id).Name != model.Name;
+            return _getDataStoreQuery.Execute(model.Id).Name != model.Name;
         }
 
         private bool BeAUniqueName(string? name)
         {
-            return _getOdsInstancesQuery.Execute().TrueForAll(x => x.Name != name);
+            return _getDataStoresQuery.Execute().TrueForAll(x => x.Name != name);
         }
+
         private bool BeAValidConnectionString(string? connectionString)
         {
             return ConnectionStringHelper.ValidateConnectionString(_databaseEngine, connectionString);
         }
-
     }
 }
-
-
-
-
-

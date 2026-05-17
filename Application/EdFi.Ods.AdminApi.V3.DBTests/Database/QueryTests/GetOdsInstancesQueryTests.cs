@@ -13,7 +13,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
-public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
+public class GetDataStoresQueryTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldGetAllInstances()
@@ -21,7 +21,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Transaction(usersContext =>
         {
             CreateMultiple(2);
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var results = command.Execute();
             results.Count.ShouldBe(2);
         });
@@ -36,7 +36,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
             var offset = 0;
             var limit = 2;
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(offset, limit), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -71,7 +71,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         {
             CreateMultiple();
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -102,7 +102,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
             CreateMultiple();
             var offset = 0;
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(offset, null), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -138,7 +138,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
             CreateMultiple();
             var limit = 2;
 
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(null, limit), null, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -155,7 +155,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Transaction(usersContext =>
         {
             var odsInstances = CreateMultiple();
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(), odsInstances[2].OdsInstanceId, null, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();
@@ -171,7 +171,7 @@ public class GetOdsInstancesQueryTests : PlatformUsersContextTestBase
         Transaction(usersContext =>
         {
             var odsInstances = CreateMultiple();
-            var command = new GetOdsInstancesQuery(usersContext, Testing.GetAppSettings());
+            var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings());
             var odsInstancesAfterOffset = command.Execute(new CommonQueryParams(), null, odsInstances[2].Name, null);
 
             odsInstancesAfterOffset.ShouldNotBeEmpty();

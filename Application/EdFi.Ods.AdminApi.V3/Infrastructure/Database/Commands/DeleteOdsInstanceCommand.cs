@@ -8,23 +8,24 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IDeleteOdsInstanceCommand
+public interface IDeleteDataStoreCommand
 {
     void Execute(int id);
 }
 
-public class DeleteOdsInstanceCommand : IDeleteOdsInstanceCommand
+public class DeleteDataStoreCommand : IDeleteDataStoreCommand
 {
     private readonly IUsersContext _context;
 
-    public DeleteOdsInstanceCommand(IUsersContext context)
+    public DeleteDataStoreCommand(IUsersContext context)
     {
         _context = context;
     }
 
     public void Execute(int id)
     {
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == id) ?? throw new NotFoundException<int>("odsInstance", id);
+        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == id)
+            ?? throw new NotFoundException<int>("dataStore", id);
         _context.OdsInstances.Remove(odsInstance);
         _context.SaveChanges();
     }

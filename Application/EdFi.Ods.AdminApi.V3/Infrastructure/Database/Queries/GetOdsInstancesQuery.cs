@@ -16,20 +16,19 @@ using IUsersContext = EdFi.Admin.DataAccess.Contexts.IUsersContext;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetOdsInstancesQuery
+public interface IGetDataStoresQuery
 {
     List<OdsInstance> Execute();
-
-    List<OdsInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name, string? instanceType);
+    List<OdsInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name, string? dataStoreType);
 }
 
-public class GetOdsInstancesQuery : IGetOdsInstancesQuery
+public class GetDataStoresQuery : IGetDataStoresQuery
 {
     private readonly IUsersContext _usersContext;
     private readonly IOptions<AppSettings> _options;
     private readonly Dictionary<string, Expression<Func<OdsInstance, object>>> _orderByColumnOds;
 
-    public GetOdsInstancesQuery(IUsersContext userContext, IOptions<AppSettings> options)
+    public GetDataStoresQuery(IUsersContext userContext, IOptions<AppSettings> options)
     {
         _usersContext = userContext;
         _options = options;
@@ -45,17 +44,17 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
 
     public List<OdsInstance> Execute()
     {
-        return _usersContext.OdsInstances.OrderBy(odsInstance => odsInstance.Name).ToList();
+        return _usersContext.OdsInstances.OrderBy(o => o.Name).ToList();
     }
 
-    public List<OdsInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name, string? instanceType)
+    public List<OdsInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name, string? dataStoreType)
     {
         Expression<Func<OdsInstance, object>> columnToOrderBy = _orderByColumnOds.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
         return _usersContext.OdsInstances
             .Where(o => id == null || o.OdsInstanceId == id)
             .Where(o => name == null || o.Name == name)
-            .Where(o => instanceType == null || o.InstanceType == instanceType)
+            .Where(o => dataStoreType == null || o.InstanceType == dataStoreType)
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToList();

@@ -13,7 +13,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class AddOdsInstanceCommandTests : PlatformUsersContextTestBase
+public class AddDataStoreCommandTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldAddOdsInstance()
@@ -21,16 +21,16 @@ public class AddOdsInstanceCommandTests : PlatformUsersContextTestBase
         var odsInstanceName = $"Test-OdsInstance{Guid.NewGuid()}";
         var odsInstanceType = $"Test-OdsInstanceType-{Guid.NewGuid()}";
         var odsInstanceConnectionString = "ConnectionString";
-        var newOdsInstance = new Mock<IAddOdsInstanceModel>();
+        var newOdsInstance = new Mock<IAddDataStoreModel>();
         newOdsInstance.Setup(x => x.Name).Returns(odsInstanceName);
-        newOdsInstance.Setup(x => x.InstanceType).Returns(odsInstanceType);
+        newOdsInstance.Setup(x => x.DataStoreType).Returns(odsInstanceType);
         newOdsInstance.Setup(x => x.ConnectionString).Returns(odsInstanceConnectionString);
 
 
         var id = 0;
         Transaction(usersContext =>
         {
-            var command = new AddOdsInstanceCommand(usersContext);
+            var command = new AddDataStoreCommand(usersContext);
             id = command.Execute(newOdsInstance.Object).OdsInstanceId;
             id.ShouldBeGreaterThan(0);
         });
@@ -49,7 +49,7 @@ public class AddOdsInstanceCommandTests : PlatformUsersContextTestBase
     {
         var odsInstanceName = $"Test-OdsInstance{Guid.NewGuid()}";
         var odsInstanceConnectionString = "ConnectionString";
-        var newOdsInstance = new Mock<IAddOdsInstanceModel>();
+        var newOdsInstance = new Mock<IAddDataStoreModel>();
         newOdsInstance.Setup(x => x.Name).Returns(odsInstanceName);
         newOdsInstance.Setup(x => x.ConnectionString).Returns(odsInstanceConnectionString);
 
@@ -57,7 +57,7 @@ public class AddOdsInstanceCommandTests : PlatformUsersContextTestBase
         var id = 0;
         Transaction(usersContext =>
         {
-            var command = new AddOdsInstanceCommand(usersContext);
+            var command = new AddDataStoreCommand(usersContext);
             id = command.Execute(newOdsInstance.Object).OdsInstanceId;
             id.ShouldBeGreaterThan(0);
         });
