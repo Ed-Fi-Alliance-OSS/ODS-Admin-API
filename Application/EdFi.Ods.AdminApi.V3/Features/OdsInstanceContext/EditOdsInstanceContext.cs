@@ -38,9 +38,9 @@ public class EditOdsInstanceContext : IFeature
     public class EditOdsInstanceContextRequest : IEditOdsInstanceContextModel
     {
         [SwaggerExclude]
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextIdDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreContextIdDescription, Nullable = false)]
         public int Id { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextOdsInstanceIdDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreContextDataStoreIdDescription, Nullable = false)]
         public int OdsInstanceId { get; set; }
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextContextKeyDescription, Nullable = false)]
         public string? ContextKey { get; set; }
@@ -63,7 +63,7 @@ public class EditOdsInstanceContext : IFeature
 
             RuleFor(m => m.OdsInstanceId)
                 .NotEqual(0)
-                .WithMessage(FeatureConstants.OdsInstanceIdValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdValidationMessage);
 
             RuleFor(m => m.OdsInstanceId)
                 .Must(BeAnExistingOdsInstance)
@@ -71,7 +71,7 @@ public class EditOdsInstanceContext : IFeature
 
             RuleFor(odsContext => odsContext)
                 .Must(BeUniqueCombinedKey)
-                .WithMessage(FeatureConstants.OdsInstanceContextCombinedKeyMustBeUnique);
+                .WithMessage(FeatureConstants.DataStoreContextCombinedKeyMustBeUnique);
         }
 
         private bool BeAnExistingOdsInstance(int id)
@@ -89,6 +89,7 @@ public class EditOdsInstanceContext : IFeature
         }
     }
 }
+
 
 
 

@@ -42,15 +42,15 @@ public class DeleteOdsInstance : IFeature
 
             RuleFor(m => m.Id)
                 .Must(NotHaveApplicationsRelationships)
-                .WithMessage(FeatureConstants.OdsInstanceCantBeDeletedMessage)
+                .WithMessage(FeatureConstants.DataStoreCantBeDeletedMessage)
                 .When(Exist);
             RuleFor(m => m.Id)
                 .Must(NotHaveOdsInstanceContextsRelationships)
-                .WithMessage(FeatureConstants.OdsInstanceCantBeDeletedMessage)
+                .WithMessage(FeatureConstants.DataStoreCantBeDeletedMessage)
                 .When(Exist);
             RuleFor(m => m.Id)
                 .Must(NotHaveOdsInstanceDerivativesRelationships)
-                .WithMessage(FeatureConstants.OdsInstanceCantBeDeletedMessage)
+                .WithMessage(FeatureConstants.DataStoreCantBeDeletedMessage)
                 .When(Exist);
         }
 
@@ -84,6 +84,7 @@ public class DeleteOdsInstance : IFeature
         public int Id { get; set; }
     }
 }
+
 
 
 

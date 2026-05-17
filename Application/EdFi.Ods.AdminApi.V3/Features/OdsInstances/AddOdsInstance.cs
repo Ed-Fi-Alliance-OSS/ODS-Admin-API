@@ -48,11 +48,11 @@ public class AddOdsInstance : IFeature
     [SwaggerSchema(Title = "AddOdsInstanceRequest")]
     public class AddOdsInstanceRequest : IAddOdsInstanceModel
     {
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceName, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreName, Nullable = false)]
         public string? Name { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceInstanceType, Nullable = true)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreTypeDescription, Nullable = true)]
         public string? InstanceType { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceConnectionString, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreConnectionString, Nullable = false)]
         public string? ConnectionString { get; set; }
 
     }
@@ -69,7 +69,7 @@ public class AddOdsInstance : IFeature
             RuleFor(m => m.Name)
                 .NotEmpty()
                 .Must(BeAUniqueName)
-                .WithMessage(FeatureConstants.OdsInstanceAlreadyExistsMessage);
+                .WithMessage(FeatureConstants.DataStoreAlreadyExistsMessage);
 
             RuleFor(m => m.InstanceType)
                 .MaximumLength(100)
@@ -80,7 +80,7 @@ public class AddOdsInstance : IFeature
 
             RuleFor(m => m.ConnectionString)
                 .Must(BeAValidConnectionString)
-                .WithMessage(FeatureConstants.OdsInstanceConnectionStringInvalid)
+                .WithMessage(FeatureConstants.DataStoreConnectionStringInvalid)
                 .When(m => !string.IsNullOrEmpty(m.ConnectionString));
         }
 
@@ -95,6 +95,7 @@ public class AddOdsInstance : IFeature
         }
     }
 }
+
 
 
 

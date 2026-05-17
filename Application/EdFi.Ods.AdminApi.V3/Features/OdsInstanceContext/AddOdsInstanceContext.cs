@@ -37,7 +37,7 @@ public class AddOdsInstanceContext : IFeature
     [SwaggerSchema(Title = "AddOdsInstanceContextRequest")]
     public class AddOdsInstanceContextRequest : IAddOdsInstanceContextModel
     {
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextOdsInstanceIdDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreContextDataStoreIdDescription, Nullable = false)]
         public int OdsInstanceId { get; set; }
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextContextKeyDescription, Nullable = false)]
         public string? ContextKey { get; set; }
@@ -60,7 +60,7 @@ public class AddOdsInstanceContext : IFeature
 
             RuleFor(m => m.OdsInstanceId)
                 .NotEqual(0)
-                .WithMessage(FeatureConstants.OdsInstanceIdValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdValidationMessage);
 
             RuleFor(m => m.OdsInstanceId)
                 .Must(BeAnExistingOdsInstance)
@@ -68,7 +68,7 @@ public class AddOdsInstanceContext : IFeature
 
             RuleFor(odsContext => odsContext)
                  .Must(BeUniqueCombinedKey)
-                 .WithMessage(FeatureConstants.OdsInstanceContextCombinedKeyMustBeUnique);
+                 .WithMessage(FeatureConstants.DataStoreContextCombinedKeyMustBeUnique);
 
         }
 
@@ -86,6 +86,7 @@ public class AddOdsInstanceContext : IFeature
         }
     }
 }
+
 
 
 

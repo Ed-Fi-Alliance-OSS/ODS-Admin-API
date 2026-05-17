@@ -47,13 +47,13 @@ public class EditOdsInstanceDerivative : IFeature
     public class EditOdsInstanceDerivativeRequest : IEditOdsInstanceDerivativeModel
     {
         [SwaggerExclude]
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceDerivativeIdDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeIdDescription, Nullable = false)]
         public int Id { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceDerivativeOdsInstanceIdDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeDataStoreIdDescription, Nullable = false)]
         public int OdsInstanceId { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceDerivativeDerivativeTypeDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeTypeDescription, Nullable = false)]
         public string? DerivativeType { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceDerivativeConnectionStringDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeConnectionStringDescription, Nullable = false)]
         public string? ConnectionString { get; set; }
     }
 
@@ -72,12 +72,12 @@ public class EditOdsInstanceDerivative : IFeature
 
             RuleFor(m => m.DerivativeType)
                 .Matches("^(?i)(readreplica|snapshot)$")
-                .WithMessage(FeatureConstants.OdsInstanceDerivativeDerivativeTypeNotValid)
+                .WithMessage(FeatureConstants.DataStoreDerivativeTypeNotValid)
                 .When(m => !string.IsNullOrEmpty(m.DerivativeType));
 
             RuleFor(m => m.OdsInstanceId)
                 .NotEqual(0)
-                .WithMessage(FeatureConstants.OdsInstanceIdValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdValidationMessage);
 
             RuleFor(m => m.OdsInstanceId)
                 .Must(BeAnExistingOdsInstance)
@@ -85,12 +85,12 @@ public class EditOdsInstanceDerivative : IFeature
 
             RuleFor(m => m.ConnectionString)
                 .Must(BeAValidConnectionString)
-                .WithMessage(FeatureConstants.OdsInstanceConnectionStringInvalid)
+                .WithMessage(FeatureConstants.DataStoreConnectionStringInvalid)
                 .When(m => !string.IsNullOrWhiteSpace(m.ConnectionString));
 
             RuleFor(odsDerivative => odsDerivative)
                 .Must(BeUniqueCombinedKey)
-                .WithMessage(FeatureConstants.OdsInstanceDerivativeCombinedKeyMustBeUnique);
+                .WithMessage(FeatureConstants.DataStoreDerivativeCombinedKeyMustBeUnique);
         }
 
         private bool BeAnExistingOdsInstance(int id)
@@ -114,6 +114,7 @@ public class EditOdsInstanceDerivative : IFeature
         }
     }
 }
+
 
 
 

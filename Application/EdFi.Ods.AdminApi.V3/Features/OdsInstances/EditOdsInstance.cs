@@ -52,11 +52,11 @@ public class EditOdsInstance : IFeature
     [SwaggerSchema(Title = "EditOdsInstanceRequest")]
     public class EditOdsInstanceRequest : IEditOdsInstanceModel
     {
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceName, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreName, Nullable = false)]
         public string? Name { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceInstanceType, Nullable = true)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreTypeDescription, Nullable = true)]
         public string? InstanceType { get; set; }
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceConnectionString, Nullable = true)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreConnectionString, Nullable = true)]
         public string? ConnectionString { get; set; }
         [SwaggerExclude]
         public int Id { get; set; }
@@ -86,7 +86,7 @@ public class EditOdsInstance : IFeature
 
             RuleFor(m => m.ConnectionString)
                 .Must(BeAValidConnectionString)
-                .WithMessage(FeatureConstants.OdsInstanceConnectionStringInvalid)
+                .WithMessage(FeatureConstants.DataStoreConnectionStringInvalid)
                 .When(m => !string.IsNullOrEmpty(m.ConnectionString));
         }
 
@@ -112,6 +112,7 @@ public class EditOdsInstance : IFeature
 
     }
 }
+
 
 
 

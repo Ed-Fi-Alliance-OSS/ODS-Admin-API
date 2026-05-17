@@ -71,7 +71,7 @@ public class EditApiClient : IFeature
         [SwaggerSchema(Description = FeatureConstants.ApiClientApplicationIdDescription, Nullable = false)]
         public int ApplicationId { get; set; }
 
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceIdsDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? OdsInstanceIds { get; set; }
     }
 
@@ -95,7 +95,7 @@ public class EditApiClient : IFeature
 
             RuleFor(m => m.OdsInstanceIds)
                 .NotEmpty()
-                .WithMessage(FeatureConstants.OdsInstanceIdsValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
             static bool BeWithinApiClientNameMaxLength<T>(IEditApiClientModel model, string? name, ValidationContext<T> context)
             {
@@ -111,6 +111,7 @@ public class EditApiClient : IFeature
         }
     }
 }
+
 
 
 

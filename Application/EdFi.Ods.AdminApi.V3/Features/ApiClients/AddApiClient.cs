@@ -74,7 +74,7 @@ public class AddApiClient : IFeature
         [SwaggerSchema(Description = FeatureConstants.ApiClientApplicationIdDescription, Nullable = false)]
         public int ApplicationId { get; set; }
 
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceIdsDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? OdsInstanceIds { get; set; }
     }
 
@@ -96,7 +96,7 @@ public class AddApiClient : IFeature
 
             RuleFor(m => m.OdsInstanceIds)
                 .NotEmpty()
-                .WithMessage(FeatureConstants.OdsInstanceIdsValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
             static bool BeWithinApiClientNameMaxLength<T>(IAddApiClientModel model, string? name, ValidationContext<T> context)
             {
@@ -112,6 +112,7 @@ public class AddApiClient : IFeature
         }
     }
 }
+
 
 
 

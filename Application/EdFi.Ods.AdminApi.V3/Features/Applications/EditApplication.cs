@@ -97,7 +97,7 @@ public class EditApplication : IFeature
         [SwaggerSchema(Description = FeatureConstants.EducationOrganizationIdsDescription, Nullable = false)]
         public IEnumerable<long>? EducationOrganizationIds { get; set; }
 
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceIdsDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? OdsInstanceIds { get; set; }
 
         [SwaggerOptional]
@@ -125,7 +125,7 @@ public class EditApplication : IFeature
 
             RuleFor(m => m.OdsInstanceIds)
                 .NotEmpty()
-                .WithMessage(FeatureConstants.OdsInstanceIdsValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
             RuleFor(m => m.VendorId).Must(id => id > 0).WithMessage(FeatureConstants.VendorIdValidationMessage);
 
@@ -143,6 +143,7 @@ public class EditApplication : IFeature
         }
     }
 }
+
 
 
 
