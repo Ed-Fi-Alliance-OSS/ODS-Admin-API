@@ -10,45 +10,43 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IEditOdsInstanceDerivativeCommand
+public interface IEditDataStoreDerivativeCommand
 {
-    OdsInstanceDerivative Execute(IEditOdsInstanceDerivativeModel changedOdsInstanceDerivativeData);
+    OdsInstanceDerivative Execute(IEditDataStoreDerivativeModel changedDataStoreDerivativeData);
 }
 
-public class EditOdsInstanceDerivativeCommand : IEditOdsInstanceDerivativeCommand
+public class EditDataStoreDerivativeCommand : IEditDataStoreDerivativeCommand
 {
     private readonly IUsersContext _context;
 
-    public EditOdsInstanceDerivativeCommand(IUsersContext context)
+    public EditDataStoreDerivativeCommand(IUsersContext context)
     {
         _context = context;
     }
 
-    public OdsInstanceDerivative Execute(IEditOdsInstanceDerivativeModel changedOdsInstanceDerivativeData)
+    public OdsInstanceDerivative Execute(IEditDataStoreDerivativeModel changedDataStoreDerivativeData)
     {
         var odsInstance = _context.OdsInstances
-            .SingleOrDefault(v => v.OdsInstanceId == changedOdsInstanceDerivativeData.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", changedOdsInstanceDerivativeData.OdsInstanceId);
+            .SingleOrDefault(v => v.OdsInstanceId == changedDataStoreDerivativeData.DataStoreId) ??
+            throw new NotFoundException<int>("dataStore", changedDataStoreDerivativeData.DataStoreId);
         var odsInstanceDerivative = _context.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
-            .SingleOrDefault(v => v.OdsInstanceDerivativeId == changedOdsInstanceDerivativeData.Id) ??
-            throw new NotFoundException<int>("odsInstanceDerivative", changedOdsInstanceDerivativeData.Id);
+            .SingleOrDefault(v => v.OdsInstanceDerivativeId == changedDataStoreDerivativeData.Id) ??
+            throw new NotFoundException<int>("dataStoreDerivative", changedDataStoreDerivativeData.Id);
 
-        odsInstanceDerivative.DerivativeType = changedOdsInstanceDerivativeData.DerivativeType;
+        odsInstanceDerivative.DerivativeType = changedDataStoreDerivativeData.DerivativeType;
         odsInstanceDerivative.OdsInstance = odsInstance;
-        odsInstanceDerivative.ConnectionString = changedOdsInstanceDerivativeData.ConnectionString;
 
         _context.SaveChanges();
         return odsInstanceDerivative;
     }
 }
 
-public interface IEditOdsInstanceDerivativeModel
+public interface IEditDataStoreDerivativeModel
 {
     public int Id { get; set; }
-    public int OdsInstanceId { get; set; }
+    public int DataStoreId { get; set; }
     public string? DerivativeType { get; set; }
-    public string? ConnectionString { get; set; }
 }
 
 

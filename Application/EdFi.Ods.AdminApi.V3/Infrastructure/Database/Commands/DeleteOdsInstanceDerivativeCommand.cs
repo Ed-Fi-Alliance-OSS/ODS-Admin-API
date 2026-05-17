@@ -8,23 +8,23 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IDeleteOdsInstanceDerivativeCommand
+public interface IDeleteDataStoreDerivativeCommand
 {
     void Execute(int id);
 }
 
-public class DeleteOdsInstanceDerivativeCommand : IDeleteOdsInstanceDerivativeCommand
+public class DeleteDataStoreDerivativeCommand : IDeleteDataStoreDerivativeCommand
 {
     private readonly IUsersContext _context;
 
-    public DeleteOdsInstanceDerivativeCommand(IUsersContext context)
+    public DeleteDataStoreDerivativeCommand(IUsersContext context)
     {
         _context = context;
     }
 
     public void Execute(int id)
     {
-        var odsInstanceDerivative = _context.OdsInstanceDerivatives.SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("odsInstanceDerivative", id);
+        var odsInstanceDerivative = _context.OdsInstanceDerivatives.SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("dataStoreDerivative", id);
         _context.OdsInstanceDerivatives.Remove(odsInstanceDerivative);
         _context.SaveChanges();
     }

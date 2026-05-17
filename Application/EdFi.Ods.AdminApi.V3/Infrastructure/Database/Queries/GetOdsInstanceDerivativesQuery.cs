@@ -16,18 +16,18 @@ using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetOdsInstanceDerivativesQuery
+public interface IGetDataStoreDerivativesQuery
 {
     List<OdsInstanceDerivative> Execute();
     List<OdsInstanceDerivative> Execute(CommonQueryParams commonQueryParams);
 }
 
-public class GetOdsInstanceDerivativesQuery : IGetOdsInstanceDerivativesQuery
+public class GetDataStoreDerivativesQuery : IGetDataStoreDerivativesQuery
 {
     private readonly IUsersContext _usersContext;
     private readonly IOptions<AppSettings> _options;
     private readonly Dictionary<string, Expression<Func<OdsInstanceDerivative, object>>> _orderByColumnOds;
-    public GetOdsInstanceDerivativesQuery(IUsersContext usersContext, IOptions<AppSettings> options)
+    public GetDataStoreDerivativesQuery(IUsersContext usersContext, IOptions<AppSettings> options)
     {
         _usersContext = usersContext;
         _options = options;

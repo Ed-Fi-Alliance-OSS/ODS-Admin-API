@@ -9,42 +9,40 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IAddOdsInstanceDerivativeCommand
+public interface IAddDataStoreDerivativeCommand
 {
-    OdsInstanceDerivative Execute(IAddOdsInstanceDerivativeModel newOdsInstanceDerivative);
+    OdsInstanceDerivative Execute(IAddDataStoreDerivativeModel newDataStoreDerivative);
 }
 
-public class AddOdsInstanceDerivativeCommand : IAddOdsInstanceDerivativeCommand
+public class AddDataStoreDerivativeCommand : IAddDataStoreDerivativeCommand
 {
     private readonly IUsersContext _context;
 
-    public AddOdsInstanceDerivativeCommand(IUsersContext context)
+    public AddDataStoreDerivativeCommand(IUsersContext context)
     {
         _context = context;
     }
 
-    public OdsInstanceDerivative Execute(IAddOdsInstanceDerivativeModel newOdsInstanceDerivative)
+    public OdsInstanceDerivative Execute(IAddDataStoreDerivativeModel newDataStoreDerivative)
     {
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newOdsInstanceDerivative.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", newOdsInstanceDerivative.OdsInstanceId);
+        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newDataStoreDerivative.DataStoreId) ??
+            throw new NotFoundException<int>("dataStore", newDataStoreDerivative.DataStoreId);
 
-        var odsInstanceDerivative = new OdsInstanceDerivative
+        var derivative = new OdsInstanceDerivative
         {
-           ConnectionString = newOdsInstanceDerivative.ConnectionString,
-           DerivativeType = newOdsInstanceDerivative.DerivativeType,
-           OdsInstance = odsInstance
+            DerivativeType = newDataStoreDerivative.DerivativeType,
+            OdsInstance = odsInstance
         };
-        _context.OdsInstanceDerivatives.Add(odsInstanceDerivative);
+        _context.OdsInstanceDerivatives.Add(derivative);
         _context.SaveChanges();
-        return odsInstanceDerivative;
+        return derivative;
     }
 }
 
-public interface IAddOdsInstanceDerivativeModel
+public interface IAddDataStoreDerivativeModel
 {
-    public int OdsInstanceId { get; set; }
+    public int DataStoreId { get; set; }
     public string? DerivativeType { get; set; }
-    public string? ConnectionString { get; set; }
 }
 
 

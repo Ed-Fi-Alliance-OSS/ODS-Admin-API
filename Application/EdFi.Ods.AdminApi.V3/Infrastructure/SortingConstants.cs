@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.V3.Features.Applications;
 using EdFi.Ods.AdminApi.V3.Features.AuthorizationStrategies;
 using EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 using EdFi.Ods.AdminApi.V3.Features.DataStoreContexts;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstanceDerivative;
+using EdFi.Ods.AdminApi.V3.Features.DataStoreDerivatives;
 using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using EdFi.Ods.AdminApi.V3.Features.Vendors;
 
@@ -25,8 +25,8 @@ public static class SortingColumns
     public const string AuthorizationStrategyDisplayNameColumn = nameof(AuthorizationStrategyModel.DisplayName);
     public const string OdsInstanceContextKeyColumn = nameof(DataStoreContextModel.ContextKey);
     public const string OdsInstanceContextValueColumn = nameof(DataStoreContextModel.ContextValue);
-    public const string OdsInstanceDerivativeTypeColumn = nameof(OdsInstanceDerivativeModel.DerivativeType);
-    public const string OdsInstanceDerivativeOdsInstanceIdColumn = nameof(OdsInstanceDerivativeModel.OdsInstanceId);
+    public const string OdsInstanceDerivativeTypeColumn = nameof(DataStoreDerivativeModel.DerivativeType);
+    public const string OdsInstanceDerivativeOdsInstanceIdColumn = nameof(DataStoreDerivativeModel.DataStoreId);
     public const string OdsInstanceInstanceTypeColumn = nameof(DataStoreModel.DataStoreType);
     public const string ResourceClaimParentNameColumn = nameof(ResourceClaimModel.ParentName);
     public const string ResourceClaimParentIdColumn = nameof(ResourceClaimModel.ParentId);

@@ -10,28 +10,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetOdsInstanceDerivativeByIdQuery
+public interface IGetDataStoreDerivativeByIdQuery
 {
-    OdsInstanceDerivative Execute(int odsInstanceDerivativeId);
+    OdsInstanceDerivative Execute(int dataStoreDerivativeId);
 }
 
-public class GetOdsInstanceDerivativeByIdQuery : IGetOdsInstanceDerivativeByIdQuery
+public class GetDataStoreDerivativeByIdQuery : IGetDataStoreDerivativeByIdQuery
 {
     private readonly IUsersContext _context;
 
-    public GetOdsInstanceDerivativeByIdQuery(IUsersContext context)
+    public GetDataStoreDerivativeByIdQuery(IUsersContext context)
     {
         _context = context;
     }
 
-    public OdsInstanceDerivative Execute(int odsInstanceDerivativeId)
+    public OdsInstanceDerivative Execute(int dataStoreDerivativeId)
     {
         var odsInstanceDerivative = _context.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
-            .SingleOrDefault(app => app.OdsInstanceDerivativeId == odsInstanceDerivativeId);
+            .SingleOrDefault(app => app.OdsInstanceDerivativeId == dataStoreDerivativeId);
         if (odsInstanceDerivative == null)
         {
-            throw new NotFoundException<int>("odsInstanceDerivative", odsInstanceDerivativeId);
+            throw new NotFoundException<int>("dataStoreDerivative", dataStoreDerivativeId);
         }
 
         return odsInstanceDerivative;

@@ -5,23 +5,22 @@
 
 using DbOdsInstanceDerivative = EdFi.Admin.DataAccess.Models.OdsInstanceDerivative;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstanceDerivative;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStoreDerivatives;
 
-public static class OdsInstanceDerivativeMapper
+public static class DataStoreDerivativeMapper
 {
-    public static OdsInstanceDerivativeModel ToModel(DbOdsInstanceDerivative source)
+    public static DataStoreDerivativeModel ToModel(DbOdsInstanceDerivative source)
     {
-        return new OdsInstanceDerivativeModel
+        return new DataStoreDerivativeModel
         {
-            Id = source.OdsInstanceDerivativeId,
-            OdsInstanceId = source.OdsInstance?.OdsInstanceId,
+            DataStoreDerivativeId = source.OdsInstanceDerivativeId,
+            DataStoreId = source.OdsInstance?.OdsInstanceId ?? 0,
             DerivativeType = source.DerivativeType
         };
     }
 
-    public static List<OdsInstanceDerivativeModel> ToModelList(IEnumerable<DbOdsInstanceDerivative> source)
+    public static List<DataStoreDerivativeModel> ToModelList(IEnumerable<DbOdsInstanceDerivative> source)
     {
         return source.Select(ToModel).ToList();
     }
 }
-

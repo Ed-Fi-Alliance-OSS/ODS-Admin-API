@@ -5,27 +5,23 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstanceDerivative;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStoreDerivatives;
 
-public class DeleteOdsInstanceDerivative : IFeature
+public class DeleteDataStoreDerivative : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstanceDerivatives/{id}", Handle)
+        AdminApiEndpointBuilder.MapDelete(endpoints, "/dataStoreDerivatives/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static Task<IResult> Handle(IDeleteOdsInstanceDerivativeCommand deleteOdsInstanceDerivativeCommand, int id)
+    public static Task<IResult> Handle(IDeleteDataStoreDerivativeCommand deleteDataStoreDerivativeCommand, int id)
     {
-        deleteOdsInstanceDerivativeCommand.Execute(id);
+        deleteDataStoreDerivativeCommand.Execute(id);
         return Task.FromResult(Results.NoContent());
     }
 }
-
-
-

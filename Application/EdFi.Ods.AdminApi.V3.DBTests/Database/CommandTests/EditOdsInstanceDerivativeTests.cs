@@ -35,33 +35,28 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         Save(odsInstance2);
 
         var derivativeType = "ReadReplica";
-        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
         var newOdsInstanceDerivative = new OdsInstanceDerivative
         {
-            ConnectionString = connectionString,
             DerivativeType = derivativeType,
             OdsInstance = odsInstance1
         };
         Save(newOdsInstanceDerivative);
 
         var updateDerivativeType = "ReadReplica";
-        var updateConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods_2;Integrated Security=True;Encrypt=False";
-        var editOdsInstanceDerivative = new Mock<IEditOdsInstanceDerivativeModel>();
-        editOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance2.OdsInstanceId);
+        var editOdsInstanceDerivative = new Mock<IEditDataStoreDerivativeModel>();
+        editOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance2.OdsInstanceId);
         editOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(updateDerivativeType);
-        editOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(updateConnectionString);
         editOdsInstanceDerivative.Setup(x => x.Id).Returns(newOdsInstanceDerivative.OdsInstanceDerivativeId);
 
         Transaction(usersContext =>
         {
-            var command = new EditOdsInstanceDerivativeCommand(usersContext);
+            var command = new EditDataStoreDerivativeCommand(usersContext);
             var updatedOdsInstanceDerivative = command.Execute(editOdsInstanceDerivative.Object);
             updatedOdsInstanceDerivative.ShouldNotBeNull();
             updatedOdsInstanceDerivative.OdsInstanceDerivativeId.ShouldBeGreaterThan(0);
             updatedOdsInstanceDerivative.OdsInstanceDerivativeId.ShouldBe(newOdsInstanceDerivative.OdsInstanceDerivativeId);
             updatedOdsInstanceDerivative.OdsInstance.OdsInstanceId.ShouldBe(odsInstance2.OdsInstanceId);
             updatedOdsInstanceDerivative.DerivativeType.ShouldBe(updateDerivativeType);
-            updatedOdsInstanceDerivative.ConnectionString.ShouldBe(updateConnectionString);
         });
     }
 
@@ -76,10 +71,8 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         };
 
         var derivativeType = "ReadReplica";
-        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
         var newOdsInstanceDerivative = new OdsInstanceDerivative
         {
-            ConnectionString = connectionString,
             DerivativeType = derivativeType,
             OdsInstance = odsInstance1
         };
@@ -87,32 +80,28 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         var newDerivativeType = "Snapshot";
         var newOdsInstanceDerivative2 = new OdsInstanceDerivative
         {
-            ConnectionString = connectionString,
             DerivativeType = newDerivativeType,
             OdsInstance = odsInstance1
         };
         Save(newOdsInstanceDerivative, newOdsInstanceDerivative2);
 
         var updateDerivativeType = "Snapshot";
-        var updateConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods_2;Integrated Security=True;Encrypt=False";
-        var editOdsInstanceDerivative = new Mock<IEditOdsInstanceDerivativeModel>();
-        editOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance1.OdsInstanceId);
+        var editOdsInstanceDerivative = new Mock<IEditDataStoreDerivativeModel>();
+        editOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance1.OdsInstanceId);
         editOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(updateDerivativeType);
-        editOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(updateConnectionString);
         editOdsInstanceDerivative.Setup(x => x.Id).Returns(newOdsInstanceDerivative.OdsInstanceDerivativeId);
 
         Assert.Throws<DbUpdateException>(() =>
         {
             Transaction(usersContext =>
             {
-                var command = new EditOdsInstanceDerivativeCommand(usersContext);
+                var command = new EditDataStoreDerivativeCommand(usersContext);
                 var updatedOdsInstanceDerivative = command.Execute(editOdsInstanceDerivative.Object);
                 updatedOdsInstanceDerivative.ShouldNotBeNull();
                 updatedOdsInstanceDerivative.OdsInstanceDerivativeId.ShouldBeGreaterThan(0);
                 updatedOdsInstanceDerivative.OdsInstanceDerivativeId.ShouldBe(newOdsInstanceDerivative.OdsInstanceDerivativeId);
                 updatedOdsInstanceDerivative.OdsInstance.OdsInstanceId.ShouldBe(odsInstance1.OdsInstanceId);
                 updatedOdsInstanceDerivative.DerivativeType.ShouldBe(updateDerivativeType);
-                updatedOdsInstanceDerivative.ConnectionString.ShouldBe(updateConnectionString);
             });
         });
     }
@@ -129,24 +118,23 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         Save(odsInstance);
 
         var updateDerivativeType = "ReadReplica";
-        var updateConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods_2;Integrated Security=True;Encrypt=False";
-        var editOdsInstanceDerivative = new Mock<IEditOdsInstanceDerivativeModel>();
-        editOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var editOdsInstanceDerivative = new Mock<IEditDataStoreDerivativeModel>();
+        editOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         editOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(updateDerivativeType);
-        editOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(updateConnectionString);
         editOdsInstanceDerivative.Setup(x => x.Id).Returns(-1);
 
         Assert.Throws<NotFoundException<int>>(() =>
         {
             Transaction(usersContext =>
             {
-                var command = new EditOdsInstanceDerivativeCommand(usersContext);
+                var command = new EditDataStoreDerivativeCommand(usersContext);
                 var updatedOdsInstanceDerivative = command.Execute(editOdsInstanceDerivative.Object);
             });
         });
     }
 
 }
+
 
 
 
