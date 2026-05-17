@@ -111,7 +111,7 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             EducationOrganizationIds = new List<long> { 12345, 67890 },
             ProfileIds = null,
             VendorId = _vendor.VendorId,
-            OdsInstanceIds = new List<int> { _odsInstance.OdsInstanceId }
+            DataStoreIds = new List<int> { _odsInstance.OdsInstanceId }
         };
 
         Transaction(usersContext =>
@@ -151,7 +151,7 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             EducationOrganizationIds = new List<long> { 23456, 78901, 5000000005 },
             ProfileIds = new List<int>() { _otherProfile.ProfileId },
             VendorId = _otherVendor.VendorId,
-            OdsInstanceIds = new List<int> { _odsInstance.OdsInstanceId }
+            DataStoreIds = new List<int> { _odsInstance.OdsInstanceId }
         };
 
         Transaction(usersContext =>
@@ -204,7 +204,7 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
         public string ClaimSetName { get; set; }
         public IEnumerable<int> ProfileIds { get; set; }
         public IEnumerable<long> EducationOrganizationIds { get; set; }
-        public IEnumerable<int> OdsInstanceIds { get; set; }
+        public IEnumerable<int> DataStoreIds { get; set; }
         public bool? Enabled { get; set; }
     }
 }

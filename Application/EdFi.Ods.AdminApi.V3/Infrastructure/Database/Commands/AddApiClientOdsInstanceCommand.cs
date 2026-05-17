@@ -9,16 +9,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IAddApiClientOdsInstanceCommand
+public interface IAddApiClientDataStoreCommand
 {
     ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientOdsInstance);
 }
 
-public class AddApiClientOdsInstanceCommand : IAddApiClientOdsInstanceCommand
+public class AddApiClientDataStoreCommand : IAddApiClientDataStoreCommand
 {
     private readonly IUsersContext _context;
 
-    public AddApiClientOdsInstanceCommand(IUsersContext context)
+    public AddApiClientDataStoreCommand(IUsersContext context)
     {
         _context = context;
     }

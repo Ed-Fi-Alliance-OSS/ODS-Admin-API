@@ -17,7 +17,7 @@ public class ApiClientModel
     public int ApplicationId { get; set; } = 0;
     public string KeyStatus { get; set; } = "Active";
     public IList<long>? EducationOrganizationIds { get; set; }
-    public IList<int>? OdsInstanceIds { get; set; }
+    public IList<int>? DataStoreIds { get; set; }
 }
 
 [SwaggerSchema(Title = "ApiClient")]

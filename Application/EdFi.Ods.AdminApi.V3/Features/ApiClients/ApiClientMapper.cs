@@ -33,7 +33,7 @@ public static class ApiClientMapper
         };
     }
 
-    public static ApiClientModel ToModel(ApiClient source, IList<int> odsInstanceIds)
+    public static ApiClientModel ToModel(ApiClient source, IList<int> dataStoreIds)
     {
         return new ApiClientModel
         {
@@ -46,18 +46,18 @@ public static class ApiClientMapper
             EducationOrganizationIds = source.ApplicationEducationOrganizations
                 .Select(eu => eu.EducationOrganizationId)
                 .ToList(),
-            OdsInstanceIds = odsInstanceIds
+            DataStoreIds = dataStoreIds
         };
     }
 
     public static List<ApiClientModel> ToModelList(
         IEnumerable<ApiClient> source,
-        IReadOnlyDictionary<int, IList<int>> odsInstanceIdsByApiClientId)
+        IReadOnlyDictionary<int, IList<int>> dataStoreIdsByApiClientId)
     {
         return source.Select(apiClient =>
         {
-            odsInstanceIdsByApiClientId.TryGetValue(apiClient.ApiClientId, out var odsInstanceIds);
-            return ToModel(apiClient, odsInstanceIds ?? new List<int>());
+            dataStoreIdsByApiClientId.TryGetValue(apiClient.ApiClientId, out var dataStoreIds);
+            return ToModel(apiClient, dataStoreIds ?? new List<int>());
         }).ToList();
     }
 }

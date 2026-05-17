@@ -28,22 +28,22 @@ public class ReadApiClient : IFeature
 
     public static Task<IResult> GetApiClients(
         [FromServices] IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery,
-        [FromServices] IGetOdsInstanceIdsByApiClientIdQuery getOdsInstanceIdsByApiClientIdQuery,
+        [FromServices] IGetDataStoreIdsByApiClientIdQuery getDataStoreIdsByApiClientIdQuery,
         [FromQuery(Name = "applicationid")] int applicationid)
     {
         var apiClients = getApiClientsByApplicationIdQuery.Execute(applicationid);
-        var odsInstanceIdsByApiClientId = getOdsInstanceIdsByApiClientIdQuery.Execute(apiClients.Select(a => a.ApiClientId));
+        var odsInstanceIdsByApiClientId = getDataStoreIdsByApiClientIdQuery.Execute(apiClients.Select(a => a.ApiClientId));
         var models = ApiClientMapper.ToModelList(apiClients, odsInstanceIdsByApiClientId);
         return Task.FromResult(Results.Ok(models));
     }
 
     public static Task<IResult> GetApiClient(
         [FromServices] IGetApiClientByIdQuery getApiClientByIdQuery,
-        [FromServices] IGetOdsInstanceIdsByApiClientIdQuery getOdsInstanceIdsByApiClientIdQuery,
+        [FromServices] IGetDataStoreIdsByApiClientIdQuery getDataStoreIdsByApiClientIdQuery,
         int id)
     {
         var apiClient = getApiClientByIdQuery.Execute(id) ?? throw new NotFoundException<int>("apiClient", id);
-        var odsInstanceIds = getOdsInstanceIdsByApiClientIdQuery.Execute(apiClient.ApiClientId);
+        var odsInstanceIds = getDataStoreIdsByApiClientIdQuery.Execute(apiClient.ApiClientId);
         var model = ApiClientMapper.ToModel(apiClient, odsInstanceIds);
         return Task.FromResult(Results.Ok(model));
     }

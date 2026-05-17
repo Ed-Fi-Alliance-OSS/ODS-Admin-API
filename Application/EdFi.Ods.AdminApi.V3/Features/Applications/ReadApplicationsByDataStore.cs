@@ -24,11 +24,11 @@ public class ReadApplicationsByDataStore : IFeature
 
     internal static Task<IResult> GetDataStoreApplications(
         IGetApplicationsByDataStoreIdQuery getApplicationsByDataStoreIdQuery,
-        IGetOdsInstanceIdsByApplicationIdQuery getOdsInstanceIdsByApplicationIdQuery,
+        IGetDataStoreIdsByApplicationIdQuery getDataStoreIdsByApplicationIdQuery,
         int id)
     {
         var applicationEntities = getApplicationsByDataStoreIdQuery.Execute(id);
-        var dataStoreIdsByApplicationId = getOdsInstanceIdsByApplicationIdQuery.Execute(applicationEntities.Select(a => a.ApplicationId));
+        var dataStoreIdsByApplicationId = getDataStoreIdsByApplicationIdQuery.Execute(applicationEntities.Select(a => a.ApplicationId));
         var applications = ApplicationMapper.ToModelList(applicationEntities, dataStoreIdsByApplicationId);
         return Task.FromResult(Results.Ok(applications));
     }

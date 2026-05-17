@@ -7,18 +7,18 @@ using EdFi.Admin.DataAccess.Contexts;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetOdsInstanceIdsByApplicationIdQuery
+public interface IGetDataStoreIdsByApplicationIdQuery
 {
     IList<int> Execute(int applicationId);
 
     IReadOnlyDictionary<int, IList<int>> Execute(IEnumerable<int> applicationIds);
 }
 
-public class GetOdsInstanceIdsByApplicationIdQuery : IGetOdsInstanceIdsByApplicationIdQuery
+public class GetDataStoreIdsByApplicationIdQuery : IGetDataStoreIdsByApplicationIdQuery
 {
     private readonly IUsersContext _context;
 
-    public GetOdsInstanceIdsByApplicationIdQuery(IUsersContext context)
+    public GetDataStoreIdsByApplicationIdQuery(IUsersContext context)
     {
         _context = context;
     }

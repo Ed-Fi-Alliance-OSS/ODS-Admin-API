@@ -16,7 +16,7 @@ public class ApplicationModel
     public IList<long>? EducationOrganizationIds { get; set; }
     public int? VendorId { get; set; }
     public IList<int>? ProfileIds { get; set; }
-    public IList<int>? OdsInstanceIds { get; set; }
+    public IList<int>? DataStoreIds { get; set; }
     public bool Enabled { get; set; } = true;
 }
 

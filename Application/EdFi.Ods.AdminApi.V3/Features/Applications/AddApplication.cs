@@ -45,7 +45,7 @@ public class AddApplication : IFeature
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
 
         ValidateProfileIds(request, db);
-        ValidateOdsInstanceIds(request, db);
+        ValidateDataStoreIds(request, db);
     }
 
     private static void ValidateProfileIds(AddApplicationRequest request, IUsersContext db)
@@ -64,19 +64,19 @@ public class AddApplication : IFeature
         }
     }
 
-    private static void ValidateOdsInstanceIds(AddApplicationRequest request, IUsersContext db)
+    private static void ValidateDataStoreIds(AddApplicationRequest request, IUsersContext db)
     {
         var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
 
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && allOdsInstanceIds.Count == 0)
+        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
         {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", request.OdsInstanceIds)}") });
+            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
         }
 
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && (!request.OdsInstanceIds.All(p => allOdsInstanceIds.Contains(p))))
+        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
         {
-            var notExist = request.OdsInstanceIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", notExist)}") });
+            var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
+            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", notExist)}") });
         }
     }
 
@@ -100,7 +100,7 @@ public class AddApplication : IFeature
         public IEnumerable<long>? EducationOrganizationIds { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
-        public IEnumerable<int>? OdsInstanceIds { get; set; }
+        public IEnumerable<int>? DataStoreIds { get; set; }
 
         [SwaggerOptional]
         [SwaggerSchema(Description = FeatureConstants.Enable)]
@@ -127,7 +127,7 @@ public class AddApplication : IFeature
                 .NotEmpty()
                 .WithMessage(FeatureConstants.EdOrgIdsValidationMessage);
 
-            RuleFor(m => m.OdsInstanceIds)
+            RuleFor(m => m.DataStoreIds)
                 .NotEmpty()
                 .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 

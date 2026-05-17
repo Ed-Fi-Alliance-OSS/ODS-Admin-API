@@ -10,16 +10,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetApiClientOdsInstanceQuery
+public interface IGetApiClientDataStoreQuery
 {
     ApiClientOdsInstance? Execute(int apiClientId, int odsInstanceId);
 }
 
-public class GetApiClientOdsInstanceQuery : IGetApiClientOdsInstanceQuery
+public class GetApiClientDataStoreQuery : IGetApiClientDataStoreQuery
 {
     private readonly IUsersContext _usersContext;
 
-    public GetApiClientOdsInstanceQuery(IUsersContext userContext)
+    public GetApiClientDataStoreQuery(IUsersContext userContext)
     {
         _usersContext = userContext;
     }

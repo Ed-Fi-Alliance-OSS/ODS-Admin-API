@@ -28,14 +28,14 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             _fakeDb = A.Fake<IUsersContext>();
             _validateMethod = typeof(AddApiClient)
-                .GetMethod("ValidateOdsInstanceIds", BindingFlags.NonPublic | BindingFlags.Static);
+                .GetMethod("ValidateDataStoreIds", BindingFlags.NonPublic | BindingFlags.Static);
         }
 
         private AddApiClient.AddApiClientRequest MakeRequest(IEnumerable<int> ids) => new AddApiClient.AddApiClientRequest
         {
             Name = "Test",
             ApplicationId = 1,
-            OdsInstanceIds = ids
+            DataStoreIds = ids
         };
 
         private void SetupOdsInstances(params int[] instanceIds)
@@ -97,7 +97,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             {
                 Name = "Test",
                 ApplicationId = 1,
-                OdsInstanceIds = null
+                DataStoreIds = null
             };
 
             Should.NotThrow(() =>

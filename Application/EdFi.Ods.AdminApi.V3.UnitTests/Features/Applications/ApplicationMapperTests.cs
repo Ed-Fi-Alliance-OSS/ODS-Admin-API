@@ -186,7 +186,7 @@ public class ApplicationMapperTests
 
         var model = ApplicationMapper.ToModel(application, odsInstanceIds);
 
-        model.OdsInstanceIds.ShouldBe(odsInstanceIds);
+        model.DataStoreIds.ShouldBe(odsInstanceIds);
     }
 
     [Test]
@@ -306,9 +306,9 @@ public class ApplicationMapperTests
 
         models.Count.ShouldBe(2);
         models[0].Id.ShouldBe(1);
-        models[0].OdsInstanceIds.ShouldBe(new List<int> { 10 });
+        models[0].DataStoreIds.ShouldBe(new List<int> { 10 });
         models[1].Id.ShouldBe(2);
-        models[1].OdsInstanceIds.ShouldBe(new List<int> { 20, 30 });
+        models[1].DataStoreIds.ShouldBe(new List<int> { 20, 30 });
     }
 
     [Test]
@@ -327,8 +327,8 @@ public class ApplicationMapperTests
         var models = ApplicationMapper.ToModelList(new[] { app }, emptyOdsMap);
 
         models.Count.ShouldBe(1);
-        models[0].OdsInstanceIds.ShouldNotBeNull();
-        models[0].OdsInstanceIds!.Count.ShouldBe(0);
+        models[0].DataStoreIds.ShouldNotBeNull();
+        models[0].DataStoreIds!.Count.ShouldBe(0);
     }
 
     [Test]

@@ -17,7 +17,7 @@ using System;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
-public class GetApiClientOdsInstanceQueryTests : PlatformUsersContextTestBase
+public class GetApiClientDataStoreQueryTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldGetApiClientOdsInstanceData()
@@ -55,8 +55,8 @@ public class GetApiClientOdsInstanceQueryTests : PlatformUsersContextTestBase
         int apiClientId = apiClient.ApiClientId;
         Transaction(usersContext =>
         {
-            var getApiClientOdsInstanceQuery = new GetApiClientOdsInstanceQuery(usersContext);
-            var results = getApiClientOdsInstanceQuery.Execute(apiClientId, odsInstanceId);
+            var GetApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
+            var results = GetApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
             results.ShouldNotBeNull();
         });
     }
@@ -97,8 +97,8 @@ public class GetApiClientOdsInstanceQueryTests : PlatformUsersContextTestBase
         int apiClientId = 999;
         Transaction(usersContext =>
         {
-            var getApiClientOdsInstanceQuery = new GetApiClientOdsInstanceQuery(usersContext);
-            var results = getApiClientOdsInstanceQuery.Execute(apiClientId, odsInstanceId);
+            var GetApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
+            var results = GetApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
             results.ShouldBeNull();
         });
     }
@@ -139,8 +139,8 @@ public class GetApiClientOdsInstanceQueryTests : PlatformUsersContextTestBase
         int apiClientId = apiClient.ApiClientId;
         Transaction(usersContext =>
         {
-            var getApiClientOdsInstanceQuery = new GetApiClientOdsInstanceQuery(usersContext);
-            var results = getApiClientOdsInstanceQuery.Execute(apiClientId, odsInstanceId);
+            var GetApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
+            var results = GetApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
             results.ShouldBeNull();
         });
     }
