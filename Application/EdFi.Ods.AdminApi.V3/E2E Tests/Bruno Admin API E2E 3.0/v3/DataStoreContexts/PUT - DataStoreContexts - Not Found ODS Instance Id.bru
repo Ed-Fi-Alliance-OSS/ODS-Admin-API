@@ -1,0 +1,42 @@
+meta {
+  name: DataStoreContexts - Not Found ODS Instance Id
+  type: http
+  seq: 19
+}
+
+put {
+  url: {{API_URL}}/v3/dataStoreContexts/{{CreatedDataStoreContextId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": 9000,
+    "contextKey": "ckey",
+    "contextValue": "cvalue"
+  }
+}
+
+script:post-response {
+  test("PUT DataStoreContexts Invalid: Status code is not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT DataStoreContexts Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  
+  test("PUT ODS Instance Contexts Invalid DataStore: Response errors include messages by property", function () {
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("DataStore");
+      expect(response.title).to.contain("It may have been recently deleted");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

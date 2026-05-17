@@ -59,7 +59,7 @@ script:pre-request {
         let applicationName =  timestamp;
         let claimsetName =  timestamp;
         var vendorId = 0;
-        var odsInstanceId = 0;
+        var DataStoreId = 0;
         bru.setEnvVar("FILTERAPPLICATIONNAME", applicationName);
         bru.setEnvVar("FILTERCLAIMSETNAME", claimsetName);
 
@@ -100,23 +100,23 @@ script:pre-request {
           throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
         }
 
-        const odsResponse = await axios.post(`${API_URL}/v3/odsInstances`, {
+        const odsResponse = await axios.post(`${API_URL}/v3/dataStores`, {
              "name": `Ods Instance ${timestamp}`, 
-             "instanceType": 'postgresql', 
+             "dataStoreType": 'postgresql', 
              "connectionString": bru.getEnvVar("connectionString")
         }, axiosConfig);
 
         if (odsResponse.status === 201) {
-          console.log(`✅ OdsInstance ${i} Created Successfully`);
+          console.log(`✅ DataStore ${i} Created Successfully`);
           let location = odsResponse.headers.get('Location');
           id = parseInt(location.split("/").pop(), 10);
-          odsInstanceId = id;
+          DataStoreId = id;
           odsintancesToDelete.push(id)
         } else {
-          console.log(`❌ Failed to post odsInstances ${i}`);
+          console.log(`❌ Failed to post DataStores ${i}`);
           console.log("Status:", odsResponse.status);
           console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
-          throw new Error(`Failed to post odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+          throw new Error(`Failed to post DataStores - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
         } 
 
         const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
@@ -125,7 +125,7 @@ script:pre-request {
             "claimSetName": `${claimsetName}`,
             "profileIds": [],
             "educationOrganizationIds": [100],
-            "odsInstanceIds": [ odsInstanceId ],
+            "dataStoreIds": [ DataStoreId ],
             "enabled" : true
         }, axiosConfig);
     
@@ -145,7 +145,7 @@ script:pre-request {
 
     bru.setEnvVar("VENDORTODELETE", vendorsToDelete);
     bru.setEnvVar("CLAIMSETSTODELETE", claimsetsToDelete);
-    bru.setEnvVar("ODSINSTANCETODELETE", odsintancesToDelete);
+    bru.setEnvVar("DataStoreTODELETE", odsintancesToDelete);
     bru.setEnvVar("APPLICATIONSTODELETE", applicationsToDelete);
 
   } catch (error) {
@@ -203,16 +203,16 @@ script:post-response {
         }
     }
 
-    async function deleteODSInstanceById(id) {
-        const odsResponse = await axios.delete(`${API_URL}/v3/odsInstances/${id}`, axiosConfig);
+    async function deleteDataStoreById(id) {
+        const odsResponse = await axios.delete(`${API_URL}/v3/dataStores/${id}`, axiosConfig);
 
         if (odsResponse.status === 204) {
-          console.log(`✅ OdsInstance ${id} deleted successfully`);
+          console.log(`✅ DataStore ${id} deleted successfully`);
         } else {
-          console.log("❌ Failed to delete odsinstance");
+          console.log("❌ Failed to delete DataStore");
           console.log("Status:", odsResponse.status);
           console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
-          throw new Error(`Failed to delete odsinstance - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+          throw new Error(`Failed to delete DataStore - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
         }
     }
 
@@ -239,9 +239,9 @@ script:post-response {
         await deleteClaimsetById(claimsetsToDelete[k]);
     }
 
-    let odsInstanceToDelete = bru.getEnvVar("ODSINSTANCETODELETE") || [];
-    for (let l = 0; l < odsInstanceToDelete.length; l++) {
-        await deleteODSInstanceById(odsInstanceToDelete[l]);
+    let DataStoreToDelete = bru.getEnvVar("DataStoreTODELETE") || [];
+    for (let l = 0; l < DataStoreToDelete.length; l++) {
+        await deleteDataStoreById(DataStoreToDelete[l]);
     }
 
   } catch (error) {

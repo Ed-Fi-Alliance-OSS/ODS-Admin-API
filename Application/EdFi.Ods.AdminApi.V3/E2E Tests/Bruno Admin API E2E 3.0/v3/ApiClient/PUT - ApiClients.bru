@@ -15,8 +15,8 @@ body:json {
     "name": "Updated Test ApiClient",
     "isApproved": false,
     "applicationId": {{CreatedApplicationId}},
-    "odsInstanceIds": [
-      {{ODSInstanceId}}
+    "dataStoreIds": [
+      {{DataStoreId}}
     ]
   }
   
@@ -61,7 +61,7 @@ script:post-response {
           expect(updated.name).to.equal("Updated Test ApiClient");
           expect(updated.isApproved).to.equal(false);
           expect(updated.applicationId).to.equal(parseInt(bru.getVar("CreatedApplicationId"), 10));
-          expect(updated.odsInstanceIds.length).to.equal(1);
+          expect(updated.DataStoreIds.length).to.equal(1);
       });
   
       test("PUT ApiClient: Response result does not include application key and secret", function () {

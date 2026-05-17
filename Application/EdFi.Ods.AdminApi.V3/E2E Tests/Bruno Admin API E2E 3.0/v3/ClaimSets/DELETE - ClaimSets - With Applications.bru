@@ -72,16 +72,16 @@ script:pre-request {
 
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
 
     if (odsResponse.status === 200) {
-      console.log("✅ OdsInstance List loaded");
-      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
+      console.log("✅ DataStore List loaded");
+      bru.setVar("dataStoreId", odsResponse.data[0].id);
     } else {
-      console.log("❌ Failed to get odsInstances");
+      console.log("❌ Failed to get DataStores");
       console.log("Status:", odsResponse.status);
       console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
-      throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+      throw new Error(`Failed to get DataStores - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     }
 
     const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
@@ -90,7 +90,7 @@ script:pre-request {
           "claimSetName": "Ed-Fi Sandbox",
           "profileIds": [],
           "educationOrganizationIds": [255901],
-          "odsInstanceIds": [bru.getVar("ODSInstanceId")]
+          "dataStoreIds": [bru.getVar("dataStoreId")]
     }, axiosConfig);
 
     if (applicationResponse.status === 201) {
@@ -119,7 +119,7 @@ script:pre-request {
             "claimSetName": `Other Test ClaimSet ${bru.getVar("OtherClaimSetGUID")}`,
             "profileIds": [],
             "educationOrganizationIds": [255901],
-            "odsInstanceIds": [bru.getVar("ODSInstanceId")]
+            "dataStoreIds": [bru.getVar("dataStoreId")]
     }, axiosConfig);
 
     if (applicationUpdatedResponse.status === 204) {

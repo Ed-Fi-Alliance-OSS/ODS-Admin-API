@@ -1,0 +1,45 @@
+meta {
+  name: DataStoreContexts - Invalid Combined Key
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{API_URL}}/v3/dataStoreContexts/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": {{DataStoreId}},
+    "contextKey": "ckey",
+    "contextValue": "cvalue"
+  }
+}
+
+script:post-response {
+  test("POST ODS Instance Contexts Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ODS Instance Contexts Invalid: Response matches title property", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  
+  test("POST ODS Instance Contexts Invalid DataStore: Response errors combined key validation", function () {
+      expect(response.title).to.contain("Validation failed");
+      expect(response.errors).to.be.an("object").and.not.to.be.empty;
+      expect(response.errors[""]).to.be.an("array").that.includes("The combined key ODS instance id and context key must be unique.");
+  });
+  
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

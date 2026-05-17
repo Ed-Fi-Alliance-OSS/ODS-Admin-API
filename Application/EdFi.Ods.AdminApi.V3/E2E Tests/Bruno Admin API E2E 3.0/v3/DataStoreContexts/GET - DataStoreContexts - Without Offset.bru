@@ -1,0 +1,64 @@
+meta {
+  name: DataStoreContexts - Without Offset
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{API_URL}}/v3/dataStoreContexts/?limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET DataStoreContexts: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET DataStoreContexts: Response result includes DataStoresContext", function () {
+      const results = res.getBody();
+      expect(results.length).to.be.greaterThan(0);   
+  });
+  
+  const GetDataStoreContextsSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "contextKey": {
+            "type": "string"
+          },
+          "contextValue": {
+            "type": "string"
+          },
+          "dataStoreId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "contextKey",
+          "contextValue",
+          "dataStoreId"     
+        ]
+      }
+    ]
+  }
+  
+  test("GET DataStoreContexts: Validation Schema Response", () => {
+  //     pm.response.to.have.jsonSchema(GetDataStoreContextsSchema);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,82 @@
+meta {
+  name: DataStoreDerivatives
+  type: http
+  seq: 16
+}
+
+put {
+  url: {{API_URL}}/v3/dataStoreDerivatives/{{CreatedDataStoreDerivativeId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": {{DataStoreId}},
+    "derivativeType": "ReadReplica",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("PUT DataStoreDerivatives: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+  
+  console.log("🔧 Setting post environment to ignore SSL certificates...");
+  
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+  
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const DataStoreDerivativeCreated = bru.getVar("CreatedDataStoreDerivativeId")
+    const DataStoreDerivativeResponse = await axios.get(`${API_URL}/v3/dataStoreDerivatives/${DataStoreDerivativeCreated}`, axiosConfig);
+
+    if (DataStoreDerivativeResponse.status === 200) {
+      console.log("✅ DataStoreContexts created successfully");
+      test("PUT DataStoreDerivatives: Response includes updated DataStoreDerivative", function () {
+        expect(DataStoreDerivativeResponse.data.derivativeType).to.equal("ReadReplica");
+        expect(DataStoreDerivativeResponse.data.DataStoreId).to.be.not.equal(0);
+       });
+    } else {
+      console.log("❌ Failed to get DataStoreDerivative");
+      console.log("Status:", DataStoreDerivativeResponse.status);
+      console.log("Response data:", JSON.stringify(DataStoreDerivativeResponse.data, null, 2));
+      throw new Error(`Failed to get DataStoreDerivative - Status: ${DataStoreDerivativeResponse.status}, Data: ${JSON.stringify(DataStoreDerivativeResponse.data)}`);
+    }
+    
+  } catch (error) {
+    console.log("Error in post-request setup:", error.message);
+  }  
+}
+
+settings {
+  encodeUrl: true
+}

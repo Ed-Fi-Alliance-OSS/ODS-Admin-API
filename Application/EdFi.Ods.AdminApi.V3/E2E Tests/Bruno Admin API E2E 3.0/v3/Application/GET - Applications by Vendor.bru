@@ -76,7 +76,7 @@ script:pre-request {
         "claimSetName": "Ed-Fi Sandbox",
         "profileIds": [],
         "educationOrganizationIds": [ 255901 ],
-        "odsInstanceIds": [bru.getVar("ODSInstanceId")],
+        "dataStoreIds": [bru.getVar("dataStoreId")],
         "enabled" : true
     }, axiosConfig);
 
@@ -124,7 +124,7 @@ script:post-response {
       expect(result.claimSetName).to.equal("Ed-Fi Sandbox");
       expect(result.educationOrganizationIds.length).to.equal(1);
       expect(result.profileIds.length).to.equal(0);
-      expect(result.odsInstanceIds.length).to.equal(1);
+      expect(result.DataStoreIds.length).to.equal(1);
   });
   
   test("GET Application by Vendor: Response result is filtered by vendor", function () {
@@ -172,7 +172,7 @@ script:post-response {
             "type": "array",
             "items": {}
           },
-          "odsInstanceIds": {
+          "dataStoreIds": {
             "type": "array",
             "items": {}
           }
@@ -184,7 +184,7 @@ script:post-response {
           "educationOrganizationIds",
           "vendorId",
           "profileIds",
-          "odsInstanceIds"
+          "dataStoreIds"
         ]
       }
     ]

@@ -15,8 +15,8 @@ body:json {
     "name": "Test ApiClient",
     "isApproved": true,
     "applicationId": {{CreatedApplicationId}},
-    "odsInstanceIds": [
-      {{ODSInstanceId}}
+    "dataStoreIds": [
+      {{DataStoreId}}
     ]
   }
 }
@@ -80,10 +80,10 @@ script:pre-request {
     }
 
     // Get first ODS instance
-    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=0&limit=1`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=0&limit=1`, axiosConfig);
 
     if (odsResponse.status === 200 && odsResponse.data && odsResponse.data.length > 0 && odsResponse.data[0].id) {
-      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
+      bru.setVar("dataStoreId", odsResponse.data[0].id);
       console.log("✅ ODS Instance found with ID:", odsResponse.data[0].id);
     } else {
       console.log("❌ Failed to get ODS instance:");
@@ -99,7 +99,7 @@ script:pre-request {
       "claimSetName": "Ed-Fi Sandbox",
       "profileIds": [],
       "educationOrganizationIds": [255901],
-      "odsInstanceIds": [bru.getVar("ODSInstanceId")],
+      "dataStoreIds": [bru.getVar("dataStoreId")],
       "enabled": true
     }, axiosConfig);
 

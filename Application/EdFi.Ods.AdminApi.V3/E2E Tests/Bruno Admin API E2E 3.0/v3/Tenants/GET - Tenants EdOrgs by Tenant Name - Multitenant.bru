@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{API_URL}}/v3/tenants/tenant1/OdsInstances/edOrgs
+  url: {{API_URL}}/v3/tenants/tenant1/DataStores/edOrgs
   body: none
   auth: inherit
 }
@@ -43,16 +43,16 @@ script:pre-request {
     };
     
     try {
-      const objectName = "OdsInstance";
-      const response = await axios.post(`${API_URL}/v3/odsInstances`, {
-        "name": `OdsInstance-E2E-${timestamp}`,
-        "instanceType": "OdsInstance",
+      const objectName = "DataStore";
+      const response = await axios.post(`${API_URL}/v3/dataStores`, {
+        "name": `DataStore-E2E-${timestamp}`,
+        "dataStoreType": "DataStore",
         "connectionString": `${bru.getEnvVar("connectionString")}`
       }, axiosConfig);
   
       if (response.status === 201 && response.headers.location) {
         const id = response.headers.location.split("/").pop();
-        bru.setVar("created-odsInstanceId", id);
+        bru.setVar("created-DataStoreId", id);
         console.log(`✅ ${objectName} created successfully with ID:`, id);
       } else {
         console.log(`❌ Failed to create ${objectName}:`);
@@ -73,14 +73,14 @@ script:pre-request {
 script:post-response {
   if (bru.getEnvVar("isMultitenant") == "true") {
   
-    test("GET Tenants OdsInstances EdOrgs: Status code is Found", function () {
+    test("GET Tenants DataStores EdOrgs: Status code is Found", function () {
         expect(res.getStatus()).to.equal(200);
     });
   
     const response = res.getBody();
     const Ajv = require('ajv');
     const ajv = new Ajv();
-    const GetTenantOdsInstancesEdOrgsSchema = {
+    const GetTenantDataStoresEdOrgsSchema = {
       "type": "object",
       "properties": {
         "id": {
@@ -89,7 +89,7 @@ script:post-response {
         "name": {
           "type": "string"
         },
-        "odsInstances": {
+        "DataStores": {
           "type": "array",
           "items": {
             "type": "object",
@@ -100,7 +100,7 @@ script:post-response {
               "name": {
                 "type": "string"
               },
-              "instanceType": {
+              "dataStoreType": {
                 "type": ["string", "null"]
               },
               "educationOrganizations": {
@@ -132,11 +132,11 @@ script:post-response {
           }
         }
       },
-      "required": ["id", "name", "odsInstances"]
+      "required": ["id", "name", "DataStores"]
     };
   
-    test("GET Tenants OdsInstances EdOrgs: Response matches schema", function () {
-        expect(ajv.validate(GetTenantOdsInstancesEdOrgsSchema, response)).to.equal(true);
+    test("GET Tenants DataStores EdOrgs: Response matches schema", function () {
+        expect(ajv.validate(GetTenantDataStoresEdOrgsSchema, response)).to.equal(true);
     });
   
   
@@ -168,12 +168,12 @@ script:post-response {
     };
     
     try {
-      const objectName = "OdsInstance";
-      const response = await axios.delete(`${API_URL}/v3/odsInstances/${bru.getVar("created-odsInstanceId")}`, axiosConfig);
+      const objectName = "DataStore";
+      const response = await axios.delete(`${API_URL}/v3/dataStores/${bru.getVar("created-DataStoreId")}`, axiosConfig);
   
       if (response.status === 200) {
-        console.log(`✅ ${objectName} with ID ${bru.getVar("created-odsInstanceId")} removed successfully`);
-        bru.deleteVar("created-odsInstanceId");
+        console.log(`✅ ${objectName} with ID ${bru.getVar("created-DataStoreId")} removed successfully`);
+        bru.deleteVar("created-DataStoreId");
       } else {
         console.log(`❌ Failed to delete ${objectName}:`);
         console.log("Status:", response.status);
@@ -188,7 +188,7 @@ script:post-response {
   
   }
   else {
-      test("GET Tenants OdsInstances EdOrgs: Status code is Found", function () {
+      test("GET Tenants DataStores EdOrgs: Status code is Found", function () {
           expect(res.getStatus()).to.equal(404);
       });
   }

@@ -41,7 +41,7 @@ script:post-response {
       expect(result.name).to.equal("Test ApiClient");
       expect(result.isApproved).to.equal(true);
       expect(result.applicationId).to.equal(parseInt(bru.getVar("CreatedApplicationId"), 10));
-      expect(result.odsInstanceIds.length).to.equal(1);
+      expect(result.DataStoreIds.length).to.equal(1);
   });
   
   test("GET ApiClients: Response results do not include secret", function () {
@@ -80,7 +80,7 @@ script:post-response {
              "type": "array",
              "items": {}
           },
-          "odsInstanceIds": {
+          "dataStoreIds": {
              "type": "array",
              "items": {}
           }
@@ -93,7 +93,7 @@ script:post-response {
           "applicationId",
           "keyStatus",
           "educationOrganizationIds",
-          "odsInstanceIds"
+          "dataStoreIds"
         ]
       }
     ]

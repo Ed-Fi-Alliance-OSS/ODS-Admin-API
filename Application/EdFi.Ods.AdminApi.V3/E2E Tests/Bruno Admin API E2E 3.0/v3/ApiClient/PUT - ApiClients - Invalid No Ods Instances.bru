@@ -15,7 +15,7 @@ body:json {
     "name": "Updated Test ApiClient",
     "isApproved": false,
     "applicationId": {{CreatedApplicationId}},
-    "odsInstanceIds": [ ]
+    "dataStoreIds": [ ]
   }
 }
 
@@ -36,7 +36,7 @@ script:post-response {
   });
   
   test("POST ApiClients Invalid: Response errors include messages by property", function () {
-      expect(response.errors["OdsInstanceIds"].length).to.equal(1);
+      expect(response.errors["dataStoreIds"].length).to.equal(1);
   });
   
 }
