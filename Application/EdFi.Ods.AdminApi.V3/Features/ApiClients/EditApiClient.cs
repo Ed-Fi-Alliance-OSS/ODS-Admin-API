@@ -46,13 +46,13 @@ public class EditApiClient : IFeature
 
         if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
         {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
+            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
         }
 
         if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
         {
             var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", notExist)}") });
+            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}") });
         }
     }
 
