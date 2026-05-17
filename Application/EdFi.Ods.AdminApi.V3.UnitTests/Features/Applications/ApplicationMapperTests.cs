@@ -120,9 +120,9 @@ public class ApplicationMapperTests
             Profiles = new List<Profile>(),
             ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>()
         };
-        var odsInstanceIds = new List<int> { 1, 2 };
+        var dataStoreIds = new List<int> { 1, 2 };
 
-        var model = ApplicationMapper.ToModel(application, odsInstanceIds);
+        var model = ApplicationMapper.ToModel(application, dataStoreIds);
 
         model.Id.ShouldBe(42);
         model.ApplicationName.ShouldBe("Test Application");
@@ -172,7 +172,7 @@ public class ApplicationMapperTests
     }
 
     [Test]
-    public void ToModel_OdsInstanceIds_AreMappedDirectly()
+    public void ToModel_DataStoreIds_AreMappedDirectly()
     {
         var application = new Application
         {
@@ -182,11 +182,11 @@ public class ApplicationMapperTests
             Profiles = new List<Profile>(),
             ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>()
         };
-        var odsInstanceIds = new List<int> { 10, 20, 30 };
+        var dataStoreIds = new List<int> { 10, 20, 30 };
 
-        var model = ApplicationMapper.ToModel(application, odsInstanceIds);
+        var model = ApplicationMapper.ToModel(application, dataStoreIds);
 
-        model.DataStoreIds.ShouldBe(odsInstanceIds);
+        model.DataStoreIds.ShouldBe(dataStoreIds);
     }
 
     [Test]
@@ -312,7 +312,7 @@ public class ApplicationMapperTests
     }
 
     [Test]
-    public void ToModelList_ApplicationWithNoOdsEntry_OdsInstanceIdsIsEmpty()
+    public void ToModelList_ApplicationWithNoOdsEntry_DataStoreIdsIsEmpty()
     {
         var app = new Application
         {
