@@ -24,7 +24,7 @@ public class DeleteDataStoreContextCommand : IDeleteDataStoreContextCommand
 
     public void Execute(int id)
     {
-        var odsInstanceContext = _context.OdsInstanceContexts.SingleOrDefault(v => v.OdsInstanceContextId == id) ?? throw new NotFoundException<int>("odsInstanceContext", id);
+        var odsInstanceContext = _context.OdsInstanceContexts.SingleOrDefault(v => v.OdsInstanceContextId == id) ?? throw new NotFoundException<int>("dataStoreContext", id);
         _context.OdsInstanceContexts.Remove(odsInstanceContext);
         _context.SaveChanges();
     }
