@@ -63,7 +63,7 @@ script:post-response {
       console.log("✅ DataStoreContexts created successfully");
       test("PUT DataStoreDerivatives: Response includes updated DataStoreDerivative", function () {
         expect(DataStoreDerivativeResponse.data.derivativeType).to.equal("ReadReplica");
-        expect(DataStoreDerivativeResponse.data.DataStoreId).to.be.not.equal(0);
+        expect(DataStoreDerivativeResponse.data.dataStoreId).to.be.not.equal(0);
        });
     } else {
       console.log("❌ Failed to get DataStoreDerivative");

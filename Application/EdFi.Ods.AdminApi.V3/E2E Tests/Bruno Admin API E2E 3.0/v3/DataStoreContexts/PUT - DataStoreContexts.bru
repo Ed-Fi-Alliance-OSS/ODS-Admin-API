@@ -64,7 +64,7 @@ script:post-response {
       test("PUT DataStoreContexts: Response includes updated DataStoreContext", function () {
          expect(DataStoresContextResponse.data.contextKey).to.equal("ckey");
          expect(DataStoresContextResponse.data.contextValue).to.be.not.empty;
-         expect(DataStoresContextResponse.data.DataStoreId).to.be.not.equal(0);
+         expect(DataStoresContextResponse.data.dataStoreId).to.be.not.equal(0);
       });
 
     } else {

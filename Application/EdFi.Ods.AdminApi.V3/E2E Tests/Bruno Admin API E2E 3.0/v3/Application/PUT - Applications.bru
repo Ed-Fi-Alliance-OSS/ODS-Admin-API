@@ -73,7 +73,7 @@ script:post-response {
           expect(applicationResponse.data.claimSetName).to.equal("Ed-Fi ODS Admin App");
           expect(applicationResponse.data.educationOrganizationIds.length).to.equal(1);
           expect(applicationResponse.data.profileIds.length).to.equal(0);
-          expect(applicationResponse.data.DataStoreIds.length).to.equal(1);
+          expect(applicationResponse.data.dataStoreIds.length).to.equal(1);
           expect(applicationResponse.data.enabled).to.equal(false);
       });
       test("PUT Application: Response result does not include application key and secret", function () {
