@@ -1,5 +1,5 @@
 meta {
-  name: DataStoreContexts - Invalid ODS Instance Id
+  name: DataStoreContexts - Invalid DataStore Id
   type: http
   seq: 18
 }
@@ -35,7 +35,7 @@ script:post-response {
   });
   
   test("PUT DataStoreContexts Invalid: Invalid DataStoreId", function () {
-     expect(response.errors.DataStoreId[0]).to.contain("valid ods instance id");
+     expect(response.errors.DataStoreId[0]).to.contain("valid DataStore id");
   });
 }
 

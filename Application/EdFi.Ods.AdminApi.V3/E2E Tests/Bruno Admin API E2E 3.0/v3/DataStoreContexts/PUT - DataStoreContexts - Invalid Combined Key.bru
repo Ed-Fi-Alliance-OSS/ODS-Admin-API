@@ -95,10 +95,10 @@ script:post-response {
   });
   
   
-  test("PUT ODS Instance Contexts Invalid DataStore: Response errors combined key validation", function () {
+  test("PUT DataStore Contexts Invalid DataStore: Response errors combined key validation", function () {
        expect(response.title).to.contain("Validation failed");
        expect(response.errors).to.be.an("object").and.not.to.be.empty;
-       expect(response.errors[""]).to.be.an("array").that.includes("The combined key ODS instance id and context key must be unique.");
+       expect(response.errors[""]).to.be.an("array").that.includes("The combined key DataStore id and context key must be unique.");
    });
 }
 

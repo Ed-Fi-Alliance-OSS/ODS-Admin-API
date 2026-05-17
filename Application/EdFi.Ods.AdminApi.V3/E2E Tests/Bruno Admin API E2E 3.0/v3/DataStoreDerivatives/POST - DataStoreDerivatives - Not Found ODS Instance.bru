@@ -1,5 +1,5 @@
 meta {
-  name: DataStoreDerivatives - Not Found ODS Instance
+  name: DataStoreDerivatives - Not Found DataStore
   type: http
   seq: 7
 }
@@ -19,18 +19,18 @@ body:json {
 }
 
 script:post-response {
-  test("POST ODS Instance Derivatives Invalid: Status code is Not Found", function () {
+  test("POST DataStore Derivatives Invalid: Status code is Not Found", function () {
       expect(res.getStatus()).to.equal(404);
   });
   
   const response = res.getBody();
   
-  test("POST ODS Instance Derivatives Invalid: Response matches title property", function () {
+  test("POST DataStore Derivatives Invalid: Response matches title property", function () {
       expect(response).to.have.property("title");
   });
   
   
-  test("POST ODS Instance Derivatives Invalid DataStore: Response errors include messages by property", function () {
+  test("POST DataStore Derivatives Invalid DataStore: Response errors include messages by property", function () {
       expect(response.title).to.contain("Not found");
       expect(response.title).to.contain("DataStore");
       expect(response.title).to.contain("It may have been recently deleted");

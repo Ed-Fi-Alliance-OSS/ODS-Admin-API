@@ -1,5 +1,5 @@
 meta {
-  name: DataStoreDerivatives - Invalid ODS Instance Id
+  name: DataStoreDerivatives - Invalid DataStore Id
   type: http
   seq: 22
 }
@@ -35,7 +35,7 @@ script:post-response {
   });
   
   test("PUT DataStoreDerivatives Invalid: Invalid DataStoreId", function () {
-     expect(response.errors.DataStoreId[0]).to.contain("valid ods instance id");
+     expect(response.errors.DataStoreId[0]).to.contain("valid DataStore id");
   });
 }
 

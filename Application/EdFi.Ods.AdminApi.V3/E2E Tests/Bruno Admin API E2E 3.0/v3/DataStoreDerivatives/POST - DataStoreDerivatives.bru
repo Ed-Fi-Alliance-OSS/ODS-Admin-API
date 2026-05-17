@@ -72,11 +72,11 @@ script:pre-request {
 }
 
 script:post-response {
-  test("POST ODS Instance Derivatives: Status code is Created", function () {
+  test("POST DataStore Derivatives: Status code is Created", function () {
       expect(res.getStatus()).to.equal(201);
   });
   
-  test("POST ODS Instance Derivatives: Response includes location in header", function () {
+  test("POST DataStore Derivatives: Response includes location in header", function () {
       expect(res.getHeaders()).to.have.property("location".toLowerCase());
       const id = res.getHeader("location").split("/").pop();
       if(id)
@@ -85,7 +85,7 @@ script:post-response {
       }
   });
 
-    test("POST ODS Instance Derivatives: Location header is absolute url", function () {
+    test("POST DataStore Derivatives: Location header is absolute url", function () {
       const location = res.getHeaders().location;
       expect(location).to.match(/^https?:\/\/.+/);
     });

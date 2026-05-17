@@ -1,5 +1,5 @@
 meta {
-  name: DataStoreContexts - Not Found ODS Instance Id
+  name: DataStoreContexts - Not Found DataStore Id
   type: http
   seq: 19
 }
@@ -30,7 +30,7 @@ script:post-response {
   });
   
   
-  test("PUT ODS Instance Contexts Invalid DataStore: Response errors include messages by property", function () {
+  test("PUT DataStore Contexts Invalid DataStore: Response errors include messages by property", function () {
       expect(response.title).to.contain("Not found");
       expect(response.title).to.contain("DataStore");
       expect(response.title).to.contain("It may have been recently deleted");

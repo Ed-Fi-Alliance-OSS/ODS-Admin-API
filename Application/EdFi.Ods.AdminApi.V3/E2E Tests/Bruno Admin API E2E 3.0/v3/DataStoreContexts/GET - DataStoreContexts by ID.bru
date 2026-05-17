@@ -21,7 +21,7 @@ script:post-response {
       const result = res.getBody();
       expect(result.contextKey).to.not.be.empty;
       expect(result.contextValue).to.not.be.empty;
-      expect(result.DataStoreId).to.not.equal(0);
+      expect(result.dataStoreId).to.not.equal(0);
   });
   
   const Ajv = require('ajv');

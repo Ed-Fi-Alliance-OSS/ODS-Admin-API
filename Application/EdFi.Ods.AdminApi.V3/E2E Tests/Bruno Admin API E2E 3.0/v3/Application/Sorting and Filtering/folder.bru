@@ -101,7 +101,7 @@ script:pre-request {
         }
 
         const odsResponse = await axios.post(`${API_URL}/v3/dataStores`, {
-             "name": `Ods Instance ${timestamp}`, 
+             "name": `DataStore ${timestamp}`, 
              "dataStoreType": 'postgresql', 
              "connectionString": bru.getEnvVar("connectionString")
         }, axiosConfig);

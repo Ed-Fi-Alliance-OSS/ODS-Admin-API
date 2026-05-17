@@ -18,7 +18,7 @@ script:post-response {
   test("GET DataStoreDerivativesId: Response result matches DataStoresDerivative", function () {
       const result = res.getBody();
       expect(result.derivativeType).to.not.be.empty;
-      expect(result.DataStoreId).to.not.equal(0);
+      expect(result.dataStoreId).to.not.equal(0);
   });
   
   const response = res.getBody();

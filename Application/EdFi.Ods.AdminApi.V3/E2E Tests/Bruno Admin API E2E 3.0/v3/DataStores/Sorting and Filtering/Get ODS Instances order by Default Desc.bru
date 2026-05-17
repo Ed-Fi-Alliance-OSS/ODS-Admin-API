@@ -1,5 +1,5 @@
 meta {
-  name: Get ODS Instances order by Default Desc
+  name: Get DataStores order by Default Desc
   type: http
   seq: 2
 }
@@ -19,16 +19,16 @@ params:query {
 script:post-response {
   var _ = require('lodash');
   
-  test("GET ODS Instances: Status code is OK", function () {
+  test("GET DataStores: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
   });
   
-  test("GET ODS Instances: Response result includes ODS Instances", function () {
+  test("GET DataStores: Response result includes DataStores", function () {
       const results = res.getBody();
       expect(results.length).to.be.greaterThan(0);   
   });
   
-  test("GET ODS Instances: Response result is ordered by Name desc", function () {
+  test("GET DataStores: Response result is ordered by Name desc", function () {
       const results = res.getBody();
       var expectedSortedOrder = _.orderBy(results, [DataStore => DataStore.name],['desc']);
       

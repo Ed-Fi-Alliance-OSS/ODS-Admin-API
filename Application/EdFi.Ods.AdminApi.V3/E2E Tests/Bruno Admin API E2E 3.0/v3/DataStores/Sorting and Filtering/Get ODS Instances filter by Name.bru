@@ -1,5 +1,5 @@
 meta {
-  name: Get ODS Instances filter by Name
+  name: Get DataStores filter by Name
   type: http
   seq: 9
 }
@@ -17,16 +17,16 @@ params:query {
 }
 
 script:post-response {
-  test("GET Ods Instances: Status code is OK", function () {
+  test("GET DataStores: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
   });
   
-  test("GET Ods Instances: Response result includes Ods instance", function () {
+  test("GET DataStores: Response result includes DataStore", function () {
       const results = res.getBody();
       expect(results).to.have.lengthOf(1);
   });
   
-  test("GET Ods Instances: Response result contains requested Ods instance", function () {
+  test("GET DataStores: Response result contains requested DataStore", function () {
       const results = res.getBody();
       expect(results[0].name).to.eql(String(bru.getEnvVar("FILTERNAMEODS")));
   });
