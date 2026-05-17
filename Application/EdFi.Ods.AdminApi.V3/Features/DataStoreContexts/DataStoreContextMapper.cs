@@ -5,24 +5,23 @@
 
 using DbOdsInstanceContext = EdFi.Admin.DataAccess.Models.OdsInstanceContext;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstanceContext;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStoreContexts;
 
-public static class OdsInstanceContextMapper
+public static class DataStoreContextMapper
 {
-    public static OdsInstanceContextModel ToModel(DbOdsInstanceContext source)
+    public static DataStoreContextModel ToModel(DbOdsInstanceContext source)
     {
-        return new OdsInstanceContextModel
+        return new DataStoreContextModel
         {
-            OdsInstanceContextId = source.OdsInstanceContextId,
-            OdsInstanceId = source.OdsInstance?.OdsInstanceId ?? 0,
+            DataStoreContextId = source.OdsInstanceContextId,
+            DataStoreId = source.OdsInstance?.OdsInstanceId ?? 0,
             ContextKey = source.ContextKey,
             ContextValue = source.ContextValue
         };
     }
 
-    public static List<OdsInstanceContextModel> ToModelList(IEnumerable<DbOdsInstanceContext> source)
+    public static List<DataStoreContextModel> ToModelList(IEnumerable<DbOdsInstanceContext> source)
     {
         return source.Select(ToModel).ToList();
     }
 }
-

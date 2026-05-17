@@ -46,15 +46,15 @@ public class EditOdsInstanceContextTests : PlatformUsersContextTestBase
 
         var updateContextKey = "contextKey2";
         var updateContextValue = "contextValue2";
-        var editOdsInstanceContext = new Mock<IEditOdsInstanceContextModel>();
-        editOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance2.OdsInstanceId);
+        var editOdsInstanceContext = new Mock<IEditDataStoreContextModel>();
+        editOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance2.OdsInstanceId);
         editOdsInstanceContext.Setup(x => x.ContextKey).Returns(updateContextKey);
         editOdsInstanceContext.Setup(x => x.ContextValue).Returns(updateContextValue);
         editOdsInstanceContext.Setup(x => x.Id).Returns(newOdsInstanceContext.OdsInstanceContextId);
 
         Transaction(usersContext =>
         {
-            var command = new EditOdsInstanceContextCommand(usersContext);
+            var command = new EditDataStoreContextCommand(usersContext);
             var updatedOdsInstanceContext = command.Execute(editOdsInstanceContext.Object);
             updatedOdsInstanceContext.ShouldNotBeNull();
             updatedOdsInstanceContext.OdsInstanceContextId.ShouldBeGreaterThan(0);
@@ -96,8 +96,8 @@ public class EditOdsInstanceContextTests : PlatformUsersContextTestBase
 
         var updateContextKey = "contextKey2";
         var updateContextValue = "contextValue2";
-        var editOdsInstanceContext = new Mock<IEditOdsInstanceContextModel>();
-        editOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance1.OdsInstanceId);
+        var editOdsInstanceContext = new Mock<IEditDataStoreContextModel>();
+        editOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance1.OdsInstanceId);
         editOdsInstanceContext.Setup(x => x.ContextKey).Returns(updateContextKey);
         editOdsInstanceContext.Setup(x => x.ContextValue).Returns(updateContextValue);
         editOdsInstanceContext.Setup(x => x.Id).Returns(newOdsInstanceContext.OdsInstanceContextId);
@@ -106,7 +106,7 @@ public class EditOdsInstanceContextTests : PlatformUsersContextTestBase
         {
             Transaction(usersContext =>
             {
-                var command = new EditOdsInstanceContextCommand(usersContext);
+                var command = new EditDataStoreContextCommand(usersContext);
                 var updatedOdsInstanceContext = command.Execute(editOdsInstanceContext.Object);
                 updatedOdsInstanceContext.ShouldNotBeNull();
                 updatedOdsInstanceContext.OdsInstanceContextId.ShouldBeGreaterThan(0);
@@ -148,8 +148,8 @@ public class EditOdsInstanceContextTests : PlatformUsersContextTestBase
 
         var updateContextKey = "contextKey2";
         var updateContextValue = string.Empty;
-        var editOdsInstanceContext = new Mock<IEditOdsInstanceContextModel>();
-        editOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance2.OdsInstanceId);
+        var editOdsInstanceContext = new Mock<IEditDataStoreContextModel>();
+        editOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance2.OdsInstanceId);
         editOdsInstanceContext.Setup(x => x.ContextKey).Returns(updateContextKey);
         editOdsInstanceContext.Setup(x => x.ContextValue).Returns(updateContextValue);
         editOdsInstanceContext.Setup(x => x.Id).Returns(-1);
@@ -158,7 +158,7 @@ public class EditOdsInstanceContextTests : PlatformUsersContextTestBase
         {
             Transaction(usersContext =>
             {
-                var command = new EditOdsInstanceContextCommand(usersContext);
+                var command = new EditDataStoreContextCommand(usersContext);
                 var result = command.Execute(editOdsInstanceContext.Object);
             });
         });

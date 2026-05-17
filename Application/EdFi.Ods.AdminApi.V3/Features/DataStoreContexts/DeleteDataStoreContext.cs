@@ -5,27 +5,23 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstanceContext;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStoreContexts;
 
-public class DeleteOdsInstanceContext : IFeature
+public class DeleteDataStoreContext : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapDelete(endpoints, "/odsInstanceContexts/{id}", Handle)
+        AdminApiEndpointBuilder.MapDelete(endpoints, "/dataStoreContexts/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static Task<IResult> Handle(IDeleteOdsInstanceContextCommand deleteOdsInstanceContextCommand, int id)
+    public static Task<IResult> Handle(IDeleteDataStoreContextCommand deleteDataStoreContextCommand, int id)
     {
-        deleteOdsInstanceContextCommand.Execute(id);
+        deleteDataStoreContextCommand.Execute(id);
         return Task.FromResult(Results.NoContent());
     }
 }
-
-
-

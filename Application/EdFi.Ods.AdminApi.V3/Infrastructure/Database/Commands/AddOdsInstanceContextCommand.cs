@@ -9,40 +9,40 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IAddOdsInstanceContextCommand
+public interface IAddDataStoreContextCommand
 {
-    OdsInstanceContext Execute(IAddOdsInstanceContextModel newOdsInstanceContext);
+    OdsInstanceContext Execute(IAddDataStoreContextModel newDataStoreContext);
 }
 
-public class AddOdsInstanceContextCommand : IAddOdsInstanceContextCommand
+public class AddDataStoreContextCommand : IAddDataStoreContextCommand
 {
     private readonly IUsersContext _context;
 
-    public AddOdsInstanceContextCommand(IUsersContext context)
+    public AddDataStoreContextCommand(IUsersContext context)
     {
         _context = context;
     }
 
-    public OdsInstanceContext Execute(IAddOdsInstanceContextModel newOdsInstanceContext)
+    public OdsInstanceContext Execute(IAddDataStoreContextModel newDataStoreContext)
     {
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newOdsInstanceContext.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", newOdsInstanceContext.OdsInstanceId);
+        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newDataStoreContext.DataStoreId) ??
+            throw new NotFoundException<int>("dataStore", newDataStoreContext.DataStoreId);
 
-        var odsInstanceContext = new OdsInstanceContext
+        var context = new OdsInstanceContext
         {
-            ContextKey = newOdsInstanceContext.ContextKey,
-            ContextValue = newOdsInstanceContext.ContextValue,
+            ContextKey = newDataStoreContext.ContextKey,
+            ContextValue = newDataStoreContext.ContextValue,
             OdsInstance = odsInstance
         };
-        _context.OdsInstanceContexts.Add(odsInstanceContext);
+        _context.OdsInstanceContexts.Add(context);
         _context.SaveChanges();
-        return odsInstanceContext;
+        return context;
     }
 }
 
-public interface IAddOdsInstanceContextModel
+public interface IAddDataStoreContextModel
 {
-    public int OdsInstanceId { get; set; }
+    public int DataStoreId { get; set; }
     public string? ContextKey { get; set; }
     public string? ContextValue { get; set; }
 }

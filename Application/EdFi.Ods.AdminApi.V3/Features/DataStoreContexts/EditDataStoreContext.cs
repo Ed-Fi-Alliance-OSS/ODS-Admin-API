@@ -5,91 +5,85 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstanceContext;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStoreContexts;
 
-public class EditOdsInstanceContext : IFeature
+public class EditDataStoreContext : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapPut(endpoints, "/odsInstanceContexts/{id}", Handle)
+            .MapPut(endpoints, "/dataStoreContexts/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IEditOdsInstanceContextCommand editOdsInstanceContextCommand, EditOdsInstanceContextRequest request, int id)
+    public static async Task<IResult> Handle(Validator validator, IEditDataStoreContextCommand editDataStoreContextCommand, EditDataStoreContextRequest request, int id)
     {
         request.Id = id;
         await validator.GuardAsync(request);
-        editOdsInstanceContextCommand.Execute(request);
+        editDataStoreContextCommand.Execute(request);
         return Results.NoContent();
     }
 
-
-    [SwaggerSchema(Title = "EditOdsInstanceContextRequest")]
-    public class EditOdsInstanceContextRequest : IEditOdsInstanceContextModel
+    [SwaggerSchema(Title = "EditDataStoreContextRequest")]
+    public class EditDataStoreContextRequest : IEditDataStoreContextModel
     {
         [SwaggerExclude]
         [SwaggerSchema(Description = FeatureConstants.DataStoreContextIdDescription, Nullable = false)]
         public int Id { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreContextDataStoreIdDescription, Nullable = false)]
-        public int OdsInstanceId { get; set; }
+        public int DataStoreId { get; set; }
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextContextKeyDescription, Nullable = false)]
         public string? ContextKey { get; set; }
         [SwaggerSchema(Description = FeatureConstants.OdsInstanceContextContextValueDescription, Nullable = false)]
         public string? ContextValue { get; set; }
     }
 
-    public class Validator : AbstractValidator<EditOdsInstanceContextRequest>
+    public class Validator : AbstractValidator<EditDataStoreContextRequest>
     {
-        private readonly IGetDataStoreQuery _getOdsInstanceQuery;
-        private readonly IGetOdsInstanceContextsQuery _getOdsInstanceContextsQuery;
+        private readonly IGetDataStoreQuery _getDataStoreQuery;
+        private readonly IGetDataStoreContextsQuery _getDataStoreContextsQuery;
 
-        public Validator(IGetDataStoreQuery getOdsInstanceQuery, IGetOdsInstanceContextsQuery getOdsInstanceContextsQuery)
+        public Validator(IGetDataStoreQuery getDataStoreQuery, IGetDataStoreContextsQuery getDataStoreContextsQuery)
         {
-            _getOdsInstanceQuery = getOdsInstanceQuery;
-            _getOdsInstanceContextsQuery = getOdsInstanceContextsQuery;
+            _getDataStoreQuery = getDataStoreQuery;
+            _getDataStoreContextsQuery = getDataStoreContextsQuery;
 
             RuleFor(m => m.ContextKey).NotEmpty();
             RuleFor(m => m.ContextValue).NotEmpty();
 
-            RuleFor(m => m.OdsInstanceId)
+            RuleFor(m => m.DataStoreId)
                 .NotEqual(0)
                 .WithMessage(FeatureConstants.DataStoreIdValidationMessage);
 
-            RuleFor(m => m.OdsInstanceId)
-                .Must(BeAnExistingOdsInstance)
-                .When(m => !m.OdsInstanceId.Equals(0));
+            RuleFor(m => m.DataStoreId)
+                .Must(BeAnExistingDataStore)
+                .When(m => !m.DataStoreId.Equals(0));
 
-            RuleFor(odsContext => odsContext)
+            RuleFor(ctx => ctx)
                 .Must(BeUniqueCombinedKey)
                 .WithMessage(FeatureConstants.DataStoreContextCombinedKeyMustBeUnique);
         }
 
-        private bool BeAnExistingOdsInstance(int id)
+        private bool BeAnExistingDataStore(int id)
         {
-            _getOdsInstanceQuery.Execute(id);
+            _getDataStoreQuery.Execute(id);
             return true;
         }
 
-        private bool BeUniqueCombinedKey(EditOdsInstanceContextRequest request)
+        private bool BeUniqueCombinedKey(EditDataStoreContextRequest request)
         {
-            return !_getOdsInstanceContextsQuery.Execute().Exists
-                (x => x.OdsInstance?.OdsInstanceId == request.OdsInstanceId &&
+            return !_getDataStoreContextsQuery.Execute().Exists(
+                x => x.OdsInstance?.OdsInstanceId == request.DataStoreId &&
                 x.ContextKey.Equals(request.ContextKey, StringComparison.OrdinalIgnoreCase) &&
                 x.OdsInstanceContextId != request.Id);
         }
     }
 }
-
-
-
-

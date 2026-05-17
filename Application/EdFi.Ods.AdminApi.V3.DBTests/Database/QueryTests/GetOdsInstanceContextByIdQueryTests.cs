@@ -42,7 +42,7 @@ public class GetOdsInstanceContextByIdQueryTests : PlatformUsersContextTestBase
         OdsInstanceContext result = null;
         Transaction(usersContext =>
         {
-            var query = new GetOdsInstanceContextByIdQuery(usersContext);
+            var query = new GetDataStoreContextByIdQuery(usersContext);
             result = query.Execute(odsInstanceContext1.OdsInstanceContextId);
             result.ShouldNotBeNull();
             result.OdsInstanceContextId.ShouldBe(odsInstanceContext1.OdsInstanceContextId);

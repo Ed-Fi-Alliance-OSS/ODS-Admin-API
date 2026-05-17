@@ -3,16 +3,17 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using DbOdsInstanceContext = EdFi.Admin.DataAccess.Models.OdsInstanceContext;
+using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace EdFi.Ods.AdminApi.V3.Features.DataStoreContexts;
 
-public class DataStoreContextModel { }
-
-public static class DataStoreContextMapper
+[SwaggerSchema(Title = "DataStoreContext")]
+public class DataStoreContextModel
 {
-    public static List<DataStoreContextModel> ToModelList(IEnumerable<DbOdsInstanceContext> source)
-    {
-        return source.Select(_ => new DataStoreContextModel()).ToList();
-    }
+    [JsonPropertyName("id")]
+    public int DataStoreContextId { get; set; }
+    public int DataStoreId { get; set; }
+    public string? ContextKey { get; set; }
+    public string? ContextValue { get; set; }
 }

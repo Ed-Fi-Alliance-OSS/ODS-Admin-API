@@ -17,18 +17,18 @@ using Microsoft.Extensions.Options;
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
 
-public interface IGetOdsInstanceContextsQuery
+public interface IGetDataStoreContextsQuery
 {
     List<OdsInstanceContext> Execute();
     List<OdsInstanceContext> Execute(CommonQueryParams commonQueryParams);
 }
 
-public class GetOdsInstanceContextsQuery : IGetOdsInstanceContextsQuery
+public class GetDataStoreContextsQuery : IGetDataStoreContextsQuery
 {
     private readonly IUsersContext _usersContext;
     private readonly IOptions<AppSettings> _options;
     private readonly Dictionary<string, Expression<Func<OdsInstanceContext, object>>> _orderByColumnOds;
-    public GetOdsInstanceContextsQuery(IUsersContext usersContext, IOptions<AppSettings> options)
+    public GetDataStoreContextsQuery(IUsersContext usersContext, IOptions<AppSettings> options)
     {
         _usersContext = usersContext;
         _options = options;

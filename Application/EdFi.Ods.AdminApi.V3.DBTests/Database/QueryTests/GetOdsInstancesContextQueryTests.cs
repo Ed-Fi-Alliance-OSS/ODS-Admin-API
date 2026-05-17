@@ -39,7 +39,7 @@ public class GetOdsInstancesContextQueryTests : PlatformUsersContextTestBase
         List<OdsInstanceContext> results = null;
         Transaction(usersContext =>
         {
-            var query = new GetOdsInstanceContextsQuery(usersContext, Testing.GetAppSettings());
+            var query = new GetDataStoreContextsQuery(usersContext, Testing.GetAppSettings());
             results = query.Execute();
         });
 
@@ -78,7 +78,7 @@ public class GetOdsInstancesContextQueryTests : PlatformUsersContextTestBase
         List<OdsInstanceContext> results = null;
         Transaction(usersContext =>
         {
-            var query = new GetOdsInstanceContextsQuery(usersContext, Testing.GetAppSettings());
+            var query = new GetDataStoreContextsQuery(usersContext, Testing.GetAppSettings());
             results = query.Execute(new CommonQueryParams(1, 1));
             results.Count.ShouldBe(1);
         });

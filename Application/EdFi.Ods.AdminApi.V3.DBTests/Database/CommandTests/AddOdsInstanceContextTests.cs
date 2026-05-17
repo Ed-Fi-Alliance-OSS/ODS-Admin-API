@@ -32,15 +32,15 @@ public class AddOdsInstanceContextTests : PlatformUsersContextTestBase
         var contextKey = "contextKey";
         var contextValue = "contextValue";
 
-        var newOdsInstanceContext = new Mock<IAddOdsInstanceContextModel>();
-        newOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceContext = new Mock<IAddDataStoreContextModel>();
+        newOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceContext.Setup(x => x.ContextKey).Returns(contextKey);
         newOdsInstanceContext.Setup(x => x.ContextValue).Returns(contextValue);
 
         var id = 0;
         Transaction((usersContext) =>
         {
-            var command = new AddOdsInstanceContextCommand(usersContext);
+            var command = new AddDataStoreContextCommand(usersContext);
             id = command.Execute(newOdsInstanceContext.Object).OdsInstanceContextId;
             id.ShouldBeGreaterThan(0);
         });
@@ -71,22 +71,22 @@ public class AddOdsInstanceContextTests : PlatformUsersContextTestBase
 
         var contextKey = "contextKey";
         var contextValue = "contextValue";
-        var newOdsInstanceContext = new Mock<IAddOdsInstanceContextModel>();
-        newOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceContext = new Mock<IAddDataStoreContextModel>();
+        newOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceContext.Setup(x => x.ContextKey).Returns(contextKey);
         newOdsInstanceContext.Setup(x => x.ContextValue).Returns(contextValue);
         var id = 0;
         Transaction(usersContext =>
         {
-            var command = new AddOdsInstanceContextCommand(usersContext);
+            var command = new AddDataStoreContextCommand(usersContext);
             id = command.Execute(newOdsInstanceContext.Object).OdsInstanceContextId;
             id.ShouldBeGreaterThan(0);
         });
 
         var newContextKey = "contextKey";
         var newContextValue = "contextValue";
-        var newOdsInstanceContext2 = new Mock<IAddOdsInstanceContextModel>();
-        newOdsInstanceContext2.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceContext2 = new Mock<IAddDataStoreContextModel>();
+        newOdsInstanceContext2.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceContext2.Setup(x => x.ContextKey).Returns(newContextKey);
         newOdsInstanceContext2.Setup(x => x.ContextValue).Returns(newContextValue);
         var newId = 0;
@@ -94,7 +94,7 @@ public class AddOdsInstanceContextTests : PlatformUsersContextTestBase
         {
             Transaction(usersContext =>
             {
-                var command = new AddOdsInstanceContextCommand(usersContext);
+                var command = new AddDataStoreContextCommand(usersContext);
                 newId = command.Execute(newOdsInstanceContext2.Object).OdsInstanceContextId;
                 newId.ShouldBeGreaterThan(0);
             });
@@ -116,15 +116,15 @@ public class AddOdsInstanceContextTests : PlatformUsersContextTestBase
 
         var contextValue = "2000";
 
-        var newOdsInstanceContext = new Mock<IAddOdsInstanceContextModel>();
-        newOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceContext = new Mock<IAddDataStoreContextModel>();
+        newOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceContext.Setup(x => x.ContextValue).Returns(contextValue);
 
         Assert.Throws<DbUpdateException>(() =>
         {
             Transaction(usersContext =>
             {
-                var command = new AddOdsInstanceContextCommand(usersContext);
+                var command = new AddDataStoreContextCommand(usersContext);
                 var result = command.Execute(newOdsInstanceContext.Object);
             });
         });
@@ -144,15 +144,15 @@ public class AddOdsInstanceContextTests : PlatformUsersContextTestBase
 
         var contextKey = "School";
 
-        var newOdsInstanceContext = new Mock<IAddOdsInstanceContextModel>();
-        newOdsInstanceContext.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceContext = new Mock<IAddDataStoreContextModel>();
+        newOdsInstanceContext.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceContext.Setup(x => x.ContextKey).Returns(contextKey);
 
         Assert.Throws<DbUpdateException>(() =>
         {
             Transaction(usersContext =>
             {
-                var command = new AddOdsInstanceContextCommand(usersContext);
+                var command = new AddDataStoreContextCommand(usersContext);
                 var result = command.Execute(newOdsInstanceContext.Object);
             });
         });

@@ -10,42 +10,42 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IEditOdsInstanceContextCommand
+public interface IEditDataStoreContextCommand
 {
-    OdsInstanceContext Execute(IEditOdsInstanceContextModel changedOdsInstanceContextData);
+    OdsInstanceContext Execute(IEditDataStoreContextModel changedDataStoreContextData);
 }
 
-public class EditOdsInstanceContextCommand : IEditOdsInstanceContextCommand
+public class EditDataStoreContextCommand : IEditDataStoreContextCommand
 {
     private readonly IUsersContext _context;
 
-    public EditOdsInstanceContextCommand(IUsersContext context)
+    public EditDataStoreContextCommand(IUsersContext context)
     {
         _context = context;
     }
 
-    public OdsInstanceContext Execute(IEditOdsInstanceContextModel changedOdsInstanceContextData)
+    public OdsInstanceContext Execute(IEditDataStoreContextModel changedDataStoreContextData)
     {
         var odsInstanceContext = _context.OdsInstanceContexts
             .Include(oid => oid.OdsInstance)
-            .SingleOrDefault(v => v.OdsInstanceContextId == changedOdsInstanceContextData.Id) ??
-            throw new NotFoundException<int>("odsInstanceContext", changedOdsInstanceContextData.Id);
-        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == changedOdsInstanceContextData.OdsInstanceId) ??
-            throw new NotFoundException<int>("odsInstance", changedOdsInstanceContextData.OdsInstanceId);
+            .SingleOrDefault(v => v.OdsInstanceContextId == changedDataStoreContextData.Id) ??
+            throw new NotFoundException<int>("odsInstanceContext", changedDataStoreContextData.Id);
+        var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == changedDataStoreContextData.DataStoreId) ??
+            throw new NotFoundException<int>("dataStore", changedDataStoreContextData.DataStoreId);
 
-        odsInstanceContext.ContextKey = changedOdsInstanceContextData.ContextKey;
+        odsInstanceContext.ContextKey = changedDataStoreContextData.ContextKey;
         odsInstanceContext.OdsInstance = odsInstance;
-        odsInstanceContext.ContextValue = changedOdsInstanceContextData.ContextValue;
+        odsInstanceContext.ContextValue = changedDataStoreContextData.ContextValue;
 
         _context.SaveChanges();
         return odsInstanceContext;
     }
 }
 
-public interface IEditOdsInstanceContextModel
+public interface IEditDataStoreContextModel
 {
     public int Id { get; set; }
-    public int OdsInstanceId { get; set; }
+    public int DataStoreId { get; set; }
     public string? ContextKey { get; set; }
     public string? ContextValue { get; set; }
 }

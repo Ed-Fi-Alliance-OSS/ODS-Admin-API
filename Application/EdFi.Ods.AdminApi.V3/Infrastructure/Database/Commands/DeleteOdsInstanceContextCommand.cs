@@ -8,16 +8,16 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IDeleteOdsInstanceContextCommand
+public interface IDeleteDataStoreContextCommand
 {
     void Execute(int id);
 }
 
-public class DeleteOdsInstanceContextCommand : IDeleteOdsInstanceContextCommand
+public class DeleteDataStoreContextCommand : IDeleteDataStoreContextCommand
 {
     private readonly IUsersContext _context;
 
-    public DeleteOdsInstanceContextCommand(IUsersContext context)
+    public DeleteDataStoreContextCommand(IUsersContext context)
     {
         _context = context;
     }
