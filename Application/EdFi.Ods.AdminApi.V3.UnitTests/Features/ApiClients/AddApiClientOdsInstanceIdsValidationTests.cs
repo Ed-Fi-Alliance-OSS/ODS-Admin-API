@@ -18,7 +18,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
 {
     [TestFixture]
-    public class AddApiClientOdsInstanceIdsValidationTests
+    public class AddApiClientDataStoreIdsValidationTests
     {
         private IUsersContext _fakeDb;
         private MethodInfo _validateMethod;
@@ -53,7 +53,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Throws_When_OdsInstanceIds_NotInDatabase()
+        public void Throws_When_DataStoreIds_NotInDatabase()
         {
             SetupOdsInstances(1);
             var request = MakeRequest(new[] { 2, 3 });
@@ -66,7 +66,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Throws_When_OdsInstanceIds_Provided_But_None_In_Database()
+        public void Throws_When_DataStoreIds_Provided_But_None_In_Database()
         {
             SetupOdsInstances(); // Empty
             var request = MakeRequest(new[] { 1 });
@@ -79,7 +79,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Does_Not_Throw_When_All_OdsInstanceIds_Exist()
+        public void Does_Not_Throw_When_All_DataStoreIds_Exist()
         {
             SetupOdsInstances(1, 2);
             var request = MakeRequest(new[] { 1, 2 });
@@ -90,7 +90,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Does_Not_Throw_When_OdsInstanceIds_Is_Null()
+        public void Does_Not_Throw_When_DataStoreIds_Is_Null()
         {
             SetupOdsInstances(1);
             var request = new AddApiClient.AddApiClientRequest
@@ -106,7 +106,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Does_Not_Throw_When_OdsInstanceIds_Is_Empty()
+        public void Does_Not_Throw_When_DataStoreIds_Is_Empty()
         {
             SetupOdsInstances(1);
             var request = MakeRequest(System.Array.Empty<int>());
