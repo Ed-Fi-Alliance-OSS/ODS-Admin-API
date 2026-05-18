@@ -32,7 +32,7 @@ public class ReadTenants : IFeature
     public static async Task<IResult> GetTenantEdOrgsByInstancesAsync(
         HttpRequest request,
         [FromServices] ITenantsService tenantsService,
-        IGetDataStoresQuery getOdsInstancesQuery,
+        IGetDataStoresQuery getDataStoresQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,
@@ -58,7 +58,7 @@ public class ReadTenants : IFeature
             throw new NotFoundException<string>("TenantName", tenantName);
         }
 
-        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getOdsInstancesQuery, getEducationOrganizationQuery, tenantName);
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getDataStoresQuery, getEducationOrganizationQuery, tenantName);
 
         if (tenant is null)
             return Results.NotFound();
