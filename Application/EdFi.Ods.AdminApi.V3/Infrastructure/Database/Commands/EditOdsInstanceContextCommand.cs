@@ -29,9 +29,9 @@ public class EditDataStoreContextCommand : IEditDataStoreContextCommand
         var odsInstanceContext = _context.OdsInstanceContexts
             .Include(oid => oid.OdsInstance)
             .SingleOrDefault(v => v.OdsInstanceContextId == changedDataStoreContextData.Id) ??
-            throw new NotFoundException<int>("dataStoreContext", changedDataStoreContextData.Id);
+            throw new NotFoundException<int>("DataStoreContext", changedDataStoreContextData.Id);
         var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == changedDataStoreContextData.DataStoreId) ??
-            throw new NotFoundException<int>("dataStore", changedDataStoreContextData.DataStoreId);
+            throw new NotFoundException<int>("DataStore", changedDataStoreContextData.DataStoreId);
 
         odsInstanceContext.ContextKey = changedDataStoreContextData.ContextKey;
         odsInstanceContext.OdsInstance = odsInstance;
