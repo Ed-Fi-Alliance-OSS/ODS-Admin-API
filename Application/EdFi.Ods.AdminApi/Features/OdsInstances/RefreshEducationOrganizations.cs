@@ -44,11 +44,8 @@ public class RefreshEducationOrganizations : IFeature
     public static async Task<IResult> RefreshAllEducationOrganizations(
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
-        [FromServices] IJobStatusService jobStatusService,
-        [FromServices] IGetOdsInstancesQuery getOdsInstancesQuery)
+        [FromServices] IJobStatusService jobStatusService)
     {
-        getOdsInstancesQuery.Execute();
-
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
