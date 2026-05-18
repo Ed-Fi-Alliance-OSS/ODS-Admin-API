@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+services:
+  db-admin:
+    build:
+      context: ../../../../../
+      dockerfile: Docker/V2/db.pgsql.admin.minimal.Dockerfile
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
+    ports:
+      - "5880:5432"
+    volumes:
+      - vol-db-admin-adminapi:/var/lib/postgresql/data
+    restart: always
+    container_name: ed-fi-db-admin-adminapi
+
+volumes:
+  vol-db-admin-adminapi:
+    driver: local
+    name: vol-db-admin-adminapi

@@ -13,6 +13,7 @@ using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
@@ -85,6 +86,7 @@ public class TenantDetailsResponse
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
+    [JsonPropertyName("DataStores")]
     public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
 }
 

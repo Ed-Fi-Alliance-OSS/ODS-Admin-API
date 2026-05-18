@@ -1,0 +1,563 @@
+# seed-education-organizations.http
+#
+# Step-by-step guide to seed EducationOrganization data into the v7-multi-api ODS
+# using the Admin API (to create credentials) and the ODS/API (to POST the data).
+#
+# This file targets the multi-tenant setup defined in compose/edfi-services.yml.
+# Change @tenant to "tenant2" to target the second tenant.
+#
+# Prerequisites:
+#   1. All services are running (compose/start-services.ps1).
+#   2. The Admin API client has already been registered (see v7.http or run Step 1 below).
+
+# ── Variables ────────────────────────────────────────────────────────────────
+
+@adminapi_url     = https://localhost/v7-multi-adminapi
+@odsapi_url       = https://localhost/v7-multi-api
+@tenant           = tenant1
+
+# Admin API OAuth client (registered in v7.http or Step 1 below)
+@adminapi_client  = adminapi_client
+@adminapi_secret  = adminapi_SECRET_2025_rftyguhijkotgyhuijok
+
+
+# ── STEP 1 — Authenticate with Admin API ─────────────────────────────────────
+
+### 1a. (One-time) Register the Admin API client if not done yet
+POST {{adminapi_url}}/connect/register
+Content-Type: application/x-www-form-urlencoded
+Tenant: {{tenant}}
+
+ClientId={{adminapi_client}}&ClientSecret={{adminapi_secret}}&DisplayName=Admin+API+{{adminapi_client}}
+
+### 1b. Get an Admin API token
+# @name adminTokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+Tenant: {{tenant}}
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@adminToken = {{adminTokenRequest.response.body.access_token}}
+
+
+# ── STEP 2 — Create a Vendor ──────────────────────────────────────────────────
+# A Vendor groups one or more Applications (API clients).
+
+### 2. Create a Vendor
+# @name createVendor
+POST {{adminapi_url}}/v2/vendors
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+{
+  "company": "Seed Vendor",
+  "contactName": "Dev User",
+  "contactEmailAddress": "dev@example.com"
+}
+
+###
+# Extract the numeric vendor id from the Location header, e.g. /v2/vendors/3 → 3
+@vendorId = {{createVendor.response.headers.Location}}
+
+
+# ── STEP 3 — Look up the ODS Instance id ─────────────────────────────────────
+# The application must be linked to an existing ODS instance.
+
+### 3. List ODS instances for this tenant
+# @name listOdsInstances
+GET {{adminapi_url}}/v2/odsinstances
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+###
+# NOTE: copy the `id` of the instance you want to target from the response above.
+# Replace the value of @odsInstanceId below before running Steps 4-5.
+@odsInstanceId = 1
+
+
+# ── STEP 4 — Create an Application with the bootstrap claim set ───────────────
+# "Bootstrap Descriptors and EdOrgs" grants write access to descriptors and
+# education organizations, which is exactly what we need for seeding.
+
+### 4. Create an Application
+# @name createApplication
+POST {{adminapi_url}}/v2/applications
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+{
+  "applicationName": "EdOrg Seeder",
+  "vendorId": {{odsInstanceId}},
+  "claimSetName": "Bootstrap Descriptors and EdOrgs",
+  "educationOrganizationIds": [1],
+  "odsInstanceIds": [
+    {{odsInstanceId}}
+  ]
+}
+
+###
+# NOTE: copy the numeric application id from the Location header response above.
+# Replace the value of @applicationId below before running Step 5.
+@applicationId = 1
+
+
+# ── STEP 5 — Create an API Client (key + secret) ─────────────────────────────
+
+### 5. Create an API Client
+# @name createApiClient
+POST {{adminapi_url}}/v2/apiclients
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+{
+  "name": "EdOrg Seeder Client",
+  "isApproved": true,
+  "applicationId": {{applicationId}},
+  "odsInstanceIds": [
+    {{odsInstanceId}}
+  ]
+}
+
+###
+# The response body contains the generated key and secret.
+@odsClientKey    = {{createApiClient.response.body.key}}
+@odsClientSecret = {{createApiClient.response.body.secret}}
+
+
+# ── STEP 6 — Get an ODS/API token ────────────────────────────────────────────
+
+### 6. Get ODS/API token
+# @name odsTokenRequest
+POST {{odsapi_url}}/{{tenant}}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{odsClientKey}}&client_secret={{odsClientSecret}}
+
+###
+@odsToken = {{odsTokenRequest.response.body.access_token}}
+
+
+# ── STEP 7 — Seed EducationOrganization data ──────────────────────────────────
+# EducationOrganization is an abstract type. Use its concrete subtypes:
+#   • StateEducationAgency  (must exist before LEA)
+#   • LocalEducationAgency  (must exist before School)
+#   • School
+#
+# POST order matters: parent must be created before its children.
+
+### 7a. Create a State Education Agency (parent of LEA)
+# @name createSEA
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/stateEducationAgencies
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "stateEducationAgencyId": 31,
+  "nameOfInstitution": "Grand Bend State",
+  "stateAbbreviationDescriptor": "uri://ed-fi.org/StateAbbreviationDescriptor#TX",
+  "categories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#State Education Agency"
+    }
+  ]
+}
+
+### 7b. Create a Local Education Agency
+# @name createLEA
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/localEducationAgencies
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "localEducationAgencyId": 255901,
+  "nameOfInstitution": "Grand Bend ISD",
+  "localEducationAgencyCategoryDescriptor": "uri://ed-fi.org/LocalEducationAgencyCategoryDescriptor#Independent",
+  "stateEducationAgencyReference": {
+    "stateEducationAgencyId": 31
+  },
+  "categories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#Local Education Agency"
+    }
+  ]
+}
+
+### 7c. Create a School (child of LEA)
+# @name createSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901107,
+  "nameOfInstitution": "Grand Bend High School",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Ninth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7d. Create a second School (child of LEA)
+# @name createSecondSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901108,
+  "nameOfInstitution": "Grand Bend Middle School",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a third School (child of LEA)
+# @name createThirdSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901109,
+  "nameOfInstitution": "Grand Bend Elementary School",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+
+### 7e. Create a fourth School (child of LEA)
+# @name createFourthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901110,
+  "nameOfInstitution": "Grand Bend Elementary School 4",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a fifth School (child of LEA)
+# @name createFifthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901111,
+  "nameOfInstitution": "Grand Bend Elementary School 5",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a sixth School (child of LEA)
+# @name createSixthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901112,
+  "nameOfInstitution": "Grand Bend Elementary School 6",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a eighth School (child of LEA)
+# @name createEighthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901113,
+  "nameOfInstitution": "Grand Bend Elementary School 8",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a ninth School (child of LEA)
+# @name createNinthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901114,
+  "nameOfInstitution": "Grand Bend Elementary School 9",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a tenth School (child of LEA)
+# @name createTenthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901115,
+  "nameOfInstitution": "Grand Bend Elementary School 10",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a twelfth School (child of LEA)
+# @name createTwelfthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901117,
+  "nameOfInstitution": "Grand Bend Elementary School 12",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+### 7e. Create a thirteenth School (child of LEA)
+# @name createThirteenthSchool
+POST {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Content-Type: application/json
+Authorization: bearer {{odsToken}}
+
+{
+  "schoolId": 255901118,
+  "nameOfInstitution": "Grand Bend Elementary School 13",
+  "schoolTypeDescriptor": "uri://ed-fi.org/SchoolTypeDescriptor#Regular",
+  "localEducationAgencyReference": {
+    "localEducationAgencyId": 255901
+  },
+  "gradeLevels": [
+    {
+      "gradeLevelDescriptor": "uri://ed-fi.org/GradeLevelDescriptor#Sixth grade"
+    }
+  ],
+  "educationOrganizationCategories": [
+    {
+      "educationOrganizationCategoryDescriptor": "uri://ed-fi.org/EducationOrganizationCategoryDescriptor#School"
+    }
+  ]
+}
+
+
+
+# ── STEP 8 — Create read credentials scoped to the new EdOrgs ────────────────
+# "Bootstrap Descriptors and EdOrgs" only grants write access.
+# Create a new Application with "SIS Vendor" claim set and link it to the
+# education organization ids created above so we can read back the data.
+
+### 8a. Create a read Application (SIS Vendor claim set)
+# @name createReadApplication
+POST {{adminapi_url}}/v2/applications
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+{
+  "applicationName": "EdOrg Reader",
+  "vendorId": {{odsInstanceId}},
+  "claimSetName": "SIS Vendor",
+  "educationOrganizationIds": [
+    255901,
+    255901107
+  ],
+  "odsInstanceIds": [
+    {{odsInstanceId}}
+  ]
+}
+
+###
+# NOTE: copy the numeric application id from the Location header above.
+@readApplicationId = 2
+
+### 8b. Create an API Client for the read Application
+# @name createReadApiClient
+POST {{adminapi_url}}/v2/apiclients
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+{
+  "name": "EdOrg Reader Client",
+  "isApproved": true,
+  "applicationId": {{readApplicationId}},
+  "odsInstanceIds": [
+    {{odsInstanceId}}
+  ]
+}
+
+###
+@readClientKey    = {{createReadApiClient.response.body.key}}
+@readClientSecret = {{createReadApiClient.response.body.secret}}
+
+### 8c. Get ODS/API token for the read client
+# @name readTokenRequest
+POST {{odsapi_url}}/{{tenant}}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id={{readClientKey}}&client_secret={{readClientSecret}}
+
+###
+@readToken = {{readTokenRequest.response.body.access_token}}
+
+
+# ── STEP 9 — Verify ───────────────────────────────────────────────────────────
+
+### 9a. List all Local Education Agencies
+GET {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/localEducationAgencies
+Authorization: bearer {{readToken}}
+
+### 9b. List all Schools
+GET {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/schools
+Authorization: bearer {{readToken}}
+
+### 9c. Retrieve the specific LEA by id
+GET {{odsapi_url}}/{{tenant}}/data/v3/ed-fi/localEducationAgencies?localEducationAgencyId=255901
+Authorization: bearer {{readToken}}
+
+
+
+# ── STEP 10 — Queue Job in Admin API ───────────────────────────────────────────────────────────
+
+### 10a. Queue the eduction organization sync job to propagate the new edorgs to the tenant's ODS instance
+POST {{adminapi_url}}/v2/odsInstances/edOrgs/refresh
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+### 10b. Verify the edorgs have been refreshed for the tenant's ODS instance
+GET {{adminapi_url}}/v2/odsInstances/edOrgs
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}
+
+### 10c. Verify the edorgs have been refreshed for the tenant's ODS instance
+GET {{adminapi_url}}/v2/odsInstances/1/edOrgs
+Content-Type: application/json
+Authorization: bearer {{adminToken}}
+Tenant: {{tenant}}

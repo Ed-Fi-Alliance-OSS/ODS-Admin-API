@@ -53,7 +53,7 @@ script:pre-request {
 
   try {
     const DataStoreDerivativesResponse = await axios.post(`${API_URL}/v3/dataStoreDerivatives`, {
-      "dataStoreId": `${bru.getVar("dataStoreId")}`,
+      "dataStoreId": `${bru.getVar("DataStoreId")}`,
       "derivativeType": "Snapshot",
       "connectionString": `${bru.getEnvVar("connectionString")}`
     }, axiosConfig);

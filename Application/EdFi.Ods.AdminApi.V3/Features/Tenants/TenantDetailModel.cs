@@ -32,6 +32,7 @@ public class TenantOdsInstanceModel
     [JsonPropertyName("id")]
     public int OdsInstanceId { get; set; }
     public string Name { get; set; }
+    [JsonPropertyName("dataStoreType")]
     public string? InstanceType { get; set; }
 
     [SwaggerSchema(Title = "EducationOrganizations")]

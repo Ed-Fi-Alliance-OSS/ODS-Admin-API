@@ -50,8 +50,8 @@ script:pre-request {
 
     for (let i = 0; i < totalToCreate; i++) {
         const timestamp = Date.now();
-        bru.setEnvVar("FILTERNAMEODS", timestamp);
-        bru.setEnvVar("FILTERdataStoreType", timestamp);
+        bru.setVar("FILTERNAMEODS", timestamp);
+        bru.setVar("FILTERdataStoreType", timestamp);
 
         const odsResponse = await axios.post(`${API_URL}/v3/dataStores`, {
              "name": `${timestamp}`, 
