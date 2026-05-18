@@ -67,6 +67,7 @@ public class GetOdsInstancesQueryTests
         var query = new GetOdsInstancesQuery(usersContext, OptionsWithKey(TestEncryptionKey), _provider);
         query.Execute();
 
+        usersContext.ChangeTracker.Clear();
         usersContext.OdsInstances.ToList()
             .ShouldAllBe(o => _provider.IsEncrypted(o.ConnectionString));
     }

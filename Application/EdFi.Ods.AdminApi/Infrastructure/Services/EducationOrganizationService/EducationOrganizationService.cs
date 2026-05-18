@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +85,8 @@ public class EducationOrganizationService(
                 .Where(o => o.OdsInstanceId == instanceId.Value)
                 .ToListAsync()
             : await usersContext.OdsInstances.ToListAsync();
+
+        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(odsInstances, usersContext, encryptionProvider, encryptionKey);
 
         if (instanceId.HasValue && odsInstances.Count == 0)
         {

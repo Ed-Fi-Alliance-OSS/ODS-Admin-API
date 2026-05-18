@@ -24,9 +24,9 @@ public class GetOdsInstanceQueryTests
 
     private readonly Aes256SymmetricStringEncryptionProvider _provider = new();
 
-    private static SqlServerUsersContext CreateContext() =>
+    private static SqlServerUsersContext CreateContext(string? dbName = null) =>
         new(new DbContextOptionsBuilder<SqlServerUsersContext>()
-            .UseInMemoryDatabase(databaseName: $"GetOdsInstanceQuery_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: dbName ?? $"GetOdsInstanceQuery_{Guid.NewGuid()}")
             .Options);
 
     private static IOptions<AppSettings> OptionsWithKey(string? key = null) =>
@@ -50,7 +50,8 @@ public class GetOdsInstanceQueryTests
     [Test]
     public void Execute_WithUnencryptedConnectionString_PersistsEncryptedValueToDatabase()
     {
-        using var usersContext = CreateContext();
+        var dbName = $"GetOdsInstanceQuery_{Guid.NewGuid()}";
+        using var usersContext = CreateContext(dbName);
         var odsInstance = new OdsInstance { Name = "Test", InstanceType = "type", ConnectionString = PlainConnectionString };
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
@@ -58,7 +59,8 @@ public class GetOdsInstanceQueryTests
         var query = new GetOdsInstanceQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
         query.Execute(odsInstance.OdsInstanceId);
 
-        var persisted = usersContext.OdsInstances.Find(odsInstance.OdsInstanceId);
+        using var verificationContext = CreateContext(dbName);
+        var persisted = verificationContext.OdsInstances.Find(odsInstance.OdsInstanceId);
         _provider.IsEncrypted(persisted!.ConnectionString).ShouldBeTrue();
     }
 

@@ -49,7 +49,8 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
     public List<OdsInstance> Execute()
     {
         var instances = _usersContext.OdsInstances.OrderBy(odsInstance => odsInstance.Name).ToList();
-        EncryptConnectionStringsIfNeeded(instances);
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
 
         return instances;
     }
@@ -66,32 +67,9 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToList();
 
-        EncryptConnectionStringsIfNeeded(instances);
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
 
         return instances;
-    }
-
-    private void EncryptConnectionStringsIfNeeded(List<OdsInstance> instances)
-    {
-        if (string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            return;
-
-        byte[] key = Convert.FromBase64String(_options.Value.EncryptionKey);
-        bool anyUpdated = false;
-
-        foreach (var instance in instances)
-        {
-            if (string.IsNullOrEmpty(instance.ConnectionString))
-                continue;
-
-            if (_encryptionProvider.IsEncrypted(instance.ConnectionString))
-                continue;
-
-            instance.ConnectionString = _encryptionProvider.Encrypt(instance.ConnectionString, key);
-            anyUpdated = true;
-        }
-
-        if (anyUpdated)
-            _usersContext.SaveChanges();
     }
 }
