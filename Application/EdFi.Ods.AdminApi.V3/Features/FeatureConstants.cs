@@ -46,7 +46,7 @@ public static class FeatureConstants
     public const string DataStoreConnectionString = "Data store connection string";
     public const string DataStoreAlreadyExistsMessage = "A data store with this name already exists in the database. Please enter a unique name.";
     public const string DataStoreCantBeDeletedMessage = "There are some {Table} associated to this DataStore. Can not be deleted.";
-    public const string DataStoreDerivativeCombinedKeyMustBeUnique = "The combined key data store id and derivative type must be unique.";
+    public const string DataStoreDerivativeCombinedKeyMustBeUnique = "The combined key DataStore id and derivative type must be unique.";
     public const string DataStoreContextCombinedKeyMustBeUnique = "The combined key DataStore id and context key must be unique.";
     public const string DataStoreConnectionStringInvalid = "The connection string is not valid.";
     public const string TenantConnectionStringInvalid = "The connection string is not valid.";

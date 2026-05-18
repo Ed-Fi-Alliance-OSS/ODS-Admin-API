@@ -26,11 +26,12 @@ public class AddDataStoreDerivativeCommand : IAddDataStoreDerivativeCommand
     public OdsInstanceDerivative Execute(IAddDataStoreDerivativeModel newDataStoreDerivative)
     {
         var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newDataStoreDerivative.DataStoreId) ??
-            throw new NotFoundException<int>("dataStore", newDataStoreDerivative.DataStoreId);
+            throw new NotFoundException<int>("DataStore", newDataStoreDerivative.DataStoreId);
 
         var derivative = new OdsInstanceDerivative
         {
             DerivativeType = newDataStoreDerivative.DerivativeType,
+            ConnectionString = newDataStoreDerivative.ConnectionString,
             OdsInstance = odsInstance
         };
         _context.OdsInstanceDerivatives.Add(derivative);
@@ -43,6 +44,7 @@ public interface IAddDataStoreDerivativeModel
 {
     public int DataStoreId { get; set; }
     public string? DerivativeType { get; set; }
+    public string? ConnectionString { get; set; }
 }
 
 

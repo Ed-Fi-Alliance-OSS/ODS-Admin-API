@@ -5,10 +5,13 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V3.Features.DataStoreDerivatives;
@@ -42,19 +45,28 @@ public class EditDataStoreDerivative : IFeature
         public int DataStoreId { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeTypeDescription, Nullable = false)]
         public string? DerivativeType { get; set; }
+        [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeConnectionStringDescription, Nullable = false)]
+        public string? ConnectionString { get; set; }
     }
 
     public class Validator : AbstractValidator<EditDataStoreDerivativeRequest>
     {
         private readonly IGetDataStoreQuery _getDataStoreQuery;
         private readonly IGetDataStoreDerivativesQuery _getDataStoreDerivativesQuery;
+        private readonly string _databaseEngine;
 
-        public Validator(IGetDataStoreQuery getDataStoreQuery, IGetDataStoreDerivativesQuery getDataStoreDerivativesQuery)
+        public Validator(IGetDataStoreQuery getDataStoreQuery, IGetDataStoreDerivativesQuery getDataStoreDerivativesQuery, IOptions<AppSettings> options)
         {
             _getDataStoreQuery = getDataStoreQuery;
             _getDataStoreDerivativesQuery = getDataStoreDerivativesQuery;
+            _databaseEngine = options.Value.DatabaseEngine ?? DatabaseEngineEnum.SqlServer;
 
             RuleFor(m => m.DerivativeType).NotEmpty();
+
+            RuleFor(m => m.DerivativeType)
+                .Matches("^(?i)(readreplica|snapshot)$")
+                .WithMessage(FeatureConstants.DataStoreDerivativeTypeNotValid)
+                .When(m => !string.IsNullOrEmpty(m.DerivativeType));
 
             RuleFor(m => m.DataStoreId)
                 .NotEqual(0)
@@ -63,6 +75,11 @@ public class EditDataStoreDerivative : IFeature
             RuleFor(m => m.DataStoreId)
                 .Must(BeAnExistingDataStore)
                 .When(m => !m.DataStoreId.Equals(0));
+
+            RuleFor(m => m.ConnectionString)
+                .Must(BeAValidConnectionString)
+                .WithMessage(FeatureConstants.DataStoreConnectionStringInvalid)
+                .When(m => !string.IsNullOrWhiteSpace(m.ConnectionString));
 
             RuleFor(ctx => ctx)
                 .Must(BeUniqueCombinedKey)
@@ -75,11 +92,16 @@ public class EditDataStoreDerivative : IFeature
             return true;
         }
 
+        private bool BeAValidConnectionString(string? connectionString)
+        {
+            return ConnectionStringHelper.ValidateConnectionString(_databaseEngine, connectionString);
+        }
+
         private bool BeUniqueCombinedKey(EditDataStoreDerivativeRequest request)
         {
             return !_getDataStoreDerivativesQuery.Execute().Exists(
                 x => x.OdsInstance?.OdsInstanceId == request.DataStoreId &&
-                x.DerivativeType.Equals(request.DerivativeType, StringComparison.OrdinalIgnoreCase) &&
+                (x.DerivativeType?.Equals(request.DerivativeType, StringComparison.OrdinalIgnoreCase) == true) &&
                 x.OdsInstanceDerivativeId != request.Id);
         }
     }

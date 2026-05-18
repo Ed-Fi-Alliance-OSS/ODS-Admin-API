@@ -28,13 +28,14 @@ public class EditDataStoreDerivativeCommand : IEditDataStoreDerivativeCommand
     {
         var odsInstance = _context.OdsInstances
             .SingleOrDefault(v => v.OdsInstanceId == changedDataStoreDerivativeData.DataStoreId) ??
-            throw new NotFoundException<int>("dataStore", changedDataStoreDerivativeData.DataStoreId);
+            throw new NotFoundException<int>("DataStore", changedDataStoreDerivativeData.DataStoreId);
         var odsInstanceDerivative = _context.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
             .SingleOrDefault(v => v.OdsInstanceDerivativeId == changedDataStoreDerivativeData.Id) ??
-            throw new NotFoundException<int>("dataStoreDerivative", changedDataStoreDerivativeData.Id);
+            throw new NotFoundException<int>("DataStoreDerivative", changedDataStoreDerivativeData.Id);
 
         odsInstanceDerivative.DerivativeType = changedDataStoreDerivativeData.DerivativeType;
+        odsInstanceDerivative.ConnectionString = changedDataStoreDerivativeData.ConnectionString;
         odsInstanceDerivative.OdsInstance = odsInstance;
 
         _context.SaveChanges();
@@ -47,6 +48,7 @@ public interface IEditDataStoreDerivativeModel
     public int Id { get; set; }
     public int DataStoreId { get; set; }
     public string? DerivativeType { get; set; }
+    public string? ConnectionString { get; set; }
 }
 
 

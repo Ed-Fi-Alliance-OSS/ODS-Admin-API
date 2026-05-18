@@ -24,7 +24,7 @@ public class DeleteDataStoreDerivativeCommand : IDeleteDataStoreDerivativeComman
 
     public void Execute(int id)
     {
-        var odsInstanceDerivative = _context.OdsInstanceDerivatives.SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("dataStoreDerivative", id);
+        var odsInstanceDerivative = _context.OdsInstanceDerivatives.SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("DataStoreDerivative", id);
         _context.OdsInstanceDerivatives.Remove(odsInstanceDerivative);
         _context.SaveChanges();
     }

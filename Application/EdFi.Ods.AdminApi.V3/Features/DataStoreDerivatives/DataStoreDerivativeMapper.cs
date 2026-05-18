@@ -15,7 +15,8 @@ public static class DataStoreDerivativeMapper
         {
             DataStoreDerivativeId = source.OdsInstanceDerivativeId,
             DataStoreId = source.OdsInstance?.OdsInstanceId ?? 0,
-            DerivativeType = source.DerivativeType
+            DerivativeType = source.DerivativeType,
+            ConnectionString = source.ConnectionString
         };
     }
 

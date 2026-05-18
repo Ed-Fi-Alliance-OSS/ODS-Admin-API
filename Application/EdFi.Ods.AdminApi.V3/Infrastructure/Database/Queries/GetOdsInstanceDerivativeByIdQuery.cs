@@ -31,7 +31,7 @@ public class GetDataStoreDerivativeByIdQuery : IGetDataStoreDerivativeByIdQuery
             .SingleOrDefault(app => app.OdsInstanceDerivativeId == dataStoreDerivativeId);
         if (odsInstanceDerivative == null)
         {
-            throw new NotFoundException<int>("dataStoreDerivative", dataStoreDerivativeId);
+            throw new NotFoundException<int>("DataStoreDerivative", dataStoreDerivativeId);
         }
 
         return odsInstanceDerivative;
