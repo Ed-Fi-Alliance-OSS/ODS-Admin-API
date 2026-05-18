@@ -92,14 +92,12 @@ script:post-response {
   }
   const id = bru.getVar("FilterTypeDS_ID");
   if (id) {
-    (async () => {
-      try {
-        await axios.delete(`${API_URL}/v3/dataStores/${id}`, axiosConfig);
-        console.log(`✅ Cleaned up filter-by-type DataStore ${id}`);
-      } catch (e) {
-        console.log(`❌ Cleanup failed for DataStore ${id}:`, e.message);
-      }
-    })();
+    try {
+      await axios.delete(`${API_URL}/v3/dataStores/${id}`, axiosConfig);
+      console.log(`✅ Cleaned up filter-by-type DataStore ${id}`);
+    } catch (e) {
+      console.log(`❌ Cleanup failed for DataStore ${id}:`, e.message);
+    }
   }
 }
 

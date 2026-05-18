@@ -77,6 +77,9 @@ public class EditDataStoreDerivative : IFeature
                 .When(m => !m.DataStoreId.Equals(0));
 
             RuleFor(m => m.ConnectionString)
+                .NotEmpty();
+
+            RuleFor(m => m.ConnectionString)
                 .Must(BeAValidConnectionString)
                 .WithMessage(FeatureConstants.DataStoreConnectionStringInvalid)
                 .When(m => !string.IsNullOrWhiteSpace(m.ConnectionString));
