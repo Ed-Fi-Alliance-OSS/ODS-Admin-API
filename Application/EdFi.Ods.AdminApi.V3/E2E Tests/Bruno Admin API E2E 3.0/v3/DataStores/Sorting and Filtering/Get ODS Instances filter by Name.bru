@@ -16,6 +16,47 @@ params:query {
   name: {{FILTERNAMEODS}}
 }
 
+script:pre-request {
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {}
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  const axiosConfig = {
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+    validateStatus: (status) => status < 500,
+    timeout: 30000
+  };
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = bru.getEnvVar("tenant1");
+  }
+
+  try {
+    const timestamp = Date.now();
+    const name = `FilterDS-Name-${timestamp}`;
+    const res = await axios.post(`${API_URL}/v3/dataStores`, {
+      "name": name,
+      "dataStoreType": "filter-test",
+      "connectionString": bru.getEnvVar("connectionString")
+    }, axiosConfig);
+
+    if (res.status === 201) {
+      bru.setVar("FILTERNAMEODS", name);
+      const id = parseInt(res.headers.location.split("/").pop(), 10);
+      bru.setVar("FilterNameDS_ID", id);
+      console.log(`✅ Filter-by-Name DataStore created: ${name}`);
+    } else {
+      console.log(`❌ Failed to create filter DataStore: ${res.status}`, JSON.stringify(res.data));
+    }
+  } catch (error) {
+    console.log("Error in filter-by-name pre-request:", error.message);
+  }
+}
+
 script:post-response {
   test("GET DataStores: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
@@ -30,7 +71,36 @@ script:post-response {
       const results = res.getBody();
       expect(results[0].name).to.eql(String(bru.getVar("FILTERNAMEODS")));
   });
-  
+
+  // Cleanup the DataStore created in pre-request
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {}
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+  const axiosConfig = {
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+    validateStatus: (status) => status < 500,
+    timeout: 30000
+  };
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = bru.getEnvVar("tenant1");
+  }
+  const id = bru.getVar("FilterNameDS_ID");
+  if (id) {
+    (async () => {
+      try {
+        await axios.delete(`${API_URL}/v3/dataStores/${id}`, axiosConfig);
+        console.log(`✅ Cleaned up filter-by-name DataStore ${id}`);
+      } catch (e) {
+        console.log(`❌ Cleanup failed for DataStore ${id}:`, e.message);
+      }
+    })();
+  }
 }
 
 settings {
