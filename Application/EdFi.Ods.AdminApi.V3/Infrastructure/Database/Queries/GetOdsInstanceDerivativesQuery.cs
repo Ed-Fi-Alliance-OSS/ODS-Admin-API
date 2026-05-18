@@ -36,8 +36,8 @@ public class GetDataStoreDerivativesQuery : IGetDataStoreDerivativesQuery
         _orderByColumnOds = new Dictionary<string, Expression<Func<OdsInstanceDerivative, object>>>
             (StringComparer.OrdinalIgnoreCase)
         {
-            { SortingColumns.OdsInstanceDerivativeTypeColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.DerivativeType, DatabaseEngineEnum.SqlServerCollation) : x.DerivativeType },
-            { SortingColumns.OdsInstanceDerivativeOdsInstanceIdColumn, x => x.OdsInstance.OdsInstanceId },
+            { SortingColumns.DataStoreDerivativeTypeColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.DerivativeType, DatabaseEngineEnum.SqlServerCollation) : x.DerivativeType },
+            { SortingColumns.DataStoreDerivativeDataStoreIdColumn, x => x.OdsInstance.OdsInstanceId },
             { SortingColumns.DefaultIdColumn, x => x.OdsInstanceDerivativeId }
         };
     }

@@ -23,11 +23,11 @@ public static class SortingColumns
     public const string ApplicationClaimSetNameColumn = nameof(ApplicationModel.ClaimSetName);
     public const string ActionUriColumn = nameof(ActionModel.Uri);
     public const string AuthorizationStrategyDisplayNameColumn = nameof(AuthorizationStrategyModel.DisplayName);
-    public const string OdsInstanceContextKeyColumn = nameof(DataStoreContextModel.ContextKey);
-    public const string OdsInstanceContextValueColumn = nameof(DataStoreContextModel.ContextValue);
-    public const string OdsInstanceDerivativeTypeColumn = nameof(DataStoreDerivativeModel.DerivativeType);
-    public const string OdsInstanceDerivativeOdsInstanceIdColumn = nameof(DataStoreDerivativeModel.DataStoreId);
-    public const string OdsInstanceInstanceTypeColumn = nameof(DataStoreModel.DataStoreType);
+    public const string DataStoreContextKeyColumn = nameof(DataStoreContextModel.ContextKey);
+    public const string DataStoreContextValueColumn = nameof(DataStoreContextModel.ContextValue);
+    public const string DataStoreDerivativeTypeColumn = nameof(DataStoreDerivativeModel.DerivativeType);
+    public const string DataStoreDerivativeDataStoreIdColumn = nameof(DataStoreDerivativeModel.DataStoreId);
+    public const string DataStoreTypeColumn = nameof(DataStoreModel.DataStoreType);
     public const string ResourceClaimParentNameColumn = nameof(ResourceClaimModel.ParentName);
     public const string ResourceClaimParentIdColumn = nameof(ResourceClaimModel.ParentId);
     public const string VendorCompanyColumn = nameof(VendorModel.Company);

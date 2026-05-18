@@ -37,7 +37,7 @@ public class GetDataStoresQuery : IGetDataStoresQuery
                     (StringComparer.OrdinalIgnoreCase)
                 {
                     { SortingColumns.DefaultNameColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.Name, DatabaseEngineEnum.SqlServerCollation) : x.Name },
-                    { SortingColumns.OdsInstanceInstanceTypeColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.InstanceType, DatabaseEngineEnum.SqlServerCollation) : x.InstanceType },
+                    { SortingColumns.DataStoreTypeColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.InstanceType, DatabaseEngineEnum.SqlServerCollation) : x.InstanceType },
                     { SortingColumns.DefaultIdColumn, x => x.OdsInstanceId }
                 };
     }

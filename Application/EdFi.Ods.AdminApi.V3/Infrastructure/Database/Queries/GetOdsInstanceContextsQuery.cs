@@ -36,8 +36,8 @@ public class GetDataStoreContextsQuery : IGetDataStoreContextsQuery
         _orderByColumnOds = new Dictionary<string, Expression<Func<OdsInstanceContext, object>>>
             (StringComparer.OrdinalIgnoreCase)
         {
-            { SortingColumns.OdsInstanceContextKeyColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ContextKey, DatabaseEngineEnum.SqlServerCollation) : x.ContextKey },
-            { SortingColumns.OdsInstanceContextValueColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ContextValue, DatabaseEngineEnum.SqlServerCollation) : x.ContextValue },
+            { SortingColumns.DataStoreContextKeyColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ContextKey, DatabaseEngineEnum.SqlServerCollation) : x.ContextKey },
+            { SortingColumns.DataStoreContextValueColumn, x => isSQLServerEngine ? EF.Functions.Collate(x.ContextValue, DatabaseEngineEnum.SqlServerCollation) : x.ContextValue },
             { SortingColumns.DefaultIdColumn, x => x.OdsInstanceContextId }
         };
     }
