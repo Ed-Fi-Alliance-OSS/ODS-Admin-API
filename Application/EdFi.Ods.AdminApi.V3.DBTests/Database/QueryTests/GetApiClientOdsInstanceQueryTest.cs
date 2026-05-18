@@ -55,8 +55,8 @@ public class GetApiClientDataStoreQueryTests : PlatformUsersContextTestBase
         int apiClientId = apiClient.ApiClientId;
         Transaction(usersContext =>
         {
-            var GetApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
-            var results = GetApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
+            var getApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
+            var results = getApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
             results.ShouldNotBeNull();
         });
     }
@@ -97,8 +97,8 @@ public class GetApiClientDataStoreQueryTests : PlatformUsersContextTestBase
         int apiClientId = 999;
         Transaction(usersContext =>
         {
-            var GetApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
-            var results = GetApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
+            var getApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
+            var results = getApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
             results.ShouldBeNull();
         });
     }
@@ -139,8 +139,8 @@ public class GetApiClientDataStoreQueryTests : PlatformUsersContextTestBase
         int apiClientId = apiClient.ApiClientId;
         Transaction(usersContext =>
         {
-            var GetApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
-            var results = GetApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
+            var getApiClientDataStoreQuery = new GetApiClientDataStoreQuery(usersContext);
+            var results = getApiClientDataStoreQuery.Execute(apiClientId, odsInstanceId);
             results.ShouldBeNull();
         });
     }
