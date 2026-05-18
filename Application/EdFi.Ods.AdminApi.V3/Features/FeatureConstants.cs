@@ -35,7 +35,7 @@ public static class FeatureConstants
     public const string ResourceClaimOneActionNotSet = "A resource must have at least one action associated with it to be added.";
     public const string DataStoreIdsDescription = "List of data store id";
     public const string DataStoreIdsValidationMessage = "Please provide at least one data store id.";
-    public const string DataStoreIdValidationMessage = "Please provide valid data store id. The id {DataStoreId} does not exist.";
+    public const string DataStoreIdValidationMessage = "Please provide valid DataStore id. The id {DataStoreId} does not exist.";
     public const string ClaimSetIdToCopy = "ClaimSet id to copy";
     public const string ProfileName = "Profile name";
     public const string ProfileAlreadyExistsMessage = "A Profile with this name already exists in the database. Please enter a unique name.";
@@ -47,7 +47,7 @@ public static class FeatureConstants
     public const string DataStoreAlreadyExistsMessage = "A data store with this name already exists in the database. Please enter a unique name.";
     public const string DataStoreCantBeDeletedMessage = "There are some {Table} associated to this DataStore. Can not be deleted.";
     public const string DataStoreDerivativeCombinedKeyMustBeUnique = "The combined key data store id and derivative type must be unique.";
-    public const string DataStoreContextCombinedKeyMustBeUnique = "The combined key data store id and context key must be unique.";
+    public const string DataStoreContextCombinedKeyMustBeUnique = "The combined key DataStore id and context key must be unique.";
     public const string DataStoreConnectionStringInvalid = "The connection string is not valid.";
     public const string TenantConnectionStringInvalid = "The connection string is not valid.";
     public const string DataStoreDerivativeIdDescription = "Data store derivative id.";

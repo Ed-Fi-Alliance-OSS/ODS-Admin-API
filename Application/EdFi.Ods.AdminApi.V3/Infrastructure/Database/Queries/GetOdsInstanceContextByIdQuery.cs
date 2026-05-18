@@ -31,7 +31,7 @@ public class GetDataStoreContextByIdQuery : IGetDataStoreContextByIdQuery
             .SingleOrDefault(app => app.OdsInstanceContextId == dataStoreContextId);
         if (odsInstanceContext == null)
         {
-            throw new NotFoundException<int>("dataStoreContext", dataStoreContextId);
+            throw new NotFoundException<int>("DataStoreContext", dataStoreContextId);
         }
 
         return odsInstanceContext;

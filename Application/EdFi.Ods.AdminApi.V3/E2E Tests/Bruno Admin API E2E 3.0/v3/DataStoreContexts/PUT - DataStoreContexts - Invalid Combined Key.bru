@@ -53,7 +53,7 @@ script:pre-request {
 
   try {
     const DataStoreContextsResponse = await axios.post(`${API_URL}/v3/dataStoreContexts`, {
-      "dataStoreId": `${bru.getVar("dataStoreId")}`,
+      "dataStoreId": `${bru.getVar("DataStoreId")}`,
       "contextKey": "ckey2",
       "contextValue": "cvalue2"
     }, axiosConfig);

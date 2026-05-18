@@ -25,7 +25,7 @@ public class GetDataStoreQuery(IUsersContext userContext) : IGetDataStoreQuery
             .Include(p => p.OdsInstanceContexts)
             .Include(p => p.OdsInstanceDerivatives)
             .SingleOrDefault(o => o.OdsInstanceId == id)
-            ?? throw new NotFoundException<int>("dataStore", id);
+            ?? throw new NotFoundException<int>("DataStore", id);
     }
 }
 
