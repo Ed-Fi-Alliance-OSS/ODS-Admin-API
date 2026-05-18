@@ -30,8 +30,8 @@ public class DeleteDataStoreCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var DeleteDataStoreCommand = new DeleteDataStoreCommand(usersContext);
-            DeleteDataStoreCommand.Execute(odsInstanceId);
+            var deleteDataStoreCommand = new DeleteDataStoreCommand(usersContext);
+            deleteDataStoreCommand.Execute(odsInstanceId);
         });
 
         Transaction(usersContext => usersContext.OdsInstances.Where(oi => oi.OdsInstanceId == odsInstanceId).ToArray()).ShouldBeEmpty();
