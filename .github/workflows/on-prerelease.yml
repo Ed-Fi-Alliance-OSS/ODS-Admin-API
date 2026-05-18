@@ -145,7 +145,8 @@ jobs:
         id: hash-code
         shell: bash
         run: |
-          echo "hash-code=$(sha256sum *.nupkg | base64 -w0)" >> $GITHUB_OUTPUT
+          hash_code="$(sha256sum ./*.nupkg | base64 -w0)"
+          echo "hash-code=$hash_code" >> "$GITHUB_OUTPUT"
 
       - name: Upload Packages as Artifacts
         if: success()
@@ -208,7 +209,7 @@ jobs:
         run: |
           # sha256sum returns "<hashcode>  <name of file". Split that and return only the <hashcode>.
           sbom_hash=$(sha256sum ./${{ env.MANIFEST_FILE }} | awk '{split($0,a); print a[1]}')
-          echo "sbom-hash-code=$sbom_hash" >> $GITHUB_OUTPUT
+          echo "sbom-hash-code=$sbom_hash" >> "$GITHUB_OUTPUT"
 
   sbom-attach:
     name: Attach SBOM file
@@ -335,17 +336,19 @@ jobs:
             # Releases get the version, plus shortened form for minor release.
             # We are not using shortened form for major or using "latest"
             # because they are too imprecise.
-            MINOR=`echo ${PACKAGEVERSION} | awk -F"." '{print $1"."$2}'`
+            MINOR="$(echo "${PACKAGEVERSION}" | awk -F"." '{print $1"."$2}')"
             APITAGS="${{ env.IMAGE_NAME }}:${PACKAGEVERSION},${{ env.IMAGE_NAME }}:${MINOR}"
             DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION},${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
             DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION}-6.2,${{ env.DATABASE_IMAGE_NAME }}:${MINOR}-6.2"
           fi
 
           SEMVERSION=${PACKAGEVERSION:1}  # strip off the leading 'v'
-          echo "APITAGS=$APITAGS" >> $GITHUB_OUTPUT
-          echo "DBTAGS=$DBTAGS" >> $GITHUB_OUTPUT
-          echo "DBTAGS6x=$DBTAGS6x" >> $GITHUB_OUTPUT
-          echo "VERSION=$SEMVERSION" >> $GITHUB_OUTPUT
+          {
+            echo "APITAGS=$APITAGS"
+            echo "DBTAGS=$DBTAGS"
+            echo "DBTAGS6x=$DBTAGS6x"
+            echo "VERSION=$SEMVERSION"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  # v3.3.0
