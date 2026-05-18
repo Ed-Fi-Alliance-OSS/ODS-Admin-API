@@ -89,7 +89,7 @@ script:pre-request {
 
     if (odsResponse.status === 200) {
       console.log("✅ DataStore List loaded");
-      bru.setVar("dataStoreId", odsResponse.data[0].id);
+      bru.setVar("DataStoreId", odsResponse.data[0].id);
     } else {
       console.log("❌ Failed to get DataStores");
       console.log("Status:", odsResponse.status);
