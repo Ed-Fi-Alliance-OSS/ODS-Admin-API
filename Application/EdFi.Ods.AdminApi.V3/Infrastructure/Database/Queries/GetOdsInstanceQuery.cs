@@ -8,6 +8,7 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -34,27 +35,11 @@ public class GetOdsInstanceQuery(
             .Include(p => p.OdsInstanceDerivatives)
             .SingleOrDefault(odsInstance => odsInstance.OdsInstanceId == odsInstanceId) ?? throw new NotFoundException<int>("odsInstance", odsInstanceId);
 
-        EncryptConnectionStringIfNeeded(odsInstance);
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+                new List<OdsInstance> { odsInstance }, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
 
         return odsInstance;
-    }
-
-    private void EncryptConnectionStringIfNeeded(OdsInstance odsInstance)
-    {
-        if (string.IsNullOrEmpty(odsInstance.ConnectionString))
-            return;
-
-        if (_encryptionProvider.IsEncrypted(odsInstance.ConnectionString))
-            return;
-
-        if (string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            return;
-
-        odsInstance.ConnectionString = _encryptionProvider.Encrypt(
-            odsInstance.ConnectionString,
-            Convert.FromBase64String(_options.Value.EncryptionKey));
-
-        _usersContext.SaveChanges();
     }
 }
 
