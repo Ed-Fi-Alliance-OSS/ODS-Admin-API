@@ -24,7 +24,7 @@ script:post-response {
   test("GET DataStoreContexts NotFound: Response title is helpful and accurate", function () {  
       expect(response.title).to.contain("Not found");
       expect(response.title).to.contain("DataStoreContext");
-      expect(response.title).to.contain(bru.getEnvVar("NotExistDataStoresContextId"));
+      expect(response.title).to.contain(bru.getVar("NotExistDataStoresContextId"));
   });
 }
 
