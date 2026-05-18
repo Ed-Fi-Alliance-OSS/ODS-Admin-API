@@ -26,7 +26,7 @@ public class AddDataStoreContextCommand : IAddDataStoreContextCommand
     public OdsInstanceContext Execute(IAddDataStoreContextModel newDataStoreContext)
     {
         var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == newDataStoreContext.DataStoreId) ??
-            throw new NotFoundException<int>("dataStore", newDataStoreContext.DataStoreId);
+            throw new NotFoundException<int>("DataStore", newDataStoreContext.DataStoreId);
 
         var context = new OdsInstanceContext
         {

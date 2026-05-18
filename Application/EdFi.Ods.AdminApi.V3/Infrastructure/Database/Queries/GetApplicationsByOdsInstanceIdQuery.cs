@@ -38,7 +38,7 @@ public class GetApplicationsByDataStoreIdQuery : IGetApplicationsByDataStoreIdQu
 
         if (!applications.Any() && _context.OdsInstances.Find(dataStoreId) == null)
         {
-            throw new NotFoundException<int>("dataStore", dataStoreId);
+            throw new NotFoundException<int>("DataStore", dataStoreId);
         }
 
         return applications;

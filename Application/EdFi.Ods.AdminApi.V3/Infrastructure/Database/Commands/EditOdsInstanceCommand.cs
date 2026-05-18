@@ -26,7 +26,7 @@ public class EditDataStoreCommand : IEditDataStoreCommand
     public OdsInstance Execute(IEditDataStoreModel changedDataStore)
     {
         var odsInstance = _context.OdsInstances.SingleOrDefault(v => v.OdsInstanceId == changedDataStore.Id) ??
-            throw new NotFoundException<int>("dataStore", changedDataStore.Id);
+            throw new NotFoundException<int>("DataStore", changedDataStore.Id);
 
         odsInstance.Name = changedDataStore.Name;
         odsInstance.InstanceType = changedDataStore.DataStoreType;

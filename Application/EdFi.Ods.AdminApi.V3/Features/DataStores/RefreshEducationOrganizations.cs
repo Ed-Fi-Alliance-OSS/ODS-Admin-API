@@ -75,7 +75,7 @@ public class RefreshEducationOrganizations : IFeature
         var odsInstance = getDataStoreQuery.Execute(instanceId);
         if (odsInstance == null)
         {
-            throw new NotFoundException<int>("dataStore", instanceId);
+            throw new NotFoundException<int>("DataStore", instanceId);
         }
 
         var tenantConfiguration = tenantConfigurationProvider.Get();
