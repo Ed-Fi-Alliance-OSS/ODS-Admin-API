@@ -42,6 +42,13 @@ public class JobStatusService(AdminApiDbContext dbContext,
                 CreatedAt = DateTime.UtcNow,
                 ErrorMessage = errorMessage
             };
+            
+            // Set FinishedAt when job reaches final state
+            if (status == QuartzJobStatus.Completed || status == QuartzJobStatus.Error)
+            {
+                jobStatus.FinishedAt = DateTime.UtcNow;
+            }
+            
             resolvedDbContext.JobStatuses.Add(jobStatus);
         }
         else

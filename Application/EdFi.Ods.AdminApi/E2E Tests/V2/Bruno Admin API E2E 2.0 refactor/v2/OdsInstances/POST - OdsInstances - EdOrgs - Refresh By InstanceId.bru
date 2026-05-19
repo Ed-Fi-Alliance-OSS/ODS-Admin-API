@@ -64,8 +64,8 @@ script:pre-request {
 }
 
 script:post-response {
-  test("POST OdsInstances by ID EdOrgs Refresh: Status code is Accepted", function () {
-      expect(res.getStatus()).to.equal(202);
+  test("POST OdsInstances by ID EdOrgs Refresh: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
   });
 }
 
