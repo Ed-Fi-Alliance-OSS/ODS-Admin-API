@@ -30,7 +30,7 @@ public class OdsInstanceEncryptionHelperTests
         var usersContext = A.Fake<IUsersContext>();
 
         OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey);
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         _provider.IsEncrypted(instance.ConnectionString).ShouldBeTrue();
         A.CallTo(() => usersContext.SaveChanges()).MustHaveHappenedOnceExactly();
@@ -44,7 +44,7 @@ public class OdsInstanceEncryptionHelperTests
         var usersContext = A.Fake<IUsersContext>();
 
         OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey);
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBe(encrypted);
         A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
@@ -59,11 +59,25 @@ public class OdsInstanceEncryptionHelperTests
         var usersContext = A.Fake<IUsersContext>();
 
         OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { plaintextInstance, encryptedInstance }, usersContext, _provider, TestEncryptionKey);
+            new List<OdsInstance> { plaintextInstance, encryptedInstance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         _provider.IsEncrypted(plaintextInstance.ConnectionString).ShouldBeTrue();
         encryptedInstance.ConnectionString.ShouldBe(encrypted);
         A.CallTo(() => usersContext.SaveChanges()).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public void EncryptConnectionStringsIfNeeded_WithInvalidConnectionString_SkipsEncryptionAndDoesNotCallSaveChanges()
+    {
+        // PlainConnectionString is SqlServer format; using PostgreSql engine makes it invalid
+        var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
+        var usersContext = A.Fake<IUsersContext>();
+
+        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "PostgreSql");
+
+        instance.ConnectionString.ShouldBe(PlainConnectionString);
+        A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
     }
 
     [Test]
@@ -73,7 +87,7 @@ public class OdsInstanceEncryptionHelperTests
         var usersContext = A.Fake<IUsersContext>();
 
         OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey);
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBe(string.Empty);
         A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
@@ -86,7 +100,7 @@ public class OdsInstanceEncryptionHelperTests
         var usersContext = A.Fake<IUsersContext>();
 
         OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey);
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBeNull();
         A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
@@ -98,7 +112,7 @@ public class OdsInstanceEncryptionHelperTests
         var usersContext = A.Fake<IUsersContext>();
 
         OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance>(), usersContext, _provider, TestEncryptionKey);
+            new List<OdsInstance>(), usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
     }

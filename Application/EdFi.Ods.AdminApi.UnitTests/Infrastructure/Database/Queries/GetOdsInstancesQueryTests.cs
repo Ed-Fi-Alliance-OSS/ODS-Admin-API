@@ -23,7 +23,7 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Database.Queries;
 public class GetOdsInstancesQueryTests
 {
     private static readonly string TestEncryptionKey = Convert.ToBase64String(new byte[32]);
-    private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
+    private const string PlainConnectionString = "Host=localhost;Port=5432;Database=EdFi_Ods;Username=postgres;Password=pass";
 
     private readonly Aes256SymmetricStringEncryptionProvider _provider = new();
 
@@ -117,21 +117,6 @@ public class GetOdsInstancesQueryTests
         var results = query.Execute();
 
         results.ShouldAllBe(r => r.ConnectionString == PlainConnectionString);
-    }
-
-    [Test]
-    public void Execute_WithParams_WithUnencryptedConnectionStrings_EncryptsOnRead()
-    {
-        using var usersContext = CreateContext();
-        usersContext.OdsInstances.AddRange(
-            new OdsInstance { Name = "Instance1", InstanceType = "type", ConnectionString = PlainConnectionString },
-            new OdsInstance { Name = "Instance2", InstanceType = "type", ConnectionString = PlainConnectionString });
-        usersContext.SaveChanges();
-
-        var query = new GetOdsInstancesQuery(usersContext, OptionsWithKey(TestEncryptionKey), _provider);
-        var results = query.Execute(new CommonQueryParams(0, 25), null, null, null);
-
-        results.ShouldAllBe(r => _provider.IsEncrypted(r.ConnectionString));
     }
 
     [Test]

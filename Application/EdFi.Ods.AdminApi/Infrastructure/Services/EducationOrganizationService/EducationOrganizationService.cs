@@ -86,7 +86,7 @@ public class EducationOrganizationService(
                 .ToListAsync()
             : await usersContext.OdsInstances.ToListAsync();
 
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(odsInstances, usersContext, encryptionProvider, encryptionKey);
+        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(odsInstances, usersContext, encryptionProvider, encryptionKey, databaseEngine);
 
         if (instanceId.HasValue && odsInstances.Count == 0)
         {
