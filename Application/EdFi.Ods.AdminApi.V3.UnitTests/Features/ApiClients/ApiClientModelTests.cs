@@ -24,7 +24,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             model.ApplicationId.ShouldBe(0);
             model.KeyStatus.ShouldBe("Active");
             model.EducationOrganizationIds.ShouldBeNull();
-            model.OdsInstanceIds.ShouldBeNull();
+            model.DataStoreIds.ShouldBeNull();
         }
 
         [Test]
@@ -39,7 +39,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
                 ApplicationId = 99,
                 KeyStatus = "Inactive",
                 EducationOrganizationIds = new List<long> { 1001, 1002 },
-                OdsInstanceIds = new List<int> { 1, 2 }
+                DataStoreIds = new List<int> { 1, 2 }
             };
 
             model.Id.ShouldBe(1);
@@ -49,7 +49,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             model.ApplicationId.ShouldBe(99);
             model.KeyStatus.ShouldBe("Inactive");
             model.EducationOrganizationIds.ShouldBe(new List<long> { 1001, 1002 });
-            model.OdsInstanceIds.ShouldBe(new List<int> { 1, 2 });
+            model.DataStoreIds.ShouldBe(new List<int> { 1, 2 });
         }
     }
 

@@ -17,7 +17,7 @@ body:json {
     "claimSetName": "Ed-Fi Sandbox",
     "profileIds": [],
     "educationOrganizationIds": [ 255901 ],
-    "odsInstanceIds": [ {{ODSInstanceId}} ],
+    "dataStoreIds": [ {{DataStoreId}} ],
     "enabled": true
   }
   
@@ -85,16 +85,16 @@ script:pre-request {
 
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
 
     if (odsResponse.status === 200) {
-      console.log("✅ OdsInstance List loaded");
-      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
+      console.log("✅ DataStore List loaded");
+      bru.setVar("DataStoreId", odsResponse.data[0].id);
     } else {
-      console.log("❌ Failed to get odsInstances");
+      console.log("❌ Failed to get DataStores");
       console.log("Status:", odsResponse.status);
       console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
-      throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+      throw new Error(`Failed to get DataStores - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     }    
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);

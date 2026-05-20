@@ -31,7 +31,7 @@ public static class ApplicationMapper
         };
     }
 
-    public static ApplicationModel ToModel(Application source, IList<int> odsInstanceIds)
+    public static ApplicationModel ToModel(Application source, IList<int> dataStoreIds)
     {
         return new ApplicationModel
         {
@@ -42,19 +42,19 @@ public static class ApplicationMapper
             VendorId = source.VendorId(),
             ProfileIds = source.Profiles(),
             Enabled = source.ApiClients.All(a => a.IsApproved),
-            OdsInstanceIds = odsInstanceIds
+            DataStoreIds = dataStoreIds
         };
     }
 
     public static List<ApplicationModel> ToModelList(
         IEnumerable<Application> source,
-        IReadOnlyDictionary<int, IList<int>> odsInstanceIdsByApplicationId)
+        IReadOnlyDictionary<int, IList<int>> dataStoreIdsByApplicationId)
     {
         return source
             .Select(application =>
             {
-                odsInstanceIdsByApplicationId.TryGetValue(application.ApplicationId, out var odsInstanceIds);
-                return ToModel(application, odsInstanceIds ?? new List<int>());
+                dataStoreIdsByApplicationId.TryGetValue(application.ApplicationId, out var dataStoreIds);
+                return ToModel(application, dataStoreIds ?? new List<int>());
             })
             .ToList();
     }

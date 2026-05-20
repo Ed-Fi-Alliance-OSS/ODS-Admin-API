@@ -13,6 +13,7 @@ using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
@@ -24,14 +25,14 @@ public class ReadTenants : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/tenants/{tenantName}/OdsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
+            .MapGet(endpoints, "/tenants/{tenantName}/dataStores/edOrgs", GetTenantEdOrgsByInstancesAsync)
             .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> GetTenantEdOrgsByInstancesAsync(
         HttpRequest request,
         [FromServices] ITenantsService tenantsService,
-        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetDataStoresQuery getDataStoresQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,
@@ -57,7 +58,7 @@ public class ReadTenants : IFeature
             throw new NotFoundException<string>("TenantName", tenantName);
         }
 
-        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getOdsInstancesQuery, getEducationOrganizationQuery, tenantName);
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getDataStoresQuery, getEducationOrganizationQuery, tenantName);
 
         if (tenant is null)
             return Results.NotFound();
@@ -85,6 +86,7 @@ public class TenantDetailsResponse
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
+    [JsonPropertyName("DataStores")]
     public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
 }
 

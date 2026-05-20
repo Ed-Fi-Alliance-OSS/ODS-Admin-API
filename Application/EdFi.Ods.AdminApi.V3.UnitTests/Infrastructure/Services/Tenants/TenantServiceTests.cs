@@ -10,7 +10,7 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using EdFi.Ods.AdminApi.V3.Features.Tenants;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
@@ -30,7 +30,7 @@ internal class TenantServiceTests
     private IOptionsSnapshot<AppSettingsFile> _options = null!;
     private IMemoryCache _memoryCache = null!;
     private AppSettingsFile _appSettings = null!;
-    private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
+    private IGetDataStoresQuery _getDataStoresQuery = null!;
     private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
 
     [SetUp]
@@ -38,7 +38,7 @@ internal class TenantServiceTests
     {
         _options = A.Fake<IOptionsSnapshot<AppSettingsFile>>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
-        _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
+        _getDataStoresQuery = A.Fake<IGetDataStoresQuery>();
         _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
         _appSettings = new AppSettingsFile
         {
@@ -208,11 +208,11 @@ internal class TenantServiceTests
             }
         };
 
-        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
+        A.CallTo(() => _getDataStoresQuery.Execute()).Returns([odsInstance]);
         A.CallTo(() => _getEducationOrganizationQuery.Execute(A<int[]>.That.Matches(ids => ids.Length == 1 && ids[0] == 101)))
             .Returns([educationOrganization]);
 
-        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName);
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName);
 
         tenant.ShouldNotBeNull();
         tenant!.TenantName.ShouldBe(tenantName);
@@ -233,7 +233,7 @@ internal class TenantServiceTests
     {
         var service = new TenantService(_options, _memoryCache);
 
-        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, "notfound");
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, "notfound");
 
         tenant.ShouldBeNull();
     }

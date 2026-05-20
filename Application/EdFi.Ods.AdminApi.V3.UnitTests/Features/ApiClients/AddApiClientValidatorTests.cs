@@ -25,7 +25,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         [Test]
         public void Should_Have_Error_When_Name_Is_Empty()
         {
-            var model = new AddApiClient.AddApiClientRequest { Name = "", ApplicationId = 1, OdsInstanceIds = new[] { 1 } };
+            var model = new AddApiClient.AddApiClientRequest { Name = "", ApplicationId = 1, DataStoreIds = new[] { 1 } };
             var result = _validator.Validate(model);
             result.Errors.Any(x => x.PropertyName == nameof(model.Name)).ShouldBeTrue();
         }
@@ -37,7 +37,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             {
                 Name = new string('A', ValidationConstants.MaximumApiClientNameLength + 1),
                 ApplicationId = 1,
-                OdsInstanceIds = new[] { 1 }
+                DataStoreIds = new[] { 1 }
             };
             var result = _validator.Validate(model);
             result.Errors.Any(x => x.PropertyName == nameof(model.Name)).ShouldBeTrue();
@@ -46,17 +46,17 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         [Test]
         public void Should_Have_Error_When_ApplicationId_Is_Zero()
         {
-            var model = new AddApiClient.AddApiClientRequest { Name = "ValidName", ApplicationId = 0, OdsInstanceIds = new[] { 1 } };
+            var model = new AddApiClient.AddApiClientRequest { Name = "ValidName", ApplicationId = 0, DataStoreIds = new[] { 1 } };
             var result = _validator.Validate(model);
             result.Errors.Any(x => x.PropertyName == nameof(model.ApplicationId)).ShouldBeTrue();
         }
 
         [Test]
-        public void Should_Have_Error_When_OdsInstanceIds_Is_Empty()
+        public void Should_Have_Error_When_DataStoreIds_Is_Empty()
         {
-            var model = new AddApiClient.AddApiClientRequest { Name = "ValidName", ApplicationId = 1, OdsInstanceIds = System.Array.Empty<int>() };
+            var model = new AddApiClient.AddApiClientRequest { Name = "ValidName", ApplicationId = 1, DataStoreIds = System.Array.Empty<int>() };
             var result = _validator.Validate(model);
-            result.Errors.Any(x => x.PropertyName == nameof(model.OdsInstanceIds)).ShouldBeTrue();
+            result.Errors.Any(x => x.PropertyName == nameof(model.DataStoreIds)).ShouldBeTrue();
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             {
                 Name = "ValidName",
                 ApplicationId = 1,
-                OdsInstanceIds = new[] { 1 }
+                DataStoreIds = new[] { 1 }
             };
             var result = _validator.Validate(model);
             result.IsValid.ShouldBeTrue();

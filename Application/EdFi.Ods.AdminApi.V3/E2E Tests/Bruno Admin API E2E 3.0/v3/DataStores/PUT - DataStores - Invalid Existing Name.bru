@@ -1,0 +1,46 @@
+meta {
+  name: DataStores - Invalid Existing Name
+  type: http
+  seq: 18
+}
+
+put {
+  url: {{API_URL}}/v3/dataStores/{{CreatedDataStoreId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Other DataStore {{OtherDataStoreGUID}}",
+      "dataStoreType": "Other DataStore Type",
+      "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("PUT DataStore Invalid Existing DataStore: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT DataStore Invalid Existing DataStore: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT DataStore Invalid Existing DataStore: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT DataStore Invalid Existing DataStore: Response errors include messages by property", function () {
+      expect(response.errors.Name.length).to.equal(1);
+      expect(response.errors.Name[0]).to.contain("already exists");
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

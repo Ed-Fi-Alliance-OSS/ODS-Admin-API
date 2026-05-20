@@ -116,11 +116,11 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                     {
                         if (parameter.Name.ToLower().Equals("id"))
                         {
-                            parameter.Description = FeatureConstants.OdsInstanceIdsDescription;
+                            parameter.Description = FeatureConstants.DataStoreIdsDescription;
                         }
                         else if (parameter.Name.ToLower().Equals("name"))
                         {
-                            parameter.Description = FeatureConstants.OdsInstanceName;
+                            parameter.Description = FeatureConstants.DataStoreName;
                         }
                     }
                     break;

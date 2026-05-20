@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;

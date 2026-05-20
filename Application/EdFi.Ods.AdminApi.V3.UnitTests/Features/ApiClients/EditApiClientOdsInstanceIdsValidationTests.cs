@@ -18,7 +18,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
 {
     [TestFixture]
-    public class EditApiClientOdsInstanceIdsValidationTests
+    public class EditApiClientDataStoreIdsValidationTests
     {
         private IUsersContext _fakeDb;
         private MethodInfo _validateMethod;
@@ -28,7 +28,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             _fakeDb = A.Fake<IUsersContext>();
             _validateMethod = typeof(EditApiClient)
-                .GetMethod("ValidateOdsInstanceIds", BindingFlags.NonPublic | BindingFlags.Static);
+                .GetMethod("ValidateDataStoreIds", BindingFlags.NonPublic | BindingFlags.Static);
         }
 
         private EditApiClient.EditApiClientRequest MakeRequest(IEnumerable<int> ids) => new EditApiClient.EditApiClientRequest
@@ -36,7 +36,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             Id = 1,
             Name = "Test",
             ApplicationId = 1,
-            OdsInstanceIds = ids
+            DataStoreIds = ids
         };
 
         private void SetupOdsInstances(params int[] instanceIds)
@@ -54,7 +54,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Throws_When_OdsInstanceIds_NotInDatabase()
+        public void Throws_When_DataStoreIds_NotInDatabase()
         {
             SetupOdsInstances(1);
             var request = MakeRequest(new[] { 2, 3 });
@@ -67,7 +67,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Throws_When_OdsInstanceIds_Provided_But_None_In_Database()
+        public void Throws_When_DataStoreIds_Provided_But_None_In_Database()
         {
             SetupOdsInstances(); // Empty
             var request = MakeRequest(new[] { 1 });
@@ -80,7 +80,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Does_Not_Throw_When_All_OdsInstanceIds_Exist()
+        public void Does_Not_Throw_When_All_DataStoreIds_Exist()
         {
             SetupOdsInstances(1, 2);
             var request = MakeRequest(new[] { 1, 2 });
@@ -91,7 +91,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Does_Not_Throw_When_OdsInstanceIds_Is_Null()
+        public void Does_Not_Throw_When_DataStoreIds_Is_Null()
         {
             SetupOdsInstances(1);
             var request = new EditApiClient.EditApiClientRequest
@@ -99,7 +99,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
                 Id = 1,
                 Name = "Test",
                 ApplicationId = 1,
-                OdsInstanceIds = null
+                DataStoreIds = null
             };
 
             Should.NotThrow(() =>
@@ -108,7 +108,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
-        public void Does_Not_Throw_When_OdsInstanceIds_Is_Empty()
+        public void Does_Not_Throw_When_DataStoreIds_Is_Empty()
         {
             SetupOdsInstances(1);
             var request = MakeRequest(System.Array.Empty<int>());

@@ -30,17 +30,15 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         Save(odsInstance);
 
         var derivativeType = "ReadReplica";
-        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
 
-        var newOdsInstanceDerivative = new Mock<IAddOdsInstanceDerivativeModel>();
-        newOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceDerivative = new Mock<IAddDataStoreDerivativeModel>();
+        newOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(derivativeType);
-        newOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(connectionString);
 
         var id = 0;
         Transaction(usersContext =>
         {
-            var command = new AddOdsInstanceDerivativeCommand(usersContext);
+            var command = new AddDataStoreDerivativeCommand(usersContext);
             id = command.Execute(newOdsInstanceDerivative.Object).OdsInstanceDerivativeId;
             id.ShouldBeGreaterThan(0);
         });
@@ -52,7 +50,6 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
             .Single(v => v.OdsInstanceDerivativeId == id);
             odsInstanceDerivative.OdsInstance.OdsInstanceId.ShouldBe(odsInstance.OdsInstanceId);
             odsInstanceDerivative.DerivativeType.ShouldBe(derivativeType);
-            odsInstanceDerivative.ConnectionString.ShouldBe(connectionString);
         });
     }
 
@@ -69,30 +66,27 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         Save(odsInstance);
 
         var derivativeType = "ReadReplica";
-        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
-        var newOdsInstanceDerivative = new Mock<IAddOdsInstanceDerivativeModel>();
-        newOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceDerivative = new Mock<IAddDataStoreDerivativeModel>();
+        newOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(derivativeType);
-        newOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(connectionString);
         var id = 0;
         Transaction(usersContext =>
         {
-            var command = new AddOdsInstanceDerivativeCommand(usersContext);
+            var command = new AddDataStoreDerivativeCommand(usersContext);
             id = command.Execute(newOdsInstanceDerivative.Object).OdsInstanceDerivativeId;
             id.ShouldBeGreaterThan(0);
         });
 
         var newDerivativeType = "ReadReplica";
-        var newOdsInstanceDerivative2 = new Mock<IAddOdsInstanceDerivativeModel>();
-        newOdsInstanceDerivative2.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceDerivative2 = new Mock<IAddDataStoreDerivativeModel>();
+        newOdsInstanceDerivative2.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative2.Setup(x => x.DerivativeType).Returns(newDerivativeType);
-        newOdsInstanceDerivative2.Setup(x => x.ConnectionString).Returns(connectionString);
         var newId = 0;
         Assert.Throws<DbUpdateException>(() =>
         {
             Transaction(usersContext =>
             {
-                var command = new AddOdsInstanceDerivativeCommand(usersContext);
+                var command = new AddDataStoreDerivativeCommand(usersContext);
                 newId = command.Execute(newOdsInstanceDerivative2.Object).OdsInstanceDerivativeId;
                 newId.ShouldBeGreaterThan(0);
             });
@@ -115,8 +109,8 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
 
         var derivativeType = "ReadReplica";
 
-        var newOdsInstanceDerivative = new Mock<IAddOdsInstanceDerivativeModel>();
-        newOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
+        var newOdsInstanceDerivative = new Mock<IAddDataStoreDerivativeModel>();
+        newOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(derivativeType);
 
         var id = 0;
@@ -124,7 +118,7 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         {
             Transaction(usersContext =>
             {
-                var command = new AddOdsInstanceDerivativeCommand(usersContext);
+                var command = new AddDataStoreDerivativeCommand(usersContext);
                 id = command.Execute(newOdsInstanceDerivative.Object).OdsInstanceDerivativeId;
             });
         });
@@ -143,18 +137,15 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
 
         Save(odsInstance);
 
-        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
-
-        var newOdsInstanceDerivative = new Mock<IAddOdsInstanceDerivativeModel>();
-        newOdsInstanceDerivative.Setup(x => x.OdsInstanceId).Returns(odsInstance.OdsInstanceId);
-        newOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(connectionString);
+        var newOdsInstanceDerivative = new Mock<IAddDataStoreDerivativeModel>();
+        newOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
 
         var id = 0;
         Assert.Throws<DbUpdateException>(() =>
         {
             Transaction(usersContext =>
             {
-                var command = new AddOdsInstanceDerivativeCommand(usersContext);
+                var command = new AddDataStoreDerivativeCommand(usersContext);
                 id = command.Execute(newOdsInstanceDerivative.Object).OdsInstanceDerivativeId;
             });
         });
@@ -162,6 +153,7 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
     }
 
 }
+
 
 
 

@@ -39,7 +39,7 @@ public class GetOdsInstancesDerivativeQueryTests : PlatformUsersContextTestBase
         List<OdsInstanceDerivative> results = null;
         Transaction(usersContext =>
         {
-            var query = new GetOdsInstanceDerivativesQuery(usersContext, Testing.GetAppSettings());
+            var query = new GetDataStoreDerivativesQuery(usersContext, Testing.GetAppSettings());
             results = query.Execute();
         });
 
@@ -78,7 +78,7 @@ public class GetOdsInstancesDerivativeQueryTests : PlatformUsersContextTestBase
         List<OdsInstanceDerivative> results = null;
         Transaction(usersContext =>
         {
-            var query = new GetOdsInstanceDerivativesQuery(usersContext, Testing.GetAppSettings());
+            var query = new GetDataStoreDerivativesQuery(usersContext, Testing.GetAppSettings());
             results = query.Execute(new CommonQueryParams(1, 1));
             results.Count.ShouldBe(1);
         });

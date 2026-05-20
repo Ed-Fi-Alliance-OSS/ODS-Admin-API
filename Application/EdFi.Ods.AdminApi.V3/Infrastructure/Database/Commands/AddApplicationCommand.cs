@@ -50,8 +50,8 @@ public class AddApplicationCommand : IAddApplicationCommand
         var vendor = _usersContext.Vendors.Include(x => x.Users)
             .Single(v => v.VendorId == applicationModel.VendorId);
 
-        var odsInstances = applicationModel.OdsInstanceIds != null
-            ? _usersContext.OdsInstances.Where(o => applicationModel.OdsInstanceIds.Contains(o.OdsInstanceId))
+        var odsInstances = applicationModel.DataStoreIds != null
+            ? _usersContext.OdsInstances.Where(o => applicationModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
 
         var user = vendor.Users.FirstOrDefault();
@@ -124,7 +124,7 @@ public interface IAddApplicationModel
     string? ClaimSetName { get; }
     IEnumerable<int>? ProfileIds { get; }
     IEnumerable<long>? EducationOrganizationIds { get; }
-    IEnumerable<int>? OdsInstanceIds { get; }
+    IEnumerable<int>? DataStoreIds { get; }
     bool? Enabled { get; }
 }
 

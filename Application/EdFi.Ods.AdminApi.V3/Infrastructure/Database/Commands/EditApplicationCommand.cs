@@ -43,8 +43,8 @@ public class EditApplicationCommand : IEditApplicationCommand
         var newProfiles = model.ProfileIds != null
             ? _context.Profiles.Where(p => model.ProfileIds.Contains(p.ProfileId))
             : null;
-        var newOdsInstances = model.OdsInstanceIds != null
-            ? _context.OdsInstances.Where(p => model.OdsInstanceIds.Contains(p.OdsInstanceId))
+        var newOdsInstances = model.DataStoreIds != null
+            ? _context.OdsInstances.Where(p => model.DataStoreIds.Contains(p.OdsInstanceId))
             : null;
 
         var apiClient = application.ApiClients.Single();
@@ -113,7 +113,7 @@ public interface IEditApplicationModel
     string? ClaimSetName { get; }
     IEnumerable<int>? ProfileIds { get; }
     IEnumerable<long>? EducationOrganizationIds { get; }
-    IEnumerable<int>? OdsInstanceIds { get; }
+    IEnumerable<int>? DataStoreIds { get; }
     bool? Enabled { get; }
 }
 

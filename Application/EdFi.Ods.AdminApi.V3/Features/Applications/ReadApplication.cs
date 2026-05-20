@@ -31,7 +31,7 @@ public class ReadApplication : IFeature
 
     internal static async Task<IResult> GetApplications(
         IGetAllApplicationsQuery getAllApplicationsQuery,
-        IGetOdsInstanceIdsByApplicationIdQuery getOdsInstanceIdsByApplicationIdQuery,
+        IGetDataStoreIdsByApplicationIdQuery getDataStoreIdsByApplicationIdQuery,
         Validator validator,
         [AsParameters] CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName, string? ids)
     {
@@ -40,19 +40,19 @@ public class ReadApplication : IFeature
             await validator.GuardAsync(ids);
         }
         var applicationEntities = getAllApplicationsQuery.Execute(commonQueryParams, id, applicationName, claimsetName, ids);
-        var odsInstanceIdsByApplicationId = getOdsInstanceIdsByApplicationIdQuery.Execute(applicationEntities.Select(a => a.ApplicationId));
+        var odsInstanceIdsByApplicationId = getDataStoreIdsByApplicationIdQuery.Execute(applicationEntities.Select(a => a.ApplicationId));
         var applications = ApplicationMapper.ToModelList(applicationEntities, odsInstanceIdsByApplicationId);
         return Results.Ok(applications);
     }
 
-    internal static Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, IGetOdsInstanceIdsByApplicationIdQuery getOdsInstanceIdsByApplicationIdQuery, int id)
+    internal static Task<IResult> GetApplication(GetApplicationByIdQuery getApplicationByIdQuery, IGetDataStoreIdsByApplicationIdQuery getDataStoreIdsByApplicationIdQuery, int id)
     {
         var application = getApplicationByIdQuery.Execute(id);
         if (application == null)
         {
             throw new NotFoundException<int>("application", id);
         }
-        var odsInstanceIds = getOdsInstanceIdsByApplicationIdQuery.Execute(application.ApplicationId);
+        var odsInstanceIds = getDataStoreIdsByApplicationIdQuery.Execute(application.ApplicationId);
         var model = ApplicationMapper.ToModel(application, odsInstanceIds);
         return Task.FromResult(Results.Ok(model));
     }

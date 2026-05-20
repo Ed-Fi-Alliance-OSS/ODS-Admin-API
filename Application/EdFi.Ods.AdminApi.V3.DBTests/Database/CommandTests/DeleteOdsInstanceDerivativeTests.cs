@@ -35,7 +35,7 @@ public class DeleteOdsInstanceDerivativeTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteOdsInstanceDerivativeCommand = new DeleteOdsInstanceDerivativeCommand(usersContext);
+            var deleteOdsInstanceDerivativeCommand = new DeleteDataStoreDerivativeCommand(usersContext);
             deleteOdsInstanceDerivativeCommand.Execute(odsInstanceDerivativeId);
         });
 

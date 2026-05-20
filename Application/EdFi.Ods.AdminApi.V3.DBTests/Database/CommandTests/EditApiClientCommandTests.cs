@@ -100,7 +100,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
             ApplicationId = _application.ApplicationId,
             Name = $"{_apiClient.Name}_Edited",
             IsApproved = true,
-            OdsInstanceIds = null
+            DataStoreIds = null
         };
 
         Transaction(usersContext =>
@@ -127,7 +127,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
             ApplicationId = _application.ApplicationId,
             Name = _apiClient.Name,
             IsApproved = false,
-            OdsInstanceIds = null
+            DataStoreIds = null
         };
 
         Transaction(usersContext =>
@@ -154,7 +154,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
             ApplicationId = _application.ApplicationId,
             Name = _apiClient.Name,
             IsApproved = true,
-            OdsInstanceIds = null
+            DataStoreIds = null
         };
 
         Transaction(usersContext =>
@@ -190,7 +190,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
             ApplicationId = _application.ApplicationId,
             Name = _apiClient.Name,
             IsApproved = true,
-            OdsInstanceIds = [_odsInstance.OdsInstanceId, _newOdsInstance.OdsInstanceId]
+            DataStoreIds = [_odsInstance.OdsInstanceId, _newOdsInstance.OdsInstanceId]
         };
 
         Transaction(usersContext =>
@@ -211,7 +211,7 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
         public string Name { get; set; }
         public bool IsApproved { get; set; }
         public int ApplicationId { get; set; }
-        public IEnumerable<int> OdsInstanceIds { get; set; }
+        public IEnumerable<int> DataStoreIds { get; set; }
     }
 }
 

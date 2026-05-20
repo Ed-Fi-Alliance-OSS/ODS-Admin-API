@@ -28,8 +28,8 @@ public class EditApiClientCommand : IEditApiClientCommand
         var apiClient = _context.ApiClients
             .SingleOrDefault(a => a.ApiClientId == model.Id) ?? throw new NotFoundException<int>("apiclient", model.Id);
 
-        var newOdsInstances = model.OdsInstanceIds != null
-            ? _context.OdsInstances.Where(p => model.OdsInstanceIds.Contains(p.OdsInstanceId))
+        var newOdsInstances = model.DataStoreIds != null
+            ? _context.OdsInstances.Where(p => model.DataStoreIds.Contains(p.OdsInstanceId))
             : null;
 
         var currentApiClientId = apiClient.ApiClientId;
@@ -57,7 +57,7 @@ public interface IEditApiClientModel
     string Name { get; }
     bool IsApproved { get; }
     int ApplicationId { get; }
-    IEnumerable<int>? OdsInstanceIds { get; }
+    IEnumerable<int>? DataStoreIds { get; }
 }
 
 

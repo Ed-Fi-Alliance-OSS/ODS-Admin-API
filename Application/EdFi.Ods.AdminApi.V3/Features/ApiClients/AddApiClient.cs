@@ -43,22 +43,22 @@ public class AddApiClient : IFeature
         if (null == db.Applications.Find(request.ApplicationId))
             throw new ValidationException([new ValidationFailure(nameof(request.ApplicationId), $"Application with ID {request.ApplicationId} not found.")]);
 
-        ValidateOdsInstanceIds(request, db);
+        ValidateDataStoreIds(request, db);
     }
 
-    private static void ValidateOdsInstanceIds(AddApiClientRequest request, IUsersContext db)
+    private static void ValidateDataStoreIds(AddApiClientRequest request, IUsersContext db)
     {
         var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
 
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && allOdsInstanceIds.Count == 0)
+        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
         {
-            throw new ValidationException([new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", request.OdsInstanceIds)}")]);
+            throw new ValidationException([new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}")]);
         }
 
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && (!request.OdsInstanceIds.All(p => allOdsInstanceIds.Contains(p))))
+        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
         {
-            var notExist = request.OdsInstanceIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException([new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", notExist)}")]);
+            var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
+            throw new ValidationException([new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}")]);
         }
     }
 
@@ -74,8 +74,8 @@ public class AddApiClient : IFeature
         [SwaggerSchema(Description = FeatureConstants.ApiClientApplicationIdDescription, Nullable = false)]
         public int ApplicationId { get; set; }
 
-        [SwaggerSchema(Description = FeatureConstants.OdsInstanceIdsDescription, Nullable = false)]
-        public IEnumerable<int>? OdsInstanceIds { get; set; }
+        [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
+        public IEnumerable<int>? DataStoreIds { get; set; }
     }
 
     public class Validator : AbstractValidator<AddApiClientRequest>
@@ -94,9 +94,9 @@ public class AddApiClient : IFeature
             RuleFor(m => m.ApplicationId)
                 .GreaterThan(0);
 
-            RuleFor(m => m.OdsInstanceIds)
+            RuleFor(m => m.DataStoreIds)
                 .NotEmpty()
-                .WithMessage(FeatureConstants.OdsInstanceIdsValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
             static bool BeWithinApiClientNameMaxLength<T>(IAddApiClientModel model, string? name, ValidationContext<T> context)
             {
@@ -112,6 +112,7 @@ public class AddApiClient : IFeature
         }
     }
 }
+
 
 
 

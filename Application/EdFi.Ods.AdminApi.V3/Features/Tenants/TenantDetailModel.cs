@@ -5,7 +5,7 @@
 
 using System.Text.Json.Serialization;
 using EdFi.Ods.AdminApi.Common.Constants;
-using EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V3.Features.Tenants;
@@ -32,6 +32,7 @@ public class TenantOdsInstanceModel
     [JsonPropertyName("id")]
     public int OdsInstanceId { get; set; }
     public string Name { get; set; }
+    [JsonPropertyName("dataStoreType")]
     public string? InstanceType { get; set; }
 
     [SwaggerSchema(Title = "EducationOrganizations")]

@@ -42,7 +42,7 @@ public class GetOdsInstanceDerivativeByIdQueryTests : PlatformUsersContextTestBa
         OdsInstanceDerivative result = null;
         Transaction(usersContext =>
         {
-            var query = new GetOdsInstanceDerivativeByIdQuery(usersContext);
+            var query = new GetDataStoreDerivativeByIdQuery(usersContext);
             result = query.Execute(odsInstanceDerivative1.OdsInstanceDerivativeId);
             result.ShouldNotBeNull();
             result.OdsInstanceDerivativeId.ShouldBe(odsInstanceDerivative1.OdsInstanceDerivativeId);

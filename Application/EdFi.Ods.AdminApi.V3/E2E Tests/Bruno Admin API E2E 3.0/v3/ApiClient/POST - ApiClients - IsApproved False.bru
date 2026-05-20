@@ -15,8 +15,8 @@ body:json {
     "name": "Test ApiClient IsApproved False",
     "isApproved": false,
     "applicationId": {{CreatedApplicationId}},
-    "odsInstanceIds": [
-      {{ODSInstanceId}}
+    "dataStoreIds": [
+      {{DataStoreId}}
     ]
   }
 }
@@ -79,17 +79,17 @@ script:pre-request {
       throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
     }
 
-    // Get first ODS instance
-    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=0&limit=1`, axiosConfig);
+    // Get first DataStore
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=0&limit=1`, axiosConfig);
 
     if (odsResponse.status === 200 && odsResponse.data && odsResponse.data.length > 0 && odsResponse.data[0].id) {
-      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
-      console.log("✅ ODS Instance found with ID:", odsResponse.data[0].id);
+      bru.setVar("DataStoreId", odsResponse.data[0].id);
+      console.log("✅ DataStore found with ID:", odsResponse.data[0].id);
     } else {
-      console.log("❌ Failed to get ODS instance:");
+      console.log("❌ Failed to get DataStore:");
       console.log("Status:", odsResponse.status);
       console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
-      throw new Error(`Failed to get ODS instance - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+      throw new Error(`Failed to get DataStore - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     }
 
     // Create application
@@ -99,7 +99,7 @@ script:pre-request {
       "claimSetName": "Ed-Fi Sandbox",
       "profileIds": [],
       "educationOrganizationIds": [255901],
-      "odsInstanceIds": [bru.getVar("ODSInstanceId")],
+      "dataStoreIds": [bru.getVar("DataStoreId")],
       "enabled": true
     }, axiosConfig);
 

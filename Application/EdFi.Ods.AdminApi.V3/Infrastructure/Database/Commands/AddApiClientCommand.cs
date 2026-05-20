@@ -26,8 +26,8 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             .Include(a => a.Vendor)
             .Single(a => a.ApplicationId == apiClientModel.ApplicationId);
 
-        var odsInstances = apiClientModel.OdsInstanceIds != null
-            ? _usersContext.OdsInstances.Where(o => apiClientModel.OdsInstanceIds.Contains(o.OdsInstanceId))
+        var odsInstances = apiClientModel.DataStoreIds != null
+            ? _usersContext.OdsInstances.Where(o => apiClientModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
 
         var applicationEdOrgs = application.EducationOrganizationIds();
@@ -79,7 +79,7 @@ public interface IAddApiClientModel
     string Name { get; }
     bool IsApproved { get; }
     int ApplicationId { get; }
-    IEnumerable<int>? OdsInstanceIds { get; }
+    IEnumerable<int>? DataStoreIds { get; }
 }
 public class AddApiClientResult
 {
