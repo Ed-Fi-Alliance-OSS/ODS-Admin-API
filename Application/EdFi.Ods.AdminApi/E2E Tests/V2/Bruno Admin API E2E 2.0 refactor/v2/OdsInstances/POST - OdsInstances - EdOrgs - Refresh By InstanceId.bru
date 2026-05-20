@@ -67,6 +67,25 @@ script:post-response {
   test("POST OdsInstances by ID EdOrgs Refresh: Status code is Created", function () {
       expect(res.getStatus()).to.equal(201);
   });
+
+  test("POST OdsInstances by ID EdOrgs Refresh: Response has jobId", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("jobId");
+      expect(body.jobId).to.be.a("string");
+  });
+
+  test("POST OdsInstances by ID EdOrgs Refresh: Response has status Pending", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("status");
+      expect(body.status).to.equal("Pending");
+  });
+
+  test("POST OdsInstances by ID EdOrgs Refresh: Response has createdAt", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("createdAt");
+  });
+
+  bru.setVar("JobId", res.getBody().jobId);
 }
 
 settings {
