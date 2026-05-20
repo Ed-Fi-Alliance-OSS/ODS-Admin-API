@@ -1,0 +1,58 @@
+meta {
+  name: ResourceClaimClaimSets - Modify Action ClaimSetId Mismatch
+  type: http
+  seq: 25.1
+}
+
+put {
+  url: {{API_URL}}/v3/claimSets/{{CreatedClaimSetId}}/resourceClaimActions/4
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "claimSetId": 999999,
+    "resourceClaimId": 4,
+    "resourceClaimActions": [
+      {
+        "name": "read",
+        "enabled": true
+      },
+      {
+        "name": "create",
+        "enabled": true
+      },
+      {
+        "name": "update",
+        "enabled": false
+      },
+      {
+        "name": "delete",
+        "enabled": false
+      }
+    ]
+  }
+}
+
+script:post-response {
+  test("PUT ResourceClaimClaimSets ClaimSetId Mismatch: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT ResourceClaimClaimSets ClaimSetId Mismatch: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT ResourceClaimClaimSets ClaimSetId Mismatch: Response includes ClaimSetId mismatch error", function () {
+      expect(response.errors["ClaimSetId"].length).to.equal(1);
+      expect(response.errors["ClaimSetId"][0]).to.contain("must match the ID in the URL");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

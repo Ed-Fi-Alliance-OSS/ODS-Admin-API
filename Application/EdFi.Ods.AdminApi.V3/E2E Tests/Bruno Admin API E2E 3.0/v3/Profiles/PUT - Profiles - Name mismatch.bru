@@ -12,6 +12,7 @@ put {
 
 body:json {
   {
+      "id": {{CreatedProfileId}},
       "Name": "Test-Profile-123",
       "Definition": "<Profile name=\"Updated-Profile\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
   }
