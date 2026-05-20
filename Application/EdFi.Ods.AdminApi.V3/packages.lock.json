@@ -128,15 +128,15 @@
       },
       "Microsoft.Extensions.Logging.Log4Net.AspNetCore": {
         "type": "Direct",
-        "requested": "[8.0.0, )",
-        "resolved": "8.0.0",
-        "contentHash": "NShPLGSM/PBGJIOK/cmlh3a+QlrtCLcSpb+vfqwxRmZK38Cy4prsOjuODpAIvqWL93zt9PZOTcHOVqyaQRNuEg==",
+        "requested": "[10.0.0, )",
+        "resolved": "10.0.0",
+        "contentHash": "ASXCV+/IuxGCiXjRnrdL1waRKaCDcxkdL1U2yqteJzGcyXN+qLf6wTLBR12sQIhK36d1um6P55AaWqlXf+X0xg==",
         "dependencies": {
           "Microsoft.Extensions.Configuration": "8.0.0",
           "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
           "Microsoft.Extensions.Configuration.Binder": "8.0.0",
           "Microsoft.Extensions.Logging": "8.0.0",
-          "log4net": "2.0.15"
+          "log4net": "3.3.0"
         }
       },
       "Microsoft.Identity.Client": {
@@ -1341,7 +1341,7 @@
           "Microsoft.EntityFrameworkCore.Abstractions": "[8.0.8, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[8.0.8, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.5, )",
-          "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
+          "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[8.0.6, )",
           "Quartz": "[3.15.1, )",
@@ -1377,7 +1377,7 @@
           "Microsoft.EntityFrameworkCore.Proxies": "[8.0.8, )",
           "Microsoft.EntityFrameworkCore.Relational": "[8.0.8, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[8.0.8, )",
-          "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
+          "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Newtonsoft.Json": "[13.0.3, )",
           "Npgsql": "[8.0.6, )",
