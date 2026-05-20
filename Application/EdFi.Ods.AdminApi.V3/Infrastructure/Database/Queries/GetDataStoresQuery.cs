@@ -49,7 +49,7 @@ public class GetDataStoresQuery : IGetDataStoresQuery
     {
         var instances = _usersContext.OdsInstances.OrderBy(o => o.Name).ToList();
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
 
         return instances;
     }
@@ -67,7 +67,7 @@ public class GetDataStoresQuery : IGetDataStoresQuery
             .ToList();
 
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
 
         return instances;
     }
