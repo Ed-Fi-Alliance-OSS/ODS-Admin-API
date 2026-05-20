@@ -5,8 +5,13 @@
 
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.V3.Features.Jobs;
 
@@ -36,9 +41,17 @@ public class GetJobStatus : IFeature
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    internal static async Task<IResult> Handle(string jobId, IJobStatusService jobStatusService)
+    internal static async Task<IResult> Handle(
+        string jobId,
+        IJobStatusService jobStatusService,
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        [FromServices] IOptions<AppSettings> options)
     {
-        var jobStatus = await jobStatusService.GetStatusAsync(jobId);
+        var tenantName = options.Value.MultiTenancy
+            ? tenantConfigurationProvider.Get()?.TenantIdentifier
+            : null;
+
+        var jobStatus = await jobStatusService.GetStatusAsync(jobId, tenantName);
 
         if (jobStatus is null)
         {

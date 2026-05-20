@@ -65,10 +65,20 @@ public class JobStatusService(AdminApiDbContext dbContext,
         await resolvedDbContext.SaveChangesAsync();
     }
 
-    public async Task<JobStatus?> GetStatusAsync(string jobId)
+    public async Task<JobStatus?> GetStatusAsync(string jobId, string? tenantName = null)
     {
-        var jobStatus = await dbContext.JobStatuses
+        AdminApiDbContext resolvedDbContext;
+
+        if (_isMultiTenancyEnabled && !string.IsNullOrEmpty(tenantName))
+        {
+            resolvedDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName);
+        }
+        else
+        {
+            resolvedDbContext = dbContext;
+        }
+
+        return await resolvedDbContext.JobStatuses
             .FirstOrDefaultAsync(j => j.JobId == jobId);
-        return jobStatus;
     }
 }

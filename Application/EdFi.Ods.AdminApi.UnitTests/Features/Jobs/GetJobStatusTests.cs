@@ -5,10 +5,14 @@
 
 using System;
 using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using FakeItEasy;
+using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
 
@@ -18,11 +22,16 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Jobs;
 public class GetJobStatusTests
 {
     private IJobStatusService _jobStatusService = null!;
+    private IContextProvider<TenantConfiguration> _tenantConfigurationProvider = null!;
+    private IOptions<AppSettings> _options = null!;
 
     [SetUp]
     public void SetUp()
     {
         _jobStatusService = A.Fake<IJobStatusService>();
+        _tenantConfigurationProvider = A.Fake<IContextProvider<TenantConfiguration>>();
+        _options = A.Fake<IOptions<AppSettings>>();
+        A.CallTo(() => _options.Value).Returns(new AppSettings { MultiTenancy = false });
     }
 
     [Test]
@@ -39,11 +48,11 @@ public class GetJobStatusTests
             FinishedAt = null,
             ErrorMessage = null
         };
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         result.ShouldNotBeNull();
@@ -62,11 +71,11 @@ public class GetJobStatusTests
     {
         // Arrange
         var jobId = "nonexistent-job-id";
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns((JobStatus?)null);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         result.ShouldNotBeNull();
@@ -80,12 +89,12 @@ public class GetJobStatusTests
     {
         // Arrange
         var jobId = "job-causing-error";
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Throws(new InvalidOperationException("Unexpected database error"));
 
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(
-            () => GetJobStatus.Handle(jobId, _jobStatusService));
+            () => GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options));
     }
 
     [Test]
@@ -103,11 +112,11 @@ public class GetJobStatusTests
             FinishedAt = finishedAt,
             ErrorMessage = null
         };
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
@@ -132,11 +141,11 @@ public class GetJobStatusTests
             FinishedAt = finishedAt,
             ErrorMessage = errorMsg
         };
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
@@ -160,11 +169,11 @@ public class GetJobStatusTests
             FinishedAt = null,
             ErrorMessage = null
         };
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
@@ -187,11 +196,11 @@ public class GetJobStatusTests
             FinishedAt = null,
             ErrorMessage = null
         };
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
@@ -214,11 +223,11 @@ public class GetJobStatusTests
             FinishedAt = new DateTime(2026, 5, 15, 23, 00, 00),
             ErrorMessage = null
         };
-        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
