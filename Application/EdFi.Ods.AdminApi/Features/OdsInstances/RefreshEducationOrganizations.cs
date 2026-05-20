@@ -43,7 +43,8 @@ public class RefreshEducationOrganizations : IFeature
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
         [FromServices] ISchedulerFactory schedulerFactory,
-        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider)
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        [FromServices] IJobStatusService jobStatusService)
     {
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
@@ -61,11 +62,14 @@ public class RefreshEducationOrganizations : IFeature
         await scheduler.ScheduleJob(job, trigger);
 
         var jobId = $"{job.Key.Name}_{scheduler.SchedulerInstanceId}";
+        await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
+
+        var createdAt = DateTime.UtcNow;
         var response = new
         {
             jobId,
-            status = "Pending",
-            createdAt = DateTime.UtcNow
+            status = QuartzJobStatus.Pending.ToString(),
+            createdAt
         };
         var locationUri = $"/v2/jobs/{jobId}";
 
@@ -76,6 +80,7 @@ public class RefreshEducationOrganizations : IFeature
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IGetOdsInstanceQuery getOdsInstanceByIdQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        [FromServices] IJobStatusService jobStatusService,
         int instanceId)
     {
         var odsInstance = getOdsInstanceByIdQuery.Execute(instanceId);
@@ -101,11 +106,14 @@ public class RefreshEducationOrganizations : IFeature
         await scheduler.ScheduleJob(job, trigger);
 
         var jobId = $"{job.Key.Name}_{scheduler.SchedulerInstanceId}";
+        await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
+
+        var createdAt = DateTime.UtcNow;
         var response = new
         {
             jobId,
-            status = "Pending",
-            createdAt = DateTime.UtcNow
+            status = QuartzJobStatus.Pending.ToString(),
+            createdAt
         };
         var locationUri = $"/v2/jobs/{jobId}";
 
