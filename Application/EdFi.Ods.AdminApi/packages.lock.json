@@ -87,9 +87,9 @@
       },
       "Microsoft.AspNetCore.Authentication.JwtBearer": {
         "type": "Direct",
-        "requested": "[8.0.26, )",
-        "resolved": "8.0.26",
-        "contentHash": "Z7Fcw2UdQ20QKqE0OgAcRqPpBvjNiSAQb8u3IXFwN0XLQbr/xJlRtg11orvkp7/aQltoRMCr8A9Nc6JhLV1VCQ==",
+        "requested": "[8.0.27, )",
+        "resolved": "8.0.27",
+        "contentHash": "OMYSRCQQyj2b2RxjIJqMg2kSRvN1X5VDk3tCHcR/gzQPMMiLQ04zUUH12ObFFdLj2zZAQq1E2A+owJCyKXXUrw==",
         "dependencies": {
           "Microsoft.IdentityModel.Protocols.OpenIdConnect": "7.1.2"
         }
@@ -1370,7 +1370,7 @@
           "EdFi.Suite3.Common": "[7.4.296, )",
           "FluentValidation": "[11.11.0, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.26, )",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.27, )",
           "Microsoft.Data.SqlClient": "[5.2.2, )",
           "Microsoft.EntityFrameworkCore": "[8.0.8, )",
           "Microsoft.EntityFrameworkCore.Abstractions": "[8.0.8, )",
@@ -1407,7 +1407,7 @@
           "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
           "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.26, )",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[8.0.27, )",
           "Microsoft.EntityFrameworkCore.Abstractions": "[8.0.8, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.5, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[8.0.0, )",
