@@ -11,22 +11,26 @@ Incremental feature-area-by-area rename (Approach A): rename one feature area at
 ## Scope
 
 ### In scope (V3 only)
-- `Application/EdFi.Ods.AdminApi.V3` — Features, Infrastructure
-- `Application/EdFi.Ods.AdminApi.V3.UnitTests`
-- `Application/EdFi.Ods.AdminApi.V3.DBTests`
-- `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3`
+
+* `Application/EdFi.Ods.AdminApi.V3` — Features, Infrastructure
+
+* `Application/EdFi.Ods.AdminApi.V3.UnitTests`
+* `Application/EdFi.Ods.AdminApi.V3.DBTests`
+* `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3`
 
 ### Out of scope
-- `EdFi.Ods.AdminApi.V1`, `EdFi.Ods.AdminApi` (V1 and non-versioned endpoints unchanged)
-- `EdFi.Ods.AdminApi.Common` — shared infrastructure unchanged
-- Database schema and EF Core entity classes (`OdsInstance`, `OdsInstanceContext`, `OdsInstanceDerivative` in `EdFi.Admin.DataAccess`)
+
+* `EdFi.Ods.AdminApi.V1`, `EdFi.Ods.AdminApi` (V1 and non-versioned endpoints unchanged)
+
+* `EdFi.Ods.AdminApi.Common` — shared infrastructure unchanged
+* Database schema and EF Core entity classes (`OdsInstance`, `OdsInstanceContext`, `OdsInstanceDerivative` in `EdFi.Admin.DataAccess`)
 
 ## Rename Mapping
 
 ### Endpoint Routes
 
 | Old | New |
-|---|---|
+| --- | --- |
 | `GET/POST /v3/odsInstances` | `GET/POST /v3/dataStores` |
 | `GET/PUT/DELETE /v3/odsInstances/{id}` | `GET/PUT/DELETE /v3/dataStores/{id}` |
 | `GET /v3/odsInstances/{id}/applications` | `GET /v3/dataStores/{id}/applications` |
@@ -38,7 +42,7 @@ Incremental feature-area-by-area rename (Approach A): rename one feature area at
 ### JSON Field Names
 
 | Old field | New field | Appears in |
-|---|---|---|
+| --- | --- | --- |
 | `instanceType` | `dataStoreType` | DataStore response body |
 | `odsInstanceId` | `dataStoreId` | DataStoreContext and DataStoreDerivative bodies |
 | `odsInstanceIds` | `dataStoreIds` | Application and ApiClient bodies |
@@ -48,7 +52,7 @@ Incremental feature-area-by-area rename (Approach A): rename one feature area at
 ### Feature Folders & Files
 
 | Old | New |
-|---|---|
+| --- | --- |
 | `Features/OdsInstances/` | `Features/DataStores/` |
 | `Features/OdsInstanceContext/` | `Features/DataStoreContexts/` |
 | `Features/OdsInstanceDerivative/` | `Features/DataStoreDerivatives/` |
@@ -58,25 +62,12 @@ Incremental feature-area-by-area rename (Approach A): rename one feature area at
 | `DeleteOdsInstance.cs` | `DeleteDataStore.cs` |
 | `OdsInstanceModel.cs` | `DataStoreModel.cs` |
 | `OdsInstanceMapper.cs` | `DataStoreMapper.cs` |
-| `OdsInstanceWithEducationOrganizationsModel.cs` | `DataStoreWithEducationOrganizationsModel.cs` |
-| `EducationOrganizationMapper.cs` | (unchanged, not OdsInstance-specific) |
-| `AddOdsInstanceContext.cs` | `AddDataStoreContext.cs` |
-| `ReadOdsInstanceContext.cs` | `ReadDataStoreContext.cs` |
-| `EditOdsInstanceContext.cs` | `EditDataStoreContext.cs` |
-| `DeleteOdsInstanceContext.cs` | `DeleteDataStoreContext.cs` |
-| `OdsInstanceContextModel.cs` | `DataStoreContextModel.cs` |
-| `OdsInstanceContextMapper.cs` | `DataStoreContextMapper.cs` |
-| `AddOdsInstanceDerivative.cs` | `AddDataStoreDerivative.cs` |
-| `ReadOdsInstanceDerivative.cs` | `ReadDataStoreDerivative.cs` |
-| `EditOdsInstanceDerivative.cs` | `EditDataStoreDerivative.cs` |
-| `DeleteOdsInstanceDerivative.cs` | `DeleteDataStoreDerivative.cs` |
-| `OdsInstanceDerivativeModel.cs` | `DataStoreDerivativeModel.cs` |
-| `OdsInstanceDerivativeMapper.cs` | `DataStoreDerivativeMapper.cs` |
+| etc | |
 
 ### C# Classes
 
 | Old | New |
-|---|---|
+| --- | --- |
 | `OdsInstanceModel` | `DataStoreModel` |
 | `OdsInstanceDetailModel` | `DataStoreDetailModel` |
 | `OdsInstanceContextModel` | `DataStoreContextModel` |
@@ -89,21 +80,17 @@ Incremental feature-area-by-area rename (Approach A): rename one feature area at
 | `OdsInstanceContextMapper` | `DataStoreContextMapper` |
 | `OdsInstanceDerivativeMapper` | `DataStoreDerivativeMapper` |
 | `AddOdsInstanceRequest` | `AddDataStoreRequest` |
-| `EditOdsInstanceRequest` | `EditDataStoreRequest` |
-| `AddOdsInstanceContextRequest` | `AddDataStoreContextRequest` |
-| `EditOdsInstanceContextRequest` | `EditDataStoreContextRequest` |
-| `AddOdsInstanceDerivativeRequest` | `AddDataStoreDerivativeRequest` |
-| `EditOdsInstanceDerivativeRequest` | `EditDataStoreDerivativeRequest` |
-| `ReadApplicationsByOdsInstance` | `ReadApplicationsByDataStore` |
+| etc. | |
 
 ### Infrastructure Layer (Queries & Commands in V3)
 
 All interfaces and implementations in `Infrastructure/Database/Queries` and `Infrastructure/Database/Commands` that reference `OdsInstance` in their names are renamed. For example:
-- `IAddOdsInstanceCommand` → `IAddDataStoreCommand`
-- `IGetOdsInstancesQuery` → `IGetDataStoresQuery`
-- `IGetOdsInstanceQuery` → `IGetDataStoreQuery`
-- `IGetOdsInstanceContextsQuery` → `IGetDataStoreContextsQuery`
-- etc.
+
+* `IAddOdsInstanceCommand` → `IAddDataStoreCommand`
+* `IGetOdsInstancesQuery` → `IGetDataStoresQuery`
+* `IGetOdsInstanceQuery` → `IGetDataStoreQuery`
+* `IGetOdsInstanceContextsQuery` → `IGetDataStoreContextsQuery`
+* etc.
 
 ### SwaggerSchema Titles
 
@@ -119,11 +106,12 @@ All interfaces and implementations in `Infrastructure/Database/Queries` and `Inf
 ### E2E Bruno Tests
 
 Rename folders and `.bru` files under `E2E Tests/Bruno Admin API E2E 3.0/v3/`:
-- `OdsInstances/` → `DataStores/`
-- `OdsInstanceContexts/` → `DataStoreContexts/`
-- `OdsInstanceDerivatives/` → `DataStoreDerivatives/`
-- `Multitenant Isolation - OdsInstances/` → `Multitenant Isolation - DataStores/`
-- Update all URL paths and JSON body field names inside `.bru` files
+
+* `OdsInstances/` → `DataStores/`
+* `OdsInstanceContexts/` → `DataStoreContexts/`
+* `OdsInstanceDerivatives/` → `DataStoreDerivatives/`
+* `Multitenant Isolation - OdsInstances/` → `Multitenant Isolation - DataStores/`
+* Update all URL paths and JSON body field names inside `.bru` files
 
 ## Execution Order
 
@@ -138,6 +126,7 @@ Rename folders and `.bru` files under `E2E Tests/Bruno Admin API E2E 3.0/v3/`:
 ## Validation
 
 After all changes:
+
 ```
 ./build.ps1 -Command Build
 ./build.ps1 -Command UnitTest
@@ -147,6 +136,6 @@ Both must pass with zero errors and no test failures before the work is consider
 
 ## Notes
 
-- The `FeatureConstants.cs` constant *identifiers* in V3 will be updated (e.g., `OdsInstanceIdsDescription` → `DataStoreIdsDescription`), but the V1 and shared versions are left unchanged.
-- `ReadApplicationsByOdsInstance.cs` is in `Features/Applications/` and stays there; only the class name and route string change.
-- The `EducationOrganizationMapper.cs`, `EducationOrganizationModels.cs`, `ReadEducationOrganizations.cs`, and `RefreshEducationOrganizations.cs` files in the `OdsInstances` folder have no OdsInstance-specific naming and are moved to `DataStores/` but their class names are unchanged.
+* The `FeatureConstants.cs` constant _identifiers_ in V3 will be updated (e.g., `OdsInstanceIdsDescription` → `DataStoreIdsDescription`), but the V1 and shared versions are left unchanged.
+* `ReadApplicationsByOdsInstance.cs` is in `Features/Applications/` and stays there; only the class name and route string change.
+* The `EducationOrganizationMapper.cs`, `EducationOrganizationModels.cs`, `ReadEducationOrganizations.cs`, and `RefreshEducationOrganizations.cs` files in the `OdsInstances` folder have no OdsInstance-specific naming and are moved to `DataStores/` but their class names are unchanged.
