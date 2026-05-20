@@ -63,7 +63,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 Name = "Test ApiClient",
                 ApplicationId = 0,
                 IsApproved = true,
-                OdsInstanceIds = [1, 2]
+                DataStoreIds = [1, 2]
             };
 
             Assert.Throws<InvalidOperationException>(() => command.Execute(newApiClient, _options));
@@ -99,7 +99,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 Name = "Test ApiClient",
                 ApplicationId = application.ApplicationId,
                 IsApproved = true,
-                OdsInstanceIds = [1, 2]
+                DataStoreIds = [1, 2]
             };
 
             command.Execute(newApiClient, _options);
@@ -135,7 +135,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 Name = "Test ApiClient",
                 ApplicationId = application.ApplicationId,
                 IsApproved = true,
-                OdsInstanceIds = null // No OdsInstanceIds provided
+                DataStoreIds = null // No DataStoreIds provided
             };
 
             command.Execute(newApiClient, _options);
@@ -153,7 +153,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 Name = "Test ApiClient IsApproved False",
                 ApplicationId = applicationId,
                 IsApproved = false,
-                OdsInstanceIds = null
+                DataStoreIds = null
             };
 
             var result = command.Execute(newApiClient, _options);
@@ -169,7 +169,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
         public string Name { get; set; }
         public bool IsApproved { get; set; }
         public int ApplicationId { get; set; }
-        public IEnumerable<int> OdsInstanceIds { get; set; }
+        public IEnumerable<int> DataStoreIds { get; set; }
     }
 }
 

@@ -23,7 +23,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientsByApplicationIdQuery>();
-            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
+            var fakeOdsQuery = A.Fake<IGetDataStoreIdsByApiClientIdQuery>();
             int appId = 42;
             var apiClient = new ApiClient
             {
@@ -50,7 +50,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientByIdQuery>();
-            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
+            var fakeOdsQuery = A.Fake<IGetDataStoreIdsByApiClientIdQuery>();
             int id = 7;
             var apiClient = new ApiClient
             {
@@ -69,7 +69,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientModel>>();
             var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientModel>;
             okResult!.Value!.Id.ShouldBe(id);
-            okResult.Value.OdsInstanceIds.ShouldBe(new List<int> { 10, 20 });
+            okResult.Value.DataStoreIds.ShouldBe(new List<int> { 10, 20 });
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientByIdQuery>();
-            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
+            var fakeOdsQuery = A.Fake<IGetDataStoreIdsByApiClientIdQuery>();
             int id = 99;
             A.CallTo(() => fakeQuery.Execute(id)).Returns(null);
 
@@ -90,7 +90,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         {
             // Arrange
             var fakeQuery = A.Fake<IGetApiClientsByApplicationIdQuery>();
-            var fakeOdsQuery = A.Fake<IGetOdsInstanceIdsByApiClientIdQuery>();
+            var fakeOdsQuery = A.Fake<IGetDataStoreIdsByApiClientIdQuery>();
             int appId = 42;
             A.CallTo(() => fakeQuery.Execute(appId)).Throws(new System.Exception("Query failed"));
 

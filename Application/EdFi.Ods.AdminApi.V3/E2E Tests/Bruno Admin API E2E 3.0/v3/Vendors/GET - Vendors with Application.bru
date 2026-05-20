@@ -47,16 +47,16 @@ script:pre-request {
   try {
     let offsetVar = bru.getEnvVar("offset");
     let limitVar = bru.getEnvVar("limit");
-    const odsResponse = await axios.get(`${API_URL}/v3/odsInstances?offset=${offsetVar}&limit=${limitVar}&direction=Ascending`, axiosConfig);
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=${offsetVar}&limit=${limitVar}&direction=Ascending`, axiosConfig);
 
     if (odsResponse.status === 200) {
-      console.log("✅ OdsInstance List loaded");
-      bru.setVar("ODSInstanceId", odsResponse.data[0].id);
+      console.log("✅ DataStore List loaded");
+      bru.setVar("dataStoreId", odsResponse.data[0].id);
     } else {
-      console.log("❌ Failed to get odsInstances");
+      console.log("❌ Failed to get DataStores");
       console.log("Status:", odsResponse.status);
       console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
-      throw new Error(`Failed to get odsInstances - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+      throw new Error(`Failed to get DataStores - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     } 
 
     const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
@@ -90,7 +90,7 @@ script:pre-request {
           "claimSetName": "Ed-Fi Sandbox",
           "profileIds": [],
           "educationOrganizationIds": [983438],
-          "odsInstanceIds": [bru.getVar("ODSInstanceId")]
+          "dataStoreIds": [bru.getVar("dataStoreId")]
     }, axiosConfig);
 
     if (applicationResponse.status === 201) {
@@ -120,7 +120,7 @@ script:post-response {
       expect(result[0].claimSetName).to.equal("Ed-Fi Sandbox");
       expect(result[0].educationOrganizationIds.length).to.equal(1);
       expect(result[0].profileIds.length).to.equal(0);
-      expect(result[0].odsInstanceIds.length).to.equal(1);
+      expect(result[0].dataStoreIds.length).to.equal(1);
   });
   
   const Ajv = require('ajv');
@@ -155,7 +155,7 @@ script:post-response {
             "type": "array",
             "items": {}
           },
-          "odsInstanceIds": {
+          "dataStoreIds": {
             "type": "array",
             "items": {}
           }
@@ -167,7 +167,7 @@ script:post-response {
           "educationOrganizationIds",
           "vendorId",
           "profileIds",
-          "odsInstanceIds"
+          "dataStoreIds"
         ]
       }
     ]

@@ -35,7 +35,7 @@ public class DeleteOdsInstanceContextTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteOdsInstanceContextCommand = new DeleteOdsInstanceContextCommand(usersContext);
+            var deleteOdsInstanceContextCommand = new DeleteDataStoreContextCommand(usersContext);
             deleteOdsInstanceContextCommand.Execute(odsInstanceContextId);
         });
 

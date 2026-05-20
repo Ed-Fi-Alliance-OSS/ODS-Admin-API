@@ -1,0 +1,50 @@
+meta {
+  name: DataStores
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v3/dataStores/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "Test-DataStore-{{DataStoreGUID}}",
+      "dataStoreType": "DataStore",
+      "connectionString": "{{connectionString}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("DataStoreGUID", bru.interpolate('{{$guid}}'));
+  
+}
+
+script:post-response {
+  test("POST DataStores: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST DataStores: Response includes location in header", function () {
+      expect(res.getHeaders()).to.have.property("location");
+      const location = res.getHeader("location");
+      const id = location.split("/").pop();
+      if(id)
+      {
+          bru.setVar("CreatedDataStoreId", id);
+      }
+  });
+
+    test("POST DataStores: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
+  
+}
+
+settings {
+  encodeUrl: true
+}

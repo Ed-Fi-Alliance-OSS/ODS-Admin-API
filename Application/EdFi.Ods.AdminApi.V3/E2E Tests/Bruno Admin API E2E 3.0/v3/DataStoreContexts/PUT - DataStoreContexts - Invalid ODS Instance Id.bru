@@ -1,0 +1,44 @@
+meta {
+  name: DataStoreContexts - Invalid DataStore Id
+  type: http
+  seq: 18
+}
+
+put {
+  url: {{API_URL}}/v3/dataStoreContexts/{{CreatedDataStoreContextId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": 0,
+    "contextKey": "ckey",
+    "contextValue": "cvalue"
+  }
+}
+
+script:post-response {
+  test("PUT DataStoreContexts Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT DataStoreContexts Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT DataStoreContexts Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT DataStoreContexts Invalid: Invalid DataStoreId", function () {
+     expect(response.errors.DataStoreId[0]).to.contain("valid DataStore id");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

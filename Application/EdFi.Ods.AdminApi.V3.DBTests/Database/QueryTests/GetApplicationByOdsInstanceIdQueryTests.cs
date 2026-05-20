@@ -66,8 +66,8 @@ public class GetApplicationByOdsInstanceIdQueryTests : PlatformUsersContextTestB
 
         Transaction(usersContext =>
         {
-            var getApplicationsByOdsInstanceIdQuery = new GetApplicationsByOdsInstanceIdQuery(usersContext);
-            var results = getApplicationsByOdsInstanceIdQuery.Execute(odsInstance.OdsInstanceId);
+            var GetApplicationsByDataStoreIdQuery = new GetApplicationsByDataStoreIdQuery(usersContext);
+            var results = GetApplicationsByDataStoreIdQuery.Execute(odsInstance.OdsInstanceId);
             results.Single().ApplicationName.ShouldBe("test application");
             results.Single().ClaimSetName.ShouldBe("test claim set");
         });
@@ -127,8 +127,8 @@ public class GetApplicationByOdsInstanceIdQueryTests : PlatformUsersContextTestB
 
         Transaction(usersContext =>
         {
-            var getApplicationsByOdsInstanceIdQuery = new GetApplicationsByOdsInstanceIdQuery(usersContext);
-            var results = getApplicationsByOdsInstanceIdQuery.Execute(odsInstance.OdsInstanceId);
+            var GetApplicationsByDataStoreIdQuery = new GetApplicationsByDataStoreIdQuery(usersContext);
+            var results = GetApplicationsByDataStoreIdQuery.Execute(odsInstance.OdsInstanceId);
             results.Single().ApplicationEducationOrganizations.Single().ApplicationEducationOrganizationId.ShouldBe(organizationId);
         });
     }
@@ -187,8 +187,8 @@ public class GetApplicationByOdsInstanceIdQueryTests : PlatformUsersContextTestB
 
         Transaction(usersContext =>
         {
-            var getApplicationsByOdsInstanceIdQuery = new GetApplicationsByOdsInstanceIdQuery(usersContext);
-            var results = getApplicationsByOdsInstanceIdQuery.Execute(odsInstance.OdsInstanceId);
+            var GetApplicationsByDataStoreIdQuery = new GetApplicationsByDataStoreIdQuery(usersContext);
+            var results = GetApplicationsByDataStoreIdQuery.Execute(odsInstance.OdsInstanceId);
             results.Single().Profiles.Single().ProfileId.ShouldBe(profileId);
         });
     }
@@ -198,10 +198,10 @@ public class GetApplicationByOdsInstanceIdQueryTests : PlatformUsersContextTestB
     {
         Transaction(usersContext =>
         {
-            var getApplicationsByOdsInstanceIdQuery = new GetApplicationsByOdsInstanceIdQuery(usersContext);
+            var GetApplicationsByDataStoreIdQuery = new GetApplicationsByDataStoreIdQuery(usersContext);
             Should.Throw<NotFoundException<int>>(() =>
             {
-                getApplicationsByOdsInstanceIdQuery.Execute(int.MaxValue);
+                GetApplicationsByDataStoreIdQuery.Execute(int.MaxValue);
             });
         });
     }

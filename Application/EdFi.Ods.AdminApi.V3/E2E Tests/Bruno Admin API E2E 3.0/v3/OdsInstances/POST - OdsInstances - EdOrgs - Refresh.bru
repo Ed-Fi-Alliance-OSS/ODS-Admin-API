@@ -1,33 +1,33 @@
 meta {
-  name: OdsInstances Refresh Education Organizations
+  name: DataStore Refresh Education Organizations
   type: http
   seq: 24
 }
 
 post {
-  url: {{API_URL}}/v3/odsInstances/edOrgs/refresh
+  url: {{API_URL}}/v3/dataStore/edOrgs/refresh
   body: none
   auth: inherit
 }
 
 script:post-response {
-  test("POST OdsInstances EdOrgs Refresh: Status code is Created", function () {
+  test("POST DataStore EdOrgs Refresh: Status code is Created", function () {
       expect(res.getStatus()).to.equal(201);
   });
 
-  test("POST OdsInstances EdOrgs Refresh: Response has jobId", function () {
+  test("POST DataStore EdOrgs Refresh: Response has jobId", function () {
       const body = res.getBody();
       expect(body).to.have.property("jobId");
       expect(body.jobId).to.be.a("string");
   });
 
-  test("POST OdsInstances EdOrgs Refresh: Response has status Pending", function () {
+  test("POST DataStore EdOrgs Refresh: Response has status Pending", function () {
       const body = res.getBody();
       expect(body).to.have.property("status");
       expect(body.status).to.equal("Pending");
   });
 
-  test("POST OdsInstances EdOrgs Refresh: Response has createdAt", function () {
+  test("POST DataStore EdOrgs Refresh: Response has createdAt", function () {
       const body = res.getBody();
       expect(body).to.have.property("createdAt");
   });

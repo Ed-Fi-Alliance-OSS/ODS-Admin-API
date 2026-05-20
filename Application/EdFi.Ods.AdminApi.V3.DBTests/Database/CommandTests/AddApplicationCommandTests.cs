@@ -88,7 +88,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
                 ProfileIds = null,
                 VendorId = vendor.VendorId,
                 EducationOrganizationIds = new List<long> { 12345, 67890, 5000000005 },
-                OdsInstanceIds = new List<int> { odsInstance.OdsInstanceId },
+                DataStoreIds = new List<int> { odsInstance.OdsInstanceId },
             };
 
             result = command.Execute(newApplication, _options);
@@ -154,7 +154,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
                 ProfileIds = new List<int>() { profile.ProfileId },
                 VendorId = vendor.VendorId,
                 EducationOrganizationIds = new List<long> { 12345, 67890, 5000000005 },
-                OdsInstanceIds = new List<int> { odsInstance.OdsInstanceId },
+                DataStoreIds = new List<int> { odsInstance.OdsInstanceId },
             };
 
             result = command.Execute(newApplication, _options);
@@ -241,7 +241,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
                 ProfileIds = [],
                 VendorId = vendor.VendorId,
                 EducationOrganizationIds = new List<long> { 12345, 67890, 5000000005 },
-                OdsInstanceIds = new List<int> { odsInstance.OdsInstanceId }
+                DataStoreIds = new List<int> { odsInstance.OdsInstanceId }
             };
 
             result = command.Execute(newApplication, options);
@@ -257,7 +257,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
                 ProfileIds = [],
                 VendorId = vendor.VendorId,
                 EducationOrganizationIds = new List<long> { 12345, 67890, 5000000005 },
-                OdsInstanceIds = new List<int> { odsInstance.OdsInstanceId }
+                DataStoreIds = new List<int> { odsInstance.OdsInstanceId }
             };
 
             Assert.Throws<AdminApiException>(() => command.Execute(newApplication, options));
@@ -376,7 +376,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
         public string ClaimSetName { get; set; }
         public IEnumerable<int> ProfileIds { get; set; }
         public IEnumerable<long> EducationOrganizationIds { get; set; }
-        public IEnumerable<int> OdsInstanceIds { get; set; }
+        public IEnumerable<int> DataStoreIds { get; set; }
         public bool? Enabled { get; set; }
     }
 }

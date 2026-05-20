@@ -1,5 +1,5 @@
 meta {
-  name: ApiClients - Invalid No Ods Instances
+  name: ApiClients - Invalid No DataStores
   type: http
   seq: 5
 }
@@ -19,7 +19,7 @@ body:json {
     "name": "",
     "isApproved": true,
     "applicationId": {{CreatedApplicationId}},
-    "odsInstanceIds": [ ]
+    "dataStoreIds": [ ]
   }
 }
 
@@ -40,7 +40,7 @@ script:post-response {
   });
   
   test("POST ApiClients Invalid: Response errors include messages by property", function () {
-      expect(response.errors["OdsInstanceIds"].length).to.equal(1);
+      expect(response.errors["DataStoreIds"].length).to.equal(1);
   });
   
 }

@@ -1,0 +1,22 @@
+meta {
+  name: DataStores
+  type: http
+  seq: 21
+}
+
+delete {
+  url: {{API_URL}}/v3/dataStores/{{CreatedDataStoreId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE DataStores: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}
