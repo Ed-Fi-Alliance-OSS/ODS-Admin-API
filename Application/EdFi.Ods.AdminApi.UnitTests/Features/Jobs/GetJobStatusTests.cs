@@ -6,13 +6,13 @@
 using System;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
-using EdFi.Ods.AdminApi.Features.OdsInstances;
+using EdFi.Ods.AdminApi.Features.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
 
-namespace EdFi.Ods.AdminApi.UnitTests.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.UnitTests.Features.Jobs;
 
 [TestFixture]
 public class GetJobStatusTests
@@ -58,7 +58,7 @@ public class GetJobStatusTests
     }
 
     [Test]
-    public async Task Handle_ReturnsNotFound_WhenJobDoesNotExist()
+    public async Task Handle_Returns404NotFound_WhenJobDoesNotExist()
     {
         // Arrange
         var jobId = "nonexistent-job-id";
@@ -70,9 +70,22 @@ public class GetJobStatusTests
 
         // Assert
         result.ShouldNotBeNull();
-        // Verify it's a NotFound result (not Ok)
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
-        okResult.ShouldBeNull("Expected NotFound result, not Ok");
+        var statusCodeResult = result as Microsoft.AspNetCore.Http.IStatusCodeHttpResult;
+        statusCodeResult.ShouldNotBeNull("Expected an IStatusCodeHttpResult");
+        statusCodeResult.StatusCode.ShouldBe(404);
+    }
+
+    [Test]
+    public async Task Handle_Returns500_WhenServiceThrowsException()
+    {
+        // Arrange
+        var jobId = "job-causing-error";
+        A.CallTo(() => _jobStatusService.GetStatusAsync(jobId))
+            .Throws(new InvalidOperationException("Unexpected database error"));
+
+        // Act & Assert
+        await Should.ThrowAsync<InvalidOperationException>(
+            () => GetJobStatus.Handle(jobId, _jobStatusService));
     }
 
     [Test]

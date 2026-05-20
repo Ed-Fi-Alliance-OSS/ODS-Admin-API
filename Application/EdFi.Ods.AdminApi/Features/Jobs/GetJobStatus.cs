@@ -6,9 +6,9 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 
-namespace EdFi.Ods.AdminApi.V3.Features.OdsInstances;
+namespace EdFi.Ods.AdminApi.Features.Jobs;
 
 public class GetJobStatus : IFeature
 {
@@ -33,7 +33,7 @@ public class GetJobStatus : IFeature
                 .WithResponseCode(200)
                 .WithResponse<Response>(200)
                 .WithResponseCode(404))
-            .BuildForVersions(AdminApiVersions.V3);
+            .BuildForVersions(AdminApiVersions.V2);
     }
 
     internal static async Task<IResult> Handle(string jobId, IJobStatusService jobStatusService)

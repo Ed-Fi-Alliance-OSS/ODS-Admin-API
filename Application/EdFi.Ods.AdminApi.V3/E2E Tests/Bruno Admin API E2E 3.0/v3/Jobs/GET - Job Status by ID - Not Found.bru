@@ -1,0 +1,31 @@
+meta {
+  name: Get Job Status by ID - Not Found
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{API_URL}}/v3/jobs/nonexistent-job-id-00000000
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Job Status Not Found: Status code is Not Found", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  test("GET Job Status Not Found: Response has message field", function () {
+    const body = res.getBody();
+    expect(body).to.have.property("message");
+  });
+
+  test("GET Job Status Not Found: Response message indicates job not found", function () {
+    const body = res.getBody();
+    expect(body.message).to.contain("not found");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

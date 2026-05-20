@@ -1,0 +1,65 @@
+meta {
+  name: Get Job Status by ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v3/jobs/{{JobId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET Job Status: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  const body = res.getBody();
+
+  test("GET Job Status: Response has jobId", function () {
+    expect(body).to.have.property("jobId");
+    expect(body.jobId).to.be.a("string");
+  });
+
+  test("GET Job Status: Response has status", function () {
+    expect(body).to.have.property("status");
+    expect(body.status).to.be.a("string");
+  });
+
+  test("GET Job Status: Response has createdAt", function () {
+    expect(body).to.have.property("createdAt");
+  });
+
+  test("GET Job Status: Response has finishedAt field", function () {
+    expect(body).to.have.property("finishedAt");
+  });
+
+  test("GET Job Status: Response has errorMessage field", function () {
+    expect(body).to.have.property("errorMessage");
+  });
+
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const schema = {
+    "type": "object",
+    "properties": {
+      "jobId":        { "type": "string" },
+      "status":       { "type": "string" },
+      "createdAt":    { "type": "string" },
+      "finishedAt":   { "type": ["string", "null"] },
+      "errorMessage": { "type": ["string", "null"] }
+    },
+    "required": ["jobId", "status", "createdAt"]
+  };
+
+  test("GET Job Status: Response matches schema", function () {
+    const valid = ajv.validate(schema, body);
+    if (!valid) console.log("Schema validation errors:", ajv.errors);
+    expect(valid).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+}
