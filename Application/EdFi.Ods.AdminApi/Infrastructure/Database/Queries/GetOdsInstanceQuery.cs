@@ -37,7 +37,7 @@ public class GetOdsInstanceQuery(
 
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
             OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-                new List<OdsInstance> { odsInstance }, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
+                new List<OdsInstance> { odsInstance }, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
 
         return odsInstance;
     }

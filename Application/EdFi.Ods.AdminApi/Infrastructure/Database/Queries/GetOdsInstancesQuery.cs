@@ -50,7 +50,7 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
     {
         var instances = _usersContext.OdsInstances.OrderBy(odsInstance => odsInstance.Name).ToList();
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
 
         return instances;
     }
@@ -68,7 +68,7 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
             .ToList();
 
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey);
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
 
         return instances;
     }

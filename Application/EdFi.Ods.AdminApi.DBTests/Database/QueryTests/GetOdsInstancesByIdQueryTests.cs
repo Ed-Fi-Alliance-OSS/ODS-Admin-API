@@ -22,7 +22,7 @@ public class GetOdsInstanceByIdQueryTests : PlatformUsersContextTestBase
     private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
 
     private static IOptions<AppSettings> OptionsWithKey(string? key = null) =>
-        Options.Create(new AppSettings { EncryptionKey = key });
+        Options.Create(new AppSettings { EncryptionKey = key, DatabaseEngine = "SqlServer" });
 
     [Test]
     public void ShouldGetInstanceById()
@@ -82,6 +82,29 @@ public class GetOdsInstanceByIdQueryTests : PlatformUsersContextTestBase
             var result = command.Execute(odsInstance.OdsInstanceId);
 
             result.ConnectionString.ShouldBe(encrypted);
+        });
+    }
+
+    [Test]
+    public void ShouldNotEncryptConnectionStringThatIsInvalidForTheEngine()
+    {
+        Transaction(usersContext =>
+        {
+            // A PostgreSQL-format connection string is invalid for the SqlServer engine
+            var invalidForSqlServer = "Host=localhost;Port=5432;Database=EdFi_Ods;Username=postgres;Password=test";
+            var odsInstance = new OdsInstance
+            {
+                InstanceType = "test type",
+                Name = "test skip invalid engine",
+                ConnectionString = invalidForSqlServer
+            };
+            Save(odsInstance);
+
+            var command = new GetOdsInstanceQuery(usersContext, EncryptionProvider, OptionsWithKey(TestEncryptionKey));
+            var result = command.Execute(odsInstance.OdsInstanceId);
+
+            result.ConnectionString.ShouldBe(invalidForSqlServer);
+            EncryptionProvider.IsEncrypted(result.ConnectionString).ShouldBeFalse();
         });
     }
 }

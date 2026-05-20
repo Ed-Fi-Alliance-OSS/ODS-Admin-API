@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Helpers;
@@ -15,7 +16,8 @@ public static class OdsInstanceEncryptionHelper
         List<OdsInstance> instances,
         IUsersContext usersContext,
         ISymmetricStringEncryptionProvider encryptionProvider,
-        string encryptionKey)
+        string encryptionKey,
+        string databaseEngine)
     {
         byte[] key = Convert.FromBase64String(encryptionKey);
         bool anyUpdated = false;
@@ -26,6 +28,9 @@ public static class OdsInstanceEncryptionHelper
                 continue;
 
             if (encryptionProvider.IsEncrypted(instance.ConnectionString))
+                continue;
+
+            if (!ConnectionStringHelper.ValidateConnectionString(databaseEngine, instance.ConnectionString))
                 continue;
 
             instance.ConnectionString = encryptionProvider.Encrypt(instance.ConnectionString, key);
