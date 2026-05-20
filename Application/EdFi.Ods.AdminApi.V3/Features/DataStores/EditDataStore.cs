@@ -37,6 +37,7 @@ public class EditDataStore : IFeature
         EditDataStoreRequest request,
         int id)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
 

@@ -48,6 +48,8 @@ public class EditResourceClaimActions : IFeature
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         EditResourceClaimOnClaimSetRequest request, int claimSetId, int resourceClaimId)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(claimSetId, request.ClaimSetId, nameof(request.ClaimSetId));
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(resourceClaimId, request.ResourceClaimId, nameof(request.ResourceClaimId));
         request.ClaimSetId = claimSetId;
         request.ResourceClaimId = resourceClaimId;
         await validator.GuardAsync(request);

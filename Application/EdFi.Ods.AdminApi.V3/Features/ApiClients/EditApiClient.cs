@@ -28,6 +28,7 @@ public class EditApiClient : IFeature
     public static async Task<IResult> Handle(IEditApiClientCommand editApiClientCommand,
         Validator validator, IUsersContext db, EditApiClientRequest request, int id)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);

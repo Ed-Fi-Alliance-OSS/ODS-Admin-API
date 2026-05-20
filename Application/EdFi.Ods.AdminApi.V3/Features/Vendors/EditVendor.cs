@@ -27,6 +27,7 @@ public class EditVendor : IFeature
     public static async Task<IResult> Handle(EditVendorCommand editVendorCommand,
                        Validator validator, EditVendorRequest request, int id)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
         editVendorCommand.Execute(request);

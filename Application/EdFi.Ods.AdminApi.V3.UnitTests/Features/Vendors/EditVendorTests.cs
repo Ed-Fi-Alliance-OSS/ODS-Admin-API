@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Features.Vendors;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -48,6 +49,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
             var validator = new EditVendor.Validator();
             var request = new EditVendor.EditVendorRequest
             {
+                Id = vendor.VendorId,
                 Company = "Updated Vendor",
                 NamespacePrefixes = "https://new.org/ns",
                 ContactName = "Updated Contact",
@@ -93,6 +95,31 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
         }
 
         [Test]
+        public void Handle_WithMismatchedBodyId_ThrowsValidationException()
+        {
+            var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+                .UseInMemoryDatabase(databaseName: $"EditVendor_{Guid.NewGuid()}")
+                .Options;
+            using var usersContext = new SqlServerUsersContext(contextOptions);
+
+            var command = new EditVendorCommand(usersContext);
+            var validator = new EditVendor.Validator();
+            var request = new EditVendor.EditVendorRequest
+            {
+                Id = 999,
+                Company = "Updated Vendor",
+                NamespacePrefixes = "https://new.org/ns",
+                ContactName = "Updated Contact",
+                ContactEmailAddress = "updated@acme.org"
+            };
+
+            var exception = Should.Throw<ValidationException>(() => EditVendor.Handle(command, validator, request, 1).GetAwaiter().GetResult());
+
+            exception.Errors.Single(x => x.PropertyName == nameof(request.Id)).ErrorMessage
+                .ShouldBe(ErrorMessagesConstants.RequestBodyIdMismatch);
+        }
+
+        [Test]
         public void Handle_WithUnknownVendorId_ThrowsNotFoundException()
         {
             var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
@@ -104,6 +131,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
             var validator = new EditVendor.Validator();
             var request = new EditVendor.EditVendorRequest
             {
+                Id = 999,
                 Company = "Updated Vendor",
                 NamespacePrefixes = "https://new.org/ns",
                 ContactName = "Updated Contact",

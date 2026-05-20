@@ -29,6 +29,7 @@ public class EditApplication : IFeature
     public static async Task<IResult> Handle(IEditApplicationCommand editApplicationCommand,
         Validator validator, IUsersContext db, EditApplicationRequest request, int id)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);

@@ -26,6 +26,7 @@ public class EditDataStoreContext : IFeature
 
     public static async Task<IResult> Handle(Validator validator, IEditDataStoreContextCommand editDataStoreContextCommand, EditDataStoreContextRequest request, int id)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
         editDataStoreContextCommand.Execute(request);
