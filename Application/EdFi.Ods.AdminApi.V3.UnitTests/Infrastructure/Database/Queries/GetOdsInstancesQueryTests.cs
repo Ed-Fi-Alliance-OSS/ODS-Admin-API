@@ -23,7 +23,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Queries;
 public class GetOdsInstancesQueryTests
 {
     private static readonly string TestEncryptionKey = Convert.ToBase64String(new byte[32]);
-    private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
+    private const string PlainConnectionString = "Host=localhost;Port=5432;Database=EdFi_Ods;Username=postgres;Password=pass";
 
     private readonly Aes256SymmetricStringEncryptionProvider _provider = new();
 
