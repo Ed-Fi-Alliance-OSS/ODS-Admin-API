@@ -6,6 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -74,18 +75,13 @@ public class GetJobStatusTests
         A.CallTo(() => _jobStatusService.GetStatusAsync(jobId, A<string?>.Ignored))
             .Returns((JobStatus?)null);
 
-        // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
-
-        // Assert
-        result.ShouldNotBeNull();
-        var statusCodeResult = result as Microsoft.AspNetCore.Http.IStatusCodeHttpResult;
-        statusCodeResult.ShouldNotBeNull("Expected an IStatusCodeHttpResult");
-        statusCodeResult.StatusCode.ShouldBe(404);
+        // Act & Assert
+        await Should.ThrowAsync<NotFoundException<string>>(
+            () => GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options));
     }
 
     [Test]
-    public async Task Handle_Returns500_WhenServiceThrowsException()
+    public async Task Handle_ThrowsException_WhenServiceThrowsException()
     {
         // Arrange
         var jobId = "job-causing-error";

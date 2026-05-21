@@ -15,14 +15,14 @@ script:post-response {
     expect(res.getStatus()).to.equal(404);
   });
 
-  test("GET Job Status Not Found: Response has message field", function () {
+  test("GET Job Status Not Found: Response has title field", function () {
     const body = res.getBody();
-    expect(body).to.have.property("message");
+    expect(body).to.have.property("title");
   });
 
-  test("GET Job Status Not Found: Response message indicates job not found", function () {
+  test("GET Job Status Not Found: Response title indicates job not found", function () {
     const body = res.getBody();
-    expect(body.message).to.contain("not found");
+    expect(body.title.toLowerCase()).to.contain("not found");
   });
 }
 

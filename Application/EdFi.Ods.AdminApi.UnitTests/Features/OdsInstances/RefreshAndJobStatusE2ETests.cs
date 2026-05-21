@@ -166,7 +166,7 @@ public class RefreshAndJobStatusE2ETests
     /// Test Scenario 3: V3 API returns correct version in Location header
     /// 
     /// Flow:
-    /// 1. POST /v3/odsInstances/edOrgs/refresh → 201 Created
+    /// 1. POST /v3/dataStores/edOrgs/refresh → 201 Created
     /// 2. Verify Location header uses /v3/jobs/{jobId} (not /v2)
     /// 3. GET /v3/jobs/{jobId} → 200 OK
     /// 4. Verify response matches expected structure
@@ -175,7 +175,7 @@ public class RefreshAndJobStatusE2ETests
     public async Task RefreshAllEdOrgs_V3_ReturnsCorrectVersionInLocationHeader()
     {
         // Step 1: Trigger refresh using V3 endpoint
-        var refreshResponse = await _httpClient.PostAsync("/v3/odsInstances/edOrgs/refresh", null);
+        var refreshResponse = await _httpClient.PostAsync("/v3/dataStores/edOrgs/refresh", null);
         
         // Verify 201 Created
         refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
@@ -201,7 +201,7 @@ public class RefreshAndJobStatusE2ETests
 
     /// <summary>
     /// Test Scenario 4: V3 instance-specific refresh endpoint
-    /// 
+    ///
     /// Verifies that V3 endpoints work correctly for instance-specific refresh
     /// </summary>
     [Test]
@@ -210,7 +210,7 @@ public class RefreshAndJobStatusE2ETests
         var instanceId = 1;
         
         // Step 1: Trigger refresh using V3 endpoint
-        var refreshResponse = await _httpClient.PostAsync($"/v3/odsInstances/{instanceId}/edOrgs/refresh", null);
+        var refreshResponse = await _httpClient.PostAsync($"/v3/dataStores/{instanceId}/edOrgs/refresh", null);
         
         // Verify 201 Created
         refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);

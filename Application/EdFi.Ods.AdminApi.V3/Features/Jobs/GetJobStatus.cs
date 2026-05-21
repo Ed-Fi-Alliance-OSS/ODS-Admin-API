@@ -6,6 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -47,15 +48,22 @@ public class GetJobStatus : IFeature
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         [FromServices] IOptions<AppSettings> options)
     {
-        var tenantName = options.Value.MultiTenancy
-            ? tenantConfigurationProvider.Get()?.TenantIdentifier
-            : null;
+        string? tenantName = null;
+        if (options.Value.MultiTenancy)
+        {
+            var tenantConfig = tenantConfigurationProvider.Get();
+            if (tenantConfig is null)
+            {
+                return Results.Problem("Tenant identifier is required when multi-tenancy is enabled.", statusCode: 400);
+            }
+            tenantName = tenantConfig.TenantIdentifier;
+        }
 
         var jobStatus = await jobStatusService.GetStatusAsync(jobId, tenantName);
 
         if (jobStatus is null)
         {
-            return Results.NotFound(new { message = "Job not found" });
+            throw new NotFoundException<string>("Job", jobId);
         }
 
         var response = new Response

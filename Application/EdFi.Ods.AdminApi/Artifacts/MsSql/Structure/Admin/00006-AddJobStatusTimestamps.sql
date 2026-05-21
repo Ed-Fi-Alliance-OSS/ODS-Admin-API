@@ -12,6 +12,17 @@ IF NOT EXISTS (
 )
 BEGIN
     ALTER TABLE [adminapi].[JobStatuses]
-    ADD [CreatedAt] DATETIME2 NOT NULL DEFAULT (GETUTCDATE()),
-        [FinishedAt] DATETIME2 NULL;
+    ADD [CreatedAt] DATETIME2 NOT NULL DEFAULT (GETUTCDATE());
+END
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = 'adminapi'
+      AND TABLE_NAME = 'JobStatuses'
+      AND COLUMN_NAME = 'FinishedAt'
+)
+BEGIN
+    ALTER TABLE [adminapi].[JobStatuses]
+    ADD [FinishedAt] DATETIME2 NULL;
 END

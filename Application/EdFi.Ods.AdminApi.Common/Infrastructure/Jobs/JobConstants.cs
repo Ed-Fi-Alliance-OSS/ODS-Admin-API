@@ -16,4 +16,5 @@ public class JobConstants
     public const string DeleteInstanceJobName = "DeleteInstanceJob";
     public const string DeletePendingDbInstancesDispatcherJobName = "DeletePendingDbInstancesDispatcherJob";
     public const string RefreshEducationOrganizationsJobName = "RefreshEducationOrganizationsJob";
+    public const string RunIdKey = "RunId";
 }

@@ -49,9 +49,13 @@ public class RefreshEducationOrganizations : IFeature
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
+        var jobName = $"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}";
+        var jobId = $"{jobName}_{Guid.NewGuid():N}";
+
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
-            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .WithIdentity(jobName)
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
+            .UsingJobData(JobConstants.RunIdKey, jobId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -61,7 +65,6 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var jobId = $"{job.Key.Name}_{scheduler.SchedulerInstanceId}";
         await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
 
         var createdAt = DateTime.UtcNow;
@@ -69,7 +72,8 @@ public class RefreshEducationOrganizations : IFeature
         {
             jobId,
             status = QuartzJobStatus.Pending.ToString(),
-            createdAt
+            createdAt,
+            message = "Education organizations refresh has been queued for all instances"
         };
         var locationUri = $"/v3/jobs/{jobId}";
 
@@ -92,10 +96,14 @@ public class RefreshEducationOrganizations : IFeature
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
+        var jobName = $"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}";
+        var jobId = $"{jobName}_{Guid.NewGuid():N}";
+
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
-            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .WithIdentity(jobName)
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
             .UsingJobData(JobConstants.OdsInstanceIdKey, instanceId)
+            .UsingJobData(JobConstants.RunIdKey, jobId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -105,7 +113,6 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var jobId = $"{job.Key.Name}_{scheduler.SchedulerInstanceId}";
         await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
 
         var createdAt = DateTime.UtcNow;
@@ -113,7 +120,8 @@ public class RefreshEducationOrganizations : IFeature
         {
             jobId,
             status = QuartzJobStatus.Pending.ToString(),
-            createdAt
+            createdAt,
+            message = "Education organizations refresh has been queued for the specified instance"
         };
         var locationUri = $"/v3/jobs/{jobId}";
 
