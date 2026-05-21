@@ -18,9 +18,9 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
 public interface IGetEducationOrganizationsQuery
 {
-    Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync();
+    Task<List<DataStoreWithEducationOrganizationsModel>> ExecuteAsync();
 
-    Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync(CommonQueryParams commonQueryParams, int? instanceId);
+    Task<List<DataStoreWithEducationOrganizationsModel>> ExecuteAsync(CommonQueryParams commonQueryParams, int? dataStoreId);
 }
 
 public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
@@ -58,7 +58,7 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
         };
     }
 
-    public async Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync()
+    public async Task<List<DataStoreWithEducationOrganizationsModel>> ExecuteAsync()
     {
         var educationOrganizations = await _adminApiDbContext.EducationOrganizations
             .OrderBy(e => e.InstanceId)
@@ -68,15 +68,15 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
         return GroupEducationOrganizationsByInstance(educationOrganizations);
     }
 
-    public async Task<List<OdsInstanceWithEducationOrganizationsModel>> ExecuteAsync(
+    public async Task<List<DataStoreWithEducationOrganizationsModel>> ExecuteAsync(
         CommonQueryParams commonQueryParams,
-        int? instanceId)
+        int? dataStoreId)
     {
         Expression<Func<EducationOrganization, object>> columnToOrderBy =
             _orderByColumns.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
         var educationOrganizations = await _adminApiDbContext.EducationOrganizations
-            .Where(e => instanceId == null || e.InstanceId == instanceId)
+            .Where(e => dataStoreId == null || e.InstanceId == dataStoreId)
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToListAsync();
@@ -84,16 +84,16 @@ public class GetEducationOrganizationsQuery : IGetEducationOrganizationsQuery
         return GroupEducationOrganizationsByInstance(educationOrganizations);
     }
 
-    private List<OdsInstanceWithEducationOrganizationsModel> GroupEducationOrganizationsByInstance(
+    private List<DataStoreWithEducationOrganizationsModel> GroupEducationOrganizationsByInstance(
         List<EducationOrganization> educationOrganizations)
     {
         return educationOrganizations
             .GroupBy(e => new { e.InstanceId, e.InstanceName })
-            .Select(group => new OdsInstanceWithEducationOrganizationsModel
+            .Select(group => new DataStoreWithEducationOrganizationsModel
             {
                 Id = group.Key.InstanceId,
                 Name = group.Key.InstanceName ?? string.Empty,
-                InstanceType = null,
+                DataStoreType = null,
                 EducationOrganizations = EducationOrganizationMapper.ToModelList(group.ToList())
             })
             .OrderBy(i => i.Id)

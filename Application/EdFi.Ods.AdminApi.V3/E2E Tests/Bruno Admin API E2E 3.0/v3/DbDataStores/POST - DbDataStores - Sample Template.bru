@@ -1,0 +1,51 @@
+meta {
+  name: DbDataStores - Sample Template
+  type: http
+  seq: 4
+}
+
+script:pre-request {
+  const SampleDbDataStoreName = `Test DB Instance Sample ${Date.now()}`;
+  bru.setVar("SampleDbDataStoreName", SampleDbDataStoreName);
+  console.log(`Using unique Sample DbDataStore name: ${SampleDbDataStoreName}`);
+}
+
+post {
+  url: {{API_URL}}/v3/dbDataStores
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "{{SampleDbDataStoreName}}",
+    "databaseTemplate": "Sample"
+  }
+}
+
+script:post-response {
+  const expectedStatus = 202;
+  const responseStatus = res.getStatus();
+
+  if (responseStatus !== expectedStatus) {
+    console.log("❌ POST DbDataStores Sample request failed");
+    console.log("Status:", responseStatus);
+    console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
+  }
+
+  test("POST DbDataStores Sample: Status code is Accepted", function () {
+    expect(responseStatus).to.equal(expectedStatus);
+  });
+
+  test("POST DbDataStores Sample: Response includes location in header", function () {
+    expect(res.getHeaders()).to.have.property("location");
+    const id = res.getHeader("location").split("/").pop();
+    if (id) {
+      bru.setVar("CreatedDbDataStoreIdSample", id);
+    }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -17,7 +17,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.DbInstances;
+using EdFi.Ods.AdminApi.V3.Features.DbDataStores;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
@@ -152,7 +152,7 @@ public class CreateInstanceJobTests
     [TestCase("EdFi Ods", "Minimal", "EdFi_Ods_Minimal")]
     public void BuildDatabaseName_UsesCanonicalFormat(string name, string databaseTemplate, string expectedDatabaseName)
     {
-        DbInstanceDatabaseNameFormatter.Build(name, databaseTemplate).ShouldBe(expectedDatabaseName);
+        DbDataStoreDatabaseNameFormatter.Build(name, databaseTemplate).ShouldBe(expectedDatabaseName);
     }
 
     [Test]

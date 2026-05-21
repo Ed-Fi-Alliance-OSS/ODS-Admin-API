@@ -100,7 +100,7 @@ services:
       IpRateLimiting__IpWhitelist: ${IPRATELIMITING__IPWHITELIST:-[]}
       IpRateLimiting__EndpointWhitelist: ${IPRATELIMITING__ENDPOINTWHITELIST:-[]}
       Log4NetCore__Log4NetConfigFileName: "./log4net.config"
-      
+
     depends_on:
       - db-admin
     restart: always

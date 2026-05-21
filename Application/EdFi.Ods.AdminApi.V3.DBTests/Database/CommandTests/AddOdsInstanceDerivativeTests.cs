@@ -30,10 +30,12 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         Save(odsInstance);
 
         var derivativeType = "ReadReplica";
+        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
 
         var newOdsInstanceDerivative = new Mock<IAddDataStoreDerivativeModel>();
         newOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(derivativeType);
+        newOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(connectionString);
 
         var id = 0;
         Transaction(usersContext =>
@@ -66,9 +68,11 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         Save(odsInstance);
 
         var derivativeType = "ReadReplica";
+        var connectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
         var newOdsInstanceDerivative = new Mock<IAddDataStoreDerivativeModel>();
         newOdsInstanceDerivative.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative.Setup(x => x.DerivativeType).Returns(derivativeType);
+        newOdsInstanceDerivative.Setup(x => x.ConnectionString).Returns(connectionString);
         var id = 0;
         Transaction(usersContext =>
         {
@@ -81,6 +85,7 @@ public class AddOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         var newOdsInstanceDerivative2 = new Mock<IAddDataStoreDerivativeModel>();
         newOdsInstanceDerivative2.Setup(x => x.DataStoreId).Returns(odsInstance.OdsInstanceId);
         newOdsInstanceDerivative2.Setup(x => x.DerivativeType).Returns(newDerivativeType);
+        newOdsInstanceDerivative2.Setup(x => x.ConnectionString).Returns(connectionString);
         var newId = 0;
         Assert.Throws<DbUpdateException>(() =>
         {
