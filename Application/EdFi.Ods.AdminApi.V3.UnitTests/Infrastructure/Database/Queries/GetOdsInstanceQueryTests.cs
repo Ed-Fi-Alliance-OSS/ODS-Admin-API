@@ -17,7 +17,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Queries;
 
 [TestFixture]
-public class GetOdsInstanceQueryTests
+public class GetDataStoreQueryTests
 {
     private static readonly string TestEncryptionKey = Convert.ToBase64String(new byte[32]);
     private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
@@ -26,7 +26,7 @@ public class GetOdsInstanceQueryTests
 
     private static SqlServerUsersContext CreateContext(string? dbName = null) =>
         new(new DbContextOptionsBuilder<SqlServerUsersContext>()
-            .UseInMemoryDatabase(databaseName: dbName ?? $"V3_GetOdsInstanceQuery_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: dbName ?? $"V3_GetDataStoreQuery_{Guid.NewGuid()}")
             .Options);
 
     private static IOptions<AppSettings> OptionsWithKey(string? key = null) =>
@@ -40,7 +40,7 @@ public class GetOdsInstanceQueryTests
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
-        var query = new GetOdsInstanceQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
+        var query = new GetDataStoreQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
         var result = query.Execute(odsInstance.OdsInstanceId);
 
         result.ConnectionString.ShouldNotBe(PlainConnectionString);
@@ -50,13 +50,13 @@ public class GetOdsInstanceQueryTests
     [Test]
     public void Execute_WithUnencryptedConnectionString_PersistsEncryptedValueToDatabase()
     {
-        var dbName = $"V3_GetOdsInstanceQuery_{Guid.NewGuid()}";
+        var dbName = $"V3_GetDataStoreQuery_{Guid.NewGuid()}";
         using var usersContext = CreateContext(dbName);
         var odsInstance = new OdsInstance { Name = "Test", InstanceType = "type", ConnectionString = PlainConnectionString };
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
-        var query = new GetOdsInstanceQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
+        var query = new GetDataStoreQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
         query.Execute(odsInstance.OdsInstanceId);
 
         using var verificationContext = CreateContext(dbName);
@@ -73,7 +73,7 @@ public class GetOdsInstanceQueryTests
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
-        var query = new GetOdsInstanceQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
+        var query = new GetDataStoreQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
         var result = query.Execute(odsInstance.OdsInstanceId);
 
         result.ConnectionString.ShouldBe(encrypted);
@@ -87,7 +87,7 @@ public class GetOdsInstanceQueryTests
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
-        var query = new GetOdsInstanceQuery(usersContext, _provider, OptionsWithKey(null));
+        var query = new GetDataStoreQuery(usersContext, _provider, OptionsWithKey(null));
         var result = query.Execute(odsInstance.OdsInstanceId);
 
         result.ConnectionString.ShouldBe(PlainConnectionString);
@@ -101,7 +101,7 @@ public class GetOdsInstanceQueryTests
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
-        var query = new GetOdsInstanceQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
+        var query = new GetDataStoreQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
         var result = query.Execute(odsInstance.OdsInstanceId);
 
         result.ConnectionString.ShouldBe(string.Empty);

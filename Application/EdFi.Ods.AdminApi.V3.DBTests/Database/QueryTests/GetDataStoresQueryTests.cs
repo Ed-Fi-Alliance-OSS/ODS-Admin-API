@@ -27,6 +27,7 @@ public class GetDataStoresQueryTests : PlatformUsersContextTestBase
         {
             CreateMultiple(2);
             var command = new GetDataStoresQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
+            var results = command.Execute();
             results.Count.ShouldBe(2);
         });
     }
