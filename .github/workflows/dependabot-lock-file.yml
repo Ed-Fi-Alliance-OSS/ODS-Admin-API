@@ -16,6 +16,9 @@ on:
 permissions:
   contents: write
 
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
 jobs:
   update-lock-file:
     name: Regenerate packages.lock.json
@@ -26,7 +29,6 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.EDFI_BUILD_AGENT_PAT }}
 
       - name: Restore packages and regenerate lock files
         run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --force-evaluate
