@@ -45,7 +45,6 @@ public class RefreshEducationOrganizationsTests
         // Arrange
         var tenantConfiguration = new TenantConfiguration { TenantIdentifier = "EdFi_Admin" };
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfiguration);
-        A.CallTo(() => _scheduler.SchedulerInstanceId).Returns("QuartzWorkerPool:localhost.localdomain1-1234567890");
 
         // Act
         var result = await RefreshEducationOrganizations.RefreshAllEducationOrganizations(
@@ -60,7 +59,7 @@ public class RefreshEducationOrganizationsTests
     }
 
     [Test]
-    public async Task RefreshEducationOrganizationsByInstance_ReturnsCreatedResult()
+    public async Task RefreshEducationOrganizationsByDataStore_ReturnsCreatedResult()
     {
         // Arrange
         var instanceId = 1;
@@ -69,10 +68,9 @@ public class RefreshEducationOrganizationsTests
 
         var tenantConfiguration = new TenantConfiguration { TenantIdentifier = "EdFi_Admin" };
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfiguration);
-        A.CallTo(() => _scheduler.SchedulerInstanceId).Returns("QuartzWorkerPool:localhost.localdomain1-1234567890");
 
         // Act
-        var result = await RefreshEducationOrganizations.RefreshEducationOrganizationsByInstance(
+        var result = await RefreshEducationOrganizations.RefreshEducationOrganizationsByDataStore(
             _schedulerFactory,
             _getDataStoreQuery,
             _tenantConfigurationProvider,
