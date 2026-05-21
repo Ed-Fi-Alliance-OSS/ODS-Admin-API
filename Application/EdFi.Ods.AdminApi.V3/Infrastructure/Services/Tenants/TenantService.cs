@@ -122,17 +122,17 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             var dataStores = getDataStoresQuery.Execute();
 
-            tenantDetails.OdsInstances = TenantMapper.ToOdsInstanceModelList(dataStores);
+            tenantDetails.DataStores = TenantMapper.ToOdsInstanceModelList(dataStores);
 
-            var dataStoreIdsList = tenantDetails.OdsInstances.Select(i => i.OdsInstanceId).ToArray();
+            var dataStoreIdsList = tenantDetails.DataStores.Select(i => i.DataStoreId).ToArray();
 
             if (dataStoreIdsList is not null && dataStoreIdsList.Length > 0)
             {
                 var edOrgsList = getEducationOrganizationQuery.Execute(dataStoreIdsList);
 
-                foreach (var dataStore in tenantDetails.OdsInstances)
+                foreach (var dataStore in tenantDetails.DataStores)
                 {
-                    var edOrgs = edOrgsList.Where(eo => eo.InstanceId == dataStore.OdsInstanceId).ToList();
+                    var edOrgs = edOrgsList.Where(eo => eo.InstanceId == dataStore.DataStoreId).ToList();
                     dataStore.EducationOrganizations = EducationOrganizationMapper.ToModelList(edOrgs);
                 }
             }

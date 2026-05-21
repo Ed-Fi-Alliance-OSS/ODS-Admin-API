@@ -38,6 +38,7 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         var newOdsInstanceDerivative = new OdsInstanceDerivative
         {
             DerivativeType = derivativeType,
+            ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False",
             OdsInstance = odsInstance1
         };
         Save(newOdsInstanceDerivative);
@@ -74,6 +75,7 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         var newOdsInstanceDerivative = new OdsInstanceDerivative
         {
             DerivativeType = derivativeType,
+            ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False",
             OdsInstance = odsInstance1
         };
 
@@ -81,6 +83,7 @@ public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
         var newOdsInstanceDerivative2 = new OdsInstanceDerivative
         {
             DerivativeType = newDerivativeType,
+            ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False",
             OdsInstance = odsInstance1
         };
         Save(newOdsInstanceDerivative, newOdsInstanceDerivative2);

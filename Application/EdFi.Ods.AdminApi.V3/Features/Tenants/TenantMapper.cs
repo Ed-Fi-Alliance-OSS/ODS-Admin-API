@@ -9,17 +9,17 @@ namespace EdFi.Ods.AdminApi.V3.Features.Tenants;
 
 public static class TenantMapper
 {
-    public static TenantOdsInstanceModel ToOdsInstanceModel(OdsInstance source)
+    public static TenantDataStoreModel ToOdsInstanceModel(OdsInstance source)
     {
-        return new TenantOdsInstanceModel
+        return new TenantDataStoreModel
         {
-            OdsInstanceId = source.OdsInstanceId,
+            DataStoreId = source.OdsInstanceId,
             Name = source.Name,
-            InstanceType = source.InstanceType,
+            DataStoreType = source.InstanceType,
         };
     }
 
-    public static List<TenantOdsInstanceModel> ToOdsInstanceModelList(IEnumerable<OdsInstance> source)
+    public static List<TenantDataStoreModel> ToOdsInstanceModelList(IEnumerable<OdsInstance> source)
     {
         return source.Select(ToOdsInstanceModel).ToList();
     }

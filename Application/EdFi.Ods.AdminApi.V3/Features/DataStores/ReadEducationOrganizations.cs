@@ -17,19 +17,19 @@ public class ReadEducationOrganizations : IFeature
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/dataStores/edOrgs", GetEducationOrganizations)
             .WithSummaryAndDescription(
-                "Retrieves all education organizations grouped by ODS instance",
-                "Returns all education organizations from all ODS instances in a nested structure"
+                "Retrieves all education organizations grouped by data store",
+                "Returns all education organizations from all data stores in a nested structure"
             )
-            .WithRouteOptions(b => b.WithResponse<List<OdsInstanceWithEducationOrganizationsModel>>(200))
+            .WithRouteOptions(b => b.WithResponse<List<DataStoreWithEducationOrganizationsModel>>(200))
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/dataStores/{instanceId}/edOrgs", GetEducationOrganizationsByInstance)
+            .MapGet(endpoints, "/dataStores/{dataStoreId}/edOrgs", GetEducationOrganizationsByDataStore)
             .WithSummaryAndDescription(
-                "Retrieves education organizations for a specific ODS instance",
-                "Returns all education organizations for the specified ODS instance in a nested structure"
+                "Retrieves education organizations for a specific data store",
+                "Returns all education organizations for the specified data store in a nested structure"
             )
-            .WithRouteOptions(b => b.WithResponse<List<OdsInstanceWithEducationOrganizationsModel>>(200))
+            .WithRouteOptions(b => b.WithResponse<List<DataStoreWithEducationOrganizationsModel>>(200))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -39,22 +39,22 @@ public class ReadEducationOrganizations : IFeature
     {
         var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
             commonQueryParams,
-            instanceId: null);
+            dataStoreId: null);
 
         return Results.Ok(educationOrganizations);
     }
 
-    public static async Task<IResult> GetEducationOrganizationsByInstance(
+    public static async Task<IResult> GetEducationOrganizationsByDataStore(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
         [FromServices] IGetDataStoreQuery getDataStoreQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
-        int instanceId)
+        int dataStoreId)
     {
-        getDataStoreQuery.Execute(instanceId);
+        getDataStoreQuery.Execute(dataStoreId);
 
         var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
             commonQueryParams,
-            instanceId: instanceId);
+            dataStoreId: dataStoreId);
 
         return Results.Ok(educationOrganizations);
     }

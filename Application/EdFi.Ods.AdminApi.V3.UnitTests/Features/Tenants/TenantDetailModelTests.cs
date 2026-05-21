@@ -22,7 +22,7 @@ public class TenantDetailModelTests
 
         // Assert
         tenantDetailModel.TenantName.ShouldBe(string.Empty);
-        tenantDetailModel.OdsInstances.ShouldBeEmpty();
+        tenantDetailModel.DataStores.ShouldBeEmpty();
     }
 
     [Test]
@@ -38,22 +38,22 @@ public class TenantDetailModelTests
             Discriminator = "discriminator 1"
         };
 
-        var odsInstance = new TenantOdsInstanceModel()
+        var odsInstance = new TenantDataStoreModel()
         {
-            OdsInstanceId = 1,
+            DataStoreId = 1,
             EducationOrganizations = [educationOrganization]
         };
 
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = [odsInstance]
+            DataStores = [odsInstance]
         };
 
         // Assert
         tenantDetailModel.TenantName.ShouldBe(tenantName);
-        tenantDetailModel.OdsInstances.ShouldBe([odsInstance]);
-        tenantDetailModel.OdsInstances[0].EducationOrganizations.ShouldBe([educationOrganization]);
+        tenantDetailModel.DataStores.ShouldBe([odsInstance]);
+        tenantDetailModel.DataStores[0].EducationOrganizations.ShouldBe([educationOrganization]);
     }
 
 }

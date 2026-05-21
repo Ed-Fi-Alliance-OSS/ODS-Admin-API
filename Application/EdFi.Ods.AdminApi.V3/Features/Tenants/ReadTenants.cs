@@ -25,11 +25,11 @@ public class ReadTenants : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/tenants/{tenantName}/dataStores/edOrgs", GetTenantEdOrgsByInstancesAsync)
+            .MapGet(endpoints, "/tenants/{tenantName}/dataStores/edOrgs", GetTenantEdOrgsByDataStoresAsync)
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> GetTenantEdOrgsByInstancesAsync(
+    public static async Task<IResult> GetTenantEdOrgsByDataStoresAsync(
         HttpRequest request,
         [FromServices] ITenantsService tenantsService,
         IGetDataStoresQuery getDataStoresQuery,
@@ -68,7 +68,7 @@ public class ReadTenants : IFeature
             {
                 Id = tenant.TenantName,
                 Name = tenant.TenantName,
-                OdsInstances = tenant.OdsInstances
+                DataStores = tenant.DataStores
             }
         );
     }
@@ -86,8 +86,8 @@ public class TenantDetailsResponse
 {
     public string? Id { get; set; }
     public string? Name { get; set; }
-    [JsonPropertyName("DataStores")]
-    public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
+    [JsonPropertyName("dataStores")]
+    public List<TenantDataStoreModel>? DataStores { get; set; }
 }
 
 

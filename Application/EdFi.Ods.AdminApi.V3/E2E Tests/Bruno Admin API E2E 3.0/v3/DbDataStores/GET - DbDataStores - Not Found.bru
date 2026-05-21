@@ -1,0 +1,32 @@
+meta {
+  name: DbDataStores - Not Found
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v3/dbDataStores/0
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET DbDataStore Not Found: Status code is Not Found", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  const response = res.getBody();
+
+  test("GET DbDataStore Not Found: Response matches error format", function () {
+    expect(response).to.have.property("title");
+  });
+
+  test("GET DbDataStore Not Found: Response title is helpful and accurate", function () {
+    expect(response.title).to.contain("Not found");
+    expect(response.title.toLowerCase()).to.contain("dbdatastore");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

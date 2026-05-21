@@ -50,16 +50,16 @@ public class ReadTenantsTest
             Discriminator = "discriminator 1"
         };
 
-        var odsInstance = new TenantOdsInstanceModel()
+        var odsInstance = new TenantDataStoreModel()
         {
-            OdsInstanceId = 1,
+            DataStoreId = 1,
             EducationOrganizations = [educationOrganization]
         };
 
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = [odsInstance]
+            DataStores = [odsInstance]
         };
 
         var request = A.Fake<HttpRequest>();
@@ -72,7 +72,7 @@ public class ReadTenantsTest
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
         A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -97,7 +97,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+            await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
         });
     }
 
@@ -121,7 +121,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+            await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
         });
     }
 
@@ -137,7 +137,7 @@ public class ReadTenantsTest
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = []
+            DataStores = []
         };
 
         var request = A.Fake<HttpRequest>();
@@ -150,7 +150,7 @@ public class ReadTenantsTest
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
         A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -167,7 +167,7 @@ public class ReadTenantsTest
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = []
+            DataStores = []
         };
 
         var request = A.Fake<HttpRequest>();
@@ -180,7 +180,7 @@ public class ReadTenantsTest
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
         A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -197,7 +197,7 @@ public class ReadTenantsTest
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = []
+            DataStores = []
         };
 
         var request = A.Fake<HttpRequest>();
@@ -210,7 +210,7 @@ public class ReadTenantsTest
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
         A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -227,7 +227,7 @@ public class ReadTenantsTest
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = []
+            DataStores = []
         };
 
         var request = A.Fake<HttpRequest>();
@@ -240,7 +240,7 @@ public class ReadTenantsTest
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
         A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -265,7 +265,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+            await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
         });
     }
 
@@ -281,7 +281,7 @@ public class ReadTenantsTest
         var tenantDetailModel = new TenantDetailModel()
         {
             TenantName = tenantName,
-            OdsInstances = []
+            DataStores = []
         };
 
         var request = A.Fake<HttpRequest>();
@@ -294,7 +294,7 @@ public class ReadTenantsTest
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
         A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(request, tenantsService, _getDataStoresQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }

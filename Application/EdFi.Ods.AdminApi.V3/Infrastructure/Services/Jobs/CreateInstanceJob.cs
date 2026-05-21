@@ -6,7 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
-using EdFi.Ods.AdminApi.V3.Features.DbInstances;
+using EdFi.Ods.AdminApi.V3.Features.DbDataStores;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
@@ -126,7 +126,7 @@ public class CreateInstanceJob(
             dbInstance.Status = DbInstanceStatus.CreateInProgress.ToString();
             if (string.IsNullOrWhiteSpace(dbInstance.DatabaseName))
             {
-                dbInstance.DatabaseName = DbInstanceDatabaseNameFormatter.Build(
+                dbInstance.DatabaseName = DbDataStoreDatabaseNameFormatter.Build(
                     dbInstance.Name,
                     dbInstance.DatabaseTemplate);
             }

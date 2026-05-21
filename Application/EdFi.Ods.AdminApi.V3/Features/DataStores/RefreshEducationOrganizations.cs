@@ -23,17 +23,17 @@ public class RefreshEducationOrganizations : IFeature
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/dataStores/edOrgs/refresh", RefreshAllEducationOrganizations)
             .WithSummaryAndDescription(
-                "Refreshes education organizations for all ODS instances",
-                "Triggers a refresh of education organization data from all ODS instances"
+                "Refreshes education organizations for all data stores",
+                "Triggers a refresh of education organization data from all data stores"
             )
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/dataStores/{instanceId}/edOrgs/refresh", RefreshEducationOrganizationsByInstance)
+            .MapPost(endpoints, "/dataStores/{dataStoreId}/edOrgs/refresh", RefreshEducationOrganizationsByDataStore)
             .WithSummaryAndDescription(
-                "Refreshes education organizations for a specific ODS instance",
-                "Triggers a refresh of education organization data for the specified ODS instance"
+                "Refreshes education organizations for a specific data store",
+                "Triggers a refresh of education organization data for the specified data store"
             )
             .WithRouteOptions(b => b
                 .WithResponseCode(202)
@@ -62,20 +62,20 @@ public class RefreshEducationOrganizations : IFeature
 
         return Results.Accepted(null, new
         {
-            Message = "Education organizations refresh has been queued for all instances"
+            Message = "Education organizations refresh has been queued for all data stores"
         });
     }
 
-    public static async Task<IResult> RefreshEducationOrganizationsByInstance(
+    public static async Task<IResult> RefreshEducationOrganizationsByDataStore(
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IGetDataStoreQuery getDataStoreQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
-        int instanceId)
+        int dataStoreId)
     {
-        var odsInstance = getDataStoreQuery.Execute(instanceId);
-        if (odsInstance == null)
+        var dataStore = getDataStoreQuery.Execute(dataStoreId);
+        if (dataStore == null)
         {
-            throw new NotFoundException<int>("DataStore", instanceId);
+            throw new NotFoundException<int>("DataStore", dataStoreId);
         }
 
         var tenantConfiguration = tenantConfigurationProvider.Get();
@@ -84,7 +84,7 @@ public class RefreshEducationOrganizations : IFeature
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
             .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
-            .UsingJobData(JobConstants.OdsInstanceIdKey, instanceId)
+            .UsingJobData(JobConstants.OdsInstanceIdKey, dataStoreId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -96,7 +96,7 @@ public class RefreshEducationOrganizations : IFeature
 
         return Results.Accepted(null, new
         {
-            Message = $"Education organizations refresh has been queued for instance {instanceId}"
+            Message = $"Education organizations refresh has been queued for data store {dataStoreId}"
         });
     }
 }

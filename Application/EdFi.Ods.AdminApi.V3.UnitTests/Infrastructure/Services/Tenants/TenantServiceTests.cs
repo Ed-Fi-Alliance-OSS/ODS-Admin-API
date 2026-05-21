@@ -188,11 +188,11 @@ internal class TenantServiceTests
             Discriminator = "School"
         };
 
-        var tenantOdsInstanceModels = new List<TenantOdsInstanceModel>
+        var tenantOdsInstanceModels = new List<TenantDataStoreModel>
         {
             new()
             {
-                OdsInstanceId = 101,
+                DataStoreId = 101,
                 Name = "Test Instance"
             }
         };
@@ -216,16 +216,16 @@ internal class TenantServiceTests
 
         tenant.ShouldNotBeNull();
         tenant!.TenantName.ShouldBe(tenantName);
-        tenant.OdsInstances.ShouldNotBeNull();
-        tenant.OdsInstances!.Count.ShouldBe(1);
-        tenant.OdsInstances[0].OdsInstanceId.ShouldBe(odsInstance.OdsInstanceId);
-        tenant.OdsInstances[0].Name.ShouldBe(odsInstance.Name);
-        tenant.OdsInstances[0].EducationOrganizations.ShouldNotBeNull();
-        tenant.OdsInstances[0].EducationOrganizations!.Count.ShouldBe(1);
-        tenant.OdsInstances[0].EducationOrganizations[0].EducationOrganizationId.ShouldBe(educationOrganization.EducationOrganizationId);
-        tenant.OdsInstances[0].EducationOrganizations[0].NameOfInstitution.ShouldBe(educationOrganization.NameOfInstitution);
-        tenant.OdsInstances[0].EducationOrganizations[0].ShortNameOfInstitution.ShouldBe(educationOrganization.ShortNameOfInstitution);
-        tenant.OdsInstances[0].EducationOrganizations[0].Discriminator.ShouldBe(educationOrganization.Discriminator);
+        tenant.DataStores.ShouldNotBeNull();
+        tenant.DataStores!.Count.ShouldBe(1);
+        tenant.DataStores[0].DataStoreId.ShouldBe(odsInstance.OdsInstanceId);
+        tenant.DataStores[0].Name.ShouldBe(odsInstance.Name);
+        tenant.DataStores[0].EducationOrganizations.ShouldNotBeNull();
+        tenant.DataStores[0].EducationOrganizations!.Count.ShouldBe(1);
+        tenant.DataStores[0].EducationOrganizations[0].EducationOrganizationId.ShouldBe(educationOrganization.EducationOrganizationId);
+        tenant.DataStores[0].EducationOrganizations[0].NameOfInstitution.ShouldBe(educationOrganization.NameOfInstitution);
+        tenant.DataStores[0].EducationOrganizations[0].ShortNameOfInstitution.ShouldBe(educationOrganization.ShortNameOfInstitution);
+        tenant.DataStores[0].EducationOrganizations[0].Discriminator.ShouldBe(educationOrganization.Discriminator);
     }
 
     [Test]

@@ -16,29 +16,28 @@ public class TenantDetailModel
     [SwaggerSchema(Description = Constants.TenantNameDescription, Nullable = false)]
     public required string TenantName { get; set; }
 
-    [SwaggerSchema(Title = "OdsInstance")]
-    public List<TenantOdsInstanceModel> OdsInstances { get; set; }
+    [SwaggerSchema(Title = "DataStores", Description = "List of data stores associated with the tenant")]
+    public List<TenantDataStoreModel> DataStores { get; set; }
 
     public TenantDetailModel()
     {
         TenantName = string.Empty;
-        OdsInstances = [];
+        DataStores = [];
     }
 }
 
 [SwaggerSchema]
-public class TenantOdsInstanceModel
+public class TenantDataStoreModel
 {
     [JsonPropertyName("id")]
-    public int OdsInstanceId { get; set; }
+    public int DataStoreId { get; set; }
     public string Name { get; set; }
-    [JsonPropertyName("dataStoreType")]
-    public string? InstanceType { get; set; }
+    public string? DataStoreType { get; set; }
 
     [SwaggerSchema(Title = "EducationOrganizations")]
     public List<EducationOrganizationModel> EducationOrganizations { get; set; }
 
-    public TenantOdsInstanceModel()
+    public TenantDataStoreModel()
     {
         Name = string.Empty;
         EducationOrganizations = [];
