@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
@@ -24,96 +26,122 @@ public class OdsInstanceEncryptionHelperTests
     private readonly Aes256SymmetricStringEncryptionProvider _provider = new();
 
     [Test]
-    public void EncryptConnectionStringsIfNeeded_WithPlaintextString_EncryptsAndCallsSaveChanges()
-    {
-        var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
-        var usersContext = A.Fake<IUsersContext>();
-
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
-
-        _provider.IsEncrypted(instance.ConnectionString).ShouldBeTrue();
-        A.CallTo(() => usersContext.SaveChanges()).MustHaveHappenedOnceExactly();
-    }
-
-    [Test]
-    public void EncryptConnectionStringsIfNeeded_WithAlreadyEncryptedString_DoesNotCallSaveChanges()
-    {
-        var encrypted = _provider.Encrypt(PlainConnectionString, new byte[32]);
-        var instance = new OdsInstance { Name = "I1", ConnectionString = encrypted };
-        var usersContext = A.Fake<IUsersContext>();
-
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
-            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
-
-        instance.ConnectionString.ShouldBe(encrypted);
-        A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
-    }
-
-    [Test]
-    public void EncryptConnectionStringsIfNeeded_WithMixedStrings_OnlyEncryptsPlaintextAndCallsSaveChanges()
+    public async Task EncryptConnectionStringsIfNeededAsync_WithMixedStrings_OnlyEncryptsPlaintextAndCallsSaveChangesAsync()
     {
         var encrypted = _provider.Encrypt(PlainConnectionString, new byte[32]);
         var plaintextInstance = new OdsInstance { Name = "Plain", ConnectionString = PlainConnectionString };
         var encryptedInstance = new OdsInstance { Name = "Encrypted", ConnectionString = encrypted };
         var usersContext = A.Fake<IUsersContext>();
 
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { plaintextInstance, encryptedInstance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         _provider.IsEncrypted(plaintextInstance.ConnectionString).ShouldBeTrue();
         encryptedInstance.ConnectionString.ShouldBe(encrypted);
-        A.CallTo(() => usersContext.SaveChanges()).MustHaveHappenedOnceExactly();
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public void EncryptConnectionStringsIfNeeded_WithInvalidConnectionString_SkipsEncryptionAndDoesNotCallSaveChanges()
+    public async Task EncryptConnectionStringsIfNeededAsync_WithInvalidConnectionString_SkipsEncryptionAndDoesNotCallSaveChangesAsync()
     {
         // PlainConnectionString is SqlServer format; using PostgreSql engine makes it invalid
         var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
         var usersContext = A.Fake<IUsersContext>();
 
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "PostgreSql");
 
         instance.ConnectionString.ShouldBe(PlainConnectionString);
-        A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Test]
-    public void EncryptConnectionStringsIfNeeded_WithEmptyConnectionString_SkipsAndDoesNotCallSaveChanges()
+    public async Task EncryptConnectionStringsIfNeededAsync_WithEmptyConnectionString_SkipsAndDoesNotCallSaveChangesAsync()
     {
         var instance = new OdsInstance { Name = "I1", ConnectionString = string.Empty };
         var usersContext = A.Fake<IUsersContext>();
 
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBe(string.Empty);
-        A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Test]
-    public void EncryptConnectionStringsIfNeeded_WithNullConnectionString_SkipsAndDoesNotCallSaveChanges()
+    public async Task EncryptConnectionStringsIfNeededAsync_WithNullConnectionString_SkipsAndDoesNotCallSaveChangesAsync()
     {
         var instance = new OdsInstance { Name = "I1", ConnectionString = null };
         var usersContext = A.Fake<IUsersContext>();
 
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBeNull();
-        A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Test]
-    public void EncryptConnectionStringsIfNeeded_WithEmptyList_DoesNotCallSaveChanges()
+    public async Task EncryptConnectionStringsIfNeededAsync_WithEmptyList_DoesNotCallSaveChangesAsync()
     {
         var usersContext = A.Fake<IUsersContext>();
 
-        OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance>(), usersContext, _provider, TestEncryptionKey, "SqlServer");
 
-        A.CallTo(() => usersContext.SaveChanges()).MustNotHaveHappened();
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task EncryptConnectionStringsIfNeededAsync_WithEmptyEngine_SkipsEncryptionAndDoesNotCallSaveChangesAsync()
+    {
+        var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "");
+
+        instance.ConnectionString.ShouldBe(PlainConnectionString);
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task EncryptConnectionStringsIfNeededAsync_WithPlaintextString_EncryptsAndCallsSaveChangesAsync()
+    {
+        var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
+
+        _provider.IsEncrypted(instance.ConnectionString).ShouldBeTrue();
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task EncryptConnectionStringsIfNeededAsync_WithAlreadyEncryptedString_DoesNotCallSaveChangesAsync()
+    {
+        var encrypted = _provider.Encrypt(PlainConnectionString, new byte[32]);
+        var instance = new OdsInstance { Name = "I1", ConnectionString = encrypted };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
+
+        instance.ConnectionString.ShouldBe(encrypted);
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task EncryptConnectionStringsIfNeededAsync_WithUnknownEngine_SkipsEncryptionAndDoesNotCallSaveChangesAsync()
+    {
+        var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+            new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "UnknownEngine");
+
+        instance.ConnectionString.ShouldBe(PlainConnectionString);
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
     }
 }

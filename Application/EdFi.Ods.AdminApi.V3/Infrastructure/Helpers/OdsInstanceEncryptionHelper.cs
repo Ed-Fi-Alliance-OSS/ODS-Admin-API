@@ -12,12 +12,13 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
 public static class OdsInstanceEncryptionHelper
 {
-    public static void EncryptConnectionStringsIfNeeded(
+    public static async Task EncryptConnectionStringsIfNeededAsync(
         List<OdsInstance> instances,
         IUsersContext usersContext,
         ISymmetricStringEncryptionProvider encryptionProvider,
         string encryptionKey,
-        string databaseEngine)
+        string databaseEngine,
+        CancellationToken cancellationToken = default)
     {
         byte[] key = Convert.FromBase64String(encryptionKey);
         bool anyUpdated = false;
@@ -38,6 +39,6 @@ public static class OdsInstanceEncryptionHelper
         }
 
         if (anyUpdated)
-            usersContext.SaveChanges();
+            await usersContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -30,7 +30,7 @@ public class GetOdsInstanceQueryTests
             .Options);
 
     private static IOptions<AppSettings> OptionsWithKey(string? key = null) =>
-        Options.Create(new AppSettings { EncryptionKey = key });
+        Options.Create(new AppSettings { EncryptionKey = key, DatabaseEngine = "SqlServer" });
 
     [Test]
     public void Execute_WithUnencryptedConnectionString_EncryptsOnRead()

@@ -49,8 +49,8 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
     public List<OdsInstance> Execute()
     {
         var instances = _usersContext.OdsInstances.OrderBy(odsInstance => odsInstance.Name).ToList();
-        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
 
         return instances;
     }
@@ -67,8 +67,8 @@ public class GetOdsInstancesQuery : IGetOdsInstancesQuery
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToList();
 
-        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeeded(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine ?? string.Empty);
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
 
         return instances;
     }
