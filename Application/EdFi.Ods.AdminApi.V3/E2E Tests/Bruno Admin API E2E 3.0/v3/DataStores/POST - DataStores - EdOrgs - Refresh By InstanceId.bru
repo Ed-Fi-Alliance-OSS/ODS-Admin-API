@@ -50,7 +50,7 @@ script:pre-request {
 
     if (odsResponse.status === 200) {
       console.log("✅ DataStore List loaded");
-      bru.setVar("dataStoreId", odsResponse.data[0].id);
+      bru.setVar("DataStoreId", odsResponse.data[0].id);
     } else {
       console.log("❌ Failed to get DataStores");
       console.log("Status:", odsResponse.status);
@@ -64,9 +64,28 @@ script:pre-request {
 }
 
 script:post-response {
-  test("POST DataStores by ID EdOrgs Refresh: Status code is Accepted", function () {
-      expect(res.getStatus()).to.equal(202);
+  test("POST DataStores by ID EdOrgs Refresh: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
   });
+
+  test("POST DataStores by ID EdOrgs Refresh: Response has jobId", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("jobId");
+      expect(body.jobId).to.be.a("string");
+  });
+
+  test("POST DataStores by ID EdOrgs Refresh: Response has status Pending", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("status");
+      expect(body.status).to.equal("Pending");
+  });
+
+  test("POST DataStores by ID EdOrgs Refresh: Response has createdAt", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("createdAt");
+  });
+
+  bru.setVar("JobId", res.getBody().jobId);
 }
 
 settings {

@@ -11,4 +11,6 @@ public class JobStatus
     public string JobId { get; set; } = null!;
     public string Status { get; set; } = null!;
     public string? ErrorMessage { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? FinishedAt { get; set; }
 }
