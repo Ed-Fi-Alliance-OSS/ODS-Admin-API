@@ -209,7 +209,7 @@ public class GetDataStoresQueryTests : PlatformUsersContextTestBase
     private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
 
     private static IOptions<AppSettings> OptionsWithKey(string? key = null) =>
-        Options.Create(new AppSettings { EncryptionKey = key });
+        Options.Create(new AppSettings { EncryptionKey = key, DatabaseEngine = "SqlServer" });
 
     [Test]
     public void ShouldEncryptUnencryptedConnectionStringsOnRead()
