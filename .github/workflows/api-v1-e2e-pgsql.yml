@@ -79,7 +79,7 @@ jobs:
         if: failure()
         run: |
           mkdir docker-logs
-          docker logs adminapi > docker-logs/adminapi.log
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/adminapi.log
           docker logs ed-fi-db-admin-adminapi > docker-logs/ed-fi-db-admin.log
           docker logs ed-fi-gateway-adminapi > docker-logs/ed-fi-gateway.log
 

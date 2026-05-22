@@ -1,0 +1,45 @@
+meta {
+  name: DataStoreContexts - Invalid DataStore
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v3/dataStoreContexts/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": 0,
+    "contextKey": "ckey",
+    "contextValue": "cvalue"
+  }
+}
+
+script:post-response {
+  test("POST DataStore Contexts Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST DataStore Contexts Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST DataStore Contexts Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST DataStore Contexts Invalid DataStore: Response errors include messages by property", function () {
+      expect(response.errors.DataStoreId.length).to.equal(1);
+      expect(response.errors.DataStoreId[0]).to.contain("provide valid DataStore id.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

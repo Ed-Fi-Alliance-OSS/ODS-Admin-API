@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+
+ADMIN_API_VIRTUAL_NAME=adminapi
+ADMIN_API_VERSION= 2.2.2-alpha.0.78
+
+# For Authentication
+AUTHORITY=http://localhost/${ADMIN_API_VIRTUAL_NAME}
+ISSUER_URL=https://localhost/${ADMIN_API_VIRTUAL_NAME}
+SIGNING_KEY=<Create a new string as symmetric encryption key>
+
+# For Ed-Fi ODS / API
+EDFI_API_DISCOVERY_URL=https://api.ed-fi.org/v7.2/api/
+
+ENABLE_ADMIN_CONSOLE=true
+USE_SELF_CONTAINED_AUTH=false
+# OIDC_AUTHORITY=http://ed-fi-idp-keycloak:8080/auth/realms/edfi-admin-console
+OIDC_REQUIRE_METADATA=false
+OIDC_ENABLE_SERVER_CERTIFICATE=true
+
+
+PAGING_OFFSET=0
+PAGING_LIMIT=25
+# For MSSQL only
+SQLSERVER_USER=edfi
+SQLSERVER_PASSWORD=P@55w0rd
+DATABASE_ENGINE_FOLDER=mssql
+# For Multitenant
+DEFAULT_TENANT=tenant1
+
+# The following needs to be set to specify a health check test for Admin api.
+# RECOMMENDED: To use the default internal Admin Api health check endpoint, set the variable as follows:
+ADMIN_API_HEALTHCHECK_TEST="wget -nv -t1 --spider http://${ADMIN_API_VIRTUAL_NAME}/health || exit 1"
+
+#  To disable the health check, remove the above and instead set the variable as follows:
+# ADMIN_API_HEALTHCHECK_TEST=/bin/true
+#  To add a custom health check, consult the documentation at https://docs.docker.com/compose/compose-file/compose-file-v3/#healthcheck
+
+
+# IdP db keycloak
+KEYCLOAK_DB_IMAGE_TAG=16.2
+KEYCLOAK_POSTGRES_DB=keycloak_db
+KEYCLOAK_POSTGRES_USER=edfi
+KEYCLOAK_POSTGRES_PASSWORD=P@55w0rd
+# IdP keycloak
+KEYCLOAK_IMAGE_TAG=26.0
+KEYCLOAK_ADMIN=admin
+KEYCLOAK_ADMIN_PASSWORD=admin
+KEYCLOAK_PORT=28080
+KEYCLOAK_VIRTUAL_NAME=keycloak
+KEYCLOAK_HOSTNAME= localhost
+KEYCLOAK_HOSTNAME_PORT=443
+KEYCLOAK_HOSTNAME_STRICT_BACKCHANNEL=false
+KEYCLOAK_HTTP_ENABLED=true
+KEYCLOAK_HOSTNAME_STRICT_HTTPS=true
+KEYCLOAK_HEALTH_ENABLED=true
+KEYCLOAK_ADMIN_CONSOLE_REALM=edfi-admin-console
+
+
+# Ods Api
+TAG=7.3
+API_HEALTHCHECK_TEST="curl -f http://localhost/health"
+ODS_CONNECTION_STRING_ENCRYPTION_KEY=<Create a new string as symmetric encryption key>

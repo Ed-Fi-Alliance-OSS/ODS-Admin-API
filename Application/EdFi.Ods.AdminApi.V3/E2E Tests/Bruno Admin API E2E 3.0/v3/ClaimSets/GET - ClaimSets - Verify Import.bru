@@ -1,0 +1,32 @@
+meta {
+  name: ClaimSets - Verify Import
+  type: http
+  seq: 4.5
+}
+
+get {
+  url: {{API_URL}}/v3/claimSets/{{ImportedClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  const importedClaimSetData = res.getBody();
+
+  test("POST ClaimSets - Import: Verify all resourceClaims were imported", function () {
+      let requestBody = req.getBody() ? req.getBody().raw : null;
+      let requestData = requestBody ? JSON.parse(requestBody) : null;
+
+      // Check that the number of resourceClaims matches the original request
+      if (requestData && requestData.resourceClaims) {
+          expect(importedClaimSetData.resourceClaims.length).to.equal(requestData.resourceClaims.length);
+      }
+      // Check that the grandchild resourceClaim "candidatePreparation" was created
+      const hasCandidatePreparation = importedClaimSetData.resourceClaims.some(rc => rc.name === "candidatePreparation");
+      expect(hasCandidatePreparation).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+}

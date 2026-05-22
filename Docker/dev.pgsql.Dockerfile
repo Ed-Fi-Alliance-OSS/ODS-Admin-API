@@ -14,8 +14,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine3.22@sha256:ddae163c8bd4d12df3bd767
 RUN apk add --no-cache musl=~1.2.5-r12 && \
     rm -rf /var/cache/apk/*
 
-ARG ASPNETCORE_ENVIRONMENT="Production"
+ARG ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+
 
 WORKDIR /source
 COPY --from=assets ./Application/NuGet.Config ./
@@ -29,6 +30,7 @@ COPY --from=assets ./Application/EdFi.Ods.AdminApi.Common EdFi.Ods.AdminApi.Comm
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.InstanceManagement EdFi.Ods.AdminApi.InstanceManagement/
 
 COPY --from=assets ./Application/EdFi.Ods.AdminApi.V1 EdFi.Ods.AdminApi.V1/
+COPY --from=assets ./Application/EdFi.Ods.AdminApi.V3 EdFi.Ods.AdminApi.V3/
 
 WORKDIR /source/EdFi.Ods.AdminApi
 RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
@@ -43,7 +45,7 @@ RUN apk add --no-cache \
         icu=~76.1-r1 \
         musl=~1.2.5-r12 \
         openssl=3.5.6-r0 \
-        postgresql15-client=~15 && \
+        postgresql15-client=15.18-r0 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
 

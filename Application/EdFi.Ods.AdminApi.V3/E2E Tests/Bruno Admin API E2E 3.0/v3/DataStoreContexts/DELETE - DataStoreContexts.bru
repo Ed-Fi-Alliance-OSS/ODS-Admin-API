@@ -1,0 +1,22 @@
+meta {
+  name: DataStoreContexts
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{API_URL}}/v3/dataStoreContexts/{{CreatedDataStoreContextId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE DataStoreContexts: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

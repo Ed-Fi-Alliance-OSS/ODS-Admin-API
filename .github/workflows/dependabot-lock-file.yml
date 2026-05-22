@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+name: Update Lock File on Dependabot PR
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "*-hotfix"
+    paths:
+      - "Application/Directory.Packages.props"
+
+permissions:
+  contents: write
+
+jobs:
+  update-lock-file:
+    name: Regenerate packages.lock.json
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.EDFI_BUILD_AGENT_PAT }}
+
+      - name: Restore packages and regenerate lock files
+        run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --force-evaluate
+
+      - name: Commit updated lock files
+        run: |
+          git config user.name "dependabot[bot]+commit"
+          git config user.email "noreply@ed-fi.org"
+          find Application -name "packages.lock.json" -print0 | xargs -0 --no-run-if-empty git add
+          git diff --staged --quiet || git commit -m "Update packages.lock.json after Dependabot package update"
+          git push

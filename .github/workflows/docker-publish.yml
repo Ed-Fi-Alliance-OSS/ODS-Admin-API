@@ -21,7 +21,7 @@ on:
         required: false
         type: boolean
         default: false
-      
+
 
 env:
   IMAGE_NAME: ${{ vars.IMAGE_NAME }}
@@ -60,7 +60,7 @@ jobs:
             # Releases get the version, plus shortened form for minor release.
             # We are not using shortened form for major or using "latest"
             # because they are too imprecise.
-            MINOR=`echo ${PACKAGEVERSION} | awk -F"." '{print $1"."$2}'`
+            MINOR="$(echo "${PACKAGEVERSION}" | awk -F"." '{print $1"."$2}')"
             if [[ $MINOR_ONLY == "true" ]]
             then
               APITAGS="${{ env.IMAGE_NAME }}:${MINOR}"
@@ -74,10 +74,12 @@ jobs:
           fi
 
           SEMVERSION=${PACKAGEVERSION:1}  # strip off the leading 'v'
-          echo "APITAGS=$APITAGS" >> $GITHUB_OUTPUT
-          echo "DBTAGS=$DBTAGS" >> $GITHUB_OUTPUT
-          echo "DBTAGS6x=$DBTAGS6x" >> $GITHUB_OUTPUT
-          echo "VERSION=$SEMVERSION" >> $GITHUB_OUTPUT
+          {
+            echo "APITAGS=$APITAGS"
+            echo "DBTAGS=$DBTAGS"
+            echo "DBTAGS6x=$DBTAGS6x"
+            echo "VERSION=$SEMVERSION"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567  # v3.3.0

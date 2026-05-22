@@ -1,0 +1,42 @@
+meta {
+  name: DataStoreContexts - Not Found DataStore
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{API_URL}}/v3/dataStoreContexts/
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": 9000,
+    "contextKey": "ckey",
+    "contextValue": "cvalue"
+  }
+}
+
+script:post-response {
+  test("POST DataStore Contexts Invalid: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST DataStore Contexts Invalid: Response matches title property", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  
+  test("POST DataStore Contexts Invalid DataStore: Response errors include messages by property", function () {
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("DataStore");
+      expect(response.title).to.contain("It may have been recently deleted");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

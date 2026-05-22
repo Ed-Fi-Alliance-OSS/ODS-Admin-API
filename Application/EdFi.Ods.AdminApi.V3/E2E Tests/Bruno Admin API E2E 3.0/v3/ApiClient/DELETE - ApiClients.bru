@@ -1,0 +1,40 @@
+meta {
+  name: ApiClients
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{API_URL}}/v3/apiclients/{{CreatedApiClientId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE ApiClients: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const DeleteApiClientsSchema = {
+    oneOf: [
+      { type: "null" },
+      { type: "string", maxLength: 0 }
+    ]
+  };
+  
+  test("DELETE ApiClients: Validation Schema Response", () => {
+      const valid = ajv.validate(DeleteApiClientsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

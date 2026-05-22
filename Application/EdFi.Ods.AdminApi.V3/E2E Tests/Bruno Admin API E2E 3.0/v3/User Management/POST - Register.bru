@@ -1,0 +1,108 @@
+meta {
+  name: Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/connect/register
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  ClientId: {{RegisteredClientId}}
+  ClientSecret: {{RegisteredClientSecret}}
+  DisplayName: Postman Test
+}
+
+script:pre-request {
+  function generateClientSecret() {
+      const minLength = 32;
+      const maxLength = 128;
+      let result = '';
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const specialCharacters = '!@#$%^&*()_+{}:"<>?|[];\',./`~';
+      const length = Math.floor(Math.random() * (maxLength - minLength + 1)) + minLength;
+  
+      result += randomChar('abcdefghijklmnopqrstuvwxyz');
+      result += randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+      result += randomChar('0123456789');
+      result += randomChar(specialCharacters);
+  
+      for (let i = result.length; i < length; i++) {
+          const charactersPlusSpecial = characters + specialCharacters;
+          result += charactersPlusSpecial.charAt(Math.floor(Math.random() * charactersPlusSpecial.length));
+      }
+  
+      return shuffleString(result);
+  }
+  
+  function randomChar(str) {
+      return str.charAt(Math.floor(Math.random() * str.length));
+  }
+  
+  function shuffleString(str) {
+      const array = str.split('');
+      for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array.join('');
+  }
+  
+  bru.setVar("RegisteredClientId", bru.interpolate('{{$guid}}'));
+  bru.setVar("RegisteredClientSecret", generateClientSecret());
+  
+}
+
+script:post-response {
+  test("POST Register: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+  const result = res.getBody().result;
+  
+  test("POST Register: Response matches success format", function () {
+      expect(response.status).to.equal(200);
+      expect(response).to.have.property("title");
+  });
+  
+  test("POST Register: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("client");
+      expect(response.title.toLowerCase()).to.contain("registered");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const PostRegisterSchema = {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "status": {
+        "type": "integer"
+      }
+    },
+    "required": [
+      "title",
+      "status"
+    ]
+  }
+  
+  test("POST Register: Validation Schema Response", () => {
+      const valid = ajv.validate(PostRegisterSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

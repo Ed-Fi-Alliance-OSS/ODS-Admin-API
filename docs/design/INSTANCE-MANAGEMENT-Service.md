@@ -10,6 +10,8 @@ following repository
 [Ed-Fi-Admin-Console-Instance-Management-Worker-Process](<https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-Admin-Console-Instance-Management-Worker-Process/tree/main/src/EdFi.AdminConsole.InstanceMgrWorker.Provisioner>)
 
 * **IInstanceProvisioner.cs** - Interface defining all required operations (_AddInstance_, _CopyInstance_, _DeleteInstance_, _InstanceInfo_, _InstanceStatus_). Each provider must implement these methods for its database or storage technology.
+
+> **Admin API V2 provisioning note:** `CreateInstanceJob` calls `ISandboxProvisioner.AddSandboxAsync` to provision a new database. `DeleteInstanceJob` calls `ISandboxProvisioner.DeleteSandboxesAsync` to drop the physical database before removing the `OdsInstance` row. If `DatabaseName` is not set on the `DbInstance` record, `DeleteInstanceJob` skips the provisioner call and proceeds directly to removing the `OdsInstance` row.
 * **InstanceProvisionerBase.cs** - Base class for common elements such as connection management and shared variables.
 * **InstanceStatus.cs** - Object class representing instance status values (e.g., "ERROR").
 

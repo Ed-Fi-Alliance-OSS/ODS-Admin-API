@@ -6,7 +6,7 @@
 services:
   nginx:
     build:
-      context: ../../../../Settings/V2/gateway/
+      context: ../../../../Settings/shared/gateway/
       dockerfile: IDP.Dockerfile
     environment:
       ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
@@ -19,7 +19,7 @@ services:
     hostname: nginx
     volumes:
       - ../../../../Settings/ssl:/ssl/
-      - ../../../../Settings/V2/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../../../Settings/shared/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
       - adminapi
       - idp-keycloak
@@ -51,6 +51,8 @@ services:
       Authentication__SigningKey: ${SIGNING_KEY}
       ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Ods: "Data Source=db-admin,1433;Initial Catalog=EdFi_Ods;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Master: "Data Source=db-admin,1433;Initial Catalog=master;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}
       IpRateLimiting__RealIpHeader: ${IPRATELIMITING__REALIPHEADER:-X-Real-IP}
@@ -78,7 +80,7 @@ services:
 
   db-admin:
     build:
-      context: ../../../../Settings/V2/DB-Admin/mssql/
+      context: ../../../../Settings/shared/DB-Admin/mssql/
       dockerfile: Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
@@ -151,3 +153,4 @@ volumes:
   vol-db-idp-keycloak:
     driver: local
     name: vol-db-idp-keycloak
+

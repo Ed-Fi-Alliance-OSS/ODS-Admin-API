@@ -37,6 +37,8 @@ public class TenantConfigurationProvider : ITenantConfigurationProvider
                 TenantIdentifier = t.Key,
                 AdminConnectionString = t.Value.ConnectionStrings.GetValueOrDefault("EdFi_Admin"),
                 SecurityConnectionString = t.Value.ConnectionStrings.GetValueOrDefault("EdFi_Security"),
+                OdsConnectionString = t.Value.ConnectionStrings.GetValueOrDefault("EdFi_Ods"),
+                MasterConnectionString = t.Value.ConnectionStrings.GetValueOrDefault("EdFi_Master"),
             },
             StringComparer.OrdinalIgnoreCase);
     }

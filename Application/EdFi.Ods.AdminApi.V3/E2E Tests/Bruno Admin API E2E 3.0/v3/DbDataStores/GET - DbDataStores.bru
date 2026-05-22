@@ -1,0 +1,61 @@
+meta {
+  name: DbDataStores - Get All
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{API_URL}}/v3/dbDataStores?offset={{offset}}&limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET DbDataStores: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("GET DbDataStores: Response is an array", function () {
+    expect(res.getBody()).to.be.an("array");
+  });
+
+  test("GET DbDataStores: Response includes created instance", function () {
+    expect(res.getBody().length).to.be.greaterThan(0);
+  });
+
+  const Ajv = require("ajv");
+  const ajv = new Ajv();
+
+  const schema = {
+    type: "array",
+    items: {
+      type: "object",
+      properties: {
+        id: { type: "integer" },
+        name: { type: "string" },
+        dataStoreId: { type: ["integer", "null"] },
+        dataStoreName: { type: ["string", "null"] },
+        status: { type: "string" },
+        databaseTemplate: { type: "string" },
+        databaseName: { type: ["string", "null"] },
+        lastRefreshed: { type: "string" },
+        lastModifiedDate: { type: ["string", "null"] }
+      },
+      required: ["id", "name", "status", "databaseTemplate"]
+    }
+  };
+
+  test("GET DbDataStores: Response matches schema", function () {
+    const valid = ajv.validate(schema, res.getBody());
+    expect(valid).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+}

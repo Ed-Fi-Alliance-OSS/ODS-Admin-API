@@ -1,0 +1,44 @@
+meta {
+  name: DataStoreDerivatives - Invalid DataStore Id
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{API_URL}}/v3/dataStoreDerivatives/{{CreatedDataStoreDerivativeId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "dataStoreId": 0,
+    "derivativeType": "ReadReplica",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("PUT DataStoreDerivatives Invalid: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT DataStoreDerivatives Invalid: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT DataStoreDerivatives Invalid: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT DataStoreDerivatives Invalid: Invalid DataStoreId", function () {
+     expect(response.errors.DataStoreId[0]).to.contain("valid DataStore id");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

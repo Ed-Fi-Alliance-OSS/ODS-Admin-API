@@ -60,6 +60,7 @@ public class AdminApiModeValidationMiddleware
 
         return path switch
         {
+            var p when p.Contains("/v3/", StringComparison.OrdinalIgnoreCase) => AdminApiMode.V3,
             var p when p.Contains("/v2/", StringComparison.OrdinalIgnoreCase) => AdminApiMode.V2,
             var p when p.Contains("/v1/", StringComparison.OrdinalIgnoreCase) => AdminApiMode.V1,
             _ => AdminApiMode.Unversioned

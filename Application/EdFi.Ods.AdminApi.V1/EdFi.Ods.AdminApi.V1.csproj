@@ -15,6 +15,11 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Microsoft.NET.Sdk.Web auto-includes *.json as Content. Multiple referenced Web
+         projects each contributing packages.lock.json to the publish root trigger NETSDK1152. -->
+    <Content Remove="packages.lock.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Asp.Versioning.Http" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />

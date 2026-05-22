@@ -1,0 +1,66 @@
+meta {
+  name: DataStoreContexts by ID
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{API_URL}}/v3/dataStoreContexts/{{CreatedDataStoreContextId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET DataStoreContextById: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+  
+  test("GET DataStoreContextId: Response result matches DataStoresContext", function () {
+      const result = res.getBody();
+      expect(result.contextKey).to.not.be.empty;
+      expect(result.contextValue).to.not.be.empty;
+      expect(result.dataStoreId).to.not.equal(0);
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetDataStoreContextsSchema = {
+    "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "contextKey": {
+            "type": "string"
+          },
+          "contextValue": {
+            "type": "string"
+          },
+          "dataStoreId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "contextKey",
+          "contextValue",
+          "dataStoreId"     
+        ]
+  }
+  
+  test("GET DataStoresContext: Validation Schema Response", () => {
+      const valid = ajv.validate(GetDataStoreContextsSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

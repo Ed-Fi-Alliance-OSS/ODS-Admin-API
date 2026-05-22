@@ -10,3 +10,8 @@ updates:
     target-branch: main
     schedule:
       interval: weekly
+    cooldown:
+      semver-patch-days: 5
+      semver-minor-days: 7
+      semver-major-days: 14
+      default-days: 7

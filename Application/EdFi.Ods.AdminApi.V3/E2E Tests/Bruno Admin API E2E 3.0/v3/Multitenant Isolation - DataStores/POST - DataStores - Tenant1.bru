@@ -1,0 +1,52 @@
+meta {
+  name: DataStores - Tenant1
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{API_URL}}/v3/dataStores/
+  body: json
+  auth: inherit
+}
+
+headers {
+  Tenant: Tenant1
+}
+
+body:json {
+  {
+      "name": "Test-DataStore-{{DataStoreGUID}}",
+      "dataStoreType": "postgresql",
+      "connectionString": "{{connectionString}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("DataStoreGUID", bru.interpolate('{{$guid}}'));
+  
+}
+
+script:post-response {
+  if (bru.getEnvVar("isMultitenant") == "true") {
+      test("POST DataStores: Status code is Created", function () {
+          expect(res.getStatus()).to.equal(201);
+      });
+  
+      test("POST DataStores: Response includes location in header", function () {
+
+          expect(res.getHeaders()).to.have.property("location".toLowerCase());
+          const id = res.getHeader("location").split("/").pop();
+          if(id)
+          {
+              bru.setEnvVar("CreatedDataStoreId", id);
+          }
+      });
+  }
+  
+  
+}
+
+settings {
+  encodeUrl: true
+}

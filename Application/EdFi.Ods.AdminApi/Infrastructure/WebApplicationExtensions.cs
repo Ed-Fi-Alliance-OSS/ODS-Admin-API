@@ -5,6 +5,7 @@
 using EdFi.Ods.AdminApi.Common.Constants;
 using AdminApiV1Features = EdFi.Ods.AdminApi.V1.Infrastructure.Helpers;
 using AdminApiV2Features = EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using AdminApiV3Features = EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -29,6 +30,14 @@ public static class WebApplicationExtensions
                 {
                     routeBuilder.MapEndpoints(application);
                 }
+                break;
+
+            case AdminApiMode.V3:
+                foreach (var routeBuilder in AdminApiV3Features.AdminApiFeatureHelper.GetFeatures())
+                {
+                    routeBuilder.MapEndpoints(application);
+                }
+                new Features.Information.ReadInformation().MapEndpoints(application);
                 break;
 
             default:
