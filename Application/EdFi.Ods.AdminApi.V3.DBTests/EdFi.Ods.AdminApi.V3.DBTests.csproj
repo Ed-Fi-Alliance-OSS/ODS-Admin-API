@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>EdFi.Ods.AdminApi.V3.DBTests</AssemblyName>
     <RootNamespace>EdFi.Ods.AdminApi.V3.DBTests</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EdFi.Ods.AdminApi.V3\EdFi.Ods.AdminApi.V3.csproj" />

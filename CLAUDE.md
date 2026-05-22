@@ -17,7 +17,7 @@ Full developer procedures and examples: `docs/developer.md` (Build Script, Runni
 * Make only high-confidence suggestions when reviewing code changes.
 * Do not change `NuGet.config` files unless explicitly requested.
 * For short tasks, include the section name in the prompt so agents load only that section.
-* Keep updates to `AGENTS.md` concise and focused to reduce token usage; put full details, examples and long procedures in `docs/developer.md`.
+* Keep updates to `CLAUDE.md` concise and focused to reduce token usage; put full details, examples and long procedures in `docs/developer.md`.
 
 ### Coding & Tests
 
@@ -37,6 +37,7 @@ Short run/build/architecture notes — see `docs/developer.md` for full procedur
 * Build helper: `./build.ps1` (common commands: `build`, `UnitTest`, `IntegrationTest`, `run`).
 * Local run options: `build.ps1 run`, Docker compose, or Visual Studio launch profiles.
 * DB migrations: scripts and artifacts under `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`.
+* Run bruno e2e tests for a particular specification (v1, v2, v3) locally, e.g: `./eng/run-e2e-bruno.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`.
 * Architecture: feature-based layout; `IUsersContext` handles `EdFi_Admin`, `ISecurityContext` handles `EdFi_Security` (EF Core); AutoMapper mappings in `AdminApiMappingProfile.cs`.
 
 <!-- Changelog removed to keep AGENTS.md concise; use git history for changes. -->

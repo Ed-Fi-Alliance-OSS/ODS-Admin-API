@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>EdFi.Ods.AdminApi.V3.UnitTests</AssemblyName>
     <RootNamespace>EdFi.Ods.AdminApi.V3.UnitTests</RootNamespace>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Configurations>Debug;Release</Configurations>
     <Copyright>Copyright © 2023 Ed-Fi Alliance</Copyright>
   </PropertyGroup>
