@@ -338,6 +338,10 @@ function IntegrationTests7x {
     Invoke-Execute { RunTests -Filter "*AdminApi.DBTests" }
 }
 
+function IntegrationTests3x {
+    Invoke-Execute { RunTests -Filter "*AdminApi.V3.DBTests" }
+}
+
 function IntegrationTests6x {
     Invoke-Execute { RunTests -Filter "*AdminApi.V1.DBTests" }
 }
@@ -481,6 +485,9 @@ function Invoke-IntegrationTestSuite {
         }
         Invoke-Step {
             IntegrationTests7x
+        }
+        Invoke-Step {
+            IntegrationTests3x
         }
     }
 
