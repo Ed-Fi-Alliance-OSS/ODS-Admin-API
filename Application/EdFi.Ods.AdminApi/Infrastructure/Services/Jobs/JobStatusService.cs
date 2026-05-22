@@ -39,15 +39,46 @@ public class JobStatusService(AdminApiDbContext dbContext,
             {
                 JobId = jobId,
                 Status = status.ToString(),
+                CreatedAt = DateTime.UtcNow,
                 ErrorMessage = errorMessage
             };
+            
+            // Set FinishedAt when job reaches final state
+            if (status == QuartzJobStatus.Completed || status == QuartzJobStatus.Error)
+            {
+                jobStatus.FinishedAt = DateTime.UtcNow;
+            }
+            
             resolvedDbContext.JobStatuses.Add(jobStatus);
         }
         else
         {
             jobStatus.Status = status.ToString();
             jobStatus.ErrorMessage = errorMessage;
+
+            // Set FinishedAt when job reaches final state
+            if (status == QuartzJobStatus.Completed || status == QuartzJobStatus.Error)
+            {
+                jobStatus.FinishedAt = DateTime.UtcNow;
+            }
         }
         await resolvedDbContext.SaveChangesAsync();
+    }
+
+    public async Task<JobStatus?> GetStatusAsync(string jobId, string? tenantName = null)
+    {
+        AdminApiDbContext resolvedDbContext;
+
+        if (_isMultiTenancyEnabled && !string.IsNullOrEmpty(tenantName))
+        {
+            resolvedDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName);
+        }
+        else
+        {
+            resolvedDbContext = dbContext;
+        }
+
+        return await resolvedDbContext.JobStatuses
+            .FirstOrDefaultAsync(j => j.JobId == jobId);
     }
 }

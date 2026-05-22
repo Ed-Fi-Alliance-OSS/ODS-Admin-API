@@ -26,7 +26,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all data stores",
                 "Triggers a refresh of education organization data from all data stores"
             )
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithRouteOptions(b => b.WithResponseCode(201))
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
@@ -36,21 +36,26 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified data store"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(202)
+                .WithResponseCode(201)
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
         [FromServices] ISchedulerFactory schedulerFactory,
-        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider)
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        [FromServices] IJobStatusService jobStatusService)
     {
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
+        var jobName = $"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}";
+        var jobId = $"{jobName}_{Guid.NewGuid():N}";
+
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
-            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .WithIdentity(jobName)
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
+            .UsingJobData(JobConstants.RunIdKey, jobId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -60,16 +65,26 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        return Results.Accepted(null, new
+        await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
+
+        var createdAt = DateTime.UtcNow;
+        var response = new
         {
-            Message = "Education organizations refresh has been queued for all data stores"
-        });
+            jobId,
+            status = QuartzJobStatus.Pending.ToString(),
+            createdAt,
+            message = "Education organizations refresh has been queued for all instances"
+        };
+        var locationUri = $"/v3/jobs/{jobId}";
+
+        return Results.Created(locationUri, response);
     }
 
     public static async Task<IResult> RefreshEducationOrganizationsByDataStore(
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IGetDataStoreQuery getDataStoreQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
+        [FromServices] IJobStatusService jobStatusService,
         int dataStoreId)
     {
         var dataStore = getDataStoreQuery.Execute(dataStoreId);
@@ -81,10 +96,14 @@ public class RefreshEducationOrganizations : IFeature
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
+        var jobName = $"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}";
+        var jobId = $"{jobName}_{Guid.NewGuid():N}";
+
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
-            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .WithIdentity(jobName)
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
             .UsingJobData(JobConstants.OdsInstanceIdKey, dataStoreId)
+            .UsingJobData(JobConstants.RunIdKey, jobId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -94,9 +113,18 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        return Results.Accepted(null, new
+        await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
+
+        var createdAt = DateTime.UtcNow;
+        var response = new
         {
-            Message = $"Education organizations refresh has been queued for data store {dataStoreId}"
-        });
+            jobId,
+            status = QuartzJobStatus.Pending.ToString(),
+            createdAt,
+            message = "Education organizations refresh has been queued for the specified instance"
+        };
+        var locationUri = $"/v3/jobs/{jobId}";
+
+        return Results.Created(locationUri, response);
     }
 }
