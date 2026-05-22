@@ -52,7 +52,7 @@
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.7.0.110445" />
     <!-- JSON -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="NJsonSchema" Version="11.0.2" />
+    <PackageVersion Include="NJsonSchema" Version="11.6.1" />
     <PackageVersion Include="System.Text.Json" Version="9.0.0" />
     <!-- PostgreSQL -->
     <PackageVersion Include="Npgsql" Version="8.0.6" />
