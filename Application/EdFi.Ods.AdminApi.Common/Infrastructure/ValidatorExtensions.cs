@@ -21,7 +21,7 @@ public static class ValidatorExtensions
 
     public static void GuardRouteIdMatchesBodyId(int routeId, int requestId, string propertyName)
     {
-        if (routeId > 0 && routeId != requestId)
+        if (routeId > 0 && requestId > 0 && routeId != requestId)
         {
             throw new ValidationException([new ValidationFailure(propertyName, ErrorMessagesConstants.RequestBodyIdMismatch)]);
         }
