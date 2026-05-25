@@ -55,7 +55,7 @@ public class ErrorMessagesConstants
     /// <summary>
     /// Identifier provided in the request body does not match the identifier provided as a parameter in the request URL.
     /// </summary>
-    public const string RequestBodyIdMismatch = "The ID in the request body must match the ID in the URL.";
+    public const string RequestBodyIdMismatch = "Request body id must match the id in the url.";
 }
 
 public enum AdminApiMode

@@ -1,37 +1,36 @@
 meta {
-  name: DataStoreDerivatives - ID Mismatch
+  name: DataStoreContexts - ID Missing in Body
   type: http
-  seq: 25
+  seq: 21.1
 }
 
 put {
-  url: {{API_URL}}/v3/dataStoreDerivatives/{{CreatedDataStoreDerivativeId}}
+  url: {{API_URL}}/v3/dataStoreContexts/{{CreatedDataStoreContextId}}
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "id": 999999,
     "dataStoreId": {{DataStoreId}},
-    "derivativeType": "ReadReplica",
-    "connectionString": "{{connectionString}}"
+    "contextKey": "ckey",
+    "contextValue": "cvalue"
   }
 }
 
 script:post-response {
-  test("PUT DataStoreDerivatives ID Mismatch: Status code is Bad Request", function () {
+  test("PUT DataStoreContexts ID Missing in Body: Status code is Bad Request", function () {
       expect(res.getStatus()).to.equal(400);
   });
   
   const response = res.getBody();
   
-  test("PUT DataStoreDerivatives ID Mismatch: Response matches error format", function () {
+  test("PUT DataStoreContexts ID Missing in Body: Response matches error format", function () {
       expect(response).to.have.property("title");
       expect(response).to.have.property("errors");
   });
   
-  test("PUT DataStoreDerivatives ID Mismatch: Response includes Id mismatch error", function () {
+  test("PUT DataStoreContexts ID Missing in Body: Response includes Id mismatch error", function () {
       expect(response.errors["Id"].length).to.equal(1);
       expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
   });

@@ -1,7 +1,7 @@
 meta {
-  name: DataStores - ID Mismatch
+  name: DataStores - ID Missing in Body
   type: http
-  seq: 20
+  seq: 20.1
 }
 
 put {
@@ -12,7 +12,6 @@ put {
 
 body:json {
   {
-      "id": 999999,
       "name": "Updated-Test-DataStore-{{DataStoreGUID}}",
       "dataStoreType": "Updated-Test-OdsdataStoreType",
       "connectionString": "{{connectionString}}"
@@ -20,18 +19,18 @@ body:json {
 }
 
 script:post-response {
-  test("PUT DataStores ID Mismatch: Status code is Bad Request", function () {
+  test("PUT DataStores ID Missing in Body: Status code is Bad Request", function () {
       expect(res.getStatus()).to.equal(400);
   });
   
   const response = res.getBody();
   
-  test("PUT DataStores ID Mismatch: Response matches error format", function () {
+  test("PUT DataStores ID Missing in Body: Response matches error format", function () {
       expect(response).to.have.property("title");
       expect(response).to.have.property("errors");
   });
   
-  test("PUT DataStores ID Mismatch: Response includes Id mismatch error", function () {
+  test("PUT DataStores ID Missing in Body: Response includes Id mismatch error", function () {
       expect(response.errors["Id"].length).to.equal(1);
       expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
   });
