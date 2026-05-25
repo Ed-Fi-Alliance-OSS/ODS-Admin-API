@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.V3.Features.DataStores;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -27,7 +26,6 @@ public class RefreshEducationOrganizationsTests
     private IContextProvider<TenantConfiguration> _tenantConfigurationProvider = null!;
     private IGetDataStoreQuery _getDataStoreQuery = null!;
     private ISchedulerFactory _schedulerFactory = null!;
-    private IJobStatusService _jobStatusService = null!;
 
     [SetUp]
     public void SetUp()
@@ -36,7 +34,6 @@ public class RefreshEducationOrganizationsTests
         _tenantConfigurationProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         _getDataStoreQuery = A.Fake<IGetDataStoreQuery>();
         _schedulerFactory = new TestSchedulerFactory(_scheduler);
-        _jobStatusService = A.Fake<IJobStatusService>();
     }
 
     [Test]
@@ -49,8 +46,7 @@ public class RefreshEducationOrganizationsTests
         // Act
         var result = await RefreshEducationOrganizations.RefreshAllEducationOrganizations(
             _schedulerFactory,
-            _tenantConfigurationProvider,
-            _jobStatusService);
+            _tenantConfigurationProvider);
 
         // Assert
         result.ShouldNotBeNull();
@@ -74,7 +70,6 @@ public class RefreshEducationOrganizationsTests
             _schedulerFactory,
             _getDataStoreQuery,
             _tenantConfigurationProvider,
-            _jobStatusService,
             instanceId);
 
         // Assert

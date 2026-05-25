@@ -43,8 +43,7 @@ public class RefreshEducationOrganizations : IFeature
 
     public static async Task<IResult> RefreshAllEducationOrganizations(
         [FromServices] ISchedulerFactory schedulerFactory,
-        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
-        [FromServices] IJobStatusService jobStatusService)
+        [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider)
     {
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
@@ -65,14 +64,9 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
-
-        var createdAt = DateTime.UtcNow;
         var response = new
         {
             jobId,
-            status = QuartzJobStatus.Pending.ToString(),
-            createdAt,
             message = "Education organizations refresh has been queued for all instances"
         };
         var locationUri = $"/v2/jobs/{jobId}";
@@ -84,7 +78,6 @@ public class RefreshEducationOrganizations : IFeature
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IGetOdsInstanceQuery getOdsInstanceByIdQuery,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
-        [FromServices] IJobStatusService jobStatusService,
         int instanceId)
     {
         var odsInstance = getOdsInstanceByIdQuery.Execute(instanceId);
@@ -113,14 +106,9 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        await jobStatusService.SetStatusAsync(jobId, QuartzJobStatus.Pending, tenantIdentifier);
-
-        var createdAt = DateTime.UtcNow;
         var response = new
         {
             jobId,
-            status = QuartzJobStatus.Pending.ToString(),
-            createdAt,
             message = "Education organizations refresh has been queued for the specified instance"
         };
         var locationUri = $"/v2/jobs/{jobId}";
