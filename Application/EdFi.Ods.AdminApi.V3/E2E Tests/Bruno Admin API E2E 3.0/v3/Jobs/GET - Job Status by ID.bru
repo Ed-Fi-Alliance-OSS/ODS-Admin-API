@@ -44,10 +44,12 @@ script:pre-request {
   const maxAttempts = 10;
   for (let i = 0; i < maxAttempts; i++) {
     const r = await axios.get(`${API_URL}/v3/jobs/${jobId}`, axiosConfig);
-    if (r.status !== 404) {
+    if (r.status >= 200 && r.status < 300) {
       console.log(`✅ Job ${jobId} found after ${i + 1} attempt(s)`);
       jobFound = true;
       break;
+    } else if (r.status !== 404) {
+      throw new Error(`Unexpected status ${r.status} while polling for job ${jobId}`);
     }
     if (i < maxAttempts - 1) {
       await new Promise(resolve => setTimeout(resolve, 1000));
