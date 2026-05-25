@@ -18,7 +18,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Helpers;
 
 [TestFixture]
-public class OdsInstanceEncryptionHelperTests
+public class DataStoreEncryptionHelperTests
 {
     private static readonly string TestEncryptionKey = Convert.ToBase64String(new byte[32]);
     private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";
@@ -33,7 +33,7 @@ public class OdsInstanceEncryptionHelperTests
         var encryptedInstance = new OdsInstance { Name = "Encrypted", ConnectionString = encrypted };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { plaintextInstance, encryptedInstance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         _provider.IsEncrypted(plaintextInstance.ConnectionString).ShouldBeTrue();
@@ -48,7 +48,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "PostgreSql");
 
         instance.ConnectionString.ShouldBe(PlainConnectionString);
@@ -61,7 +61,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = string.Empty };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBe(string.Empty);
@@ -74,7 +74,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = null };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBeNull();
@@ -86,7 +86,7 @@ public class OdsInstanceEncryptionHelperTests
     {
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance>(), usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
@@ -98,7 +98,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "");
 
         instance.ConnectionString.ShouldBe(PlainConnectionString);
@@ -111,7 +111,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         _provider.IsEncrypted(instance.ConnectionString).ShouldBeTrue();
@@ -125,7 +125,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = encrypted };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "SqlServer");
 
         instance.ConnectionString.ShouldBe(encrypted);
@@ -138,7 +138,7 @@ public class OdsInstanceEncryptionHelperTests
         var instance = new OdsInstance { Name = "I1", ConnectionString = PlainConnectionString };
         var usersContext = A.Fake<IUsersContext>();
 
-        await OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
             new List<OdsInstance> { instance }, usersContext, _provider, TestEncryptionKey, "UnknownEngine");
 
         instance.ConnectionString.ShouldBe(PlainConnectionString);

@@ -122,7 +122,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             var dataStores = getDataStoresQuery.Execute();
 
-            tenantDetails.DataStores = TenantMapper.ToOdsInstanceModelList(dataStores);
+            tenantDetails.DataStores = TenantMapper.ToDataStoreModelList(dataStores);
 
             var dataStoreIdsList = tenantDetails.DataStores.Select(i => i.DataStoreId).ToArray();
 

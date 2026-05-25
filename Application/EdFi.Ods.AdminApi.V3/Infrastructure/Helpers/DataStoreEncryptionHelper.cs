@@ -10,7 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
-public static class OdsInstanceEncryptionHelper
+public static class DataStoreEncryptionHelper
 {
     public static async Task EncryptConnectionStringsIfNeededAsync(
         List<OdsInstance> instances,

@@ -23,7 +23,7 @@ public class RefreshEducationOrganizationsJob(
     {
         var multiTenancyEnabled = options.Value.MultiTenancy;
         var jobId = context.JobDetail.Key.Name;
-        var instanceId = context.MergedJobDataMap.ContainsKey(JobConstants.OdsInstanceIdKey)
+        var dataStoreId = context.MergedJobDataMap.ContainsKey(JobConstants.OdsInstanceIdKey)
             ? context.MergedJobDataMap.GetInt(JobConstants.OdsInstanceIdKey)
             : (int?)null;
         if (multiTenancyEnabled && context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey))
@@ -37,7 +37,7 @@ public class RefreshEducationOrganizationsJob(
                     tenantName,
                     jobId
                 );
-                await _edOrgService.Execute(tenantName, instanceId);
+                await _edOrgService.Execute(tenantName, dataStoreId);
             }
             else
             {
@@ -51,7 +51,7 @@ public class RefreshEducationOrganizationsJob(
                 "Starting scheduled RefreshEducationOrganizationsJob with JobId: {JobId}",
                 jobId
             );
-            await _edOrgService.Execute(null, instanceId);
+            await _edOrgService.Execute(null, dataStoreId);
         }
     }
 }

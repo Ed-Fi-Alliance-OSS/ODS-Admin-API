@@ -49,7 +49,7 @@ public class GetDataStoresQuery : IGetDataStoresQuery
     {
         var instances = _usersContext.OdsInstances.OrderBy(o => o.Name).ToList();
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
+            DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
 
         return instances;
     }
@@ -67,7 +67,7 @@ public class GetDataStoresQuery : IGetDataStoresQuery
             .ToList();
 
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
-            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
+            DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(instances, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
 
         return instances;
     }

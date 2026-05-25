@@ -17,7 +17,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
-public class GetApplicationByOdsInstanceIdQueryTests : PlatformUsersContextTestBase
+public class GetApplicationByDataStoreIdQueryTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldGetBasicApplicationData()
