@@ -28,6 +28,7 @@ public class EditProfile : IFeature
     [ProfileRequestExample]
     public async Task<IResult> Handle(Validator validator, IEditProfileCommand editProfileCommand, EditProfileRequest request, int id)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
         request.Id = id;

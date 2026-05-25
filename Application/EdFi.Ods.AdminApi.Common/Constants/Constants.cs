@@ -51,6 +51,11 @@ public class ErrorMessagesConstants
     /// Tenant identifier provided in the request header does not match the tenant identifier provided as a parameter in the request URL.
     /// </summary>
     public const string Tenant_ParameterMismatch = "Tenant header and URL tenant name do not match";
+
+    /// <summary>
+    /// Identifier provided in the request body does not match the identifier provided as a parameter in the request URL.
+    /// </summary>
+    public const string RequestBodyIdMismatch = "The ID in the request body must match the ID in the URL.";
 }
 
 public enum AdminApiMode
