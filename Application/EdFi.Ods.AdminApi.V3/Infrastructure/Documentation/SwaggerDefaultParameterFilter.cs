@@ -110,7 +110,7 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                     }
                     break;
                 }
-            case "GetOdsInstances":
+            case "GetDataStores":
                 {
                     foreach (var parameter in operation.Parameters)
                     {

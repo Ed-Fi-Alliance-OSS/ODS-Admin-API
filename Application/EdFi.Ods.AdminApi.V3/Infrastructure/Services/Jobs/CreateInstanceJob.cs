@@ -120,7 +120,7 @@ public class CreateInstanceJob(
 
             var finalName = dbInstance.Name;
             ValidateFinalName(finalName);
-            var existingOdsInstance = await GetExistingOdsInstanceByNameAsync(resolvedUsersContext, finalName);
+            var existingDataStore = await GetExistingDataStoreByNameAsync(resolvedUsersContext, finalName);
 
             var now = DateTime.UtcNow;
             dbInstance.Status = DbInstanceStatus.CreateInProgress.ToString();
@@ -141,24 +141,24 @@ public class CreateInstanceJob(
 
             var encryptedConnectionString = BuildEncryptedConnectionString(dbInstance.DatabaseName, tenantName);
 
-            var odsInstance = existingOdsInstance ?? new OdsInstance
+            var dataStore = existingDataStore ?? new OdsInstance
             {
                 Name = finalName,
                 InstanceType = dbInstance.DatabaseTemplate,
                 ConnectionString = encryptedConnectionString
             };
 
-            odsInstance.InstanceType = dbInstance.DatabaseTemplate;
-            odsInstance.ConnectionString = encryptedConnectionString;
+            dataStore.InstanceType = dbInstance.DatabaseTemplate;
+            dataStore.ConnectionString = encryptedConnectionString;
 
-            if (existingOdsInstance is null)
+            if (existingDataStore is null)
             {
-                resolvedUsersContext.OdsInstances.Add(odsInstance);
+                resolvedUsersContext.OdsInstances.Add(dataStore);
             }
 
             await resolvedUsersContext.SaveChangesAsync(CancellationToken.None);
 
-            dbInstance.OdsInstanceId = odsInstance.OdsInstanceId;
+            dbInstance.OdsInstanceId = dataStore.OdsInstanceId;
             dbInstance.OdsInstanceName = finalName;
             dbInstance.Status = DbInstanceStatus.Created.ToString();
             dbInstance.LastModifiedDate = DateTime.UtcNow;
@@ -295,6 +295,6 @@ public class CreateInstanceJob(
         }
     }
 
-    private static Task<OdsInstance?> GetExistingOdsInstanceByNameAsync(IUsersContext usersContext, string finalName)
+    private static Task<OdsInstance?> GetExistingDataStoreByNameAsync(IUsersContext usersContext, string finalName)
         => usersContext.OdsInstances.FirstOrDefaultAsync(instance => instance.Name == finalName, CancellationToken.None);
 }

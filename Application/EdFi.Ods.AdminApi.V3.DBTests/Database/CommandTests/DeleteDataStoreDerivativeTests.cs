@@ -12,7 +12,7 @@ using System.Linq;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class DeleteOdsInstanceDerivativeTests : PlatformUsersContextTestBase
+public class DeleteDataStoreDerivativeTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldDeleteOdsInstanceDerivative()

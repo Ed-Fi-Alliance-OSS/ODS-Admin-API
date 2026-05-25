@@ -5,13 +5,13 @@
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
-public static class OdsInstanceIdentityHelper
+public static class DataStoreIdentityHelper
 {
-    public static int GetIdentityValue(string odsInstanceName)
+    public static int GetIdentityValue(string dataStoreName)
     {
-        var index = odsInstanceName.LastIndexOf("_", StringComparison.InvariantCulture);
+        var index = dataStoreName.LastIndexOf("_", StringComparison.InvariantCulture);
 
-        var identityValue = odsInstanceName[(index + 1)..];
+        var identityValue = dataStoreName[(index + 1)..];
 
         return int.Parse(identityValue);
     }

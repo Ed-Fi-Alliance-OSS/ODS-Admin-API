@@ -12,7 +12,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
 public interface IGetApiClientDataStoreQuery
 {
-    ApiClientOdsInstance? Execute(int apiClientId, int odsInstanceId);
+    ApiClientOdsInstance? Execute(int apiClientId, int dataStoreId);
 }
 
 public class GetApiClientDataStoreQuery : IGetApiClientDataStoreQuery
@@ -23,10 +23,10 @@ public class GetApiClientDataStoreQuery : IGetApiClientDataStoreQuery
     {
         _usersContext = userContext;
     }
-    public ApiClientOdsInstance? Execute(int apiClientId, int odsInstanceId)
+    public ApiClientOdsInstance? Execute(int apiClientId, int dataStoreId)
     {
         var result = _usersContext.ApiClientOdsInstances
-            .SingleOrDefault(odsInstance => odsInstance.ApiClient.ApiClientId == apiClientId && odsInstance.OdsInstance.OdsInstanceId == odsInstanceId);
+            .SingleOrDefault(dataStore => dataStore.ApiClient.ApiClientId == apiClientId && dataStore.OdsInstance.OdsInstanceId == dataStoreId);
         return result;
     }
 }
