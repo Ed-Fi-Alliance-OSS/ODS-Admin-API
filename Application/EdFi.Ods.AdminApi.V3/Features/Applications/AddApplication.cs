@@ -123,6 +123,10 @@ public class AddApplication : IFeature
                 .NotEmpty()
                 .WithMessage(FeatureConstants.ClaimSetNameValidationMessage);
 
+            RuleFor(m => m.ClaimSetName)
+                .Must(name => name == null || !name.Contains(' '))
+                .WithMessage(FeatureConstants.ClaimSetNameNoWhitespaceMessage);
+
             RuleFor(m => m.EducationOrganizationIds)
                 .NotEmpty()
                 .WithMessage(FeatureConstants.EdOrgIdsValidationMessage);

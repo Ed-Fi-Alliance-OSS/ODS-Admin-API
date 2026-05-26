@@ -84,6 +84,10 @@ public class ImportClaimSet : IFeature
                 .MaximumLength(255)
                 .WithMessage(FeatureConstants.ClaimSetNameMaxLengthMessage);
 
+            RuleFor(m => m.Name)
+                .Must(name => name == null || !name.Contains(' '))
+                .WithMessage(FeatureConstants.ClaimSetNameNoWhitespaceMessage);
+
             RuleFor(m => m).Custom((claimSet, context) =>
             {
                 var resourceClaimValidator = new ResourceClaimValidator();

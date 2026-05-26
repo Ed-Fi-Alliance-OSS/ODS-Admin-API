@@ -73,6 +73,10 @@ public class CopyClaimSet : IFeature
             RuleFor(m => m.Name)
                 .MaximumLength(255)
                 .WithMessage(FeatureConstants.ClaimSetNameMaxLengthMessage);
+
+            RuleFor(m => m.Name)
+                .Must(name => name == null || !name.Contains(' '))
+                .WithMessage(FeatureConstants.ClaimSetNameNoWhitespaceMessage);
         }
 
         private bool BeAnExistingClaimSet(int id)
