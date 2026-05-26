@@ -14,24 +14,15 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.ClaimSetEditorTests;
 [TestFixture]
 public class ImportClaimSetValidatorTests : SecurityDataTestBase
 {
-    private ImportClaimSet.Validator CreateValidator()
-    {
-        using var securityContext = TestContext;
-        var getAllClaimSetsQuery = new GetAllClaimSetsQuery(securityContext, Testing.GetAppSettings());
-        var getResourceClaimsAsFlatListQuery = new GetResourceClaimsAsFlatListQuery(securityContext);
-        var getAllAuthorizationStrategiesQuery = new GetAllAuthorizationStrategiesQuery(securityContext);
-        var getAllActionsQuery = new GetAllActionsQuery(securityContext, Testing.GetAppSettings());
-        return new ImportClaimSet.Validator(
-            getAllClaimSetsQuery,
-            getResourceClaimsAsFlatListQuery,
-            getAllAuthorizationStrategiesQuery,
-            getAllActionsQuery);
-    }
-
     [Test]
     public void Validator_Should_Fail_When_Name_Contains_Whitespace()
     {
-        var validator = CreateValidator();
+        using var securityContext = TestContext;
+        var validator = new ImportClaimSet.Validator(
+            new GetAllClaimSetsQuery(securityContext, Testing.GetAppSettings()),
+            new GetResourceClaimsAsFlatListQuery(securityContext),
+            new GetAllAuthorizationStrategiesQuery(securityContext),
+            new GetAllActionsQuery(securityContext, Testing.GetAppSettings()));
 
         var request = new ImportClaimSet.ImportClaimSetRequest { Name = "imported claimset" };
         var result = validator.Validate(request);
@@ -43,7 +34,12 @@ public class ImportClaimSetValidatorTests : SecurityDataTestBase
     [Test]
     public void Validator_Should_Pass_When_Name_Has_No_Whitespace()
     {
-        var validator = CreateValidator();
+        using var securityContext = TestContext;
+        var validator = new ImportClaimSet.Validator(
+            new GetAllClaimSetsQuery(securityContext, Testing.GetAppSettings()),
+            new GetResourceClaimsAsFlatListQuery(securityContext),
+            new GetAllAuthorizationStrategiesQuery(securityContext),
+            new GetAllActionsQuery(securityContext, Testing.GetAppSettings()));
 
         var request = new ImportClaimSet.ImportClaimSetRequest { Name = "importedclaimset" };
         var result = validator.Validate(request);
