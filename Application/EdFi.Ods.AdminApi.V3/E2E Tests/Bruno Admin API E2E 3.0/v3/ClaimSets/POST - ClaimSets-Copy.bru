@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-      "name": "Copied ClaimSet from {{CreatedClaimSetId}}",
+      "name": "CopiedClaimSet-from-{{CreatedClaimSetId}}",
       "originalid": "{{CreatedClaimSetId}}"
   }
 }
@@ -146,7 +146,7 @@ script:post-response {
       test("POST ClaimSets: Response result claimset has expected name and resource claims", function () {
        expect(copiedClaimSetResponse.data).to.have.property("id");
        expect(copiedClaimSetResponse.data).to.have.property("name");
-       expect(copiedClaimSetResponse.data.name).contains("Copied ClaimSet from");
+       expect(copiedClaimSetResponse.data.name).contains("CopiedClaimSet-from");
        expect(copiedClaimSetResponse.data.resourceClaims).to.not.be.empty;
        const resourceclaimexists = copiedClaimSetResponse.data.resourceClaims.some(r => r.name === "educationStandards");
        expect(resourceclaimexists).to.equal(true);

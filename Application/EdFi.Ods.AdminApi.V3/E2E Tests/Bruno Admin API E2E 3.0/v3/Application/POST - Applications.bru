@@ -14,7 +14,7 @@ body:json {
   {
     "applicationName": "Test Application",
     "vendorId": {{ApplicationVendorId}},
-    "claimSetName": "Ed-Fi Sandbox",
+    "claimSetName": "{{ApplicationClaimSetName}}",
     "profileIds": [],
     "educationOrganizationIds": [ 255901 ],
     "dataStoreIds": [ {{DataStoreId}} ],
@@ -81,6 +81,18 @@ script:pre-request {
       console.log("Status:", vendorResponse.status);
       console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
       throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }
+
+    // Create a claimset without spaces
+    const claimSetName = `AppTestClaimSet-${Date.now()}`;
+    const claimSetResp = await axios.post(`${API_URL}/v3/claimSets`, {
+      "name": claimSetName
+    }, axiosConfig);
+    if (claimSetResp.status === 201) {
+      console.log("✅ ClaimSet created successfully:", claimSetName);
+      bru.setVar("ApplicationClaimSetName", claimSetName);
+    } else {
+      throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
     }
 
     let offsetVar = bru.getEnvVar("offset");
