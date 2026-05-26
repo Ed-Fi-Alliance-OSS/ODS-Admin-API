@@ -108,12 +108,12 @@ public class DeleteInstanceJob(
 
             if (dbInstance.OdsInstanceId.HasValue)
             {
-                var odsInstance = await resolvedUsersContext.OdsInstances
+                var dataStore = await resolvedUsersContext.OdsInstances
                     .FindAsync(dbInstance.OdsInstanceId.Value);
 
-                if (odsInstance is not null)
+                if (dataStore is not null)
                 {
-                    resolvedUsersContext.OdsInstances.Remove(odsInstance);
+                    resolvedUsersContext.OdsInstances.Remove(dataStore);
                     await resolvedUsersContext.SaveChangesAsync(CancellationToken.None);
                 }
             }

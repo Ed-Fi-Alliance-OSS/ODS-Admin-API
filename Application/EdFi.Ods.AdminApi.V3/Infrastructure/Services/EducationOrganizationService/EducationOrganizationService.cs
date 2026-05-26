@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Services.EducationOrganizationServ
 
 public interface IEducationOrganizationService
 {
-    Task Execute(string? tenantName, int? instanceId);
+    Task Execute(string? tenantName, int? dataStoreId);
 }
 
 public class EducationOrganizationService(
@@ -54,7 +55,7 @@ public class EducationOrganizationService(
        ('edfi.StateEducationAgency', 'edfi.EducationServiceCenter', 'edfi.LocalEducationAgency', 'edfi.School');
    ";
 
-    public async Task Execute(string? tenantName, int? instanceId)
+    public async Task Execute(string? tenantName, int? dataStoreId)
     {
         var multiTenancyEnabled = options.Value.MultiTenancy;
         var maxDegreeOfParallelism = options.Value.MaxDegreeOfParallelism;
@@ -69,46 +70,48 @@ public class EducationOrganizationService(
                 return;
             }
             var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
-            await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine, instanceId, maxDegreeOfParallelism);
+            await ProcessDataStoreAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine, dataStoreId, maxDegreeOfParallelism);
         }
         else
         {
-            await ProcessOdsInstanceAsync(tenantName, usersContext, encryptionKey, databaseEngine, instanceId, maxDegreeOfParallelism);
+            await ProcessDataStoreAsync(tenantName, usersContext, encryptionKey, databaseEngine, dataStoreId, maxDegreeOfParallelism);
         }
     }
 
-    public virtual async Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null, int maxDegreeOfParallelism = 10)
+    public virtual async Task ProcessDataStoreAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? dataStoreId = null, int maxDegreeOfParallelism = 10)
     {
-        var odsInstances = instanceId.HasValue
+        var dataStores = dataStoreId.HasValue
             ? await usersContext.OdsInstances
-                .Where(o => o.OdsInstanceId == instanceId.Value)
+                .Where(o => o.OdsInstanceId == dataStoreId.Value)
                 .ToListAsync()
             : await usersContext.OdsInstances.ToListAsync();
 
-        if (instanceId.HasValue && odsInstances.Count == 0)
+        await DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(dataStores, usersContext, encryptionProvider, encryptionKey, databaseEngine);
+
+        if (dataStoreId.HasValue && dataStores.Count == 0)
         {
-            logger.LogWarning("An instanceId was provided ({InstanceId}) but no matching OdsInstance exists for tenant {TenantName}.", instanceId.Value, tenantName);
+            logger.LogWarning("A dataStoreId was provided ({DataStoreId}) but no matching OdsInstance exists for tenant {TenantName}.", dataStoreId.Value, tenantName);
             return;
         }
 
         await Parallel.ForEachAsync(
-            odsInstances,
+            dataStores,
             new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism },
-            async (odsInstance, cancellationToken) =>
+            async (dataStore, cancellationToken) =>
             {
-                await RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, odsInstance, cancellationToken);
+                await RefreshEducationOrganizationsAsync(tenantName, encryptionKey, databaseEngine, dataStore, cancellationToken);
             });
     }
 
-    protected virtual async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance odsInstance, CancellationToken cancellationToken = default)
+    protected virtual async Task RefreshEducationOrganizationsAsync(string? tenantName, string encryptionKey, string databaseEngine, Admin.DataAccess.Models.OdsInstance dataStore, CancellationToken cancellationToken = default)
     {
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!encryptionProvider.TryDecrypt(odsInstance.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString))
+            if (!encryptionProvider.TryDecrypt(dataStore.ConnectionString, Convert.FromBase64String(encryptionKey), out var decryptedConnectionString))
             {
-                logger.LogError("Failed to decrypt connection string for ODS Instance ID {OdsInstanceId}. Skipping education organization synchronization for this instance.", odsInstance.OdsInstanceId);
+                logger.LogError("Failed to decrypt connection string for ODS Instance ID {OdsInstanceId}. Skipping education organization synchronization for this instance.", dataStore.OdsInstanceId);
                 return;
             }
 
@@ -121,7 +124,7 @@ public class EducationOrganizationService(
                 : scope.ServiceProvider.GetRequiredService<ITenantSpecificDbContextProvider>().GetAdminApiDbContext(tenantName);
 
             var existingEducationOrganizations = await taskAdminApiDbContext.EducationOrganizations
-            .Where(e => e.InstanceId == odsInstance.OdsInstanceId)
+            .Where(e => e.InstanceId == dataStore.OdsInstanceId)
             .ToDictionaryAsync(e => e.EducationOrganizationId, cancellationToken);
 
             var currentSourceIds = new HashSet<long>(edorgs.Select(e => e.EducationOrganizationId));
@@ -147,8 +150,8 @@ public class EducationOrganizationService(
                         ShortNameOfInstitution = edorg.ShortNameOfInstitution,
                         Discriminator = edorg.Discriminator,
                         ParentId = edorg.ParentId,
-                        InstanceId = odsInstance.OdsInstanceId,
-                        InstanceName = odsInstance.Name,
+                        InstanceId = dataStore.OdsInstanceId,
+                        InstanceName = dataStore.Name,
                         LastModifiedDate = DateTime.UtcNow,
                         LastRefreshed = DateTime.UtcNow
                     });
@@ -165,17 +168,17 @@ public class EducationOrganizationService(
                 taskAdminApiDbContext.EducationOrganizations.RemoveRange(educationOrganizationsToDelete);
             }
 
-            // Save changes for this OdsInstance
+            // Save changes for this DataStore
             await taskAdminApiDbContext.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("Successfully processed ODS Instance ID {OdsInstanceId}. Updated/Added {EdOrgCount} education organizations.",
-                odsInstance.OdsInstanceId, edorgs.Count);
+                dataStore.OdsInstanceId, edorgs.Count);
         }
         catch (Exception ex)
         {
             // Log error but don't throw - this prevents one failure from blocking others
             logger.LogError(ex, "Error processing ODS Instance ID {OdsInstanceId}: {ErrorMessage}",
-                odsInstance.OdsInstanceId, ex.Message);
+                dataStore.OdsInstanceId, ex.Message);
         }
     }
 

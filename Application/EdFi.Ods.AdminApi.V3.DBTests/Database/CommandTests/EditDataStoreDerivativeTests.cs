@@ -14,7 +14,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class EditOdsInstanceDerivativeTests : PlatformUsersContextTestBase
+public class EditDataStoreDerivativeTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldEditOdsInstanceDerivative()

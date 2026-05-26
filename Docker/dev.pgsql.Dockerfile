@@ -43,6 +43,7 @@ RUN apk add --no-cache \
         dos2unix=~7 \
         gettext=~0 \
         icu=~76.1-r1 \
+        krb5-libs=~1 \
         musl=~1.2.5-r12 \
         openssl=3.5.6-r0 \
         postgresql15-client=15.18-r0 && \
