@@ -88,7 +88,7 @@ public class EditClaimSet : IFeature
                 .WithMessage(FeatureConstants.ClaimSetNameMaxLengthMessage);
 
             RuleFor(m => m.Name)
-                .Must(name => name == null || !name.Contains(' '))
+                .Must(name => name == null || !name.Any(char.IsWhiteSpace))
                 .WithMessage(FeatureConstants.ClaimSetNameNoWhitespaceMessage);
         }
 

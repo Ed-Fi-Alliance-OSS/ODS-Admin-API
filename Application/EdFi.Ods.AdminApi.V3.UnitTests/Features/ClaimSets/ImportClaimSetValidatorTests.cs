@@ -47,12 +47,16 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ClaimSets
                 fakeGetAllActionsQuery);
         }
 
-        [Test]
-        public void Should_Have_Error_When_Name_Contains_Whitespace()
+        [TestCase("claimset name")]
+        [TestCase("claimset\tname")]
+        [TestCase("claimset\nname")]
+        [TestCase(" leadingspace")]
+        [TestCase("trailingspace ")]
+        public void Should_Have_Error_When_Name_Contains_Whitespace(string name)
         {
             var request = new ImportClaimSet.ImportClaimSetRequest
             {
-                Name = "claimset name",
+                Name = name,
                 ResourceClaims = new List<ClaimSetResourceClaimModel>()
             };
 

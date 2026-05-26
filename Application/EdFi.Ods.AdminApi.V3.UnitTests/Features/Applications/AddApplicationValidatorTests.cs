@@ -22,11 +22,15 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
             _validator = new AddApplication.Validator();
         }
 
-        [Test]
-        public void Should_Have_Error_When_ClaimSetName_Contains_Whitespace()
+        [TestCase("claimset name")]
+        [TestCase("claimset\tname")]
+        [TestCase("claimset\nname")]
+        [TestCase(" leadingspace")]
+        [TestCase("trailingspace ")]
+        public void Should_Have_Error_When_ClaimSetName_Contains_Whitespace(string claimSetName)
         {
             var request = ValidRequest();
-            request.ClaimSetName = "claimset name";
+            request.ClaimSetName = claimSetName;
 
             var result = _validator.Validate(request);
 

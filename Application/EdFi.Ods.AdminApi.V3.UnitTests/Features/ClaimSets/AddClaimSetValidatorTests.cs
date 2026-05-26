@@ -30,10 +30,14 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ClaimSets
             _validator = new AddClaimSet.Validator(fakeGetAllClaimSetsQuery);
         }
 
-        [Test]
-        public void Should_Have_Error_When_Name_Contains_Whitespace()
+        [TestCase("claimset name")]
+        [TestCase("claimset\tname")]
+        [TestCase("claimset\nname")]
+        [TestCase(" leadingspace")]
+        [TestCase("trailingspace ")]
+        public void Should_Have_Error_When_Name_Contains_Whitespace(string name)
         {
-            var request = new AddClaimSet.AddClaimSetRequest { Name = "claimset name" };
+            var request = new AddClaimSet.AddClaimSetRequest { Name = name };
 
             var result = _validator.Validate(request);
 

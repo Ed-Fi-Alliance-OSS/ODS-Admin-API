@@ -121,7 +121,7 @@ public class EditApplication : IFeature
                 .WithMessage(FeatureConstants.ClaimSetNameValidationMessage);
 
             RuleFor(m => m.ClaimSetName)
-                .Must(name => name == null || !name.Contains(' '))
+                .Must(name => name == null || !name.Any(char.IsWhiteSpace))
                 .WithMessage(FeatureConstants.ClaimSetNameNoWhitespaceMessage);
 
             RuleFor(m => m.EducationOrganizationIds)
