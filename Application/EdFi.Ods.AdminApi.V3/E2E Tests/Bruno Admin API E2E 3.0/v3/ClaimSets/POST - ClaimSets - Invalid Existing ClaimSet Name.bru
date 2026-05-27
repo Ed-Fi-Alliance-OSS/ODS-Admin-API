@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-      "name": "Other Test ClaimSet {{OtherClaimSetGUID}}"
+      "name": "OtherTestClaimSet-{{OtherClaimSetGUID}}"
   }
 }
 
@@ -53,7 +53,7 @@ script:pre-request {
   try {
     // Create a claimsets for the application test
     const claimsetsResponse = await axios.post(`${API_URL}/v3/claimSets`, {
-      "name": `Other Test ClaimSet ${bru.getVar("OtherClaimSetGUID")}`,
+      "name": `OtherTestClaimSet-${bru.getVar("OtherClaimSetGUID")}`,
       "resourceClaims": []
     }, axiosConfig);
 

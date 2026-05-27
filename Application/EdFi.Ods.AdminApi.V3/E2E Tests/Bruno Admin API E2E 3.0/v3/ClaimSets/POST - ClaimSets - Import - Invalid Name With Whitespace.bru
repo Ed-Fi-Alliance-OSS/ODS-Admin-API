@@ -1,0 +1,45 @@
+meta {
+  name: ClaimSets - Import - Invalid Name With Whitespace
+  type: http
+  seq: 8.5
+}
+
+post {
+  url: {{API_URL}}/v3/claimSets/import
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "imported claimset with space",
+      "resourceClaims": []
+  }
+}
+
+script:post-response {
+  test("POST ClaimSets/Import Invalid Name With Whitespace: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST ClaimSets/Import Invalid Name With Whitespace: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("POST ClaimSets/Import Invalid Name With Whitespace: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("POST ClaimSets/Import Invalid Name With Whitespace: Response errors include whitespace message", function () {
+      expect(response.errors.Name.length).to.be.at.least(1);
+      expect(response.errors.Name.some(e => e.toLowerCase().includes("white space"))).to.equal(true);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

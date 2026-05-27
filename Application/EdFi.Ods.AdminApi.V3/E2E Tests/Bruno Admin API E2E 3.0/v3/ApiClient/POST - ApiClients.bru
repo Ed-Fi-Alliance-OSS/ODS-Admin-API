@@ -92,11 +92,23 @@ script:pre-request {
       throw new Error(`Failed to get DataStore - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
     }
 
+    // Create a claimset without spaces
+    const claimSetName = `AppTestClaimSet-${Date.now()}`;
+    const claimSetResp = await axios.post(`${API_URL}/v3/claimSets`, {
+      "name": claimSetName
+    }, axiosConfig);
+    if (claimSetResp.status === 201) {
+      console.log("✅ ClaimSet created successfully:", claimSetName);
+      bru.setVar("ApiClientClaimSetName", claimSetName);
+    } else {
+      throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
+    }
+
     // Create application
     const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
       "applicationName": `Test Application ${uniqueId}`,
       "vendorId": bru.getVar("ApplicationVendorId"),
-      "claimSetName": "Ed-Fi Sandbox",
+      "claimSetName": claimSetName,
       "profileIds": [],
       "educationOrganizationIds": [255901],
       "dataStoreIds": [bru.getVar("DataStoreId")],
