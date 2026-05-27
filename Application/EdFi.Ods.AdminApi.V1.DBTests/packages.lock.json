@@ -864,7 +864,8 @@
           "Npgsql": "[10.0.2, )",
           "Quartz": "[3.15.1, )",
           "Swashbuckle.AspNetCore": "[7.1.0, )",
-          "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )"
+          "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )",
+          "log4net": "[3.3.1, )"
         }
       },
       "edfi.ods.adminapi.v1": {
@@ -895,7 +896,7 @@
           "OpenIddict.EntityFrameworkCore": "[4.10.1, )",
           "Swashbuckle.AspNetCore": "[7.1.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )",
-          "log4net": "[3.3.0, )"
+          "log4net": "[3.3.1, )"
         }
       },
       "Asp.Versioning.Http": {
@@ -991,9 +992,9 @@
       },
       "log4net": {
         "type": "CentralTransitive",
-        "requested": "[3.3.0, )",
-        "resolved": "3.3.0",
-        "contentHash": "wtZ7K4XGWDxeQqHbUybwIug/3AAzhKcmroLf4ENfE5GsaDIMqT3GLX24f18XPFY8Qg9vaxfMSAODwWAXqkjI/Q==",
+        "requested": "[3.3.1, )",
+        "resolved": "3.3.1",
+        "contentHash": "fgQ8XkqF0r4/CRfAq8xZqlPrG0/9n4rJAa1HlFGQMXtCAxbbLzXyuXCbu65NUbcKzQ9KDYr4239NNqipVRCv6A==",
         "dependencies": {
           "System.Configuration.ConfigurationManager": "4.5.0"
         }
