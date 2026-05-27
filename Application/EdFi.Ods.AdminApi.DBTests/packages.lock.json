@@ -870,7 +870,7 @@
       "edfi.ods.adminapi.instancemanagement": {
         "type": "Project",
         "dependencies": {
-          "Dapper": "[2.1.72, )",
+          "Dapper": "[2.1.79, )",
           "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )"
         }
@@ -975,9 +975,9 @@
       },
       "Dapper": {
         "type": "CentralTransitive",
-        "requested": "[2.1.72, )",
-        "resolved": "2.1.72",
-        "contentHash": "ns4mGqQd9a/MhP8m6w556vVlZIa0/MfUu03zrxjZC/jlr1uVCsUac8bkdB+Fs98Llbd56rRSo1eZH5VVmeGZyw=="
+        "requested": "[2.1.79, )",
+        "resolved": "2.1.79",
+        "contentHash": "8YijbzgTfmqmQOnVNorYM6K++pxqnW3nJ4aC1sRHzxUA2CcuoJ9gsTem3kgBnPRMc38zZHl4Esb6hAezXIEEuw=="
       },
       "EdFi.Suite3.Admin.DataAccess": {
         "type": "CentralTransitive",
