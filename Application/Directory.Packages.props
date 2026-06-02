@@ -58,7 +58,7 @@
     <PackageVersion Include="Npgsql" Version="10.0.2" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <!-- NuGet -->
-    <PackageVersion Include="NuGet.Protocol" Version="6.10.2" />
+    <PackageVersion Include="NuGet.Protocol" Version="7.6.0" />
     <!-- OpenIddict -->
     <PackageVersion Include="OpenIddict.AspNetCore" Version="4.10.1" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="4.10.1" />
