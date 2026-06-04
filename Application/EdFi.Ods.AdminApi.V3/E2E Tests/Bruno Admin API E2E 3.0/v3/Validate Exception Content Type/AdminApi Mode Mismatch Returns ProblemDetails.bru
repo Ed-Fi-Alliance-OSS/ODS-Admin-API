@@ -1,0 +1,45 @@
+meta {
+  name: AdminApi Mode Mismatch Returns ProblemDetails
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{API_URL}}/v2/vendors?offset={{offset}}&limit={{limit}}&orderBy=id&direction=ASC
+  body: none
+  auth: inherit
+}
+
+params:query {
+  offset: {{offset}}
+  limit: {{limit}}
+  orderBy: id
+  direction: ASC
+}
+
+script:post-response {
+  test("Mode mismatch: Status code is 400", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  test("Mode mismatch: Content type is problem+json", function () {
+      expect(res.getHeader("content-type")).to.include("application/problem+json");
+  });
+
+  test("Mode mismatch: RFC9457 members are present", function () {
+      let body = res.getBody();
+      expect(body).to.have.property("title");
+      expect(body).to.have.property("status");
+      expect(body).to.have.property("detail");
+      expect(body).to.have.property("correlationId");
+  });
+
+  test("Mode mismatch: error detail is descriptive", function () {
+      let body = res.getBody();
+      expect(body.detail).to.equal("Wrong API version for this instance mode.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}
