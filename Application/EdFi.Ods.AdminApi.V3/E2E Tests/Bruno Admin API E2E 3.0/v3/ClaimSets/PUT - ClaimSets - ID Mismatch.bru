@@ -13,7 +13,7 @@ put {
 body:json {
   {
       "id": 999999,
-      "name": "Updated Test ClaimSet"
+      "name": "UpdatedTestClaimSet"
   }
 }
 
@@ -31,7 +31,7 @@ script:post-response {
   
   test("PUT ClaimSets ID Mismatch: Response includes Id mismatch error", function () {
       expect(response.errors["Id"].length).to.equal(1);
-      expect(response.errors["Id"][0]).to.contain("must match the ID in the URL");
+      expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
   });
 }
 

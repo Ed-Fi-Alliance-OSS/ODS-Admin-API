@@ -1,0 +1,50 @@
+meta {
+  name: Applications - Invalid ClaimSetName With Whitespace
+  type: http
+  seq: 17.5
+}
+
+put {
+  url: {{API_URL}}/v3/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": {{CreatedApplicationId}},
+    "applicationName": "Test Application Whitespace",
+    "vendorId": {{OtherApplicationVendorId}},
+    "claimSetName": "claimset name with space",
+    "profileIds": [],
+    "educationOrganizationIds": [ 255901 ],
+    "dataStoreIds": []
+  }
+}
+
+script:post-response {
+  test("PUT Applications Invalid ClaimSetName With Whitespace: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT Applications Invalid ClaimSetName With Whitespace: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT Applications Invalid ClaimSetName With Whitespace: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+  
+  test("PUT Applications Invalid ClaimSetName With Whitespace: Response errors include whitespace message", function () {
+      expect(response.errors["ClaimSetName"].length).to.be.at.least(1);
+      expect(response.errors["ClaimSetName"].some(e => e.toLowerCase().includes("white space"))).to.equal(true);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

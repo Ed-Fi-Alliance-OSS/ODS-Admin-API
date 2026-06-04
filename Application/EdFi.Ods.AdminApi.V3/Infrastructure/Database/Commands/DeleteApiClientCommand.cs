@@ -34,11 +34,11 @@ public class DeleteApiClientCommand : IDeleteApiClientCommand
             _context.ClientAccessTokens.RemoveRange(currentClientAccessTokens);
         }
 
-        var currentApiClientOdsInstances = _context.ApiClientOdsInstances.Where(o => apiClient.ApiClientId.Equals(o.ApiClient.ApiClientId));
+        var currentApiClientDataStores = _context.ApiClientOdsInstances.Where(o => apiClient.ApiClientId.Equals(o.ApiClient.ApiClientId));
 
-        if (currentApiClientOdsInstances.Any())
+        if (currentApiClientDataStores.Any())
         {
-            _context.ApiClientOdsInstances.RemoveRange(currentApiClientOdsInstances);
+            _context.ApiClientOdsInstances.RemoveRange(currentApiClientDataStores);
         }
 
         _context.ApiClients.Remove(apiClient);

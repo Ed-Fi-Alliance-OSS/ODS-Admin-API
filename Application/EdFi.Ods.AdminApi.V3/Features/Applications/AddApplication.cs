@@ -66,16 +66,16 @@ public class AddApplication : IFeature
 
     private static void ValidateDataStoreIds(AddApplicationRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
+        var allDataStoreIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
 
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
+        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allDataStoreIds.Count == 0)
         {
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
         }
 
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
+        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allDataStoreIds.Contains(p))))
         {
-            var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
+            var notExist = request.DataStoreIds.Where(p => !allDataStoreIds.Contains(p));
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}") });
         }
     }
@@ -122,6 +122,10 @@ public class AddApplication : IFeature
             RuleFor(m => m.ClaimSetName)
                 .NotEmpty()
                 .WithMessage(FeatureConstants.ClaimSetNameValidationMessage);
+
+            RuleFor(m => m.ClaimSetName)
+                .Must(name => name == null || !name.Any(char.IsWhiteSpace))
+                .WithMessage(FeatureConstants.ClaimSetNameNoWhitespaceMessage);
 
             RuleFor(m => m.EducationOrganizationIds)
                 .NotEmpty()

@@ -64,7 +64,7 @@ script:pre-request {
         bru.setEnvVar("FILTERCLAIMSETNAME", claimsetName);
 
         const schemaResponse = await axios.post(`${API_URL}/v3/claimSets`, {
-          "name": `ClaimSet Pre ${uniqueId}`
+          "name": `ClaimSetPre-${uniqueId}`
         }, axiosConfig);
 
         if (schemaResponse.status === 201) {

@@ -11,7 +11,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
-public class GetOdsInstanceDerivativeByIdQueryTests : PlatformUsersContextTestBase
+public class GetDataStoreDerivativeByIdQueryTests : PlatformUsersContextTestBase
 {
     [Test]
     public void Should_Retreive_OdsInstanceDerivative()

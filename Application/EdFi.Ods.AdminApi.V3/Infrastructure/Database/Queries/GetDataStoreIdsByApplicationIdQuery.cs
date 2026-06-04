@@ -41,7 +41,7 @@ public class GetDataStoreIdsByApplicationIdQuery : IGetDataStoreIdsByApplication
             return new Dictionary<int, IList<int>>();
         }
 
-        var groupedOdsInstanceIds = _context.ApiClientOdsInstances
+        var groupedDataStoreIds = _context.ApiClientOdsInstances
             .Where(p => ids.Contains(p.ApiClient.Application.ApplicationId))
             .Select(p => new
             {
@@ -55,7 +55,7 @@ public class GetDataStoreIdsByApplicationIdQuery : IGetDataStoreIdsByApplication
                 group => group.Key,
                 group => (IList<int>)group.Select(x => x.OdsInstanceId).ToList());
 
-        return groupedOdsInstanceIds;
+        return groupedDataStoreIds;
     }
 }
 

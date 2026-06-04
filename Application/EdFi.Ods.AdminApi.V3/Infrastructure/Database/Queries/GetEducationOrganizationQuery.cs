@@ -11,9 +11,9 @@ public interface IGetEducationOrganizationQuery
 {
     List<EducationOrganization> Execute();
 
-    List<EducationOrganization> Execute(int odsInstanceId);
+    List<EducationOrganization> Execute(int dataStoreId);
 
-    List<EducationOrganization> Execute(int[] odsInstanceIds);
+    List<EducationOrganization> Execute(int[] dataStoreIds);
 }
 
 public class GetEducationOrganizationQuery(AdminApiDbContext adminApiDbContext) : IGetEducationOrganizationQuery
@@ -25,17 +25,17 @@ public class GetEducationOrganizationQuery(AdminApiDbContext adminApiDbContext) 
         return _adminApiDbContext.EducationOrganizations.ToList();
     }
 
-    public List<EducationOrganization> Execute(int odsInstanceId)
+    public List<EducationOrganization> Execute(int dataStoreId)
     {
         return _adminApiDbContext.EducationOrganizations
-                .Where(edOrgs => edOrgs.InstanceId == odsInstanceId)
+                .Where(edOrgs => edOrgs.InstanceId == dataStoreId)
                 .ToList();
     }
 
-    public List<EducationOrganization> Execute(int[] odsInstanceIds)
+    public List<EducationOrganization> Execute(int[] dataStoreIds)
     {
         return _adminApiDbContext.EducationOrganizations
-                .Where(edOrgs => odsInstanceIds.Contains(edOrgs.InstanceId))
+                .Where(edOrgs => dataStoreIds.Contains(edOrgs.InstanceId))
                 .ToList();
     }
 }

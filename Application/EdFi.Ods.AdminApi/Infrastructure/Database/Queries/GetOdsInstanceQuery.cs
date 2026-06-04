@@ -6,7 +6,11 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
+using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
@@ -15,15 +19,26 @@ public interface IGetOdsInstanceQuery
     OdsInstance Execute(int odsInstanceId);
 }
 
-public class GetOdsInstanceQuery(IUsersContext userContext) : IGetOdsInstanceQuery
+public class GetOdsInstanceQuery(
+    IUsersContext userContext,
+    ISymmetricStringEncryptionProvider encryptionProvider,
+    IOptions<AppSettings> options) : IGetOdsInstanceQuery
 {
     private readonly IUsersContext _usersContext = userContext;
+    private readonly ISymmetricStringEncryptionProvider _encryptionProvider = encryptionProvider;
+    private readonly IOptions<AppSettings> _options = options;
 
     public OdsInstance Execute(int odsInstanceId)
     {
-        return _usersContext.OdsInstances
+        var odsInstance = _usersContext.OdsInstances
             .Include(p => p.OdsInstanceContexts)
             .Include(p => p.OdsInstanceDerivatives)
             .SingleOrDefault(odsInstance => odsInstance.OdsInstanceId == odsInstanceId) ?? throw new NotFoundException<int>("odsInstance", odsInstanceId);
+
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
+            OdsInstanceEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
+                new List<OdsInstance> { odsInstance }, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
+
+        return odsInstance;
     }
 }
