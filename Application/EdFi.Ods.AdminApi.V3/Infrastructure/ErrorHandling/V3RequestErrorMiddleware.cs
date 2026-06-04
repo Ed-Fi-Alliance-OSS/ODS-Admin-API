@@ -56,7 +56,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                 StatusCodes.Status404NotFound,
                 V3ProblemDetailsFactory.Create(
                     status: StatusCodes.Status404NotFound,
-                    title: "Not Found",
+                    title: notFoundException.Message,
                     detail: notFoundException.Message,
                     correlationId: correlationId
                 )

@@ -51,6 +51,10 @@ public static class V3ProblemDetailsFactory
             title: "Validation failed",
             detail: detail,
             correlationId: correlationId,
-            extensions: new Dictionary<string, object?> { ["validationErrors"] = validationErrors }
+            extensions: new Dictionary<string, object?>
+            {
+                ["validationErrors"] = validationErrors,
+                ["errors"] = validationErrors
+            }
         );
 }

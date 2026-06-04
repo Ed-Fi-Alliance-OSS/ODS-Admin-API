@@ -65,5 +65,7 @@ public class V3RequestErrorMiddlewareTests
         var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
         using var doc = JsonDocument.Parse(body);
         doc.RootElement.GetProperty("status").GetInt32().ShouldBe(404);
+        doc.RootElement.GetProperty("title").GetString()!.ToLowerInvariant().ShouldContain("not found");
+        doc.RootElement.GetProperty("detail").GetString()!.ToLowerInvariant().ShouldContain("not found");
     }
 }
