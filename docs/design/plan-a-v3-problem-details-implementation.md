@@ -1,6 +1,6 @@
 # Admin API v3 Problem Details + Admin App Compatibility Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** Execute this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Standardize Admin API **v3-only** error payloads on RFC 9457 Problem Details and make Admin App accept both compact and Problem Details envelopes without UI regressions.
 
@@ -12,7 +12,7 @@
 
 ## File Structure
 
-### Admin API repository (`C:\dev\ed-fi\ODS-Admin-API`)
+### Admin API repository (`ODS-Admin-API`)
 
 - Create: `Application\EdFi.Ods.AdminApi.V3\Infrastructure\ErrorHandling\V3ProblemDetailsFactory.cs`  
   v3-specific helper to build RFC 9457 payloads consistently.
@@ -30,7 +30,7 @@
 - Modify: `Application\EdFi.Ods.AdminApi.V3\E2E Tests\Bruno Admin API E2E 3.0\v3\Validate Exception Content Type\Vendors - Invalid Copy.bru`
 - Create: `Application\EdFi.Ods.AdminApi.V3\E2E Tests\Bruno Admin API E2E 3.0\v3\Validate Exception Content Type\AdminApi Mode Mismatch Returns ProblemDetails.bru`
 
-### Admin App repository (`C:\dev\ed-fi\Ed-Fi-AdminApp`)
+### Admin App repository (`Ed-Fi-AdminApp`)
 
 - Create: `packages\fe\src\app\api\errorEnvelope.ts`  
   shape guards + normalization for compact and Problem Details envelopes.
@@ -256,11 +256,11 @@ git commit -m "test(v3): assert RFC9457 error payload in bruno suite"
 ### Task 5: Add Admin App dual-envelope normalization
 
 **Files (Admin App repo):**
-- Create: `C:\dev\ed-fi\Ed-Fi-AdminApp\packages\fe\src\app\api\errorEnvelope.ts`
-- Modify: `C:\dev\ed-fi\Ed-Fi-AdminApp\packages\fe\src\app\api\methods.ts`
-- Modify: `C:\dev\ed-fi\Ed-Fi-AdminApp\packages\fe\src\app\api-v2\apiClient.ts`
-- Modify: `C:\dev\ed-fi\Ed-Fi-AdminApp\packages\fe\src\app\helpers\mutationErrCallback.ts`
-- Test: `C:\dev\ed-fi\Ed-Fi-AdminApp\packages\fe\src\app\api\errorEnvelope.spec.ts`
+- Create: `packages\fe\src\app\api\errorEnvelope.ts`
+- Modify: `packages\fe\src\app\api\methods.ts`
+- Modify: `packages\fe\src\app\api-v2\apiClient.ts`
+- Modify: `packages\fe\src\app\helpers\mutationErrCallback.ts`
+- Test: `packages\fe\src\app\api\errorEnvelope.spec.ts`
 
 - [ ] **Step 1: Write failing normalization tests**
 
@@ -341,4 +341,3 @@ Expected: PASS.
 git add docs/design/admin-api-v3-problem-details-admin-app-compatibility-design.md
 git commit -m "docs(v3): align design notes with final RFC9457 implementation details"
 ```
-

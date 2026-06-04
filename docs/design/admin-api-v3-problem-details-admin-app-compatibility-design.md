@@ -9,7 +9,7 @@ Update Admin API v3 to return RFC 9457 Problem Details responses for errors, whi
 ### In scope
 
 - Admin API v3 error payload shape
-- Admin API v3 error logging standardization
+- Admin API v3 error logging follow-up documentation
 - Admin App error normalization for compact and Problem Details envelopes
 - Documentation and test updates that reflect the new behavior
 
@@ -24,7 +24,7 @@ Update Admin API v3 to return RFC 9457 Problem Details responses for errors, whi
 1. Use **RFC 9457** as the canonical standard for Problem Details.
 2. Apply the new error payload shape only to **Admin API v3**.
 3. Keep v1 and v2 response shapes unchanged.
-4. Replace **log4net** with **Serilog** for the Admin API logging path used by v3.
+4. Keep **log4net** in this PR and track **Serilog** migration as follow-up work.
 5. Make the Admin App tolerant of both:
    - the existing compact error envelope
    - RFC 9457 Problem Details
@@ -55,9 +55,9 @@ Expected v3 response characteristics:
 
 The existing compact envelopes and behavior for v1 and v2 stay as-is. The change is intentionally scoped to v3 because the repository supports multiple specifications and the compatibility risk should stay isolated.
 
-#### 3. Replace log4net with Serilog for the v3 path
+#### 3. Track logging migration as follow-up work
 
-Move the v3 Admin API host to Serilog so logging is structured and aligned with the rest of the platform. Keep the logging migration focused on the v3 application host and its middleware so the error work does not force unrelated changes into the v1/v2 paths.
+The current change set keeps the existing runtime logger in place. A separate follow-up can migrate the v3 Admin API host to Serilog so logging is structured and aligned with the rest of the platform without coupling that migration to this error-contract change.
 
 #### 4. Update API tests and docs
 
@@ -66,7 +66,7 @@ Add or update tests that verify:
 - v3 returns Problem Details for validation and unexpected failures
 - v1 and v2 remain unchanged
 - error content type remains `application/problem+json` for v3
-- log output uses the new structured logging path where relevant
+- logging behavior remains unchanged by this PR
 
 ### Admin App repo
 
@@ -104,7 +104,7 @@ Add tests for:
 
 1. Introduce a v3-only Problem Details mapping helper.
 2. Ensure all v3 middleware and exception paths use the same error serializer.
-3. Swap the logging provider to Serilog in the v3 host bootstrap.
+3. Keep existing logging provider wiring unchanged in this change set.
 4. Keep v1/v2 wiring untouched.
 
 ### App
@@ -117,12 +117,11 @@ Add tests for:
 
 - A partial v3 migration could leave one or two endpoints still emitting compact envelopes.
 - The Admin App may have hidden assumptions about `message`-only responses in a few feature flows.
-- Logging migration to Serilog should avoid changing log content in a way that breaks existing operational searches.
+- Future logging migration to Serilog should avoid changing log content in a way that breaks existing operational searches.
 
 ## Acceptance Criteria
 
 - Admin API v3 returns RFC 9457 Problem Details for error responses.
 - Admin API v1 and v2 keep their current error responses.
 - Admin App handles both the compact envelope and Problem Details without regressions.
-- Admin API logging for the v3 path is standardized on Serilog.
-
+- Serilog migration for the v3 path is captured as follow-up work and is not required for this PR.

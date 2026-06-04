@@ -7,15 +7,34 @@ using System.Net;
 using System.Text.Json;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using FluentValidation;
+using log4net;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 
 public class V3RequestErrorMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
+    private static readonly ILog _logger = LogManager.GetLogger(typeof(V3RequestErrorMiddleware));
 
     public async Task InvokeAsync(HttpContext context)
     {
+        if (context.Request.Path.StartsWithSegments(new PathString("/.well-known")))
+        {
+            _logger.Debug(
+                JsonSerializer.Serialize(
+                    new { path = context.Request.Path.Value, traceId = context.TraceIdentifier }
+                )
+            );
+        }
+        else
+        {
+            _logger.Info(
+                JsonSerializer.Serialize(
+                    new { path = context.Request.Path.Value, traceId = context.TraceIdentifier }
+                )
+            );
+        }
+
         try
         {
             await _next(context);
@@ -24,7 +43,43 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
         {
             if (context.Response.HasStarted)
             {
+                _logger.Error(
+                    JsonSerializer.Serialize(
+                        new
+                        {
+                            message = "Cannot write to response, response has already started",
+                            error = new { ex.Message, ex.StackTrace },
+                            traceId = context.TraceIdentifier
+                        }
+                    ),
+                    ex
+                );
                 throw;
+            }
+
+            switch (ex)
+            {
+                case ValidationException:
+                case INotFoundException:
+                    _logger.Debug(
+                        JsonSerializer.Serialize(
+                            new { message = ex.Message, traceId = context.TraceIdentifier }
+                        )
+                    );
+                    break;
+                default:
+                    _logger.Error(
+                        JsonSerializer.Serialize(
+                            new
+                            {
+                                message = "An uncaught error has occurred",
+                                error = new { ex.Message, ex.StackTrace },
+                                traceId = context.TraceIdentifier
+                            }
+                        ),
+                        ex
+                    );
+                    break;
             }
 
             var (statusCode, problemDetails) = CreateProblemDetails(ex, context.TraceIdentifier);

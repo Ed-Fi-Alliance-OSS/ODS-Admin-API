@@ -1,6 +1,6 @@
 # Admin API Log4Net to Serilog Migration Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** Execute this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace Log4Net with Serilog in Admin API runtime logging while preserving existing behavior and log intent.
 
@@ -261,4 +261,3 @@ Expected: startup logs written through Serilog sinks (console + configured file)
 git add docs/design/*.md
 git commit -m "docs(logging): capture serilog migration notes and verification"
 ```
-
