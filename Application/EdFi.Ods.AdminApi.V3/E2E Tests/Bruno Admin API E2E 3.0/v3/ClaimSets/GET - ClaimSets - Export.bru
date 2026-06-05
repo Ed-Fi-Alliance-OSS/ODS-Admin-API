@@ -21,7 +21,7 @@ script:post-response {
   test("ClaimSets Export: Response result matches claimset", function () {
       const claimSetId = bru.getVar("CreatedClaimSetId");
       expect(result.id).to.equal(parseInt(claimSetId));
-      expect(result.name).to.equal(`Test ClaimSet ${bru.getVar("ClaimSetGUID")}`);
+      expect(result.name).to.equal(`TestClaimSet-${bru.getVar("ClaimSetGUID")}`);
       expect(result._isSystemReserved).to.equal(false);
       expect(result._applications).to.be.empty;
   });
