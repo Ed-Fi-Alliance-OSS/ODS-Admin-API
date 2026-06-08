@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Net;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using FluentValidation;
@@ -35,59 +36,112 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
             );
         }
 
+        if (context.Request.Path.StartsWithSegments("/connect/token"))
+        {
+            await InvokeTokenEndpointAsync(context);
+            return;
+        }
+
         try
         {
             await _next(context);
         }
         catch (Exception ex)
         {
-            if (context.Response.HasStarted)
+            await HandleExceptionAsync(context, ex);
+        }
+    }
+
+    private async Task InvokeTokenEndpointAsync(HttpContext context)
+    {
+        var originalBodyStream = context.Response.Body;
+
+        using var responseBody = new MemoryStream();
+        context.Response.Body = responseBody;
+
+        try
+        {
+            await _next(context);
+
+            if (context.Response.StatusCode == 400)
             {
+                responseBody.Seek(0, SeekOrigin.Begin);
+                var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
+
+                if (responseContent.Contains("\"error\": \"invalid_scope\"") ||
+                    responseContent.Contains("\"error\":\"invalid_scope\""))
+                {
+                    context.Response.ContentType = "application/problem+json";
+                }
+
+                responseBody.Seek(0, SeekOrigin.Begin);
+                await responseBody.CopyToAsync(originalBodyStream);
+            }
+            else
+            {
+                responseBody.Seek(0, SeekOrigin.Begin);
+                await responseBody.CopyToAsync(originalBodyStream);
+            }
+        }
+        catch (Exception ex)
+        {
+            context.Response.Body = originalBodyStream;
+            await HandleExceptionAsync(context, ex);
+        }
+        finally
+        {
+            context.Response.Body = originalBodyStream;
+        }
+    }
+
+    private async Task HandleExceptionAsync(HttpContext context, Exception ex)
+    {
+        if (context.Response.HasStarted)
+        {
+            _logger.Error(
+                JsonSerializer.Serialize(
+                    new
+                    {
+                        message = "Cannot write to response, response has already started",
+                        error = new { ex.Message, ex.StackTrace },
+                        traceId = context.TraceIdentifier
+                    }
+                ),
+                ex
+            );
+            ExceptionDispatchInfo.Capture(ex).Throw();
+        }
+
+        switch (ex)
+        {
+            case ValidationException:
+            case INotFoundException:
+                _logger.Debug(
+                    JsonSerializer.Serialize(
+                        new { message = ex.Message, traceId = context.TraceIdentifier }
+                    )
+                );
+                break;
+            default:
                 _logger.Error(
                     JsonSerializer.Serialize(
                         new
                         {
-                            message = "Cannot write to response, response has already started",
+                            message = "An uncaught error has occurred",
                             error = new { ex.Message, ex.StackTrace },
                             traceId = context.TraceIdentifier
                         }
                     ),
                     ex
                 );
-                throw;
-            }
-
-            switch (ex)
-            {
-                case ValidationException:
-                case INotFoundException:
-                    _logger.Debug(
-                        JsonSerializer.Serialize(
-                            new { message = ex.Message, traceId = context.TraceIdentifier }
-                        )
-                    );
-                    break;
-                default:
-                    _logger.Error(
-                        JsonSerializer.Serialize(
-                            new
-                            {
-                                message = "An uncaught error has occurred",
-                                error = new { ex.Message, ex.StackTrace },
-                                traceId = context.TraceIdentifier
-                            }
-                        ),
-                        ex
-                    );
-                    break;
-            }
-
-            var (statusCode, problemDetails) = CreateProblemDetails(ex, context.TraceIdentifier);
-
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = "application/problem+json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+                break;
         }
+
+        var (statusCode, problemDetails) = CreateProblemDetails(ex, context.TraceIdentifier);
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/problem+json";
+        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
     }
 
     private static (int StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails ProblemDetails) CreateProblemDetails(

@@ -31,7 +31,7 @@ script:post-response {
   test("POST Token Invalid scope: Response with content type error", function () {
       let headers = res.getHeaders();  
       
-      expect(headers["content-type"]).to.include("application/json");
+      expect(headers["content-type"]).to.include("application/problem+json");
   });
   
   test("POST Token: Response includes error properties", function () {
