@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,7 +140,7 @@ internal class EducationOrganizationServiceTests
             _serviceScopeFactory,
             _logger);
 
-        string decryptedConnectionString = null;
+        string? decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
             A<string>._,
             A<byte[]>._,
@@ -316,7 +318,7 @@ internal class EducationOrganizationServiceTests
               _serviceScopeFactory,
               _logger);
 
-        string decryptedConnectionString = null;
+        string? decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
             A<string>._,
             A<byte[]>._,
@@ -527,7 +529,7 @@ internal class EducationOrganizationServiceTests
         A.CallTo(() => fakeEncryption.IsEncrypted(A<string>._)).Returns(true);
 
         // Setup encryption: succeed for all instances
-        string decryptedConnectionString;
+        string? decryptedConnectionString;
         A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-1", A<byte[]>._, out decryptedConnectionString))
             .Returns(true).AssignsOutAndRefParameters("Server=test1;");
         A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-2", A<byte[]>._, out decryptedConnectionString))
@@ -583,7 +585,7 @@ internal class EducationOrganizationServiceTests
         A.CallTo(() => fakeEncryption.IsEncrypted(A<string>._)).Returns(true);
 
         // Setup encryption to succeed
-        string decryptedConnectionString;
+        string? decryptedConnectionString;
         A.CallTo(() => fakeEncryption.TryDecrypt(A<string>._, A<byte[]>._, out decryptedConnectionString))
             .Returns(true).AssignsOutAndRefParameters("Server=test;");
 

@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
@@ -120,8 +122,8 @@ public class GetJobStatusTests
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.FinishedAt.ShouldBe(finishedAt);
-        okResult.Value.ErrorMessage.ShouldBeNull();
+        okResult!.Value!.FinishedAt.ShouldBe(finishedAt);
+        okResult!.Value!.ErrorMessage.ShouldBeNull();
     }
 
     [Test]
@@ -149,9 +151,9 @@ public class GetJobStatusTests
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.Status.ShouldBe("Error");
-        okResult.Value.ErrorMessage.ShouldBe(errorMsg);
-        okResult.Value.FinishedAt.ShouldBe(finishedAt);
+        okResult!.Value!.Status.ShouldBe("Error");
+        okResult!.Value!.ErrorMessage.ShouldBe(errorMsg);
+        okResult!.Value!.FinishedAt.ShouldBe(finishedAt);
     }
 
     [Test]
@@ -177,8 +179,8 @@ public class GetJobStatusTests
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.Status.ShouldBe("Pending");
-        okResult.Value.FinishedAt.ShouldBeNull();
+        okResult!.Value!.Status.ShouldBe("Pending");
+        okResult!.Value!.FinishedAt.ShouldBeNull();
     }
 
     [Test]
@@ -204,8 +206,8 @@ public class GetJobStatusTests
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.Status.ShouldBe("InProgress");
-        okResult.Value.FinishedAt.ShouldBeNull();
+        okResult!.Value!.Status.ShouldBe("InProgress");
+        okResult!.Value!.FinishedAt.ShouldBeNull();
     }
 
     [Test]
@@ -231,7 +233,7 @@ public class GetJobStatusTests
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        var response = okResult.Value;
+        var response = okResult!.Value!;
         response.JobId.ShouldNotBeNullOrEmpty();
         response.Status.ShouldNotBeNullOrEmpty();
         response.CreatedAt.ShouldNotBe(default);

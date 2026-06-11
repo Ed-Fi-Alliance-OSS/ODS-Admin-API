@@ -3,6 +3,7 @@
     <AssemblyName>EdFi.Ods.AdminApi.V3.DBTests</AssemblyName>
     <RootNamespace>EdFi.Ods.AdminApi.V3.DBTests</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EdFi.Ods.AdminApi.V3\EdFi.Ods.AdminApi.V3.csproj" />
@@ -29,8 +30,6 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
-    <PackageReference Include="System.Formats.Asn1" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
     <None Update="testsappsettings.json">
