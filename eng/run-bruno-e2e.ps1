@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+﻿# SPDX-License-Identifier: Apache-2.0
 # Licensed to the Ed-Fi Alliance under one or more agreements.
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
@@ -11,6 +11,13 @@
     Builds Docker containers, waits for the API to be healthy, obtains an auth
     token, writes the Bruno environment file, and runs the test suite — exactly
     as the CI workflows do.
+
+    Requires PowerShell 7+ (uses -SkipCertificateCheck on web requests).
+
+    NOTE: If using -UseGlobalBru and you see errors related to 'ajv' or missing
+    modules, run 'npm install' inside the Bruno collection folder first, e.g.:
+        cd Application\EdFi.Ods.AdminApi.V3\E2E Tests\Bruno Admin API E2E 3.0
+        npm install
 
 .PARAMETER ApiVersion
     1  — runs V1 tests (single tenant only, pgsql or mssql)
@@ -31,6 +38,10 @@
 .PARAMETER TearDown
     When set, runs docker compose down after the tests finish.
 
+.PARAMETER UseGlobalBru
+    When set, invokes the globally installed 'bru' CLI instead of npx.
+    Useful if npx has local cache issues. Requires: npm install -g @usebruno/cli
+
 .PARAMETER BrunoFilter
     One or more sub-paths inside the Bruno collection to run.
     V1 default: "v1/Vendors","v1/OdsInstances","v1/ClaimSets","v1/Application"
@@ -48,6 +59,10 @@
 .EXAMPLE
     # Run V2 single-tenant pgsql, only Jobs folder
     .\eng\run-bruno-e2e.ps1 -ApiVersion 2 -BrunoFilter "v2/Jobs"
+
+.EXAMPLE
+    # Run V3 using globally installed bru CLI
+    .\eng\run-bruno-e2e.ps1 -ApiVersion 3 -UseGlobalBru
 #>
 
 param(
@@ -62,6 +77,7 @@ param(
 
     [switch]$SkipDockerBuild,
     [switch]$TearDown,
+    [switch]$UseGlobalBru,
     [string[]]$BrunoFilter = @()
 )
 
@@ -344,7 +360,9 @@ vars {
 "@
 }
 
-Set-Content -Path $envFilePath -Value $bruEnvContent -Encoding UTF8
+# Write without BOM — Bruno's v2 parser fails if the file starts with a UTF-8 BOM
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllText($envFilePath, $bruEnvContent, $utf8NoBom)
 Write-Host "📁 Bruno environment written to: $envFilePath"
 
 # ---------------------------------------------------------------------------
@@ -356,7 +374,7 @@ Write-Host "🧪 Running Bruno tests ($($BrunoFilter -join ', '))..." -Foregroun
 $env:NODE_TLS_REJECT_UNAUTHORIZED = "0"
 $brunoExitCode = 0
 
-$commonArgs = @("@usebruno/cli@latest", "run", "--env", "local", "--sandbox=developer", "--insecure")
+$commonArgs = @("run", "--env", "local", "--sandbox=developer", "--insecure")
 $reportArgs = @("--reporter-html", "./results.html", "--reporter-junit", "./report.xml")
 
 if ($brunoRecursive) {
@@ -369,7 +387,15 @@ if ($brunoRecursive) {
 
 Push-Location $brunoDir
 try {
-    & npx @runArgs
+    if ($UseGlobalBru) {
+        & bru @runArgs
+    } else {
+        # Disable strict mode temporarily — npx.ps1 references $MyInvocation.Statement
+        # which is not available under Set-StrictMode -Version Latest
+        Set-StrictMode -Off
+        npx --yes @usebruno/cli@latest @runArgs
+        Set-StrictMode -Version Latest
+    }
     $brunoExitCode = $LASTEXITCODE
 } finally {
     Pop-Location

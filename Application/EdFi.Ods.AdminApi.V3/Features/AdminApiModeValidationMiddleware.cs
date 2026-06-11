@@ -7,6 +7,7 @@ using System.Net;
 using System.Text.Json;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.V3.Features;
@@ -37,8 +38,16 @@ public class AdminApiModeValidationMiddleware
 
         if (requestedVersion != _adminApiMode && !path.Contains("/swagger/"))
         {
+            var problemDetails = V3ProblemDetailsFactory.Create(
+                status: StatusCodes.Status400BadRequest,
+                title: "Bad Request",
+                detail: "Wrong API version for this instance mode.",
+                correlationId: context.TraceIdentifier
+            );
+
             response.StatusCode = (int)HttpStatusCode.BadRequest;
-            await response.WriteAsync(JsonSerializer.Serialize(new { message = "Wrong API version for this instance mode." }));
+            response.ContentType = "application/problem+json";
+            await response.WriteAsync(JsonSerializer.Serialize(problemDetails));
             return;
         }
 
@@ -67,6 +76,5 @@ public class AdminApiModeValidationMiddleware
         };
     }
 }
-
 
 

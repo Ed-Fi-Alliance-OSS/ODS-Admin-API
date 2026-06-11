@@ -34,6 +34,19 @@ script:post-response {
   test("POST Vendors Invalid: Response with content type error", function () {
       expect(res.getHeader("content-type")).to.not.include("application/json");
   });
+
+  test("POST Vendors Invalid: Response includes RFC9457 members", function () {
+      let body = res.getBody();
+      expect(body).to.have.property("title");
+      expect(body).to.have.property("status");
+      expect(body).to.have.property("detail");
+  });
+
+  test("POST Vendors Invalid: Response includes extension members", function () {
+      let body = res.getBody();
+      expect(body).to.have.property("validationErrors");
+      expect(body).to.have.property("correlationId");
+  });
   
 }
 
