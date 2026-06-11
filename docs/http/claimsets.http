@@ -33,3 +33,5 @@ Authorization: bearer {{token}}
 
 ### Get claimsets V2
 GET {{adminapi_url}}/v2/claimsets
+Content-Type: application/json
+Authorization: bearer {{token}}
