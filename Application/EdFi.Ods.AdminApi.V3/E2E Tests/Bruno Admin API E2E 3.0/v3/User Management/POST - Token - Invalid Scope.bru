@@ -1,0 +1,39 @@
+meta {
+  name: Token - Invalid Scope
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{API_URL}}/connect/token
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  client_id: {{RegisteredClientId}}
+  client_secret: {{$guid}}
+  grant_type: client_credentials
+  scope: NOT_REAL/SCOPE
+}
+
+script:post-response {
+  test("POST Token Invalid Scope: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("POST Token Invalid Scope: Response includes error message", function () {
+      expect(response).to.have.property("error");
+      expect(response).to.have.property("error_description");    
+      expect(response).to.have.property("error", "invalid_scope");
+      expect(response).to.have.property("error_description", "The request is missing required scope claims or has invalid scope values");
+  
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

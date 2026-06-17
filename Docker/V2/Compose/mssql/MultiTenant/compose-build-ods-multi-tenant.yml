@@ -6,7 +6,7 @@
 services:
   db-ods-tenant1:
     build:
-      context: ../../../../Settings/V2/DB-Ods/mssql/
+      context: ../../../../Settings/shared/DB-Ods/mssql/
       dockerfile: Dockerfile
       args:
         ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}
@@ -32,7 +32,7 @@ services:
 
   db-ods-tenant2:
     build:
-      context: ../../../../Settings/V2/DB-Ods/mssql/
+      context: ../../../../Settings/shared/DB-Ods/mssql/
       dockerfile: Dockerfile
       args:
         ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}
@@ -72,10 +72,16 @@ services:
       SQLSERVER_TENANT2_PORT: 1433
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       TPDM_ENABLED: "${TPDM_ENABLED:-true}"
+      ConnectionStrings__EdFi_Ods: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Master: "Data Source=db-admin-tenant1,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Ods: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Master: "Data Source=db-admin-tenant1,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Ods: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Master: "Data Source=db-admin-tenant2,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
     volumes:
       - ${LOGS_FOLDER}:/app/logs
     depends_on:

@@ -1,0 +1,22 @@
+meta {
+  name: DataStoreDerivatives
+  type: http
+  seq: 26
+}
+
+delete {
+  url: {{API_URL}}/v3/dataStoreDerivatives/{{CreatedDataStoreDerivativeId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE DataStoreDerivatives: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

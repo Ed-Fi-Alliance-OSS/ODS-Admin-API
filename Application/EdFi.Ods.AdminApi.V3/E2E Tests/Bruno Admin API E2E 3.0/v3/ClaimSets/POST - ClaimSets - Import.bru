@@ -1,0 +1,168 @@
+meta {
+  name: ClaimSets - Import
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v3/claimSets/import
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "resourceClaims": [
+      {     
+        "name": "educationStandards",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],      
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {     
+        "name": "academicSubjectDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }  
+     
+        ],
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {
+        "name": "gradeLevelDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],
+       
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {      
+        "name": "publicationStatusDescriptor",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],     
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      },
+      {      
+        "name": "candidatePreparation",
+        "actions": [
+          {
+            "name": "Create",
+            "enabled": true
+          },
+          {
+            "name": "Read",
+            "enabled": true
+          },
+          {
+            "name": "Update",
+            "enabled": true
+          },
+          {
+            "name": "Delete",
+            "enabled": true
+          }
+        ],     
+        "authorizationStrategyOverridesForCRUD": [],
+        "children": []
+      }
+    ],
+    "name": "TestClaimSet-import-{{ImportClaimSetGUID}}"
+  }
+}
+
+script:pre-request {
+  bru.setVar("ImportClaimSetGUID", bru.interpolate('{{$guid}}'));
+}
+
+script:post-response {
+  test("POST ClaimSets - Import: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("POST ClaimSets - Import: Response includes location in header", function () {
+      let headers = res.getHeaders(); 
+      expect(headers).to.have.property("location");
+      const locationHeader = headers.location || headers["location"];
+      if(locationHeader) {
+          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
+          const id = locationStr.split("/").pop();
+          if(id) {
+              bru.setVar("ImportedClaimSetId", id);
+          }
+      }
+  });
+
+    test("POST ClaimSets - Import: Location header is absolute url", function () {
+      const location = res.getHeaders().location;
+      expect(location).to.match(/^https?:\/\/.+/);
+    });
+}
+
+settings {
+  encodeUrl: true
+}

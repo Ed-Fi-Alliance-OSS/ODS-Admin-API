@@ -1,0 +1,63 @@
+meta {
+  name: DataStoreDerivatives by ID
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{API_URL}}/v3/dataStoreDerivatives/{{CreatedDataStoreDerivativeId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET DataStoreDerivativesById: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("GET DataStoreDerivativesId: Response result matches DataStoresDerivative", function () {
+      const result = res.getBody();
+      expect(result.derivativeType).to.not.be.empty;
+      expect(result.dataStoreId).to.not.equal(0);
+  });
+  
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetDataStoreDerivativesSchema = {
+    "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "derivativeType": {
+            "type": "string"
+          },
+          "connectionString": {
+            "type": "string"
+          },
+          "dataStoreId": {
+            "type": "integer"
+          },
+        },
+        "required": [
+          "id",
+          "derivativeType",
+          "dataStoreId"     
+        ]
+  }
+  
+  test("GET DataStoresDerivative: Validation Schema Response", () => {
+      const valid = ajv.validate(GetDataStoreDerivativesSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

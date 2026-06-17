@@ -6,7 +6,7 @@
 services:
   nginx:
     build:
-      context: ../../../../Settings/V2/gateway/
+      context: ../../../../Settings/shared/gateway/
       dockerfile: Dockerfile
     environment:
       ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
@@ -18,7 +18,7 @@ services:
     hostname: nginx
     volumes:
       - ../../../../Settings/ssl:/ssl/
-      - ../../../../Settings/V2/gateway/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../../../Settings/shared/gateway/default.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
       - adminapi
 
@@ -56,10 +56,16 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_PORT: 5432
       POSTGRES_USER: "${POSTGRES_USER}"
+      ConnectionStrings__EdFi_Ods: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
+      ConnectionStrings__EdFi_Master: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Ods: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Master: "host=db-admin-tenant1;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Ods: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Master: "host=db-admin-tenant2;port=${POSTGRES_PORT};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
     depends_on:
       - db-admin-tenant1
       - db-admin-tenant2
@@ -112,3 +118,4 @@ volumes:
   vol-db-admin-adminapi-tenant2:
     driver: local
     name: vol-db-admin-adminapi-tenant2
+

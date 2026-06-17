@@ -51,22 +51,31 @@ public class ErrorMessagesConstants
     /// Tenant identifier provided in the request header does not match the tenant identifier provided as a parameter in the request URL.
     /// </summary>
     public const string Tenant_ParameterMismatch = "Tenant header and URL tenant name do not match";
+
+    /// <summary>
+    /// Identifier provided in the request body does not match the identifier provided as a parameter in the request URL.
+    /// </summary>
+    public const string RequestBodyIdMismatch = "Request body id must match the id in the url.";
 }
 
 public enum AdminApiMode
 {
     V2,
     V1,
+    V3,
     Unversioned
 }
 
 public enum DbInstanceStatus
 {
-    Pending,
-    Completed,
-    InProgress,
+    PendingCreate,
+    Created,
+    CreateInProgress,
+    CreateFailed,
+    CreateError,
     PendingDelete,
+    DeleteInProgress,
     Deleted,
     DeleteFailed,
-    Error
+    DeleteError
 }

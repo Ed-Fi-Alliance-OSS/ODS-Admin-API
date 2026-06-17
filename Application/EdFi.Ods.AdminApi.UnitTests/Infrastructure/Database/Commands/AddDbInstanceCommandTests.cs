@@ -68,7 +68,7 @@ public class AddDbInstanceCommandTests
 
         result.Name.ShouldBe("Test Instance");
         result.DatabaseTemplate.ShouldBe("Minimal");
-        result.Status.ShouldBe(DbInstanceStatus.Pending.ToString());
+        result.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
         result.OdsInstanceId.ShouldBeNull();
         result.OdsInstanceName.ShouldBeNull();
         result.DatabaseName.ShouldBeNull();

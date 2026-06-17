@@ -1,0 +1,41 @@
+meta {
+  name: Profiles - ID Mismatch
+  type: http
+  seq: 21
+}
+
+put {
+  url: {{API_URL}}/v3/profiles/{{CreatedProfileId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "id": 999999,
+      "Name": "Updated-Test-Profile",
+      "Definition": "<Profile name=\"Updated-Test-Profile\"><Resource name=\"School\"><ReadContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"City\" /><Property name=\"StateAbbreviationType\" /><Property name=\"PostalCode\" /></Collection></ReadContentType><WriteContentType memberSelection=\"IncludeOnly\"><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeOnly\"><Property name=\"Latitude\" /><Property name=\"Longitude\" /></Collection></WriteContentType></Resource></Profile>"
+  }
+}
+
+script:post-response {
+  test("PUT Profiles ID Mismatch: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT Profiles ID Mismatch: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT Profiles ID Mismatch: Response includes Id mismatch error", function () {
+      expect(response.errors["Id"].length).to.equal(1);
+      expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

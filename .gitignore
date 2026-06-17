@@ -75,3 +75,13 @@ coveragereport/
 
 # Bruno test results
 **/E2E Tests/**/results.html
+
+# Local git worktrees
+.worktrees/
+
+# Git worktrees
+.claude/worktrees/
+.claude/settings.local.json
+
+# Cache files
+*.lscache

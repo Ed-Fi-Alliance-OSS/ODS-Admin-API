@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{API_URL}}/v2/tenants/default/OdsInstances/edOrgs
+  url: {{API_URL}}/v2/tenants/default/odsInstances/edOrgs
   body: none
   auth: inherit
 }
@@ -19,16 +19,16 @@ script:pre-request {
   } catch (e) {
     // Ignore in UI environment
   }
-  
+
   // Add tenant header if multitenant mode is enabled
   if (bru.getEnvVar("isMultitenant") == "false") {
     console.log("🔧 Setting pre environment to ignore SSL certificates...");
-  
+
     const axios = require('axios');
     const API_URL = bru.getEnvVar("API_URL");
     const TOKEN = bru.getEnvVar("TOKEN");
     const timestamp = Date.now();
-    
+
     // Configure axios to handle SSL and network issues
     const axiosConfig = {
       headers: {
@@ -40,7 +40,7 @@ script:pre-request {
       },
       timeout: 30000
     };
-    
+
     try {
       const objectName = "OdsInstance";
       const response = await axios.post(`${API_URL}/v2/odsInstances`, {
@@ -48,7 +48,7 @@ script:pre-request {
         "instanceType": "OdsInstance",
         "connectionString": `${bru.getEnvVar("connectionString")}`
       }, axiosConfig);
-  
+
       if (response.status === 201 && response.headers.location) {
         const id = response.headers.location.split("/")[2];
         bru.setVar("created-odsInstanceId", id);
@@ -58,24 +58,24 @@ script:pre-request {
         console.log("Status:", response.status);
         console.log("Response headers:", JSON.stringify(response.headers));
         console.log("Response data:", JSON.stringify(response.data, null, 2));
-        
+
         throw new Error(`Failed to create ${objectName} - Status: ${response.status}, Data: ${JSON.stringify(response.data)}`);
       }
     } catch (error) {
       console.log("Error in pre-request setup:", error.message);
     }
   }
-  
-  
+
+
 }
 
 script:post-response {
   if (bru.getEnvVar("isMultitenant") == "false") {
-  
+
     test("GET Tenants OdsInstances EdOrgs: Status code is Found", function () {
         expect(res.getStatus()).to.equal(200);
     });
-  
+
     const response = res.getBody();
     const Ajv = require('ajv');
     const ajv = new Ajv();
@@ -133,12 +133,12 @@ script:post-response {
       },
       "required": ["id", "name", "odsInstances"]
     };
-  
+
     test("GET Tenants OdsInstances EdOrgs: Response matches schema", function () {
         expect(ajv.validate(GetTenantOdsInstancesEdOrgsSchema, response)).to.equal(true);
     });
-  
-  
+
+
     // DELETE dependencies
     // Safely set Node.js environment variable if available (CLI only)
     try {
@@ -148,11 +148,11 @@ script:post-response {
     } catch (e) {
       // Ignore in UI environment
     }
-     
+
     const axios = require('axios');
     const API_URL = bru.getEnvVar("API_URL");
     const TOKEN = bru.getEnvVar("TOKEN");
-    
+
     // Configure axios to handle SSL and network issues
     const axiosConfig = {
       headers: {
@@ -164,11 +164,11 @@ script:post-response {
       },
       timeout: 30000
     };
-    
+
     try {
       const objectName = "OdsInstance";
       const response = await axios.delete(`${API_URL}/v2/odsInstances/${bru.getVar("created-odsInstanceId")}`, axiosConfig);
-  
+
       if (response.status === 200) {
         console.log(`✅ ${objectName} with ID ${bru.getVar("created-odsInstanceId")} removed successfully`);
         bru.deleteVar("created-odsInstanceId");
@@ -182,8 +182,8 @@ script:post-response {
     } catch (error) {
       console.log("Error in post-request clean up:", error.message);
     }
-  
-  
+
+
   }
   else {
       test("GET Tenants OdsInstances EdOrgs: Status code is Found", function () {

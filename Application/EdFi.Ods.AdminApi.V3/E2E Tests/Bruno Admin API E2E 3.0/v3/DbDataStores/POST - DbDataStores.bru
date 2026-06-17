@@ -1,0 +1,42 @@
+meta {
+  name: DbDataStores
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v3/dbDataStores
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Test DB Instance",
+    "databaseTemplate": "Minimal"
+  }
+}
+
+script:post-response {
+  test("POST DbDataStores: Status code is Accepted", function () {
+    expect(res.getStatus()).to.equal(202);
+  });
+
+  test("POST DbDataStores: Response includes location in header", function () {
+    expect(res.getHeaders()).to.have.property("location");
+    const location = res.getHeader("location");
+      const id = location.split("/").pop();
+    if (id) {
+      bru.setVar("CreatedDbDataStoreId", id);
+    }
+  });
+
+  test("POST DbDataStores: Location header is absolute url", function () {
+    const location = res.getHeaders().location;
+    expect(location).to.match(/^https?:\/\/.+/);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

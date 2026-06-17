@@ -30,7 +30,7 @@ public class AddDbInstanceCommand
         {
             Name = model.Name.Trim(),
             DatabaseTemplate = model.DatabaseTemplate.Trim(),
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.PendingCreate.ToString(),
             OdsInstanceId = null,
             OdsInstanceName = null,
             DatabaseName = null,

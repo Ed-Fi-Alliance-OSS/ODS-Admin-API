@@ -1,0 +1,22 @@
+meta {
+  name: Profiles
+  type: http
+  seq: 22
+}
+
+delete {
+  url: {{API_URL}}/v3/profiles/{{CreatedProfileId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE Profile: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

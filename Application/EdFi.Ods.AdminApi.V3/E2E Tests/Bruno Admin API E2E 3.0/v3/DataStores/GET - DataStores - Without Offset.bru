@@ -1,0 +1,70 @@
+meta {
+  name: DataStores - Without Offset
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{API_URL}}/v3/dataStores?limit={{limit}}
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: {{limit}}
+}
+
+script:post-response {
+  test("GET DataStores: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  const response = res.getBody();
+
+  test("GET DataStores: Response matches success format", function () {
+      expect(response[0]).to.have.property("id");
+      expect(response[0]).to.have.property("name");
+      expect(response[0]).to.have.property("dataStoreType");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetDataStoresSchema = {
+    "type": "array",
+    "items": [
+      {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dataStoreType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "dataStoreType"
+        ]
+      }
+    ]
+  }
+  
+  test("GET DataStores: Validation Schema Response", () => {
+      const valid = ajv.validate(GetDataStoresSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

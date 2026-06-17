@@ -1,0 +1,46 @@
+meta {
+  name: Applications - ID Mismatch
+  type: http
+  seq: 21.5
+}
+
+put {
+  url: {{API_URL}}/v3/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 999999,
+    "applicationName": "Updated Application Name",
+    "vendorId": {{OtherApplicationVendorId}},
+    "claimSetName": "{{UpdatedApplicationClaimSetName}}",
+    "profileIds": [],
+    "educationOrganizationIds": [1234],
+    "dataStoreIds": [ {{DataStoreId}} ],
+    "enabled": false
+  }
+}
+
+script:post-response {
+  test("PUT Applications ID Mismatch: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT Applications ID Mismatch: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT Applications ID Mismatch: Response includes Id mismatch error", function () {
+      expect(response.errors["Id"].length).to.equal(1);
+      expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -27,4 +27,16 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Context
         public T? GetValue<T>(string key) => (T?)(UnderlyingHashtable != null &&
             UnderlyingHashtable[key] != null ? UnderlyingHashtable[key] : default(T));
     }
+
+    public class AsyncLocalContextStorage : IContextStorage
+    {
+        private static readonly AsyncLocal<Dictionary<string, object?>> _storage = new();
+
+        private static Dictionary<string, object?> Current =>
+            _storage.Value ??= new Dictionary<string, object?>();
+
+        public void SetValue(string key, object value) => Current[key] = value;
+
+        public T? GetValue<T>(string key) => Current.TryGetValue(key, out var v) ? (T?)v : default;
+    }
 }

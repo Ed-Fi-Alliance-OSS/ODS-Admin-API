@@ -1,0 +1,70 @@
+meta {
+  name: Token
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{API_URL}}/connect/token
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  client_id: {{RegisteredClientId}}
+  client_secret: {{RegisteredClientSecret}}
+  grant_type: client_credentials
+  scope: edfi_admin_api/full_access
+}
+
+script:post-response {
+  test("POST Token: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+  
+  test("POST Token: Response includes token", function () {
+      expect(response).to.have.property("access_token");
+      expect(response).to.have.property("token_type");
+      expect(response).to.have.property("expires_in");
+  
+      expect(response["token_type"]).to.equal("Bearer");
+  });
+  
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const PostTokenSchema = {
+    "type": "object",
+    "properties": {
+      "access_token": {
+        "type": "string"
+      },
+      "token_type": {
+        "type": "string"
+      },
+      "expires_in": {
+        "type": "integer"
+      }
+    },
+    "required": [
+      "access_token",
+      "token_type",
+      "expires_in"
+    ]
+  }
+  
+  test("POST Token: Validation Schema Response", () => {
+      const valid = ajv.validate(PostTokenSchema, response);
+      expect(valid).to.be.true;
+      
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

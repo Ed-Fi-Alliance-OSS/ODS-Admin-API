@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: Apache-2.0
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
+using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+
+namespace EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
+
+public class JobStatusService(AdminApiDbContext dbContext,
+    ITenantSpecificDbContextProvider tenantSpecificDbContextProvider,
+    IOptions<AppSettings> options) : IJobStatusService
+{
+    private readonly ITenantSpecificDbContextProvider _tenantSpecificDbContextProvider = tenantSpecificDbContextProvider;
+    private readonly bool _isMultiTenancyEnabled = options.Value.MultiTenancy;
+
+    public async Task SetStatusAsync(string jobId, QuartzJobStatus status, string? tenantName, string? errorMessage = null)
+    {
+        AdminApiDbContext resolvedDbContext;
+
+        if (_isMultiTenancyEnabled && !string.IsNullOrEmpty(tenantName))
+        {
+            resolvedDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName);
+        }
+        else
+        {
+            resolvedDbContext = dbContext;
+        }
+
+        var jobStatus = await resolvedDbContext.JobStatuses
+            .FirstOrDefaultAsync(j => j.JobId == jobId);
+        if (jobStatus is null)
+        {
+            jobStatus = new JobStatus
+            {
+                JobId = jobId,
+                Status = status.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                ErrorMessage = errorMessage
+            };
+            
+            // Set FinishedAt when job reaches final state
+            if (status == QuartzJobStatus.Completed || status == QuartzJobStatus.Error)
+            {
+                jobStatus.FinishedAt = DateTime.UtcNow;
+            }
+            
+            resolvedDbContext.JobStatuses.Add(jobStatus);
+        }
+        else
+        {
+            jobStatus.Status = status.ToString();
+            jobStatus.ErrorMessage = errorMessage;
+
+            // Set FinishedAt when job reaches final state
+            if (status == QuartzJobStatus.Completed || status == QuartzJobStatus.Error)
+            {
+                jobStatus.FinishedAt = DateTime.UtcNow;
+            }
+        }
+        await resolvedDbContext.SaveChangesAsync();
+    }
+
+    public async Task<JobStatus?> GetStatusAsync(string jobId, string? tenantName = null)
+    {
+        AdminApiDbContext resolvedDbContext;
+
+        if (_isMultiTenancyEnabled && !string.IsNullOrEmpty(tenantName))
+        {
+            resolvedDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName);
+        }
+        else
+        {
+            resolvedDbContext = dbContext;
+        }
+
+        return await resolvedDbContext.JobStatuses
+            .FirstOrDefaultAsync(j => j.JobId == jobId);
+    }
+}
+
+
+

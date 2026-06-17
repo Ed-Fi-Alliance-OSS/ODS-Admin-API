@@ -20,7 +20,13 @@ script:post-response {
   test("Response includes expected properties", function () {
       expect(response).to.have.property("version");
       expect(response).to.have.property("build");
+      expect(response).to.have.property("specificationVersion");
   });
+
+  test("GET Landing: specificationVersion is v1", function () {
+    expect(response.specificationVersion).to.equal("v1");
+  });
+  
   
 }
 

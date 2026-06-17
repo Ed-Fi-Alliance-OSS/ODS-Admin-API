@@ -1,0 +1,44 @@
+meta {
+  name: DataStoreDerivatives - Not Found
+  type: http
+  seq: 18
+}
+
+put {
+  url: {{API_URL}}/v3/dataStoreDerivatives/{{NotExistDataStoresDerivativeId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": {{NotExistDataStoresDerivativeId}},
+    "dataStoreId": {{DataStoreId}},
+    "derivativeType": "Snapshot",
+    "connectionString": "{{connectionString}}"
+  }
+}
+
+script:post-response {
+  test("PUT DataStoreDerivatives NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+  
+  test("PUT DataStoreDerivatives NotFound: Response matches error format", function () {
+      const response = res.getBody();
+  
+      expect(response).to.have.property("title");
+  });
+  
+  test("PUT DataStoreDerivatives NotFound: Response title is helpful and accurate", function () {
+      const response = res.getBody();
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("DataStoreDerivative");
+      expect(response.title).to.contain(bru.getVar("NotExistDataStoresDerivativeId"));
+  });
+  
+}
+
+settings {
+  encodeUrl: true
+}

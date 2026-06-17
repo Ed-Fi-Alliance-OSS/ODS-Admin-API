@@ -43,7 +43,7 @@ public class DeleteDbInstanceCommandTests
         var instance = new DbInstance
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.Created.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
@@ -65,7 +65,7 @@ public class DeleteDbInstanceCommandTests
         var instance = new DbInstance
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.Pending.ToString(),
+            Status = DbInstanceStatus.Created.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };

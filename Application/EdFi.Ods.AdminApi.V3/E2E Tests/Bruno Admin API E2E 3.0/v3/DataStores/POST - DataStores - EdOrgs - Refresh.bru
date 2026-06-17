@@ -1,0 +1,71 @@
+meta {
+  name: DataStores Refresh Education Organizations
+  type: http
+  seq: 24
+}
+
+post {
+  url: {{API_URL}}/v3/dataStores/edOrgs/refresh
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("POST DataStores EdOrgs Refresh: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  test("POST DataStores EdOrgs Refresh: Response has jobId", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("jobId");
+      expect(body.jobId).to.be.a("string");
+  });
+
+  test("POST DataStores EdOrgs Refresh: Response has message", function () {
+      const body = res.getBody();
+      expect(body).to.have.property("message");
+      expect(body.message).to.be.a("string");
+  });
+
+  const jobId = res.getBody().jobId;
+  bru.setVar("JobId", jobId);
+
+  // Poll until the job status record exists (not 404)
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  const axiosConfig = {
+    headers: { 'Authorization': `Bearer ${TOKEN}` },
+    validateStatus: () => true,
+    timeout: 10000
+  };
+
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = bru.getEnvVar("tenant1");
+  }
+
+  let jobFound = false;
+  const maxAttempts = 10;
+  for (let i = 0; i < maxAttempts; i++) {
+    const r = await axios.get(`${API_URL}/v3/jobs/${jobId}`, axiosConfig);
+    if (r.status >= 200 && r.status < 300) {
+      console.log(`✅ Job ${jobId} found after ${i + 1} attempt(s)`);
+      jobFound = true;
+      break;
+    } else if (r.status !== 404) {
+      throw new Error(`Unexpected status ${r.status} while polling for job ${jobId}`);
+    }
+    if (i < maxAttempts - 1) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  test("POST DataStores EdOrgs Refresh: Job is accessible via GET /jobs/{jobId}", function () {
+    expect(jobFound).to.be.true;
+  });
+}
+
+settings {
+  encodeUrl: true
+}

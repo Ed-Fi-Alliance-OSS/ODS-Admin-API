@@ -1,0 +1,78 @@
+meta {
+  name: DataStores by ID - Tenant1
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{API_URL}}/v3/dataStores/{{CreatedDataStoreId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Tenant: Tenant1
+}
+
+script:post-response {
+  if (bru.getEnvVar("isMultitenant") == "true") {
+      test("GET DataStoresID: Status code is OK", function () {
+          expect(res.getStatus()).to.equal(200);
+      });
+  
+      const response = res.getBody();
+  
+      test("GET DataStoresID: Response matches success format", function () {
+          expect(response).to.have.property("id");
+          expect(response).to.have.property("name");
+          expect(response).to.have.property("dataStoreType");
+          expect(response).to.have.property("dataStoreContexts");
+          expect(response).to.have.property("dataStoreDerivatives");
+      });
+
+      const Ajv = require('ajv');
+      const ajv = new Ajv();
+      const GetDataStoresIdSchema = {
+      "type": "object",
+      "properties": {
+          "id": {
+          "type": "integer"
+          },
+          "name": {
+          "type": "string"
+          },
+          "dataStoreType": {
+          "type": "string"
+          },
+          "dataStoreContexts": {
+              "type": "array",
+              "items": {}
+          },
+          "dataStoreDerivatives": {
+              "type": "array",
+              "items": {}
+          }
+      },
+      "required": [
+          "id",
+          "name",
+          "dataStoreType",
+          "dataStoreContexts",
+          "dataStoreDerivatives"
+      ]
+      }
+  
+      test("GET DataStoresID: Validation Schema Response", () => {
+          const valid = ajv.validate(GetDataStoresIdSchema, response);
+          expect(valid).to.be.true;
+          
+          if (!valid) {
+              console.log("Schema validation errors:", ajv.errors);
+          }
+      });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

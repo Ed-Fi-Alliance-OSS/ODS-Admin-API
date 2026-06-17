@@ -7,6 +7,8 @@
 FROM nginx@sha256:2140dad235c130ac861018a4e13a6bc8aea3a35f3a40e20c1b060d51a7efd250
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
+RUN apk add --no-cache openssl=3.3.7-r0
+
 COPY ./default.conf.template /etc/nginx/templates/
 
 EXPOSE 443

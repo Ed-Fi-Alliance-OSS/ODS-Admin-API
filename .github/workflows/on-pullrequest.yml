@@ -18,6 +18,7 @@ on:
       # - "**/*.psm1"
       - "**/*.cs"
       - "**/*.csproj"
+      - "**/packages.lock.json"
       - ".github/**/*.yml"
   workflow_dispatch:
 
@@ -43,6 +44,9 @@ jobs:
     steps:
       - name: Checkout the Repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Verify NuGet lock files are up to date
+        run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --locked-mode
 
       - name: Build
         run: ./build.ps1 -Command Build -Configuration Debug
@@ -91,8 +95,17 @@ jobs:
         if: success()
         uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
 
+      - name: Upload built application
+        if: success()
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+        with:
+          name: built-application
+          path: Application
+          retention-days: 1
+
   run-integration-tests:
     name: Run integration tests
+    needs: run-cs-tests
     env:
       DB_Password: P@55w0rd
     runs-on: ubuntu-22.04
@@ -112,11 +125,11 @@ jobs:
       - name: Checkout the Repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup Nuget.exe
-        uses: nuget/setup-nuget@323ab0502cd38fdc493335025a96c8fdb0edc71f #v2.0.1
-
-      - name: Build
-        run: ./build.ps1 -Command Build -Configuration Debug
+      - name: Download built application
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: built-application
+          path: Application
 
       - name: Run Integration Tests
         if: success()

@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +37,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
     private AppSettings _appSettings;
     private string _encryptionKey;
     private IConfiguration _configuration;
-    private IUsersContext _usersContext;
+    private IUsersContext _usersContext = null!;
     private ILogger<EducationOrganizationService> _logger;
 
     [SetUp]
@@ -45,7 +47,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         _encryptionProvider = new Mock<ISymmetricStringEncryptionProvider>();
         _configuration = new ConfigurationBuilder()
-           .AddInMemoryCollection(new Dictionary<string, string>
+           .AddInMemoryCollection(new Dictionary<string, string?>
            {
                 { "AppSettings:DatabaseEngine", "SqlServer" }
            })
@@ -255,7 +257,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         if (_usersContext != null)
         {
             _usersContext.Dispose();
-            _usersContext = null;
+            _usersContext = null!;
         }
     }
 
@@ -467,7 +469,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 
         Save(odsInstance);
 
-        string decryptedConnectionString = null;
+        string? decryptedConnectionString = null;
         _encryptionProvider.Setup(x => x.TryDecrypt(
             It.IsAny<string>(),
             It.IsAny<byte[]>(),
@@ -497,9 +499,9 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(error)),
+                    It.Is<It.IsAnyType>((v, t) => (v.ToString() ?? string.Empty).Contains(error)),
                     null,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeastOnce);
         });
     }

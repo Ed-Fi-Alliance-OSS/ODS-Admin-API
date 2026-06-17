@@ -26,7 +26,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
             )
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithRouteOptions(b => b.WithResponseCode(201))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
@@ -36,7 +36,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified ODS instance"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(202)
+                .WithResponseCode(201)
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V2);
     }
@@ -48,9 +48,13 @@ public class RefreshEducationOrganizations : IFeature
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
+        var jobName = $"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}";
+        var jobId = $"{jobName}_{Guid.NewGuid():N}";
+
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
-            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .WithIdentity(jobName)
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
+            .UsingJobData(JobConstants.RunIdKey, jobId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -60,10 +64,14 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        return Results.Accepted(null, new
+        var response = new
         {
-            Message = "Education organizations refresh has been queued for all instances"
-        });
+            jobId,
+            message = "Education organizations refresh has been queued for all instances"
+        };
+        var locationUri = $"/v2/jobs/{jobId}";
+
+        return Results.Created(locationUri, response);
     }
 
     public static async Task<IResult> RefreshEducationOrganizationsByInstance(
@@ -81,10 +89,14 @@ public class RefreshEducationOrganizations : IFeature
         var tenantConfiguration = tenantConfigurationProvider.Get();
         var tenantIdentifier = tenantConfiguration?.TenantIdentifier;
 
+        var jobName = $"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}";
+        var jobId = $"{jobName}_{Guid.NewGuid():N}";
+
         var job = JobBuilder.Create<RefreshEducationOrganizationsJob>()
-            .WithIdentity($"{JobConstants.RefreshEducationOrganizationsJobName}-{tenantIdentifier}-{Guid.NewGuid()}")
+            .WithIdentity(jobName)
             .UsingJobData(JobConstants.TenantNameKey, tenantIdentifier)
             .UsingJobData(JobConstants.OdsInstanceIdKey, instanceId)
+            .UsingJobData(JobConstants.RunIdKey, jobId)
             .Build();
 
         var trigger = TriggerBuilder.Create()
@@ -94,9 +106,13 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        return Results.Accepted(null, new
+        var response = new
         {
-            Message = $"Education organizations refresh has been queued for instance {instanceId}"
-        });
+            jobId,
+            message = "Education organizations refresh has been queued for the specified instance"
+        };
+        var locationUri = $"/v2/jobs/{jobId}";
+
+        return Results.Created(locationUri, response);
     }
 }

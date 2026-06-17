@@ -1,0 +1,33 @@
+meta {
+  name: DataStoreContexts by ID - Not Found
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{API_URL}}/v3/dataStoreContexts/{{NotExistDataStoresContextId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET DataStoreContexts NotFound: Status code is Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+
+  const response = res.getBody();
+
+  test("GET DataStoreContexts NotFound: Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+  
+  test("GET DataStoreContexts NotFound: Response title is helpful and accurate", function () {  
+      expect(response.title).to.contain("Not found");
+      expect(response.title).to.contain("DataStoreContext");
+      expect(response.title).to.contain(bru.getVar("NotExistDataStoresContextId"));
+  });
+}
+
+settings {
+  encodeUrl: true
+}

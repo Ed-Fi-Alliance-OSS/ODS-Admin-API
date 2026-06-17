@@ -13,6 +13,10 @@ using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using V3Jobs = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
+using V3Tenants = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
+using V3ErrorHandling = EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
+using V3Features = EdFi.Ods.AdminApi.V3.Features;
 using log4net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -48,10 +52,18 @@ if (!string.IsNullOrEmpty(pathBase))
 AdminApiVersions.Initialize(app);
 
 //The ordering here is meaningful: Logging -> Routing -> Auth -> Endpoints
-app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseMiddleware<AdminApiModeValidationMiddleware>();
+if (adminApiMode == AdminApiMode.V3)
+{
+    app.UseMiddleware<V3ErrorHandling.V3RequestErrorMiddleware>();
+    app.UseMiddleware<V3Features.AdminApiModeValidationMiddleware>();
+}
+else
+{
+    app.UseMiddleware<RequestLoggingMiddleware>();
+    app.UseMiddleware<AdminApiModeValidationMiddleware>();
+}
 
-if (adminApiMode == AdminApiMode.V2)
+if (adminApiMode == AdminApiMode.V2 || adminApiMode == AdminApiMode.V3)
     app.UseMiddleware<TenantResolverMiddleware>();
 
 app.UseRouting();
@@ -93,40 +105,49 @@ if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
 var edOrgsRefreshIntervalInMins = app.Configuration.GetValue<string>(
     "AppSettings:EdOrgsRefreshIntervalInMins"
 );
+var createDbInstancesSweepIntervalInMins = app.Configuration.GetValue<string>(
+    "AppSettings:CreateDbInstancesSweepIntervalInMins"
+);
+var deleteDbInstancesSweepIntervalInMins = app.Configuration.GetValue<string>(
+    "AppSettings:DeleteDbInstancesSweepIntervalInMins"
+);
 var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
     "AppSettings:MultiTenancy"
 );
 
 if (adminApiMode == AdminApiMode.V2)
 {
-    if (double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval))
+    var shouldScheduleDispatcher = double.TryParse(createDbInstancesSweepIntervalInMins, out var createDbInstancesSweepInterval);
+    var shouldScheduleDeleteDispatcher = double.TryParse(deleteDbInstancesSweepIntervalInMins, out var deleteDbInstancesSweepInterval);
+    var shouldScheduleEdOrgsRefresh = double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval);
+
+    if (isMultiTenancyEnabled && (shouldScheduleDispatcher || shouldScheduleDeleteDispatcher || shouldScheduleEdOrgsRefresh))
+    {
+        using var scope = app.Services.CreateScope();
+        var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+        await tenantService.InitializeTenantsAsync();
+    }
+
+    var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
+    var scheduler = await schedulerFactory.GetScheduler();
+
+    if (shouldScheduleEdOrgsRefresh)
     {
         if (isMultiTenancyEnabled)
         {
             using var scope = app.Services.CreateScope();
             var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
-            await tenantService.InitializeTenantsAsync();
-
             var tenants = await tenantService.GetTenantsAsync(fromCache: true);
 
-            var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
-            var scheduler = await schedulerFactory.GetScheduler();
-
-            var tenantNames = tenants.Select(tenant => tenant.TenantName);
-
-            foreach (var tenantName in tenantNames)
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
             {
-                var jobData = new Dictionary<string, object>
-                {
-                    [JobConstants.TenantNameKey] = tenantName
-                };
-
-                var jobKey = new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}_{tenantName}");
-
                 await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
                     scheduler,
-                    jobKey: jobKey,
-                    jobData: jobData,
+                    jobKey: new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
                     startImmediately: false,
                     interval: TimeSpan.FromMinutes(refreshInterval)
                 );
@@ -134,9 +155,6 @@ if (adminApiMode == AdminApiMode.V2)
         }
         else
         {
-            var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
-            var scheduler = await schedulerFactory.GetScheduler();
-
             await QuartzJobScheduler.ScheduleJob<RefreshEducationOrganizationsJob>(
                 scheduler,
                 jobKey: new JobKey(JobConstants.RefreshEducationOrganizationsJobName),
@@ -150,6 +168,212 @@ if (adminApiMode == AdminApiMode.V2)
     else
     {
         _logger.Error("Invalid value for EdOrgsRefreshIntervalInMins. Please ensure it is a valid number.");
+    }
+
+    if (shouldScheduleDispatcher)
+    {
+        if (isMultiTenancyEnabled)
+        {
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+            {
+                await QuartzJobScheduler.ScheduleJob<CreatePendingDbInstancesDispatcherJob>(
+                    scheduler,
+                    jobKey: new JobKey($"{JobConstants.CreatePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(createDbInstancesSweepInterval)
+                );
+            }
+        }
+        else
+        {
+            await QuartzJobScheduler.ScheduleJob<CreatePendingDbInstancesDispatcherJob>(
+                scheduler,
+                jobKey: new JobKey(JobConstants.CreatePendingDbInstancesDispatcherJobName),
+                jobData: new Dictionary<string, object>(),
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(createDbInstancesSweepInterval)
+            );
+        }
+    }
+    else
+    {
+        _logger.Error("Invalid value for CreateDbInstancesSweepIntervalInMins. Please ensure it is a valid number.");
+    }
+
+    if (shouldScheduleDeleteDispatcher)
+    {
+        if (isMultiTenancyEnabled)
+        {
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+            {
+                await QuartzJobScheduler.ScheduleJob<DeletePendingDbInstancesDispatcherJob>(
+                    scheduler,
+                    jobKey: new JobKey($"{JobConstants.DeletePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(deleteDbInstancesSweepInterval)
+                );
+            }
+        }
+        else
+        {
+            await QuartzJobScheduler.ScheduleJob<DeletePendingDbInstancesDispatcherJob>(
+                scheduler,
+                jobKey: new JobKey(JobConstants.DeletePendingDbInstancesDispatcherJobName),
+                jobData: new Dictionary<string, object>(),
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(deleteDbInstancesSweepInterval)
+            );
+        }
+    }
+    else
+    {
+        _logger.Error("Invalid value for DeleteDbInstancesSweepIntervalInMins. Please ensure it is a valid number.");
+    }
+}
+else if (adminApiMode == AdminApiMode.V3)
+{
+    var shouldScheduleDispatcher = double.TryParse(createDbInstancesSweepIntervalInMins, out var createDbInstancesSweepInterval) && createDbInstancesSweepInterval > 0;
+    var shouldScheduleDeleteDispatcher = double.TryParse(deleteDbInstancesSweepIntervalInMins, out var deleteDbInstancesSweepInterval) && deleteDbInstancesSweepInterval > 0;
+    var shouldScheduleEdOrgsRefresh = double.TryParse(edOrgsRefreshIntervalInMins, out var refreshInterval) && refreshInterval > 0;
+
+    if (isMultiTenancyEnabled && (shouldScheduleDispatcher || shouldScheduleDeleteDispatcher || shouldScheduleEdOrgsRefresh))
+    {
+        using var scope = app.Services.CreateScope();
+        var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
+        await tenantService.InitializeTenantsAsync();
+    }
+
+    var schedulerFactory = app.Services.GetRequiredService<ISchedulerFactory>();
+    var scheduler = await schedulerFactory.GetScheduler();
+
+    if (shouldScheduleEdOrgsRefresh)
+    {
+        if (isMultiTenancyEnabled)
+        {
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+            {
+                await QuartzJobScheduler.ScheduleJob<V3Jobs.RefreshEducationOrganizationsJob>(
+                    scheduler,
+                    jobKey: new JobKey($"{JobConstants.RefreshEducationOrganizationsJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(refreshInterval)
+                );
+            }
+        }
+        else
+        {
+            await QuartzJobScheduler.ScheduleJob<V3Jobs.RefreshEducationOrganizationsJob>(
+                scheduler,
+                jobKey: new JobKey(JobConstants.RefreshEducationOrganizationsJobName),
+                jobData: new Dictionary<string, object>(),
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(refreshInterval)
+            );
+        }
+    }
+    else
+    {
+        _logger.Error("Invalid value for EdOrgsRefreshIntervalInMins. Please ensure it is a valid number.");
+    }
+
+    if (shouldScheduleDispatcher)
+    {
+        if (isMultiTenancyEnabled)
+        {
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+            {
+                await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDbInstancesDispatcherJob>(
+                    scheduler,
+                    jobKey: new JobKey($"{JobConstants.CreatePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(createDbInstancesSweepInterval)
+                );
+            }
+        }
+        else
+        {
+            await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDbInstancesDispatcherJob>(
+                scheduler,
+                jobKey: new JobKey(JobConstants.CreatePendingDbInstancesDispatcherJobName),
+                jobData: new Dictionary<string, object>(),
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(createDbInstancesSweepInterval)
+            );
+        }
+    }
+    else
+    {
+        _logger.Error("Invalid value for CreateDbInstancesSweepIntervalInMins. Please ensure it is a valid number.");
+    }
+
+    if (shouldScheduleDeleteDispatcher)
+    {
+        if (isMultiTenancyEnabled)
+        {
+            using var scope = app.Services.CreateScope();
+            var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
+            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+
+            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+            {
+                await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDbInstancesDispatcherJob>(
+                    scheduler,
+                    jobKey: new JobKey($"{JobConstants.DeletePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobData: new Dictionary<string, object>
+                    {
+                        [JobConstants.TenantNameKey] = tenantName
+                    },
+                    startImmediately: false,
+                    interval: TimeSpan.FromMinutes(deleteDbInstancesSweepInterval)
+                );
+            }
+        }
+        else
+        {
+            await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDbInstancesDispatcherJob>(
+                scheduler,
+                jobKey: new JobKey(JobConstants.DeletePendingDbInstancesDispatcherJobName),
+                jobData: new Dictionary<string, object>(),
+                startImmediately: false,
+                interval: TimeSpan.FromMinutes(deleteDbInstancesSweepInterval)
+            );
+        }
+    }
+    else
+    {
+        _logger.Error("Invalid value for DeleteDbInstancesSweepIntervalInMins. Please ensure it is a valid number.");
     }
 }
 

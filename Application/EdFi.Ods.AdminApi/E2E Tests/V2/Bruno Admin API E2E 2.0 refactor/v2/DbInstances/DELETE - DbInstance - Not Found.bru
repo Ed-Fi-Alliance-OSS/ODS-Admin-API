@@ -14,13 +14,13 @@ script:post-response {
   test("DELETE DbInstance Not Found: Status code is Not Found", function () {
     expect(res.getStatus()).to.equal(404);
   });
-
+  
   const response = res.getBody();
-
+  
   test("DELETE DbInstance Not Found: Response matches error format", function () {
     expect(response).to.have.property("title");
   });
-
+  
   test("DELETE DbInstance Not Found: Response title is helpful and accurate", function () {
     expect(response.title.toLowerCase()).to.contain("not found");
   });
@@ -28,4 +28,5 @@ script:post-response {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

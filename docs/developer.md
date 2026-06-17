@@ -15,10 +15,11 @@
   * [Application Architecture](#application-architecture)
     * [Database Layer](#database-layer)
     * [Validation](#validation)
+    * [DbInstance Provisioning Jobs](#dbinstance-provisioning-jobs)
 
 ## Development Pre-Requisites
 
-* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+* [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 * Suggested to have either:
   * [Visual Studio 2022](https://visualstudio.microsoft.com/downloads), or
   * [Visual Studio 2022 Build
@@ -35,7 +36,7 @@
 
 The PowerShell script [build.ps1](/build.ps1) in the root directory contains functions for
 running standard build operations at the command line. This script assumes that
-.NET 8.0 SDK or newer is installed. Other dependency tools are downloaded
+.NET 10.0 SDK or newer is installed. Other dependency tools are downloaded
 as needed (NuGet, NUnit).
 
 Available commands (e.g., `./build.ps1 clean`) (commands are not case sensitive):
@@ -236,3 +237,20 @@ credentials.
 
 Validation of API requests is configured via
 [FluentValidation](https://docs.fluentvalidation.net/en/latest/).
+
+### DbInstance Provisioning Jobs
+
+The `POST /v2/dbinstances` flow is asynchronous. The endpoint persists a `Pending` `DbInstance`, schedules `CreateInstanceJob`, and returns `202 Accepted` immediately. A separate recurring `CreatePendingDbInstancesDispatcherJob` handles sweep-based recovery and capped retries for records that remain in `Pending` or move to `Error`.
+
+Use [design/DBINSTANCE-PROVISIONING-JOBS.md](design/DBINSTANCE-PROVISIONING-JOBS.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
+
+Feature-specific prerequisites and configuration:
+
+* `AppSettings:adminApiMode` must be `v2` so startup scheduling registers the recurring dispatcher.
+* Admin API DB migrations must be applied because the flow relies on `adminapi.DbInstances` and `adminapi.JobStatuses`.
+* `AppSettings:EncryptionKey` must be a valid base64-encoded key.
+* `ConnectionStrings:EdFi_Ods` supplies the connection-string shape used to generate encrypted `OdsInstance.ConnectionString` values.
+* For PostgreSQL, `ConnectionStrings:EdFi_Master` should point at the maintenance database `postgres`, not an ODS database.
+* `AppSettings:CreateDbInstancesSweepIntervalInMins` controls dispatcher cadence.
+* `AppSettings:CreateDbInstancesMaxRetryAttempts` controls retry capping.
+* When `AppSettings:MultiTenancy` is enabled, the active tenant must have tenant-specific connection strings available before the worker runs.

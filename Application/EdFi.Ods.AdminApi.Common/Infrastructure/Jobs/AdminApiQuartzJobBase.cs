@@ -16,7 +16,9 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs
         public async Task Execute(IJobExecutionContext context)
         {
             var jobId = context.JobDetail.Key.Name;
-            var runId = $"{jobId}_{context.FireInstanceId}";
+            var runId = context.MergedJobDataMap.ContainsKey(JobConstants.RunIdKey)
+                ? context.MergedJobDataMap.GetString(JobConstants.RunIdKey)!
+                : $"{jobId}_{context.FireInstanceId}";
             var tenantName = context.MergedJobDataMap.ContainsKey(JobConstants.TenantNameKey) ? context.MergedJobDataMap.GetString(JobConstants.TenantNameKey) : string.Empty;
             try
             {

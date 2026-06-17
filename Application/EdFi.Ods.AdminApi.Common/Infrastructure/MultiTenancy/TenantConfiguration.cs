@@ -12,4 +12,8 @@ public class TenantConfiguration
     public string? AdminConnectionString { get; set; }
 
     public string? SecurityConnectionString { get; set; }
+
+    public string? OdsConnectionString { get; set; }
+
+    public string? MasterConnectionString { get; set; }
 }

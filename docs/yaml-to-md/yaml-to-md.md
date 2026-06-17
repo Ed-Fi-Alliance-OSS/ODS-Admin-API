@@ -27,11 +27,11 @@ Check the .config/dotnet-tools.json file and verify if you have the section call
 }
 ```
 
-- Build the EdFi.Ods.AdminApi project and it should generate the assembly, the location should be in Application\EdFi.Ods.AdminApi\bin\Debug\net8.0\EdFi.Ods.AdminApi.dll
+- Build the EdFi.Ods.AdminApi project and it should generate the assembly, the location should be in Application\EdFi.Ods.AdminApi\bin\Debug\net10.0\EdFi.Ods.AdminApi.dll
 
 - If everything goes well, we can proceed to generate the api description with following command:
 ```
-dotnet tool run swagger tofile --output ..\..\docs\swagger.yaml --yaml .\bin\Debug\net8.0\EdFi.Ods.AdminApi.dll v2
+dotnet tool run swagger tofile --output ..\..\docs\swagger.yaml --yaml .\bin\Debug\net10.0\EdFi.Ods.AdminApi.dll v2
 ``` 
 For more details check [Swashbuckle.AspNetCore](https://github.com/domaindrivendev/Swashbuckle.AspNetCore#swashbuckleaspnetcorecli)
 

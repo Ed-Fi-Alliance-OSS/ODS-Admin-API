@@ -1,0 +1,122 @@
+meta {
+  name: Get Job Status by ID
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v2/jobs/{{JobId}}
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  // Trigger a refresh to ensure a valid JobId is available before the main request
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: () => true,
+    timeout: 30000
+  };
+
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = bru.getEnvVar("tenant1");
+  }
+
+  const refreshResponse = await axios.post(`${API_URL}/v2/odsInstances/edOrgs/refresh`, null, axiosConfig);
+
+  test("Pre: Refresh endpoint returns 201", function () {
+    expect(refreshResponse.status).to.equal(201);
+  });
+
+  const jobId = refreshResponse.data.jobId;
+  bru.setVar("JobId", jobId);
+  console.log(`✅ Triggered refresh job: ${jobId}`);
+
+  // Poll until the job status record exists (not 404)
+  let jobFound = false;
+  const maxAttempts = 10;
+  for (let i = 0; i < maxAttempts; i++) {
+    const r = await axios.get(`${API_URL}/v2/jobs/${jobId}`, axiosConfig);
+    if (r.status >= 200 && r.status < 300) {
+      console.log(`✅ Job ${jobId} found after ${i + 1} attempt(s)`);
+      jobFound = true;
+      break;
+    } else if (r.status !== 404) {
+      throw new Error(`Unexpected status ${r.status} while polling for job ${jobId}`);
+    }
+    if (i < maxAttempts - 1) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  test("Pre: Job is accessible via GET /jobs/{jobId} before main request", function () {
+    expect(jobFound).to.be.true;
+  });
+}
+
+script:post-response {
+  test("GET Job Status: Status code is OK", function () {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  if (res.getStatus() === 200) {
+    const body = res.getBody();
+
+    test("GET Job Status: Response has jobId", function () {
+      expect(body).to.have.property("jobId");
+      expect(body.jobId).to.be.a("string");
+    });
+
+    test("GET Job Status: Response has status", function () {
+      expect(body).to.have.property("status");
+      expect(body.status).to.be.a("string");
+    });
+
+    test("GET Job Status: Response has createdAt", function () {
+      expect(body).to.have.property("createdAt");
+    });
+
+    test("GET Job Status: finishedAt is null or a string when present", function () {
+      if (body.finishedAt !== undefined) {
+        expect(body.finishedAt === null || typeof body.finishedAt === "string").to.be.true;
+      }
+    });
+
+    test("GET Job Status: errorMessage is null or a string when present", function () {
+      if (body.errorMessage !== undefined) {
+        expect(body.errorMessage === null || typeof body.errorMessage === "string").to.be.true;
+      }
+    });
+
+    const Ajv = require('ajv');
+    const ajv = new Ajv();
+    const schema = {
+      "type": "object",
+      "properties": {
+        "jobId":        { "type": "string" },
+        "status":       { "type": "string" },
+        "createdAt":    { "type": "string" },
+        "finishedAt":   { "type": ["string", "null"] },
+        "errorMessage": { "type": ["string", "null"] }
+      },
+      "required": ["jobId", "status", "createdAt"]
+    };
+
+    test("GET Job Status: Response matches schema", function () {
+      const valid = ajv.validate(schema, body);
+      if (!valid) console.log("Schema validation errors:", ajv.errors);
+      expect(valid).to.be.true;
+    });
+  }
+}
+
+settings {
+  encodeUrl: true
+}

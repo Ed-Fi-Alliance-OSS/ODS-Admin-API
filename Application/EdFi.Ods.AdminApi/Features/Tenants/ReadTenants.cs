@@ -24,7 +24,7 @@ public class ReadTenants : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/tenants/{tenantName}/OdsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
+            .MapGet(endpoints, "/tenants/{tenantName}/odsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
             .BuildForVersions(AdminApiVersions.V2);
     }
 

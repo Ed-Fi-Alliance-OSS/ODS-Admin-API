@@ -6,7 +6,7 @@
 services:
   nginx:
     build:
-      context: ../../../../Settings/V2/gateway/
+      context: ../../../../Settings/shared/gateway/
       dockerfile: IDP.Dockerfile
     environment:
       ADMIN_API_VIRTUAL_NAME: "${ADMIN_API_VIRTUAL_NAME:-adminapi}"
@@ -19,7 +19,7 @@ services:
     hostname: nginx
     volumes:
       - ../../../../Settings/ssl:/ssl/
-      - ../../../../Settings/V2/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
+      - ../../../../Settings/shared/gateway/default_idp.conf.template:/etc/nginx/templates/default.conf.template
     depends_on:
       - adminapi
       - idp-keycloak
@@ -63,10 +63,16 @@ services:
       SQLSERVER_TENANT2_PORT: 1433
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       SwaggerSettings__DefaultTenant: ${DEFAULT_TENANT:-tenant1}
+      ConnectionStrings__EdFi_Ods: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Ods;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Master: "Data Source=db-admin-tenant1,1433;Initial Catalog=master;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Ods: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Ods;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Master: "Data Source=db-admin-tenant1,1433;Initial Catalog=master;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Admin;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Security;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Ods: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Ods;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Master: "Data Source=db-admin-tenant2,1433;Initial Catalog=master;User Id=$SQLSERVER_USER;Password=$SQLSERVER_PASSWORD; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
     depends_on:
@@ -83,7 +89,7 @@ services:
 
   db-admin-tenant1:
     build:
-      context: ../../../../Settings/V2/DB-Admin/mssql/
+      context: ../../../../Settings/shared/DB-Admin/mssql/
       dockerfile: Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
@@ -109,7 +115,7 @@ services:
 
   db-admin-tenant2:
     build:
-      context: ../../../../Settings/V2/DB-Admin/mssql/
+      context: ../../../../Settings/shared/DB-Admin/mssql/
       dockerfile: Dockerfile
       args:
         ADMIN_API_VERSION: "${ADMIN_API_VERSION:-2.2.0}"
@@ -185,3 +191,4 @@ volumes:
   vol-db-idp-keycloak:
     driver: local
     name: vol-db-idp-keycloak
+
