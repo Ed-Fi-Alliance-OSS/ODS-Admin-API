@@ -31,7 +31,7 @@ jobs:
   #   uses: Ed-Fi-Alliance-OSS/Ed-Fi-Actions/.github/workflows/powershell-analyzer.yml@main
   scan-actions-bidi:
     name: Scan Actions, scan all files for BIDI Trojan Attacks
-    uses: ed-fi-alliance-oss/ed-fi-actions/.github/workflows/repository-scanner.yml@main
+    uses: ed-fi-alliance-oss/ed-fi-actions/.github/workflows/repository-scanner.yml@8fc2302d7369828b2f0784f8ca219c7da228b583
     with:
       config-file-path: ./.github/workflows/bidi-config.json
 
@@ -54,8 +54,8 @@ jobs:
       - name: Install Coverlet Tools
         if: success()
         run: |
-          dotnet tool install --global coverlet.console
-          dotnet tool install --global dotnet-reportgenerator-globaltool
+          dotnet tool install --global coverlet.console --version 10.0.1
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.10
 
       - name: Run Unit Tests
         if: success()
