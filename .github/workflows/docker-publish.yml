@@ -38,19 +38,31 @@ jobs:
     steps:
       - name: Prepare Tags
         id: prepare-tags
+        shell: bash
+        env:
+          RELEASE_REF: ${{ inputs.ref }}
+          MINOR_ONLY: ${{ inputs.publish-only-minor-image }}
         run: |
-          REF="${{ inputs.ref }}"
-          MINOR_ONLY="${{ inputs.publish-only-minor-image }}"
-          if [[ $REF =~ "Pre-Release" ]]
+          set -euo pipefail
+
+          REF="$RELEASE_REF"
+
+          if [[ ! "$REF" =~ ^(Pre-Release-)?v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          then
+            echo "Invalid release tag: $REF" >&2
+            exit 1
+          fi
+
+          if [[ "$REF" == Pre-Release-* ]]
           then
              # Remove Pre-Release prefix
              PREFIX="Pre-Release-"
-             PACKAGEVERSION=${REF#"$PREFIX"}
+             PACKAGEVERSION="${REF#"$PREFIX"}"
           else
-             PACKAGEVERSION=${REF}
+             PACKAGEVERSION="$REF"
           fi
 
-          if [[ $PACKAGEVERSION =~ "alpha" ]]
+          if [[ "$PACKAGEVERSION" == *alpha* ]]
           then
             # Pre-releases get the tag "pre"
             APITAGS="${{ env.IMAGE_NAME }}:pre"
@@ -61,7 +73,7 @@ jobs:
             # We are not using shortened form for major or using "latest"
             # because they are too imprecise.
             MINOR="$(echo "${PACKAGEVERSION}" | awk -F"." '{print $1"."$2}')"
-            if [[ $MINOR_ONLY == "true" ]]
+            if [[ "$MINOR_ONLY" == "true" ]]
             then
               APITAGS="${{ env.IMAGE_NAME }}:${MINOR}"
               DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
@@ -73,7 +85,7 @@ jobs:
             fi
           fi
 
-          SEMVERSION=${PACKAGEVERSION:1}  # strip off the leading 'v'
+          SEMVERSION="${PACKAGEVERSION:1}"  # strip off the leading 'v'
           {
             echo "APITAGS=$APITAGS"
             echo "DBTAGS=$DBTAGS"

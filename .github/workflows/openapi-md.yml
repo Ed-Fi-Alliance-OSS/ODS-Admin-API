@@ -15,11 +15,9 @@ on:
 permissions: read-all
 
 env:
-    CI_COMMIT_MESSAGE: Add YAML and markdown file api-specification version ${{ inputs.version }}
     CI_COMMIT_AUTHOR: github-actions[bot]
     CI_COMMIT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-    BRANCH_NAME: openapi-${{ inputs.version }}
 
 jobs:
   create-doc-and-openapiyaml:
@@ -32,12 +30,28 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout the Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Validate version
+        id: validate-version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          $version = $env:INPUT_VERSION
+
+          if ($version -notmatch '^\d+\.\d+\.\d+$')
+          {
+              throw "Invalid version format: $version"
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "branch-name=openapi-$version" >> $env:GITHUB_OUTPUT
+          "commit-message=Add YAML and markdown file api-specification version $version" >> $env:GITHUB_OUTPUT
 
       - name: Git create branch
         run: |
-          git checkout -b ${{ env.BRANCH_NAME }}
-          git push --set-upstream origin ${{ env.BRANCH_NAME }}
+          git checkout -b "${{ steps.validate-version.outputs.branch-name }}"
+          git push --set-upstream origin "${{ steps.validate-version.outputs.branch-name }}"
 
       - name: Install Swashbuckle CLI
         run: dotnet tool install Swashbuckle.AspNetCore.Cli --version 6.6.2 --create-manifest-if-needed
@@ -56,7 +70,7 @@ jobs:
               AdminDB          = "host=db-admin;port=5432;username=username;password=password;database=EdFi_Admin;Application Name=EdFi.Ods.AdminApi;"
               SecurityDB       = "host=db-admin;port=5432;username=username;password=password;database=EdFi_Security;Application Name=EdFi.Ods.AdminApi;"
           }
-          ./build.ps1 -APIVersion ${{ inputs.version }} -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPIAndMD
+          ./build.ps1 -APIVersion "${{ steps.validate-version.outputs.version }}" -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPIAndMD
 
       - name: Git add files
         run: |
@@ -67,12 +81,12 @@ jobs:
 
       - name: Commit file
         id: commit
-        uses: planetscale/ghcommit-action@d4176bfacef926cc2db351eab20398dfc2f593b5 #v0.2.0
+        uses: planetscale/ghcommit-action@25309d8005ac7c3bcd61d3fe19b69e0fe47dbdde # v0.2.20
         with:
-          commit_message: "${{ env.CI_COMMIT_MESSAGE }}"
+          commit_message: "${{ steps.validate-version.outputs.commit-message }}"
           repo: ${{ github.repository }}
-          branch: ${{ env.BRANCH_NAME }}
+          branch: ${{ steps.validate-version.outputs.branch-name }}
           file_pattern: '*.yaml *.md'
 
       - name: Create PR
-        run: gh pr create -B main -H ${{ env.BRANCH_NAME }} --title '[Github Action] Open API documentation version ${{ inputs.version }}' --body 'Created by Github action'
+        run: gh pr create -B main -H "${{ steps.validate-version.outputs.branch-name }}" --title "[Github Action] Open API documentation version ${{ steps.validate-version.outputs.version }}" --body 'Created by Github action'
