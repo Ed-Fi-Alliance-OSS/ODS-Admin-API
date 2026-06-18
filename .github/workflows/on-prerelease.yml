@@ -222,7 +222,7 @@ jobs:
       contents: write
     steps:
       - name: Download the SBOM
-        uses: Ed-Fi-Alliance-OSS/slsa-github-generator/.github/actions/secure-download-artifact@b0424f2594afb7f5ae513b04d5464ecba72449dd
+        uses: Ed-Fi-Alliance-OSS/slsa-github-generator/.github/actions/secure-download-artifact@main
         with:
           name: "${{ env.PACKAGE_NAME }}-SBOM"
           path: ${{ env.MANIFEST_FILE }}
@@ -264,7 +264,7 @@ jobs:
       actions: read
       id-token: write
       contents: write
-    uses: Ed-Fi-Alliance-OSS/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@5a775b367a56d5bd118a224a811bba288150a563
+    uses: Ed-Fi-Alliance-OSS/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
       base64-subjects: ${{ needs.pack.outputs.hash-code }}
       provenance-name: AdminApi.intoto.jsonl
