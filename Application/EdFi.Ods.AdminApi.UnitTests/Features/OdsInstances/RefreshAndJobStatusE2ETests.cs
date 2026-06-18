@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Net;
 using System.Net.Http;
@@ -121,7 +123,7 @@ public class RefreshAndJobStatusE2ETests
         
         // For this test, we're primarily verifying the flow works
         // In a real scenario with actual job execution, status would be Completed
-        TestContext.WriteLine($"Final job status: {finalStatus}");
+        TestContext.Out.WriteLine($"Final job status: {finalStatus}");
     }
 
     /// <summary>
@@ -159,7 +161,7 @@ public class RefreshAndJobStatusE2ETests
         var completedStatus = await PollJobStatus(jobId, "/v2/jobs/{0}");
         completedStatus.ShouldNotBeNullOrEmpty();
         
-        TestContext.WriteLine($"Job {jobId} final status: {completedStatus}");
+        TestContext.Out.WriteLine($"Job {jobId} final status: {completedStatus}");
     }
 
     /// <summary>
@@ -196,7 +198,7 @@ public class RefreshAndJobStatusE2ETests
         var completedStatus = await PollJobStatus(jobId, "/v3/jobs/{0}");
         completedStatus.ShouldNotBeNullOrEmpty();
         
-        TestContext.WriteLine($"V3 job {jobId} final status: {completedStatus}");
+        TestContext.Out.WriteLine($"V3 job {jobId} final status: {completedStatus}");
     }
 
     /// <summary>
@@ -385,7 +387,7 @@ public class RefreshAndJobStatusE2ETests
             }
             
             // Continue polling
-            TestContext.WriteLine($"Polling job {jobId}: {status}");
+            TestContext.Out.WriteLine($"Polling job {jobId}: {status}");
         }
         
         // Timeout - job didn't complete in time
