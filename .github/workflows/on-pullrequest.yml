@@ -31,7 +31,7 @@ jobs:
   #   uses: Ed-Fi-Alliance-OSS/Ed-Fi-Actions/.github/workflows/powershell-analyzer.yml@main
   scan-actions-bidi:
     name: Scan Actions, scan all files for BIDI Trojan Attacks
-    uses: ed-fi-alliance-oss/ed-fi-actions/.github/workflows/repository-scanner.yml@main
+    uses: ed-fi-alliance-oss/ed-fi-actions/.github/workflows/repository-scanner.yml@8fc2302d7369828b2f0784f8ca219c7da228b583
     with:
       config-file-path: ./.github/workflows/bidi-config.json
 
@@ -43,9 +43,7 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout the Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Verify NuGet lock files are up to date
         run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --locked-mode
@@ -56,8 +54,8 @@ jobs:
       - name: Install Coverlet Tools
         if: success()
         run: |
-          dotnet tool install --global coverlet.console
-          dotnet tool install --global dotnet-reportgenerator-globaltool
+          dotnet tool install --global coverlet.console --version 10.0.1
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.10
 
       - name: Run Unit Tests
         if: success()
@@ -65,13 +63,13 @@ jobs:
 
       - name: Upload Coverage Report
         if: always()
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: Coverage Report
           path: coveragereport
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: csharp-tests
           path: "**/*.trx"
@@ -79,11 +77,11 @@ jobs:
 
       - name: Dependency Review ("Dependabot on PR")
         if: ${{ !github.event.repository.fork }}
-        uses: actions/dependency-review-action@9129d7d40b8c12c1ed0f60400d00c92d437adcce # v4.1.3
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
       - name: Initialize CodeQL
         if: success()
-        uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # codeql-bundle-v3.28.0
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           languages: csharp, actions
 
@@ -95,11 +93,11 @@ jobs:
 
       - name: Perform CodeQL Analysis
         if: success()
-        uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # codeql-bundle-v3.28.0
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
 
       - name: Upload built application
         if: success()
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: built-application
           path: Application
@@ -125,12 +123,10 @@ jobs:
           - 1433:1433
     steps:
       - name: Checkout the Repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Download built application
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: built-application
           path: Application
@@ -140,7 +136,7 @@ jobs:
         run: ./build.ps1 -Command IntegrationTest -Configuration Debug -UseIntegratedSecurity:$false -DbUsername "sa" -DbPassword ${{ env.DB_Password }}
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: csharp-integration-tests
           path: "**/*.trx"
@@ -151,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Upload
-      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: Event File
         path: ${{ github.event_path }}
