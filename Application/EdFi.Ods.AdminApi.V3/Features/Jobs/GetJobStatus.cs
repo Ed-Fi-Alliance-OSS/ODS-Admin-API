@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -46,7 +47,8 @@ public class GetJobStatus : IFeature
         string jobId,
         IJobStatusService jobStatusService,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
-        [FromServices] IOptions<AppSettings> options)
+        [FromServices] IOptions<AppSettings> options,
+        HttpContext httpContext)
     {
         string? tenantName = null;
         if (options.Value.MultiTenancy)
@@ -54,7 +56,13 @@ public class GetJobStatus : IFeature
             var tenantConfig = tenantConfigurationProvider.Get();
             if (tenantConfig is null)
             {
-                return Results.Problem("Tenant identifier is required when multi-tenancy is enabled.", statusCode: 400);
+                var problemDetails = V3ProblemDetailsFactory.Create(
+                    status: StatusCodes.Status400BadRequest,
+                    title: "Bad Request",
+                    detail: "Tenant identifier is required when multi-tenancy is enabled.",
+                    correlationId: httpContext.TraceIdentifier);
+
+                return Results.Json(problemDetails, statusCode: StatusCodes.Status400BadRequest, contentType: "application/problem+json");
             }
             tenantName = tenantConfig.TenantIdentifier;
         }

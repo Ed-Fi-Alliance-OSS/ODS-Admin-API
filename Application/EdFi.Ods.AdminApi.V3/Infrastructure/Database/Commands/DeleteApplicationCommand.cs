@@ -49,11 +49,11 @@ public class DeleteApplicationCommand : IDeleteApplicationCommand
             _context.ClientAccessTokens.RemoveRange(currentClientAccessTokens);
         }
 
-        var currentApiClientOdsInstances = _context.ApiClientOdsInstances.Where(o => application.ApiClients.Contains(o.ApiClient));
+        var currentApiClientDataStores = _context.ApiClientOdsInstances.Where(o => application.ApiClients.Contains(o.ApiClient));
 
-        if (currentApiClientOdsInstances.Any())
+        if (currentApiClientDataStores.Any())
         {
-            _context.ApiClientOdsInstances.RemoveRange(currentApiClientOdsInstances);
+            _context.ApiClientOdsInstances.RemoveRange(currentApiClientDataStores);
         }
 
         var currentApplicationEducationOrganizations = _context.ApplicationEducationOrganizations.Where(aeo => aeo.Application.ApplicationId == application.ApplicationId);

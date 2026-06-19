@@ -17,7 +17,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class AddApiClientOdsInstanceCommandTests : PlatformUsersContextTestBase
+public class AddApiClientDataStoreCommandTests : PlatformUsersContextTestBase
 {
     [Test]
     public void ShouldAddApiClient()

@@ -32,7 +32,7 @@ RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-bu
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine3.22-amd64@sha256:86b43b7250c683781587f9e8d30a2315c5684f1b1fb788a9aa74e86bc06df4a5 AS runtimebase
 RUN apk upgrade --no-cache && \
-    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~76.1-r1 curl openssl=3.5.6-r0 musl=~1.2.5-r12 && \
+    apk add dos2unix=~7 bash=~5 gettext=~0 icu=~76.1-r1 krb5-libs=~1 curl openssl=3.5.7-r0 musl=~1.2.5-r12 && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
 FROM runtimebase AS setup

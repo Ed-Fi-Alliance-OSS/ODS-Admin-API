@@ -26,7 +26,7 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             .Include(a => a.Vendor)
             .Single(a => a.ApplicationId == apiClientModel.ApplicationId);
 
-        var odsInstances = apiClientModel.DataStoreIds != null
+        var dataStores = apiClientModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => apiClientModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
 
@@ -49,13 +49,13 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
 
         _usersContext.ApiClients.Add(apiClient);
 
-        if (odsInstances != null && odsInstances.Any())
+        if (dataStores != null && dataStores.Any())
         {
-            foreach (var odsInstance in odsInstances)
+            foreach (var dataStore in dataStores)
             {
                 _usersContext.ApiClientOdsInstances.Add(new ApiClientOdsInstance
                 {
-                    OdsInstance = odsInstance,
+                    OdsInstance = dataStore,
                     ApiClient = apiClient,
                 });
             }

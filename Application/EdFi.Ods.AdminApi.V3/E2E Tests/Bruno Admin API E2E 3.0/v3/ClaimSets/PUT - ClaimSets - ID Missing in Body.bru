@@ -1,0 +1,39 @@
+meta {
+  name: ClaimSets - ID Missing in Body
+  type: http
+  seq: 50.6
+}
+
+put {
+  url: {{API_URL}}/v3/claimSets/{{CreatedClaimSetId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "name": "UpdatedTestClaimSet"
+  }
+}
+
+script:post-response {
+  test("PUT ClaimSets ID Missing in Body: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+  const response = res.getBody();
+  
+  test("PUT ClaimSets ID Missing in Body: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+  
+  test("PUT ClaimSets ID Missing in Body: Response includes Id mismatch error", function () {
+      expect(response.errors["Id"].length).to.equal(1);
+      expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

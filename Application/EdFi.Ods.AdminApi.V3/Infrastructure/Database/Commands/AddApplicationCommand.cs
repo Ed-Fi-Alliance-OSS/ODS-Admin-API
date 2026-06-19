@@ -50,7 +50,7 @@ public class AddApplicationCommand : IAddApplicationCommand
         var vendor = _usersContext.Vendors.Include(x => x.Users)
             .Single(v => v.VendorId == applicationModel.VendorId);
 
-        var odsInstances = applicationModel.DataStoreIds != null
+        var dataStores = applicationModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => applicationModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
 
@@ -94,13 +94,13 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         _usersContext.Applications.Add(application);
 
-        if (odsInstances != null && odsInstances.Count() > 0)
+        if (dataStores != null && dataStores.Count() > 0)
         {
-            foreach (var odsInstance in odsInstances)
+            foreach (var dataStore in dataStores)
             {
                 _usersContext.ApiClientOdsInstances.Add(new ApiClientOdsInstance
                 {
-                    OdsInstance = odsInstance,
+                    OdsInstance = dataStore,
                     ApiClient = apiClient,
                 });
             }

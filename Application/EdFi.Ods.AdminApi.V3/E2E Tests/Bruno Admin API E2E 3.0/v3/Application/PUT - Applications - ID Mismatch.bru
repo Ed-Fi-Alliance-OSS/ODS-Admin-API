@@ -15,7 +15,7 @@ body:json {
     "id": 999999,
     "applicationName": "Updated Application Name",
     "vendorId": {{OtherApplicationVendorId}},
-    "claimSetName": "Ed-Fi ODS Admin App",
+    "claimSetName": "{{UpdatedApplicationClaimSetName}}",
     "profileIds": [],
     "educationOrganizationIds": [1234],
     "dataStoreIds": [ {{DataStoreId}} ],
@@ -37,7 +37,7 @@ script:post-response {
   
   test("PUT Applications ID Mismatch: Response includes Id mismatch error", function () {
       expect(response.errors["Id"].length).to.equal(1);
-      expect(response.errors["Id"][0]).to.contain("must match the ID in the URL");
+      expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
   });
 }
 

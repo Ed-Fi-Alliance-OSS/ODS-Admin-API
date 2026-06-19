@@ -6,14 +6,17 @@
 services:
   db-ods:
     build:
-      context: ../../../../Settings/shared/DB-Ods/mssql/
+      context: ../../../../Settings/V2/DB-Ods/mssqlPoC/
       dockerfile: Dockerfile
       args:
-        ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.478}
-        TPDM_VERSION: ${MSSQL_TPDM_MINIMAL_VERSION:-7.3.326}
+        MINIMAL_ODS_VERSION: ${MSSQL_ODS_MINIMAL_VERSION:-7.3.20062}
+        MINIMAL_TPDM_VERSION: ${MSSQL_TPDM_MINIMAL_VERSION:-7.3.20166}
+        POPULATED_ODS_VERSION: ${MSSQL_ODS_POPULATED_VERSION:-7.3.20065}
+        POPULATED_TPDM_VERSION: ${MSSQL_TPDM_POPULATED_VERSION:-7.3.20044}
         STANDARD_VERSION: ${STANDARD_VERSION:-5.2.0}
         EXTENSION_VERSION: ${EXTENSION_VERSION:-1.1.0}
     environment:
+      SA_PASSWORD: "${SA_PASSWORD:-P@55w0rd}"
       ACCEPT_EULA: "Y"
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       SQLSERVER_PASSWORD: ${SQLSERVER_PASSWORD:-P@55w0rd}
@@ -25,6 +28,8 @@ services:
     restart: always
     container_name: ed-fi-db-ods
     hostname: ed-fi-db-ods
+    ports:
+      - 1434:1433
     healthcheck:
       test: /opt/mssql-tools18/bin/sqlcmd -U ${SQLSERVER_USER:-edfi} -P "${SQLSERVER_PASSWORD:-P@55w0rd}" -C -Q "SELECT 1"
       start_period: "60s"
@@ -47,7 +52,7 @@ services:
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       TPDM_ENABLED: "${TPDM_ENABLED:-true}"
     volumes:
-      - ${LOGS_FOLDER}:/app/logs
+      - ${LOGS_FOLDER:-./logs}:/app/logs
     depends_on:
       - db-ods
       - db-admin

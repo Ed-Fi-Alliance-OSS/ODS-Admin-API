@@ -14,7 +14,7 @@ body:json {
   {
     "applicationName": "Test Application",
     "vendorId": {{ApplicationVendorId}},
-    "claimSetName": "Ed-Fi Sandbox",
+    "claimSetName": "{{ApplicationClaimSetName}}",
     "profileIds": [],
     "educationOrganizationIds": [ 255901 ],
     "dataStoreIds": [ {{DataStoreId}} ],
@@ -110,11 +110,11 @@ script:post-response {
   const response = res.getBody();
   
   test("Response matches error format", function () {
-      expect(response).to.have.property("message");
+      expect(response).to.have.property("detail");
   });
   
   test("Response title is helpful and accurate", function () {
-      expect(response.message.toLowerCase()).to.contain("wrong api version for this instance mode.");
+      expect(response.detail.toLowerCase()).to.contain("wrong api version for this instance mode.");
   });
 }
 

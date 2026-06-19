@@ -15,6 +15,8 @@ using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using V3Jobs = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using V3Tenants = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
+using V3ErrorHandling = EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
+using V3Features = EdFi.Ods.AdminApi.V3.Features;
 using log4net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -50,8 +52,16 @@ if (!string.IsNullOrEmpty(pathBase))
 AdminApiVersions.Initialize(app);
 
 //The ordering here is meaningful: Logging -> Routing -> Auth -> Endpoints
-app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseMiddleware<AdminApiModeValidationMiddleware>();
+if (adminApiMode == AdminApiMode.V3)
+{
+    app.UseMiddleware<V3ErrorHandling.V3RequestErrorMiddleware>();
+    app.UseMiddleware<V3Features.AdminApiModeValidationMiddleware>();
+}
+else
+{
+    app.UseMiddleware<RequestLoggingMiddleware>();
+    app.UseMiddleware<AdminApiModeValidationMiddleware>();
+}
 
 if (adminApiMode == AdminApiMode.V2 || adminApiMode == AdminApiMode.V3)
     app.UseMiddleware<TenantResolverMiddleware>();

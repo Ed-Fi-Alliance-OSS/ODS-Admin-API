@@ -49,7 +49,7 @@ script:post-response {
   
   test("PUT ResourceClaimClaimSets ResourceClaimId Mismatch: Response includes ResourceClaimId mismatch error", function () {
       expect(response.errors["ResourceClaimId"].length).to.equal(1);
-      expect(response.errors["ResourceClaimId"][0]).to.contain("must match the ID in the URL");
+      expect(response.errors["ResourceClaimId"][0]).to.contain("Request body id must match the id in the url.");
   });
 }
 

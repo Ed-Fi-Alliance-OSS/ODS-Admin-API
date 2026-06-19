@@ -34,14 +34,14 @@ public static class AdminModelExtensions
         return application?.Vendor?.VendorId;
     }
 
-    public static int? OdsInstanceId(this OdsInstanceContext odsInstanceContext)
+    public static int? OdsInstanceId(this OdsInstanceContext dataStoreContext)
     {
-        return odsInstanceContext.OdsInstance?.OdsInstanceId;
+        return dataStoreContext.OdsInstance?.OdsInstanceId;
     }
 
-    public static int? OdsInstanceId(this OdsInstanceDerivative odsInstanceDerivative)
+    public static int? OdsInstanceId(this OdsInstanceDerivative dataStoreDerivative)
     {
-        return odsInstanceDerivative.OdsInstance?.OdsInstanceId;
+        return dataStoreDerivative.OdsInstance?.OdsInstanceId;
     }
 
     public static IList<long>? EducationOrganizationIds(this Application application)

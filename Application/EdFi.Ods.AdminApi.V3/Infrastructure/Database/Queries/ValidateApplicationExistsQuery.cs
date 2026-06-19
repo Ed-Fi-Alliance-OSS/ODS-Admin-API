@@ -58,7 +58,7 @@ public class ValidateApplicationExistsQuery(IUsersContext context)
                         ApiClients = applications.ApiClients.Select(k => k.Application.ApplicationId).ToList(),
                     }).ToList();
 
-        var existingInstance = _context.ApiClientOdsInstances
+        var existingDataStore = _context.ApiClientOdsInstances
                 .Include(x => x.ApiClient)
                 .ThenInclude(app => app.Application)
                 .Where(a => a.ApiClient.Application.ApplicationName == applicationModel.ApplicationName
@@ -71,9 +71,9 @@ public class ValidateApplicationExistsQuery(IUsersContext context)
                 }).ToList();
         if (existingApplication.Count != 0)
         {
-            if ((existingInstance == null
-                || (existingInstance != null
-                    && existingInstance.Count == 0))
+            if ((existingDataStore == null
+                || (existingDataStore != null
+                    && existingDataStore.Count == 0))
              && (applicationModel.DataStoreIds == null
                 || (applicationModel.DataStoreIds != null && !applicationModel.DataStoreIds.Any()))
               )
@@ -81,7 +81,7 @@ public class ValidateApplicationExistsQuery(IUsersContext context)
                 return true;
             }
             bool instance = existingApplication.Exists(
-            x => x.ApiClients.Exists(y => existingInstance != null && existingInstance.Exists(z => z.ApplicationId == y))
+            x => x.ApiClients.Exists(y => existingDataStore != null && existingDataStore.Exists(z => z.ApplicationId == y))
             );
             return instance;
         }

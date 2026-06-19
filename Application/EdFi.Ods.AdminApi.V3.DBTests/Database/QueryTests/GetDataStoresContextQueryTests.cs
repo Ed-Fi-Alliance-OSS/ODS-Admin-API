@@ -15,7 +15,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
-public class GetOdsInstancesContextQueryTests : PlatformUsersContextTestBase
+public class GetDataStoresContextQueryTests : PlatformUsersContextTestBase
 {
     [Test]
     public void Should_Retreive_OdsInstancesContext()

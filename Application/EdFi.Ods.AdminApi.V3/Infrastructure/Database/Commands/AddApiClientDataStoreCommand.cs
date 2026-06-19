@@ -11,7 +11,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
 public interface IAddApiClientDataStoreCommand
 {
-    ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientOdsInstance);
+    ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientDataStore);
 }
 
 public class AddApiClientDataStoreCommand : IAddApiClientDataStoreCommand
@@ -23,17 +23,17 @@ public class AddApiClientDataStoreCommand : IAddApiClientDataStoreCommand
         _context = context;
     }
 
-    public ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientOdsInstance)
+    public ApiClientOdsInstance Execute(ApiClientOdsInstance newApiClientDataStore)
     {
 
-        var apiClientOdsInstance = new ApiClientOdsInstance
+        var apiClientDataStore = new ApiClientOdsInstance
         {
-            ApiClient = newApiClientOdsInstance.ApiClient,
-            OdsInstance = newApiClientOdsInstance.OdsInstance
+            ApiClient = newApiClientDataStore.ApiClient,
+            OdsInstance = newApiClientDataStore.OdsInstance
         };
-        _context.ApiClientOdsInstances.Add(apiClientOdsInstance);
+        _context.ApiClientOdsInstances.Add(apiClientDataStore);
         _context.SaveChanges();
-        return apiClientOdsInstance;
+        return apiClientDataStore;
     }
 }
 

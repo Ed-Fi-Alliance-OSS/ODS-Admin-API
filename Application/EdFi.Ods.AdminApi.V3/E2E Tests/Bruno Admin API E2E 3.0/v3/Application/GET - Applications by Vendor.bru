@@ -70,10 +70,22 @@ script:pre-request {
       throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
     }
 
+    // Create a claimset without spaces
+    const claimSetName = `AppTestClaimSet-${Date.now()}`;
+    const claimSetResp = await axios.post(`${API_URL}/v3/claimSets`, {
+      "name": claimSetName
+    }, axiosConfig);
+    if (claimSetResp.status === 201) {
+      console.log("✅ ClaimSet created successfully:", claimSetName);
+      bru.setVar("OtherApplicationClaimSetName", claimSetName);
+    } else {
+      throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
+    }
+
     const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
         "applicationName": "Other Vendor Application",
         "vendorId": bru.getVar("OtherApplicationVendorId"),
-        "claimSetName": "Ed-Fi Sandbox",
+        "claimSetName": claimSetName,
         "profileIds": [],
         "educationOrganizationIds": [ 255901 ],
         "dataStoreIds": [bru.getVar("dataStoreId")],
@@ -121,7 +133,7 @@ script:post-response {
   
       const result = results[indexOfApplication];
       expect(result.applicationName).to.equal("Test Application");
-      expect(result.claimSetName).to.equal("Ed-Fi Sandbox");
+      expect(result.claimSetName).to.equal(bru.getVar("ApplicationClaimSetName"));
       expect(result.educationOrganizationIds.length).to.equal(1);
       expect(result.profileIds.length).to.equal(0);
       expect(result.dataStoreIds.length).to.equal(1);

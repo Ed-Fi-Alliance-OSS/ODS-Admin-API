@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
@@ -54,6 +57,7 @@ internal class EducationOrganizationServiceTests
         };
 
         A.CallTo(() => _options.Value).Returns(_appSettings);
+        A.CallTo(() => _encryptionProvider.IsEncrypted(A<string>._)).Returns(true);
         _logger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
         _tenantSpecificDbContextProvider = A.Fake<ITenantSpecificDbContextProvider>();
         _serviceScopeFactory = A.Fake<IServiceScopeFactory>();
@@ -136,7 +140,7 @@ internal class EducationOrganizationServiceTests
             _serviceScopeFactory,
             _logger);
 
-        string decryptedConnectionString = null;
+        string? decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
             A<string>._,
             A<byte[]>._,
@@ -177,6 +181,72 @@ internal class EducationOrganizationServiceTests
         processOdsInstanceCallCount.ShouldBe(1);
     }
 
+    [Test]
+    public async Task ProcessDataStoreAsync_Should_Encrypt_Plaintext_ConnectionStrings_Before_Processing()
+    {
+        var realEncryptionProvider = new Aes256SymmetricStringEncryptionProvider();
+        var plaintextConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True";
+
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_V3_ProcessOdsInstance_EncryptsPlaintext")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var instance = new OdsInstance { OdsInstanceId = 1, Name = "Instance1", ConnectionString = plaintextConnectionString };
+        usersContext.OdsInstances.Add(instance);
+        await usersContext.SaveChangesAsync();
+
+        var processedInstanceIds = new List<int>();
+        var service = new TestableEducationOrganizationServiceWithTracking(
+            _options,
+            usersContext,
+            realEncryptionProvider,
+            _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
+            processedInstanceIds,
+            _logger);
+
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer");
+
+        var updatedInstance = await usersContext.OdsInstances.SingleAsync(o => o.OdsInstanceId == 1);
+        realEncryptionProvider.IsEncrypted(updatedInstance.ConnectionString).ShouldBeTrue();
+        processedInstanceIds.ShouldContain(1);
+    }
+
+    [Test]
+    public async Task ProcessDataStoreAsync_Should_Not_ReEncrypt_Already_Encrypted_ConnectionStrings()
+    {
+        var realEncryptionProvider = new Aes256SymmetricStringEncryptionProvider();
+        var key = Convert.FromBase64String(_encryptionKey);
+        var encryptedConnectionString = realEncryptionProvider.Encrypt(
+            "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True", key);
+
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb_V3_ProcessOdsInstance_NoReEncrypt")
+            .Options;
+
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+        var instance = new OdsInstance { OdsInstanceId = 1, Name = "Instance1", ConnectionString = encryptedConnectionString };
+        usersContext.OdsInstances.Add(instance);
+        await usersContext.SaveChangesAsync();
+
+        var processedInstanceIds = new List<int>();
+        var service = new TestableEducationOrganizationServiceWithTracking(
+            _options,
+            usersContext,
+            realEncryptionProvider,
+            _tenantSpecificDbContextProvider,
+            _serviceScopeFactory,
+            processedInstanceIds,
+            _logger);
+
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer");
+
+        var updatedInstance = await usersContext.OdsInstances.SingleAsync(o => o.OdsInstanceId == 1);
+        updatedInstance.ConnectionString.ShouldBe(encryptedConnectionString);
+        processedInstanceIds.ShouldContain(1);
+    }
+
     private class TestableEducationOrganizationService(
         IOptions<AppSettings> options,
         IUsersContext usersContext,
@@ -187,7 +257,7 @@ internal class EducationOrganizationServiceTests
     {
         private readonly Action _onProcessOdsInstance = onProcessOdsInstance;
 
-        public override Task ProcessOdsInstanceAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null, int maxDegreeOfParallelism = 10)
+        public override Task ProcessDataStoreAsync(string? tenantName, IUsersContext usersContext, string encryptionKey, string databaseEngine, int? instanceId = null, int maxDegreeOfParallelism = 10)
         {
             _onProcessOdsInstance();
             return Task.CompletedTask;
@@ -248,7 +318,7 @@ internal class EducationOrganizationServiceTests
               _serviceScopeFactory,
               _logger);
 
-        string decryptedConnectionString = null;
+        string? decryptedConnectionString = null;
         A.CallTo(() => _encryptionProvider.TryDecrypt(
             A<string>._,
             A<byte[]>._,
@@ -325,7 +395,7 @@ internal class EducationOrganizationServiceTests
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer", instanceId: 1);
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer", dataStoreId: 1);
 
         processedInstanceIds.Count.ShouldBe(1);
         processedInstanceIds.ShouldContain(1);
@@ -377,7 +447,7 @@ internal class EducationOrganizationServiceTests
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer", instanceId: null);
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer", dataStoreId: null);
 
         processedInstanceIds.Count.ShouldBe(3);
         processedInstanceIds.ShouldContain(1);
@@ -414,7 +484,7 @@ internal class EducationOrganizationServiceTests
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer", instanceId: 999);
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer", dataStoreId: 999);
 
         processedInstanceIds.ShouldBeEmpty();
     }
@@ -456,9 +526,10 @@ internal class EducationOrganizationServiceTests
 
         var fakeLogger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
+        A.CallTo(() => fakeEncryption.IsEncrypted(A<string>._)).Returns(true);
 
         // Setup encryption: succeed for all instances
-        string decryptedConnectionString;
+        string? decryptedConnectionString;
         A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-1", A<byte[]>._, out decryptedConnectionString))
             .Returns(true).AssignsOutAndRefParameters("Server=test1;");
         A.CallTo(() => fakeEncryption.TryDecrypt("encrypted-2", A<byte[]>._, out decryptedConnectionString))
@@ -511,9 +582,10 @@ internal class EducationOrganizationServiceTests
 
         var fakeLogger = A.Fake<ILogger<EducationOrganizationServiceImpl>>();
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
+        A.CallTo(() => fakeEncryption.IsEncrypted(A<string>._)).Returns(true);
 
         // Setup encryption to succeed
-        string decryptedConnectionString;
+        string? decryptedConnectionString;
         A.CallTo(() => fakeEncryption.TryDecrypt(A<string>._, A<byte[]>._, out decryptedConnectionString))
             .Returns(true).AssignsOutAndRefParameters("Server=test;");
 
@@ -570,7 +642,7 @@ internal class EducationOrganizationServiceTests
         public int CallCount => _callCount;
 
         // Override at the RefreshEducationOrganizationsAsync level so that
-        // ProcessOdsInstanceAsync (the thing under test) drives all iterations.
+        // ProcessDataStoreAsync (the thing under test) drives all iterations.
         // We replicate the base-class error-handling contract: catch per instance
         // so one failure never blocks the others.
         protected override Task RefreshEducationOrganizationsAsync(
@@ -639,7 +711,7 @@ internal class EducationOrganizationServiceTests
     }
 
     [Test]
-    public async Task ProcessOdsInstanceAsync_Should_Process_All_Instances_Within_MaxDegreeOfParallelism()
+    public async Task ProcessDataStoreAsync_Should_Process_All_Instances_Within_MaxDegreeOfParallelism()
     {
         var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_Parallelism")
@@ -668,8 +740,8 @@ internal class EducationOrganizationServiceTests
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer",
-            instanceId: null, maxDegreeOfParallelism: 2);
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer",
+            dataStoreId: null, maxDegreeOfParallelism: 2);
 
         processedInstanceIds.Count.ShouldBe(5);
         processedInstanceIds.ShouldContain(1);
@@ -681,7 +753,7 @@ internal class EducationOrganizationServiceTests
     }
 
     [Test]
-    public async Task ProcessOdsInstanceAsync_Should_Process_Sequentially_When_MaxDegreeOfParallelism_Is_One()
+    public async Task ProcessDataStoreAsync_Should_Process_Sequentially_When_MaxDegreeOfParallelism_Is_One()
     {
         var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_Sequential")
@@ -710,8 +782,8 @@ internal class EducationOrganizationServiceTests
             processedInstanceIds,
             _logger);
 
-        await service.ProcessOdsInstanceAsync("default", usersContext, _encryptionKey, "SqlServer",
-            instanceId: null, maxDegreeOfParallelism: 1);
+        await service.ProcessDataStoreAsync("default", usersContext, _encryptionKey, "SqlServer",
+            dataStoreId: null, maxDegreeOfParallelism: 1);
 
         processedInstanceIds.Count.ShouldBe(3);
         service.PeakConcurrency.ShouldBe(1);

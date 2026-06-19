@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
@@ -13,6 +15,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Features.Jobs;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using FakeItEasy;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -25,6 +28,7 @@ public class GetJobStatusTests
     private IJobStatusService _jobStatusService = null!;
     private IContextProvider<TenantConfiguration> _tenantConfigurationProvider = null!;
     private IOptions<AppSettings> _options = null!;
+    private HttpContext _httpContext = null!;
 
     [SetUp]
     public void SetUp()
@@ -32,6 +36,7 @@ public class GetJobStatusTests
         _jobStatusService = A.Fake<IJobStatusService>();
         _tenantConfigurationProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         _options = A.Fake<IOptions<AppSettings>>();
+        _httpContext = new DefaultHttpContext();
         A.CallTo(() => _options.Value).Returns(new AppSettings { MultiTenancy = false });
     }
 
@@ -53,7 +58,7 @@ public class GetJobStatusTests
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
         result.ShouldNotBeNull();
@@ -77,7 +82,7 @@ public class GetJobStatusTests
 
         // Act & Assert
         await Should.ThrowAsync<NotFoundException<string>>(
-            () => GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options));
+            () => GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext));
     }
 
     [Test]
@@ -90,7 +95,7 @@ public class GetJobStatusTests
 
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(
-            () => GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options));
+            () => GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext));
     }
 
     [Test]
@@ -112,13 +117,13 @@ public class GetJobStatusTests
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.FinishedAt.ShouldBe(finishedAt);
-        okResult.Value.ErrorMessage.ShouldBeNull();
+        okResult!.Value!.FinishedAt.ShouldBe(finishedAt);
+        okResult!.Value!.ErrorMessage.ShouldBeNull();
     }
 
     [Test]
@@ -141,14 +146,14 @@ public class GetJobStatusTests
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.Status.ShouldBe("Error");
-        okResult.Value.ErrorMessage.ShouldBe(errorMsg);
-        okResult.Value.FinishedAt.ShouldBe(finishedAt);
+        okResult!.Value!.Status.ShouldBe("Error");
+        okResult!.Value!.ErrorMessage.ShouldBe(errorMsg);
+        okResult!.Value!.FinishedAt.ShouldBe(finishedAt);
     }
 
     [Test]
@@ -169,13 +174,13 @@ public class GetJobStatusTests
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.Status.ShouldBe("Pending");
-        okResult.Value.FinishedAt.ShouldBeNull();
+        okResult!.Value!.Status.ShouldBe("Pending");
+        okResult!.Value!.FinishedAt.ShouldBeNull();
     }
 
     [Test]
@@ -196,13 +201,13 @@ public class GetJobStatusTests
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        okResult.Value.Status.ShouldBe("InProgress");
-        okResult.Value.FinishedAt.ShouldBeNull();
+        okResult!.Value!.Status.ShouldBe("InProgress");
+        okResult!.Value!.FinishedAt.ShouldBeNull();
     }
 
     [Test]
@@ -223,15 +228,35 @@ public class GetJobStatusTests
             .Returns(jobStatus);
 
         // Act
-        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options);
+        var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
         okResult.ShouldNotBeNull();
-        var response = okResult.Value;
+        var response = okResult!.Value!;
         response.JobId.ShouldNotBeNullOrEmpty();
         response.Status.ShouldNotBeNullOrEmpty();
         response.CreatedAt.ShouldNotBe(default);
         response.FinishedAt.ShouldNotBeNull();
+    }
+
+    [Test]
+    public async Task Handle_ReturnsProblemDetails_WhenMultiTenancyEnabledAndTenantMissing()
+    {
+        // Arrange
+        A.CallTo(() => _options.Value).Returns(new AppSettings { MultiTenancy = true });
+        A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(null);
+
+        // Act
+        var result = await GetJobStatus.Handle("any-job", _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
+
+        // Assert
+        result.ShouldNotBeNull();
+        var jsonResult = result as Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<Microsoft.AspNetCore.Mvc.ProblemDetails>;
+        jsonResult.ShouldNotBeNull();
+        jsonResult.StatusCode.ShouldBe(400);
+        jsonResult.ContentType.ShouldBe("application/problem+json");
+        jsonResult.Value.ShouldNotBeNull();
+        jsonResult.Value.Detail.ShouldBe("Tenant identifier is required when multi-tenancy is enabled.");
     }
 }

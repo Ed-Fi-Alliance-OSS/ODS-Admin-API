@@ -44,6 +44,10 @@ public static class ConnectionStringHelper
                 _log.Error(ex);
             }
         }
+        else
+        {
+            result = false;
+        }
         return result;
     }
 
