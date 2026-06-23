@@ -9,6 +9,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
@@ -59,5 +60,60 @@ public class DeleteVendorCommandTests
 
         usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeFalse();
         usersContext.Users.Any().ShouldBeFalse();
+    }
+
+    [Test]
+    public void Execute_WithSystemReservedVendor_ThrowsArgumentException()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor
+        {
+            VendorName = VendorExtensions.ReservedNames[0]
+        };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+
+        Should.Throw<ArgumentException>(() => command.Execute(vendor.VendorId));
+        usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeTrue();
+    }
+
+    [Test]
+    public void Execute_WithVendorHavingApplications_InvokesDeleteApplicationCommandForEachApplication()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor
+        {
+            VendorName = "Acme Vendor"
+        };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var application = new Application
+        {
+            ApplicationName = "TestApp",
+            OperationalContextUri = string.Empty,
+            Vendor = vendor
+        };
+        usersContext.Applications.Add(application);
+        usersContext.SaveChanges();
+
+        var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+
+        command.Execute(vendor.VendorId);
+
+        A.CallTo(() => deleteApplicationCommand.Execute(application.ApplicationId)).MustHaveHappenedOnceExactly();
+        usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeFalse();
     }
 }
