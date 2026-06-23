@@ -50,6 +50,99 @@ public class AddVendorCommandTests
         persisted.Users.Single().Email.ShouldBe("alice@acme.org");
     }
 
+    [Test]
+    public void Execute_WithNullNamespacePrefixes_PersistsVendorWithEmptyPrefixCollection()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"AddVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var command = new AddVendorCommand(usersContext);
+        var request = new AddVendorModelStub
+        {
+            Company = "Acme Vendor",
+            NamespacePrefixes = null,
+            ContactName = "Alice",
+            ContactEmailAddress = "alice@acme.org"
+        };
+
+        var vendor = command.Execute(request);
+
+        vendor.VendorId.ShouldBeGreaterThan(0);
+
+        var persisted = usersContext.Vendors
+            .Include(v => v.VendorNamespacePrefixes)
+            .Include(v => v.Users)
+            .Single(v => v.VendorId == vendor.VendorId);
+
+        var prefixCount = persisted.VendorNamespacePrefixes?.Count ?? 0;
+        prefixCount.ShouldBe(0);
+    }
+
+    [Test]
+    public void Execute_WithMultipleCommaSeparatedNamespaces_PersistsEachPrefixSeparately()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"AddVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var command = new AddVendorCommand(usersContext);
+        var request = new AddVendorModelStub
+        {
+            Company = "Acme Vendor",
+            NamespacePrefixes = "https://a.org/ns,https://b.org/ns",
+            ContactName = "Alice",
+            ContactEmailAddress = "alice@acme.org"
+        };
+
+        var vendor = command.Execute(request);
+
+        vendor.VendorId.ShouldBeGreaterThan(0);
+
+        var persisted = usersContext.Vendors
+            .Include(v => v.VendorNamespacePrefixes)
+            .Include(v => v.Users)
+            .Single(v => v.VendorId == vendor.VendorId);
+
+        persisted.VendorNamespacePrefixes.ShouldNotBeNull();
+        persisted.VendorNamespacePrefixes.Count.ShouldBe(2);
+        persisted.VendorNamespacePrefixes.Select(p => p.NamespacePrefix).ShouldContain("https://a.org/ns");
+        persisted.VendorNamespacePrefixes.Select(p => p.NamespacePrefix).ShouldContain("https://b.org/ns");
+    }
+
+    [Test]
+    public void Execute_WithPaddedFields_TrimsCompanyContactNameAndEmail()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"AddVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var command = new AddVendorCommand(usersContext);
+        var request = new AddVendorModelStub
+        {
+            Company = "  Acme Vendor  ",
+            NamespacePrefixes = "https://acme.org/ns",
+            ContactName = "  Alice  ",
+            ContactEmailAddress = "  alice@acme.org  "
+        };
+
+        var vendor = command.Execute(request);
+
+        vendor.VendorId.ShouldBeGreaterThan(0);
+
+        var persisted = usersContext.Vendors
+            .Include(v => v.VendorNamespacePrefixes)
+            .Include(v => v.Users)
+            .Single(v => v.VendorId == vendor.VendorId);
+
+        persisted.VendorName.ShouldBe("Acme Vendor");
+        persisted.Users.Single().FullName.ShouldBe("Alice");
+        persisted.Users.Single().Email.ShouldBe("alice@acme.org");
+    }
+
     private sealed class AddVendorModelStub : IAddVendorModel
     {
         public string? Company { get; set; }
