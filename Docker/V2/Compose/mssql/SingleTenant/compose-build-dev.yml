@@ -100,7 +100,7 @@ services:
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       SQLSERVER_PASSWORD: "${SQLSERVER_PASSWORD:-P@55w0rd}"
     ports:
-      - 1433:1433
+      - 1435:1433
     healthcheck:
       test: ["CMD", "/usr/local/bin/healthcheck.sh"]
       interval: 10s
