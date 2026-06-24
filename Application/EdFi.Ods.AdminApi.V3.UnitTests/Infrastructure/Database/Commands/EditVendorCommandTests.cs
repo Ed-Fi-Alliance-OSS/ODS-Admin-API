@@ -4,9 +4,13 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -39,6 +43,76 @@ public class EditVendorCommandTests
         Should.Throw<NotFoundException<int>>(() => command.Execute(model));
     }
 
+    [Test]
+    public void Execute_WithExistingVendor_UpdatesVendorSuccessfully()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"EditVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor
+        {
+            VendorName = "Acme Vendor",
+            VendorNamespacePrefixes = new List<VendorNamespacePrefix>
+            {
+                new VendorNamespacePrefix { NamespacePrefix = "http://acme.org/ns" }
+            },
+            Users = new List<User>
+            {
+                new User { FullName = "Old Name", Email = "old@acme.org" }
+            }
+        };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var command = new EditVendorCommand(usersContext);
+        var model = new EditVendorModelStub
+        {
+            Id = vendor.VendorId,
+            Company = "Updated Vendor",
+            NamespacePrefixes = "http://updated.org/ns",
+            ContactName = "New Name",
+            ContactEmailAddress = "new@acme.org"
+        };
+
+        command.Execute(model);
+
+        var updated = usersContext.Vendors
+            .Include(v => v.VendorNamespacePrefixes)
+            .Include(v => v.Users)
+            .Single(v => v.VendorId == vendor.VendorId);
+        updated.VendorName.ShouldBe("Updated Vendor");
+        updated.VendorNamespacePrefixes.Single().NamespacePrefix.ShouldBe("http://updated.org/ns");
+        updated.Users.First().FullName.ShouldBe("New Name");
+        updated.Users.First().Email.ShouldBe("new@acme.org");
+    }
+
+    [Test]
+    public void Execute_WithReservedVendorName_ThrowsArgumentException()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"EditVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor { VendorName = VendorExtensions.ReservedNames[0] };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var command = new EditVendorCommand(usersContext);
+        var model = new EditVendorModelStub
+        {
+            Id = vendor.VendorId,
+            Company = "New Name",
+            NamespacePrefixes = "http://updated.org/ns",
+            ContactName = "Contact",
+            ContactEmailAddress = "contact@org.org"
+        };
+
+        Should.Throw<ArgumentException>(() => command.Execute(model));
+    }
+
     private sealed class EditVendorModelStub : IEditVendor
     {
         public int Id { get; set; }
@@ -50,6 +124,3 @@ public class EditVendorCommandTests
 }
 
 #nullable restore
-
-
-
