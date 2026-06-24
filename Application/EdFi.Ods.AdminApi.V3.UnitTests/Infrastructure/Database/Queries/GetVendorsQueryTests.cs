@@ -70,7 +70,130 @@ public class GetVendorsQueryTests
         result.Count.ShouldBe(1);
         result.Single().VendorName.ShouldBe("Acme Vendor");
     }
+
+    [Test]
+    public void Execute_WithIdFilter_ReturnsMatchingVendor()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor1 = new Vendor
+        {
+            VendorName = "Acme Vendor",
+            Users = new List<User> { new User { FullName = "Acme User", Email = "acme@test.org" } }
+        };
+        var vendor2 = new Vendor
+        {
+            VendorName = "Beta Vendor",
+            Users = new List<User> { new User { FullName = "Beta User", Email = "beta@test.org" } }
+        };
+        usersContext.Vendors.Add(vendor1);
+        usersContext.Vendors.Add(vendor2);
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        var result = query.Execute(new CommonQueryParams(0, 25), vendor1.VendorId, null, null, null, null);
+
+        result.Count.ShouldBe(1);
+        result.Single().VendorName.ShouldBe("Acme Vendor");
+    }
+
+    [Test]
+    public void Execute_WithNamespacePrefixFilter_ReturnsMatchingVendor()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Acme Vendor",
+            VendorNamespacePrefixes = new List<VendorNamespacePrefix>
+            {
+                new VendorNamespacePrefix { NamespacePrefix = "http://acme.org/ns" }
+            },
+            Users = new List<User> { new User { FullName = "Acme User", Email = "acme@test.org" } }
+        });
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Beta Vendor",
+            VendorNamespacePrefixes = new List<VendorNamespacePrefix>
+            {
+                new VendorNamespacePrefix { NamespacePrefix = "http://beta.org/ns" }
+            },
+            Users = new List<User> { new User { FullName = "Beta User", Email = "beta@test.org" } }
+        });
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        var result = query.Execute(new CommonQueryParams(0, 25), null, null, "http://acme.org/ns", null, null);
+
+        result.Count.ShouldBe(1);
+        result.Single().VendorName.ShouldBe("Acme Vendor");
+    }
+
+    [Test]
+    public void Execute_WithContactNameFilter_ReturnsMatchingVendor()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Acme Vendor",
+            Users = new List<User> { new User { FullName = "Acme User", Email = "acme@test.org" } }
+        });
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Beta Vendor",
+            Users = new List<User> { new User { FullName = "Beta User", Email = "beta@test.org" } }
+        });
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        var result = query.Execute(new CommonQueryParams(0, 25), null, null, null, "Acme User", null);
+
+        result.Count.ShouldBe(1);
+        result.Single().VendorName.ShouldBe("Acme Vendor");
+    }
+
+    [Test]
+    public void Execute_WithContactEmailFilter_ReturnsMatchingVendor()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Acme Vendor",
+            Users = new List<User> { new User { FullName = "Acme User", Email = "acme@test.org" } }
+        });
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Beta Vendor",
+            Users = new List<User> { new User { FullName = "Beta User", Email = "beta@test.org" } }
+        });
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        var result = query.Execute(new CommonQueryParams(0, 25), null, null, null, null, "acme@test.org");
+
+        result.Count.ShouldBe(1);
+        result.Single().VendorName.ShouldBe("Acme Vendor");
+    }
 }
-
-
-
