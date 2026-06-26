@@ -3,7 +3,7 @@ title: Update Problem Details Type URN in Admin API v3
 feature: 2026-06-26-update-problem-details-type-urn-admin-api-v3
 date: 2026-06-26
 version: 1
-status: draft
+status: approved
 source-spec: ./spec.md
 mode: brownfield
 ---
