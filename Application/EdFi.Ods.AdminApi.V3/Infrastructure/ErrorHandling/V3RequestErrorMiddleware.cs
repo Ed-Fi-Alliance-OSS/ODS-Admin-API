@@ -45,6 +45,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
         try
         {
             await _next(context);
+            await EnsureProblemDetailsForMalformedJsonRequestAsync(context);
         }
         catch (Exception ex)
         {
@@ -142,6 +143,40 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/problem+json";
         await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+    }
+
+    private static async Task EnsureProblemDetailsForMalformedJsonRequestAsync(HttpContext context)
+    {
+        if (!IsEligibleForMalformedJsonFallback(context))
+        {
+            return;
+        }
+
+        var problemDetails = V3ProblemDetailsFactory.Create(
+            status: StatusCodes.Status400BadRequest,
+            title: "Bad Request",
+            detail: "The request body contains malformed JSON. Please ensure your data is properly formatted and try again.",
+            type: AdminApiProblemTypes.BadRequestData,
+            correlationId: context.TraceIdentifier
+        );
+
+        context.Response.ContentType = "application/problem+json";
+        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+    }
+
+    private static bool IsEligibleForMalformedJsonFallback(HttpContext context)
+    {
+        var requestPath = context.Request.Path.Value ?? string.Empty;
+        var requestContentType = context.Request.ContentType ?? string.Empty;
+        var responseContentType = context.Response.ContentType ?? string.Empty;
+        var responseHasNoBody = (context.Response.ContentLength ?? 0) == 0;
+
+        return context.Response.StatusCode == StatusCodes.Status400BadRequest &&
+               !context.Response.HasStarted &&
+               requestPath.Contains("/v3/", StringComparison.OrdinalIgnoreCase) &&
+               requestContentType.Contains("json", StringComparison.OrdinalIgnoreCase) &&
+               responseHasNoBody &&
+               !responseContentType.Contains("application/problem+json", StringComparison.OrdinalIgnoreCase);
     }
 
     private static (int StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails ProblemDetails) CreateProblemDetails(

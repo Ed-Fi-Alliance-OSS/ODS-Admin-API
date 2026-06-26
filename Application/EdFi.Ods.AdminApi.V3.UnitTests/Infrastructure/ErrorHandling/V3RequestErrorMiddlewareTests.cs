@@ -137,4 +137,60 @@ public class V3RequestErrorMiddlewareTests
         doc.RootElement.GetProperty("status").GetInt32().ShouldBe(500);
         doc.RootElement.GetProperty("type").GetString().ShouldBe(AdminApiProblemTypes.InternalServerError);
     }
+
+    [Test]
+    public async Task InvokeAsync_WhenPipelineReturnsBadRequestWithEmptyBody_WritesProblemDetailsWithBadRequestDataType()
+    {
+        var middleware = new V3RequestErrorMiddleware(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/json";
+            await Task.CompletedTask;
+        });
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/v3/claimSets";
+        context.Request.ContentType = "application/json";
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context);
+
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        context.Response.ContentType.ShouldContain("application/problem+json");
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
+        using var doc = JsonDocument.Parse(body);
+        doc.RootElement.GetProperty("title").GetString().ShouldBe("Bad Request");
+        doc.RootElement.GetProperty("status").GetInt32().ShouldBe(400);
+        doc.RootElement.GetProperty("type").GetString().ShouldBe(AdminApiProblemTypes.BadRequestData);
+    }
+
+    [Test]
+    public async Task InvokeAsync_WhenPipelineAlreadyReturnsProblemDetails_DoesNotOverwriteBody()
+    {
+        const string existingBody =
+            "{\"type\":\"urn:ed-fi:admin-api:bad-request:version-mismatch\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Wrong API version for this instance mode.\"}";
+
+        var middleware = new V3RequestErrorMiddleware(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsync(existingBody);
+        });
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/v3/tenants/default/DataStores/edOrgs";
+        context.Request.ContentType = "application/json";
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context);
+
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        context.Response.ContentType.ShouldContain("application/problem+json");
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
+        body.ShouldBe(existingBody);
+    }
 }
