@@ -20,11 +20,58 @@ public class V3ProblemDetailsFactoryTests
             status: 400,
             title: "Bad Request",
             detail: "Wrong API version for this instance mode.",
+            type: AdminApiProblemTypes.BadRequestVersionMismatch,
             correlationId: "trace-123"
         );
 
         pd.Detail.ShouldBe("Wrong API version for this instance mode.");
+        pd.Type.ShouldBe(AdminApiProblemTypes.BadRequestVersionMismatch);
         pd.Extensions.ShouldNotContainKey("message");
+    }
+
+    [Test]
+    public void Create_ShouldSetTypeToNotFound()
+    {
+        var pd = V3ProblemDetailsFactory.Create(
+            status: 404,
+            title: "Not Found",
+            detail: "Resource was not found.",
+            type: AdminApiProblemTypes.NotFound,
+            correlationId: "trace-456"
+        );
+
+        pd.Status.ShouldBe(404);
+        pd.Type.ShouldBe(AdminApiProblemTypes.NotFound);
+    }
+
+    [Test]
+    public void Create_ShouldSetTypeToInternalServerError()
+    {
+        var pd = V3ProblemDetailsFactory.Create(
+            status: 500,
+            title: "Internal Server Error",
+            detail: "An unexpected error occurred.",
+            type: AdminApiProblemTypes.InternalServerError,
+            correlationId: "trace-789"
+        );
+
+        pd.Status.ShouldBe(500);
+        pd.Type.ShouldBe(AdminApiProblemTypes.InternalServerError);
+    }
+
+    [Test]
+    public void Create_ShouldSetTypeToBadRequestData()
+    {
+        var pd = V3ProblemDetailsFactory.Create(
+            status: 400,
+            title: "Bad Request",
+            detail: "The request body contains malformed JSON.",
+            type: AdminApiProblemTypes.BadRequestData,
+            correlationId: "trace-abc"
+        );
+
+        pd.Status.ShouldBe(400);
+        pd.Type.ShouldBe(AdminApiProblemTypes.BadRequestData);
     }
 
     [Test]
@@ -40,6 +87,7 @@ public class V3ProblemDetailsFactoryTests
 
         pd.Title.ShouldBe("Validation failed");
         pd.Status.ShouldBe(400);
+        pd.Type.ShouldBe(AdminApiProblemTypes.BadRequestValidation);
         pd.Extensions.ShouldContainKey("validationErrors");
         pd.Extensions.ShouldContainKey("errors");
         pd.Extensions.ShouldContainKey("correlationId");

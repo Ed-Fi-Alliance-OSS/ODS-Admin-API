@@ -167,6 +167,17 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                     status: StatusCodes.Status404NotFound,
                     title: notFoundException.Message,
                     detail: notFoundException.Message,
+                    type: AdminApiProblemTypes.NotFound,
+                    correlationId: correlationId
+                )
+            ),
+            BadHttpRequestException => (
+                StatusCodes.Status400BadRequest,
+                V3ProblemDetailsFactory.Create(
+                    status: StatusCodes.Status400BadRequest,
+                    title: "Bad Request",
+                    detail: "The request body contains malformed JSON. Please ensure your data is properly formatted and try again.",
+                    type: AdminApiProblemTypes.BadRequestData,
                     correlationId: correlationId
                 )
             ),
@@ -178,15 +189,9 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                     detail: string.IsNullOrWhiteSpace(adminApiException.Message)
                         ? "The server encountered an unexpected condition that prevented it from fulfilling the request."
                         : adminApiException.Message,
-                    correlationId: correlationId
-                )
-            ),
-            BadHttpRequestException => (
-                StatusCodes.Status400BadRequest,
-                V3ProblemDetailsFactory.Create(
-                    status: StatusCodes.Status400BadRequest,
-                    title: "Bad Request",
-                    detail: "The request body contains malformed JSON. Please ensure your data is properly formatted and try again.",
+                    type: adminApiException.StatusCode.HasValue && (int)adminApiException.StatusCode.Value < 500
+                        ? AdminApiProblemTypes.BadRequest
+                        : AdminApiProblemTypes.InternalServerError,
                     correlationId: correlationId
                 )
             ),
@@ -196,6 +201,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                     status: (int)HttpStatusCode.InternalServerError,
                     title: "Internal Server Error",
                     detail: "The server encountered an unexpected condition that prevented it from fulfilling the request.",
+                    type: AdminApiProblemTypes.InternalServerError,
                     correlationId: correlationId
                 )
             )

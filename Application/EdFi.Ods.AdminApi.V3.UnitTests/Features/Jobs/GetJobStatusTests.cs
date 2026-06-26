@@ -13,6 +13,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Features.Jobs;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
@@ -258,5 +259,6 @@ public class GetJobStatusTests
         jsonResult.ContentType.ShouldBe("application/problem+json");
         jsonResult.Value.ShouldNotBeNull();
         jsonResult.Value.Detail.ShouldBe("Tenant identifier is required when multi-tenancy is enabled.");
+        jsonResult.Value.Type.ShouldBe(AdminApiProblemTypes.BadRequest);
     }
 }

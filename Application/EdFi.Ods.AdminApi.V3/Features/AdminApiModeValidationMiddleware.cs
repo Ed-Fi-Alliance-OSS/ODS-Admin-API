@@ -42,6 +42,7 @@ public class AdminApiModeValidationMiddleware
                 status: StatusCodes.Status400BadRequest,
                 title: "Bad Request",
                 detail: "Wrong API version for this instance mode.",
+                type: AdminApiProblemTypes.BadRequestVersionMismatch,
                 correlationId: context.TraceIdentifier
             );
 
