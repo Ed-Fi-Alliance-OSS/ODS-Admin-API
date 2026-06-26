@@ -188,3 +188,57 @@ For testing pre-built binaries with keycloak, use `MultiTenant/compose-build-idp
 
 Please refer [DOCKER DEPLOYMENT](https://techdocs.ed-fi.org/display/EDFITOOLS/Docker+Deployment) for
 installing and configuring Admin Api along with Ed-Fi ODS / API on Docker containers for testing.
+
+## ODS Database Restore from Backup Files
+
+By default, the `db-ods` container downloads and uses the Ed-Fi minimal template from NuGet at
+build time. If you need to restore from your own backup files instead, you can provide them via a
+bind mount volume.
+
+### How It Works
+
+- **MSSQL**: The container accepts `.bak` backup files. The bind mount exposes your host folder
+  inside the container as read-only, and the init script restores from those files on first startup.
+- **PostgreSQL**: The container accepts plain-SQL (`.sql`) dump files. A custom image
+  (`Docker/Settings/shared/DB-Ods/pgsql/`) initializes the PostgreSQL data directory and restores
+  both the minimal and populated template databases on first startup.
+
+In both cases, restoration only runs when the data directory is empty (i.e., on a fresh volume).
+Subsequent container restarts reuse the already-restored data.
+
+### Required Environment Variables
+
+Set the following variables in your `.env` file (see `env.example` for reference):
+
+| Variable | Description |
+|---|---|
+| `SQL_BACKUPS_FOLDER` | **Required.** Absolute path on the **host** to the folder containing the backup files. |
+| `MINIMAL_BAK_PATH` / `MINIMAL_SQL_PATH` | Path to the minimal template backup **inside the container**. Defaults to `/sql-backups/EdFi.Ods.Minimal.Template.bak` (MSSQL) or `/sql-backups/EdFi.Ods.Minimal.Template.sql` (PostgreSQL). |
+| `POPULATED_BAK_PATH` / `POPULATED_SQL_PATH` | Path to the populated template backup **inside the container**. Defaults to `/sql-backups/EdFi.Ods.Populated.Template.bak` (MSSQL) or `/sql-backups/EdFi.Ods.Populated.Template.sql` (PostgreSQL). |
+
+### Example `.env` Configuration
+
+MSSQL
+
+```env
+SQL_BACKUPS_FOLDER=C:/path/to/your/backups
+MINIMAL_BAK_PATH=/sql-backups/EdFi.Ods.Minimal.Template.bak
+POPULATED_BAK_PATH=/sql-backups/EdFi.Ods.Populated.Template.bak
+```
+
+PostgreSQL
+
+```env
+SQL_BACKUPS_FOLDER=/path/to/your/backups
+MINIMAL_SQL_PATH=/sql-backups/EdFi.Ods.Minimal.Template.sql
+POPULATED_SQL_PATH=/sql-backups/EdFi.Ods.Populated.Template.sql
+```
+
+> [!NOTE]
+> The `SQL_BACKUPS_FOLDER` is mounted into the container as read-only at `/sql-backups/` (PostgreSQL)
+> or `/var/opt/mssql/data/sql-backups/` (MSSQL). The `MINIMAL_*_PATH` and `POPULATED_*_PATH`
+> variables must point to files within that mounted path inside the container.
+
+> [!IMPORTANT]
+> If `SQL_BACKUPS_FOLDER` is not set, or the backup files are not found at the specified paths,
+> the container will exit immediately with a descriptive error message.
