@@ -5,13 +5,19 @@
 
 services:
   db-ods:
-    image: edfialliance/ods-api-db-ods-minimal:${TAG}
+    build:
+      context: ../../../../Settings/shared/DB-Ods/pgsql/
+      dockerfile: Dockerfile
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       TPDM_ENABLED: "${TPDM_ENABLED:-true}"
+      SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
+      MINIMAL_SQL_PATH: "${MINIMAL_SQL_PATH:-/var/opt/pgsql/data/sql-backups/EdFi.Ods.Minimal.Template.sql}"
+      POPULATED_SQL_PATH: "${POPULATED_SQL_PATH:-/var/opt/pgsql/data/sql-backups/EdFi.Ods.Populated.Template.sql}"
     volumes:
       - vol-db-ods:/var/lib/postgresql/data
+      - ${SQL_BACKUPS_FOLDER}:/var/opt/pgsql/data/sql-backups/:ro
     restart: always
     container_name: ed-fi-db-ods
     healthcheck:
