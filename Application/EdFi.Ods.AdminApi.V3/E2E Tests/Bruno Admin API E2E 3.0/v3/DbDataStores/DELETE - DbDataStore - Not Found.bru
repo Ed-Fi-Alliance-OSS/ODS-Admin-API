@@ -24,6 +24,11 @@ script:post-response {
   test("DELETE DbDataStore Not Found: Response title is helpful and accurate", function () {
     expect(response.title.toLowerCase()).to.contain("not found");
   });
+  
+  test("DELETE DbDataStore Not Found: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+  });
 }
 
 settings {

@@ -41,6 +41,11 @@ script:post-response {
       expect(response.errors["ContactEmailAddress"].length).to.equal(2);
   });
   
+  test("POST Vendors Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {

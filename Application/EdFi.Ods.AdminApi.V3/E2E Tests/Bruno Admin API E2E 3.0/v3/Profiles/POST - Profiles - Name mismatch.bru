@@ -41,6 +41,11 @@ script:post-response {
       expect(response.errors["Definition"][0].toLowerCase()).to.contain("match with test-profile-123");
   });
   
+  test("POST Profiles Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {

@@ -1,0 +1,40 @@
+meta {
+  name: ClaimSets - Malformed Body
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{API_URL}}/v3/claimSets/
+  body: text
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:text {
+  { "name":
+}
+
+script:post-response {
+  test("POST ClaimSets Malformed Body: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  test("POST ClaimSets Malformed Body: Response matches error format", function () {
+      expect(response).to.have.property("title");
+  });
+
+  test("POST ClaimSets Malformed Body: type URN is correct", function () {
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:data");
+  });
+
+}
+
+settings {
+  encodeUrl: true
+}

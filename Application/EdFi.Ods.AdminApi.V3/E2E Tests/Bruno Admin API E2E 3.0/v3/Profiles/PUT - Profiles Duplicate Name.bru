@@ -103,6 +103,11 @@ script:post-response {
       expect(response.errors["Name"][0].toLowerCase()).to.contain("another profile with this name already exists in the database. please enter a unique name.");
   });
   
+  test("PUT Profiles: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
   console.log("🔧 Setting post environment to ignore SSL certificates...");
   // Safely set Node.js environment variable if available (CLI only)
   try {

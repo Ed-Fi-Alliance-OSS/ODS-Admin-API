@@ -24,6 +24,11 @@ script:post-response {
     const body = res.getBody();
     expect(body.title.toLowerCase()).to.contain("not found");
   });
+  
+  test("GET Job Status Not Found: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+  });
 }
 
 settings {

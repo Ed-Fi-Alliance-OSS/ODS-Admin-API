@@ -40,6 +40,11 @@ script:post-response {
   test("POST Profiles Invalid: Response errors include messages with wrong element name", function () {
       expect(response.errors["Name"][0].toLowerCase()).to.contain("'name' must not be empty");
   });
+  
+  test("POST Profiles Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

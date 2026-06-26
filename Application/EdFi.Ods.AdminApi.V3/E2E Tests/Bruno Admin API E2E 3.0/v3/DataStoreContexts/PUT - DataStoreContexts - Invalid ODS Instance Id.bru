@@ -38,6 +38,11 @@ script:post-response {
   test("PUT DataStoreContexts Invalid: Invalid DataStoreId", function () {
      expect(response.errors.DataStoreId[0]).to.contain("valid DataStore id");
   });
+  
+  test("PUT DataStoreContexts Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

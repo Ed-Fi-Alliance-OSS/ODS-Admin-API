@@ -42,6 +42,11 @@ script:post-response {
   test("PUT DataStores Invalid ConnectionString: Response errors include messages with wrong elements", function () {
       expect(response.errors["ConnectionString"][0]).to.contain("is not valid");
   });
+  
+  test("PUT DataStores Invalid ConnectionString: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

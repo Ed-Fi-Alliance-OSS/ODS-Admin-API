@@ -101,6 +101,11 @@ script:post-response {
        expect(response.errors).to.be.an("object").and.not.to.be.empty;
        expect(response.errors[""]).to.be.an("array").that.includes("The combined key DataStore id and context key must be unique.");
    });
+  
+  test("PUT DataStoreContexts Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

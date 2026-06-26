@@ -51,6 +51,11 @@ script:post-response {
       expect(response.errors["ClaimSetId"].length).to.equal(1);
       expect(response.errors["ClaimSetId"][0]).to.contain("Request body id must match the id in the url.");
   });
+  
+  test("PUT ResourceClaimClaimSets ClaimSetId Mismatch: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

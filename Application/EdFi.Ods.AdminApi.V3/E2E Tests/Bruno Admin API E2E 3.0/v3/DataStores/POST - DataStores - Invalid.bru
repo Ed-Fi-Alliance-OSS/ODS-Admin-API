@@ -43,6 +43,11 @@ script:post-response {
       expect(response.errors["Name"][0]).to.contain("'Name' must not be empty");
       expect(response.errors["ConnectionString"][0]).to.contain("'Connection String' must not be empty");
   });
+  
+  test("POST DataStores Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

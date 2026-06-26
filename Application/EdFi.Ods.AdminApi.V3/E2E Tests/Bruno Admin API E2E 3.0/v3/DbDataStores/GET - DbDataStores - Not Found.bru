@@ -25,6 +25,11 @@ script:post-response {
     expect(response.title).to.contain("Not found");
     expect(response.title.toLowerCase()).to.contain("dbdatastore");
   });
+  
+  test("GET DbDataStore Not Found: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+  });
 }
 
 settings {

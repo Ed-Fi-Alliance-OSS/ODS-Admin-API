@@ -43,6 +43,11 @@ script:post-response {
       expect(response.errors.ActionName[0]).to.contain("doesn't exist");
   });
   
+  test("POST OverrideAuthStrategy Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {
