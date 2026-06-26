@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -25,7 +26,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, string tenantName);
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDbInstancesQuery getDbInstancesQuery, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -112,6 +113,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
     public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetDbInstancesQuery getDbInstancesQuery,
         string tenantName)
     {
         var tenant = await GetTenantByTenantIdAsync(tenantName);
@@ -135,6 +137,33 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                     var edOrgs = edOrgsList.Where(eo => eo.InstanceId == odsInstance.OdsInstanceId).ToList();
                     odsInstance.EducationOrganizations = EducationOrganizationMapper.ToModelList(edOrgs);
                 }
+            }
+
+            var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, null), null, null);
+
+            var linkedDbInstancesByOdsId = allDbInstances
+                .Where(d => d.OdsInstanceId is not null)
+                .ToDictionary(d => d.OdsInstanceId!.Value);
+
+            foreach (var odsInstance in tenantDetails.OdsInstances)
+            {
+                if (linkedDbInstancesByOdsId.TryGetValue(odsInstance.OdsInstanceId, out var dbInstance))
+                {
+                    odsInstance.Status = dbInstance.Status;
+                    odsInstance.DatabaseTemplate = dbInstance.DatabaseTemplate;
+                    odsInstance.DatabaseName = dbInstance.DatabaseName;
+                }
+                else
+                {
+                    odsInstance.Status = DbInstanceStatus.Created.ToString();
+                }
+            }
+
+            var unlinkedDbInstances = allDbInstances.Where(d => d.OdsInstanceId is null).ToList();
+            var negativeId = -1;
+            foreach (var dbInstance in unlinkedDbInstances)
+            {
+                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedDbInstanceModel(dbInstance, negativeId--));
             }
 
             return tenantDetails;

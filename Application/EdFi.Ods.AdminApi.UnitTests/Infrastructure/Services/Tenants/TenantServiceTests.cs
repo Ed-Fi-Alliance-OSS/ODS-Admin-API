@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.OdsInstances;
@@ -32,6 +34,7 @@ internal class TenantServiceTests
     private AppSettingsFile _appSettings = null!;
     private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
     private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
+    private IGetDbInstancesQuery _getDbInstancesQuery = null!;
 
     [SetUp]
     public void SetUp()
@@ -40,6 +43,9 @@ internal class TenantServiceTests
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
         _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
         _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
+        _getDbInstancesQuery = A.Fake<IGetDbInstancesQuery>();
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([]);
         _appSettings = new AppSettingsFile
         {
             AppSettings = new AppSettings
@@ -212,7 +218,7 @@ internal class TenantServiceTests
         A.CallTo(() => _getEducationOrganizationQuery.Execute(A<int[]>.That.Matches(ids => ids.Length == 1 && ids[0] == 101)))
             .Returns([educationOrganization]);
 
-        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName);
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName);
 
         tenant.ShouldNotBeNull();
         tenant!.TenantName.ShouldBe(tenantName);
@@ -233,8 +239,133 @@ internal class TenantServiceTests
     {
         var service = new TenantService(_options, _memoryCache);
 
-        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, "notfound");
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, "notfound");
 
         tenant.ShouldBeNull();
+    }
+
+    [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_SetsStatusCreated_WhenOdsInstanceHasNoLinkedDbInstance()
+    {
+        _appSettings.AppSettings.MultiTenancy = false;
+        var service = new TenantService(_options, _memoryCache);
+
+        var odsInstance = new OdsInstance { OdsInstanceId = 1, Name = "Instance1" };
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
+
+        var result = await service.GetTenantEdOrgsByInstancesAsync(
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+
+        result.ShouldNotBeNull();
+        result!.OdsInstances.Count.ShouldBe(1);
+        result.OdsInstances[0].Status.ShouldBe(DbInstanceStatus.Created.ToString());
+        result.OdsInstances[0].DatabaseTemplate.ShouldBeNull();
+        result.OdsInstances[0].DatabaseName.ShouldBeNull();
+    }
+
+    [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_EnrichesOdsInstance_WithLinkedDbInstanceFields()
+    {
+        _appSettings.AppSettings.MultiTenancy = false;
+        var service = new TenantService(_options, _memoryCache);
+
+        var odsInstance = new OdsInstance { OdsInstanceId = 2, Name = "Instance2" };
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
+
+        var dbInstance = new DbInstance
+        {
+            Id = 10,
+            Name = "DbInstance2",
+            OdsInstanceId = 2,
+            Status = DbInstanceStatus.CreateInProgress.ToString(),
+            DatabaseTemplate = "Minimal",
+            DatabaseName = "EdFi_ODS_2",
+            LastRefreshed = System.DateTime.UtcNow
+        };
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([dbInstance]);
+
+        var result = await service.GetTenantEdOrgsByInstancesAsync(
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+
+        result.ShouldNotBeNull();
+        result!.OdsInstances.Count.ShouldBe(1);
+        var instance = result.OdsInstances[0];
+        instance.Status.ShouldBe(DbInstanceStatus.CreateInProgress.ToString());
+        instance.DatabaseTemplate.ShouldBe("Minimal");
+        instance.DatabaseName.ShouldBe("EdFi_ODS_2");
+    }
+
+    [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedDbInstances_WithSuccessiveNegativeIds()
+    {
+        _appSettings.AppSettings.MultiTenancy = false;
+        var service = new TenantService(_options, _memoryCache);
+
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([]);
+
+        var unlinked1 = new DbInstance
+        {
+            Id = 20, Name = "Unlinked-A", OdsInstanceId = null,
+            Status = DbInstanceStatus.PendingCreate.ToString(),
+            DatabaseTemplate = "Sample", LastRefreshed = System.DateTime.UtcNow
+        };
+        var unlinked2 = new DbInstance
+        {
+            Id = 21, Name = "Unlinked-B", OdsInstanceId = null,
+            Status = DbInstanceStatus.PendingCreate.ToString(),
+            DatabaseTemplate = "Minimal", LastRefreshed = System.DateTime.UtcNow
+        };
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([unlinked1, unlinked2]);
+
+        var result = await service.GetTenantEdOrgsByInstancesAsync(
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+
+        result.ShouldNotBeNull();
+        result!.OdsInstances.Count.ShouldBe(2);
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -1 && i.Name == "Unlinked-A");
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -2 && i.Name == "Unlinked-B");
+    }
+
+    [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_MixedScenario_LinkedAndUnlinked()
+    {
+        _appSettings.AppSettings.MultiTenancy = false;
+        var service = new TenantService(_options, _memoryCache);
+
+        var odsInstance = new OdsInstance { OdsInstanceId = 5, Name = "Instance5" };
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
+
+        var linked = new DbInstance
+        {
+            Id = 30, Name = "Linked-5", OdsInstanceId = 5,
+            Status = DbInstanceStatus.Created.ToString(),
+            DatabaseTemplate = "Minimal", DatabaseName = "EdFi_ODS_5",
+            LastRefreshed = System.DateTime.UtcNow
+        };
+        var unlinked = new DbInstance
+        {
+            Id = 31, Name = "Unlinked-C", OdsInstanceId = null,
+            Status = DbInstanceStatus.PendingCreate.ToString(),
+            DatabaseTemplate = "Sample", LastRefreshed = System.DateTime.UtcNow
+        };
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([linked, unlinked]);
+
+        var result = await service.GetTenantEdOrgsByInstancesAsync(
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+
+        result.ShouldNotBeNull();
+        result!.OdsInstances.Count.ShouldBe(2);
+
+        var linkedInstance = result.OdsInstances.Single(i => i.OdsInstanceId == 5);
+        linkedInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
+        linkedInstance.DatabaseTemplate.ShouldBe("Minimal");
+        linkedInstance.DatabaseName.ShouldBe("EdFi_ODS_5");
+
+        var unlinkedInstance = result.OdsInstances.Single(i => i.OdsInstanceId == -1);
+        unlinkedInstance.Name.ShouldBe("Unlinked-C");
+        unlinkedInstance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
     }
 }
