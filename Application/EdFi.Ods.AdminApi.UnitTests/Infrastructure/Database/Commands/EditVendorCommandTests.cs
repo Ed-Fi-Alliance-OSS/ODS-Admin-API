@@ -198,6 +198,48 @@ public class EditVendorCommandTests
         persisted.VendorNamespacePrefixes.Any(p => p.NamespacePrefix == "https://old.org/ns").ShouldBeFalse();
     }
 
+    [Test]
+    public void Execute_WithNullNamespacePrefixes_ProducesEmptyNamespaceCollection()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"EditVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor
+        {
+            VendorName = "Namespace Test Vendor",
+            VendorNamespacePrefixes =
+            [
+                new VendorNamespacePrefix { NamespacePrefix = "https://old.org/ns" }
+            ],
+            Users =
+            [
+                new User { FullName = "Contact", Email = "contact@example.org" }
+            ]
+        };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var command = new EditVendorCommand(usersContext);
+        var model = new EditVendorModelStub
+        {
+            Id = vendor.VendorId,
+            Company = "Namespace Test Vendor",
+            NamespacePrefixes = null,
+            ContactName = "Contact",
+            ContactEmailAddress = "contact@example.org"
+        };
+
+        command.Execute(model);
+
+        var persisted = usersContext.Vendors
+            .Include(v => v.VendorNamespacePrefixes)
+            .Single(v => v.VendorId == vendor.VendorId);
+
+        persisted.VendorNamespacePrefixes.ShouldBeEmpty();
+    }
+
     private sealed class EditVendorModelStub : IEditVendor
     {
         public int Id { get; set; }
