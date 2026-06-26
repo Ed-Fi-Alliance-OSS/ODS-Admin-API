@@ -143,6 +143,37 @@ public class AddVendorCommandTests
         persisted.Users.Single().Email.ShouldBe("alice@acme.org");
     }
 
+    [Test]
+    public void Execute_WithNullCompanyContactNameAndEmail_PersistsVendorWithNullFields()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"AddVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var command = new AddVendorCommand(usersContext);
+        var request = new AddVendorModelStub
+        {
+            Company = null,
+            NamespacePrefixes = "https://acme.org/ns",
+            ContactName = null,
+            ContactEmailAddress = null
+        };
+
+        var vendor = command.Execute(request);
+
+        vendor.VendorId.ShouldBeGreaterThan(0);
+
+        var persisted = usersContext.Vendors
+            .Include(v => v.VendorNamespacePrefixes)
+            .Include(v => v.Users)
+            .Single(v => v.VendorId == vendor.VendorId);
+
+        persisted.VendorName.ShouldBeNull();
+        persisted.Users.Single().FullName.ShouldBeNull();
+        persisted.Users.Single().Email.ShouldBeNull();
+    }
+
     private sealed class AddVendorModelStub : IAddVendorModel
     {
         public string? Company { get; set; }
