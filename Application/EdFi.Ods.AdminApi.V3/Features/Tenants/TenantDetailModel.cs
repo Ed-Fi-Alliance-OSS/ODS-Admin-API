@@ -33,6 +33,9 @@ public class TenantDataStoreModel
     public int DataStoreId { get; set; }
     public string Name { get; set; }
     public string? DataStoreType { get; set; }
+    public string? Status { get; set; }
+    public string? DatabaseTemplate { get; set; }
+    public string? DatabaseName { get; set; }
 
     [SwaggerSchema(Title = "EducationOrganizations")]
     public List<EducationOrganizationModel> EducationOrganizations { get; set; }

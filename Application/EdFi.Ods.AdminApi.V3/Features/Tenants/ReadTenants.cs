@@ -34,6 +34,7 @@ public class ReadTenants : IFeature
         [FromServices] ITenantsService tenantsService,
         IGetDataStoresQuery getDataStoresQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetDbDataStoresQuery getDbDataStoresQuery,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,
         IOptions<SwaggerSettings> _swaggerOptions,
@@ -58,7 +59,8 @@ public class ReadTenants : IFeature
             throw new NotFoundException<string>("TenantName", tenantName);
         }
 
-        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(getDataStoresQuery, getEducationOrganizationQuery, tenantName);
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(
+            getDataStoresQuery, getEducationOrganizationQuery, getDbDataStoresQuery, tenantName);
 
         if (tenant is null)
             return Results.NotFound();
