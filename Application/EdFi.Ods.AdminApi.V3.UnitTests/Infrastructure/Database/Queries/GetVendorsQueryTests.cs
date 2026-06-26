@@ -218,6 +218,29 @@ public class GetVendorsQueryTests
 
         result.ShouldBeEmpty();
     }
+
+    [Test]
+    public void Execute_WithSqlServerDatabaseEngine_ReturnsVendors()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        usersContext.Vendors.Add(new Vendor
+        {
+            VendorName = "Acme Corp",
+            Users = new List<User> { new User { FullName = "Alice", Email = "alice@test.org" } }
+        });
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "SqlServer", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        var result = query.Execute();
+
+        result.ShouldNotBeEmpty();
+    }
 }
 
 
