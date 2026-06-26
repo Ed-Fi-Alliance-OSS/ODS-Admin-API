@@ -11,6 +11,22 @@ set +x
 export MSSQL_SA_PASSWORD=$SQLSERVER_PASSWORD
 export ACCEPT_EULA=Y
 
+# Validate required backup env variables
+if [[ -z "$SQL_BACKUPS_FOLDER" ]]; then
+  echo "ERROR: SQL_BACKUPS_FOLDER is not set. Please set it to the host path containing the .bak files." >&2
+  exit 1
+fi
+
+if [[ -z "$MINIMAL_BAK_PATH" ]]; then
+  echo "ERROR: MINIMAL_BAK_PATH is not set. Please set it to the container path of the minimal backup file." >&2
+  exit 1
+fi
+
+if [[ -z "$POPULATED_BAK_PATH" ]]; then
+  echo "ERROR: POPULATED_BAK_PATH is not set. Please set it to the container path of the populated backup file." >&2
+  exit 1
+fi
+
 /app/setup-db.sh &
 
 /opt/mssql/bin/sqlservr
