@@ -40,6 +40,7 @@ N/A — this is an error-response-format fix, not a user-facing flow that can it
 ### Non-functional requirements
 
 Response latency impact: negligible (string constant substitution). Target: error response p95 ≤ 100ms, consistent with existing error pipeline performance.
+Availability: inherits existing Admin API v3 SLA — no new infrastructure or dependency introduced by this change.
 
 ## 4. Architecture
 

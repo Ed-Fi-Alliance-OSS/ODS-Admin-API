@@ -1,0 +1,10 @@
+{
+  "slug": "2026-06-26-update-problem-details-type-urn-admin-api-v3",
+  "title": "Update Problem Details Type URN in Admin API v3",
+  "current_phase": "ae-implement",
+  "completed_phases": ["ae-spec", "ae-generate-plan", "ae-validate-plan"],
+  "validation_status": "approved",
+  "last_updated": "2026-06-26T14:00:00Z",
+  "last_touched_by": "ae-validate-plan",
+  "notes": "Compliant. Approach: URN constants class (AdminApiProblemTypes) + type param on V3ProblemDetailsFactory.Create. 3 call sites: V3RequestErrorMiddleware, AdminApiModeValidationMiddleware, GetJobStatus. 5 steps. S5 adds new Bruno test for bad-request:data path."
+}
