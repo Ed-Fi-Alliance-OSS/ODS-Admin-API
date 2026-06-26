@@ -116,4 +116,35 @@ public class DeleteVendorCommandTests
         A.CallTo(() => deleteApplicationCommand.Execute(application.ApplicationId)).MustHaveHappenedOnceExactly();
         usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeFalse();
     }
+
+    [Test]
+    public void Execute_WithUserHavingApiClient_RemovesApiClientBeforeRemovingUser()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var user = new User { FullName = "Alice", Email = "alice@acme.org" };
+        var vendor = new Vendor
+        {
+            VendorName = "Acme Vendor",
+            Users = [user]
+        };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var apiClient = new ApiClient(true) { Name = "TestClient", User = user };
+        usersContext.ApiClients.Add(apiClient);
+        usersContext.SaveChanges();
+
+        var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+
+        command.Execute(vendor.VendorId);
+
+        usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeFalse();
+        usersContext.ApiClients.Any(c => c.ApiClientId == apiClient.ApiClientId).ShouldBeFalse();
+        usersContext.Users.Any().ShouldBeFalse();
+    }
 }
