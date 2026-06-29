@@ -46,6 +46,8 @@ services:
       AppSettings__MultiTenancy: ${MULTITENANCY_ENABLED:-true}
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       AppSettings__PreventDuplicateApplications: ${PREVENT_DUPLICATE_APPLICATIONS:-false}
+      AppSettings__SqlServerMinimalBakFile: "${MINIMAL_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Minimal.Template.bak}"
+      AppSettings__SqlServerSampleBakFile: "${POPULATED_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Populated.Template.bak}"
       ASPNETCORE_ENVIRONMENT: "multitenantdocker"
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
       AdminConsoleSettings__CorsSettings__EnableCors: ${ENABLE_CORS:-false}
@@ -71,8 +73,12 @@ services:
       SwaggerSettings__DefaultTenant: ${DEFAULT_TENANT:-tenant2}
       Tenants__tenant1__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant1,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Ods: "Data Source=db-ods-tenant1,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Master: "Data Source=db-ods-tenant1,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Ods: "Data Source=db-ods-tenant2,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Master: "Data Source=db-ods-tenant2,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
     depends_on:

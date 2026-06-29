@@ -17,6 +17,7 @@ services:
       ACCEPT_EULA: "Y"
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       SQLSERVER_PASSWORD: ${SQLSERVER_PASSWORD:-P@55w0rd}
+      SQLSERVER_PORT: ${SQLSERVER_PORT:-1433}
       TPDM_ENABLED: ${TPDM_ENABLED:-true}
       MSSQL_PID: ${MSSQL_PID:-Express}
       SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
@@ -49,6 +50,7 @@ services:
       SQLSERVER_PASSWORD: ${SQLSERVER_PASSWORD:-P@55w0rd}
       TPDM_ENABLED: ${TPDM_ENABLED:-true}
       MSSQL_PID: ${MSSQL_PID:-Express}
+      SQLSERVER_PORT: ${SQLSERVER_PORT:-1433}
       SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
       MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/sql-backups/EdFi.Ods.Minimal.Template.bak}"
       POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/sql-backups/EdFi.Ods.Populated.Template.bak}"

@@ -67,12 +67,12 @@ services:
       POSTGRES_USER: "${POSTGRES_USER}"
       Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
-      Tenants__tenant1__ConnectionStrings__EdFi_Ods: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
-      Tenants__tenant1__ConnectionStrings__EdFi_Master: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Ods: "host=db-ods-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
+      Tenants__tenant1__ConnectionStrings__EdFi_Master: "host=db-ods-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "host=db-admin-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
-      Tenants__tenant2__ConnectionStrings__EdFi_Ods: "host=db-admin-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
-      Tenants__tenant2__ConnectionStrings__EdFi_Master: "host=db-admin-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Ods: "host=db-ods-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"
+      Tenants__tenant2__ConnectionStrings__EdFi_Master: "host=db-ods-tenant2;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=postgres;pooling=true"
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
     depends_on:
