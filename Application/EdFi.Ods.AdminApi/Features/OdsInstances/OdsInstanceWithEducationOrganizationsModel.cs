@@ -19,6 +19,15 @@ public class OdsInstanceWithEducationOrganizationsModel
     [SwaggerSchema(Description = "Type of ODS instance")]
     public string? InstanceType { get; set; }
 
+    [SwaggerSchema(Description = "Current provisioning status of the ODS instance")]
+    public string? Status { get; set; }
+
+    [SwaggerSchema(Description = "Database template used for this ODS instance")]
+    public string? DatabaseTemplate { get; set; }
+
+    [SwaggerSchema(Description = "Database name for this ODS instance")]
+    public string? DatabaseName { get; set; }
+
     [SwaggerSchema(Description = "List of education organizations in this instance")]
     public List<EducationOrganizationModel> EducationOrganizations { get; set; } = new();
 }

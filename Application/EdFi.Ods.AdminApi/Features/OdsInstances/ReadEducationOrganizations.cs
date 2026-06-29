@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
@@ -35,11 +36,14 @@ public class ReadEducationOrganizations : IFeature
 
     public static async Task<IResult> GetEducationOrganizations(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
+        [FromServices] IGetDbInstancesQuery getDbInstancesQuery,
         [AsParameters] CommonQueryParams commonQueryParams)
     {
         var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
             commonQueryParams,
             instanceId: null);
+
+        MergeDbInstanceData(educationOrganizations, getDbInstancesQuery, includeUnlinked: true);
 
         return Results.Ok(educationOrganizations);
     }
@@ -47,6 +51,7 @@ public class ReadEducationOrganizations : IFeature
     public static async Task<IResult> GetEducationOrganizationsByInstance(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
         [FromServices] IGetOdsInstanceQuery getOdsInstanceQuery,
+        [FromServices] IGetDbInstancesQuery getDbInstancesQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
         int instanceId)
     {
@@ -56,6 +61,51 @@ public class ReadEducationOrganizations : IFeature
             commonQueryParams,
             instanceId: instanceId);
 
+        MergeDbInstanceData(educationOrganizations, getDbInstancesQuery, includeUnlinked: false);
+
         return Results.Ok(educationOrganizations);
+    }
+
+    private static void MergeDbInstanceData(
+        List<OdsInstanceWithEducationOrganizationsModel> instances,
+        IGetDbInstancesQuery getDbInstancesQuery,
+        bool includeUnlinked)
+    {
+        var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, null), null, null);
+
+        var linkedById = allDbInstances
+            .Where(d => d.OdsInstanceId is not null)
+            .ToDictionary(d => d.OdsInstanceId!.Value);
+
+        foreach (var instance in instances)
+        {
+            if (linkedById.TryGetValue(instance.Id, out var dbInstance))
+            {
+                instance.Status = dbInstance.Status;
+                instance.DatabaseTemplate = dbInstance.DatabaseTemplate;
+                instance.DatabaseName = dbInstance.DatabaseName;
+            }
+            else
+            {
+                instance.Status = DbInstanceStatus.Created.ToString();
+            }
+        }
+
+        if (includeUnlinked)
+        {
+            var negativeId = -1;
+            foreach (var dbInstance in allDbInstances.Where(d => d.OdsInstanceId is null))
+            {
+                instances.Add(new OdsInstanceWithEducationOrganizationsModel
+                {
+                    Id = negativeId--,
+                    Name = dbInstance.Name ?? string.Empty,
+                    Status = dbInstance.Status,
+                    DatabaseTemplate = dbInstance.DatabaseTemplate,
+                    DatabaseName = dbInstance.DatabaseName,
+                    EducationOrganizations = new()
+                });
+            }
+        }
     }
 }

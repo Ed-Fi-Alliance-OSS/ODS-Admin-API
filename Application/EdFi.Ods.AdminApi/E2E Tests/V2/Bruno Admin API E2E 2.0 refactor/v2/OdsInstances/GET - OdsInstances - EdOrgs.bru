@@ -11,8 +11,46 @@ get {
 }
 
 script:post-response {
+  const response = res.getBody();
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+
   test("GET OdsInstances EdOrgs: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
+  });
+
+  const OdsInstancesEdOrgsSchema = {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "instanceType": { "type": ["string", "null"] },
+        "status": { "type": ["string", "null"] },
+        "databaseTemplate": { "type": ["string", "null"] },
+        "databaseName": { "type": ["string", "null"] },
+        "educationOrganizations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "educationOrganizationId": { "type": "integer" },
+              "nameOfInstitution": { "type": "string" },
+              "shortNameOfInstitution": { "type": ["string", "null"] },
+              "discriminator": { "type": "string" },
+              "parentId": { "type": ["integer", "null"] }
+            },
+            "required": ["educationOrganizationId", "nameOfInstitution", "discriminator"]
+          }
+        }
+      },
+      "required": ["id", "name", "educationOrganizations"]
+    }
+  };
+
+  test("GET OdsInstances EdOrgs: Response matches schema", function () {
+      expect(ajv.validate(OdsInstancesEdOrgsSchema, response)).to.equal(true);
   });
 }
 
