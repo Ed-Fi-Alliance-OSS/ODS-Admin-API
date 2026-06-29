@@ -139,11 +139,12 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 }
             }
 
-            var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, null), null, null);
+            var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
             var linkedDbDataStoresByDataStoreId = allDbDataStores
                 .Where(d => d.OdsInstanceId is not null)
-                .ToDictionary(d => d.OdsInstanceId!.Value);
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
             foreach (var dataStore in tenantDetails.DataStores)
             {

@@ -139,11 +139,12 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 }
             }
 
-            var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, null), null, null);
+            var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
             var linkedDbInstancesByOdsId = allDbInstances
                 .Where(d => d.OdsInstanceId is not null)
-                .ToDictionary(d => d.OdsInstanceId!.Value);
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
             foreach (var odsInstance in tenantDetails.OdsInstances)
             {
