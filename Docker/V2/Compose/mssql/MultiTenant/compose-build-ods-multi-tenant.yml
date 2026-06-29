@@ -21,8 +21,8 @@ services:
       TPDM_ENABLED: ${TPDM_ENABLED:-true}
       MSSQL_PID: ${MSSQL_PID:-Express}
       SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
-      MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/sql-backups/EdFi.Ods.Minimal.Template.bak}"
-      POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/sql-backups/EdFi.Ods.Populated.Template.bak}"
+      MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Minimal.Template.bak}"
+      POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Populated.Template.bak}"
     volumes:
       - vol-db-ods-tenant1:/var/opt/mssql/data
       - vol-db-ods-tenant1:/var/opt/mssql/log
@@ -52,8 +52,8 @@ services:
       MSSQL_PID: ${MSSQL_PID:-Express}
       SQLSERVER_PORT: ${SQLSERVER_PORT:-1433}
       SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
-      MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/sql-backups/EdFi.Ods.Minimal.Template.bak}"
-      POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/sql-backups/EdFi.Ods.Populated.Template.bak}"
+      MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Minimal.Template.bak}"
+      POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Populated.Template.bak}"
     volumes:
       - vol-db-ods-tenant2:/var/opt/mssql/data
       - vol-db-ods-tenant2:/var/opt/mssql/log
