@@ -71,11 +71,12 @@ public class ReadEducationOrganizations : IFeature
         IGetDbDataStoresQuery getDbDataStoresQuery,
         bool includeUnlinked)
     {
-        var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, null), null, null);
+        var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
         var linkedById = allDbDataStores
             .Where(d => d.OdsInstanceId is not null)
-            .ToDictionary(d => d.OdsInstanceId!.Value);
+            .GroupBy(d => d.OdsInstanceId!.Value)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
         foreach (var instance in instances)
         {
