@@ -60,6 +60,14 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.ApiClients
         }
 
         [Test]
+        public void Should_Have_Error_When_OdsInstanceIds_Is_Null()
+        {
+            var model = new AddApiClient.AddApiClientRequest { Name = "ValidName", ApplicationId = 1, OdsInstanceIds = null };
+            var result = _validator.Validate(model);
+            result.Errors.Any(x => x.PropertyName == nameof(model.OdsInstanceIds)).ShouldBeTrue();
+        }
+
+        [Test]
         public void Should_Not_Have_Error_For_Valid_Model()
         {
             var model = new AddApiClient.AddApiClientRequest
