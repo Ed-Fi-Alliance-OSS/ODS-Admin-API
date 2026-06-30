@@ -42,7 +42,7 @@ Source: `artifacts\Coverage Report\index.html`
 | V2 | ApiClients | `Application\EdFi.Ods.AdminApi\Features\ApiClients` | Not reviewed before ApiClients batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\ApiClients` | Not started |
 | V2 | Applications | `Application\EdFi.Ods.AdminApi\Features\Applications` | Not reviewed before Applications batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\Applications` | Not started |
 | V2 | AuthorizationStrategies | `Application\EdFi.Ods.AdminApi\Features\AuthorizationStrategies` | Not reviewed before AuthorizationStrategies batch | No existing folder found at plan time | Not started |
-| V2 | ClaimSets | `Application\EdFi.Ods.AdminApi\Features\ClaimSets` | Not reviewed before ClaimSets batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\ClaimSets` | Not started |
+| V2 | ClaimSets | `Application\EdFi.Ods.AdminApi\Features\ClaimSets` | Not reviewed before ClaimSets batch | No existing folder found at plan time | Not started |
 | V2 | Connect | `Application\EdFi.Ods.AdminApi\Features\Connect` | Not reviewed before Connect batch | No existing folder found at plan time | Not started |
 | V2 | DbInstances | `Application\EdFi.Ods.AdminApi\Features\DbInstances` | Not reviewed before DbInstances batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\DbInstances` | Not started |
 | V2 | Information | `Application\EdFi.Ods.AdminApi\Features\Information` | Not reviewed before Information batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\Information` | Not started |
