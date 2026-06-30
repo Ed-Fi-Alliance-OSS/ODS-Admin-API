@@ -39,8 +39,8 @@ Source: `artifacts\Coverage Report\index.html`
 | API surface | Feature | Source path | Endpoint/behavior files reviewed | Existing tests reviewed | Status |
 | --- | --- | --- | --- | --- | --- |
 | V2 | Actions | `Application\EdFi.Ods.AdminApi\Features\Actions` | Not reviewed before Actions batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\Actions` | Not started |
-| V2 | ApiClients | `Application\EdFi.Ods.AdminApi\Features\ApiClients` | Not reviewed before ApiClients batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\ApiClients` | Not started |
-| V2 | Applications | `Application\EdFi.Ods.AdminApi\Features\Applications` | Not reviewed before Applications batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\Applications` | Not started |
+| V2 | ApiClients | `Application\EdFi.Ods.AdminApi\Features\ApiClients` | Reviewed: `AddApiClient.cs`, `ApiClientMapper.cs`, `ApiClientModel.cs`, `DeleteApiClient.cs`, `EditApiClient.cs`, `ReadApiClient.cs`, `ResetApiClientCredentials.cs` | Reviewed/updated: `AddApiClientOdsInstanceIdsValidationTests.cs`, `AddApiClientValidatorTests.cs`, `ApiClientModelTests.cs`, `DeleteApiClientTests.cs`, `EditApiClientOdsInstanceIdsValidationTests.cs`, `EditApiClientValidatorTests.cs`, `ReadApiClientTests.cs`, `ResetApiClientCredentialsTests.cs` | Task 5 updated validator null-IDs coverage |
+| V2 | Applications | `Application\EdFi.Ods.AdminApi\Features\Applications` | Reviewed: `AddApplication.cs`, `ApplicationMapper.cs`, `ApplicationModel.cs`, `DeleteApplication.cs`, `EditApplication.cs`, `ReadApplication.cs`, `ReadApplicationsByOdsInstance.cs`, `ReadApplicationsByVendor.cs`, `ResetApplicationCredentials.cs` | Reviewed/updated: `ApplicationMapperTests.cs`, `AddApplicationValidatorTests.cs`, `EditApplicationValidatorTests.cs`, `DeleteApplicationTests.cs`, `ResetApplicationCredentialsTests.cs` | Task 5 added validator/delete/reset coverage |
 | V2 | AuthorizationStrategies | `Application\EdFi.Ods.AdminApi\Features\AuthorizationStrategies` | Not reviewed before AuthorizationStrategies batch | No existing folder found at plan time | Not started |
 | V2 | ClaimSets | `Application\EdFi.Ods.AdminApi\Features\ClaimSets` | Not reviewed before ClaimSets batch | No existing folder found at plan time | Not started |
 | V2 | Connect | `Application\EdFi.Ods.AdminApi\Features\Connect` | Not reviewed before Connect batch | No existing folder found at plan time | Not started |
@@ -56,12 +56,15 @@ Source: `artifacts\Coverage Report\index.html`
 | V2 | ResourceClaims | `Application\EdFi.Ods.AdminApi\Features\ResourceClaims` | Not reviewed before ResourceClaims batch | No existing folder found at plan time | Not started |
 | V2 | Tenants | `Application\EdFi.Ods.AdminApi\Features\Tenants` | Not reviewed before Tenants batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\Tenants` | Not started |
 | V2 | Vendors | `Application\EdFi.Ods.AdminApi\Features\Vendors` | Not reviewed before Vendors batch | `Application\EdFi.Ods.AdminApi.UnitTests\Features\Vendors` | Not started |
-| V3 | Feature folders | `Application\EdFi.Ods.AdminApi.V3\Features` | V3 folders are reviewed with the matching feature batch | `Application\EdFi.Ods.AdminApi.V3.UnitTests\Features` | Not started |
+| V3 | ApiClients | `Application\EdFi.Ods.AdminApi.V3\Features\ApiClients` | Reviewed: `AddApiClient.cs`, `ApiClientMapper.cs`, `ApiClientModel.cs`, `DeleteApiClient.cs`, `EditApiClient.cs`, `ReadApiClient.cs`, `ResetApiClientCredentials.cs` | Reviewed/updated: `AddApiClientOdsInstanceIdsValidationTests.cs`, `AddApiClientValidatorTests.cs`, `ApiClientModelTests.cs`, `DeleteApiClientTests.cs`, `EditApiClientOdsInstanceIdsValidationTests.cs`, `EditApiClientTests.cs`, `EditApiClientValidatorTests.cs`, `ReadApiClientTests.cs`, `ResetApiClientCredentialsTests.cs` | Task 5 updated validator null-IDs coverage |
+| V3 | Applications | `Application\EdFi.Ods.AdminApi.V3\Features\Applications` | Reviewed: `AddApplication.cs`, `ApplicationMapper.cs`, `ApplicationModel.cs`, `DeleteApplication.cs`, `EditApplication.cs`, `ReadApplication.cs`, `ReadApplicationsByDataStore.cs`, `ReadApplicationsByVendor.cs`, `ResetApplicationCredentials.cs` | Reviewed/updated: `AddApplicationValidatorTests.cs`, `ApplicationMapperTests.cs`, `EditApplicationTests.cs`, `EditApplicationValidatorTests.cs`, `DeleteApplicationTests.cs`, `ResetApplicationCredentialsTests.cs` | Task 5 added delete/reset coverage; existing validator tests reviewed |
 
 ## Skipped or uncovered areas
 
 | Feature/endpoint | API surface | Gap type | Evidence | Reason | Suspected risk | Recommended Jira summary | Recommended acceptance criteria |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `ReadApplication.GetApplication` single-record null branch | V2 Applications | Not unit-tested in Task 5 | `Application\EdFi.Ods.AdminApi\Features\Applications\ReadApplication.cs`; `Application\EdFi.Ods.AdminApi\Infrastructure\Database\Queries\GetApplicationByIdQuery.cs`; `docs\Coverage Report.zip` entry `EdFi.Ods.AdminApi_GetAllApplicationsQuery.html` shows EF-query hotspots | Handler takes concrete `GetApplicationByIdQuery`, and that query throws `NotFoundException<int>` instead of returning null; testing the handler null branch without a database would require a testability seam or behavior decision. | Low/medium: redundant null guard may be unreachable and single-record handler behavior is mostly owned by query. | Review V2 application single-record query/handler testability | Decide whether `GetApplicationByIdQuery` or handler owns not-found behavior, then add unit coverage or remove unreachable branch. |
+| `ReadApplication.GetApplication` single-record null branch | V3 Applications | Not unit-tested in Task 5 | `Application\EdFi.Ods.AdminApi.V3\Features\Applications\ReadApplication.cs`; `Application\EdFi.Ods.AdminApi.V3\Infrastructure\Database\Queries\GetApplicationByIdQuery.cs`; `docs\Coverage Report.zip` entry `EdFi.Ods.AdminApi.V3_GetAllApplicationsQuery.html` shows EF-query hotspots | Handler takes concrete `GetApplicationByIdQuery`, and that query throws `NotFoundException<int>` instead of returning null; testing the handler null branch without a database would require a testability seam or behavior decision. | Low/medium: redundant null guard may be unreachable and single-record handler behavior is mostly owned by query. | Review V3 application single-record query/handler testability | Decide whether `GetApplicationByIdQuery` or handler owns not-found behavior, then add unit coverage or remove unreachable branch. |
 
 ## Final summary
 
@@ -76,7 +79,7 @@ Source: `artifacts\Coverage Report\index.html`
 
 | Batch | Features | Reason | Status |
 | --- | --- | --- | --- |
-| 1 | Applications, ApiClients | High endpoint value and existing test patterns | Not started |
+| 1 | Applications, ApiClients | High endpoint value and existing test patterns | Task 5 implemented targeted V2/V3 unit coverage |
 | 2 | ClaimSets and ResourceClaims | High uncovered-line count and validation/mapping complexity | Not started |
 | 3 | ODS/DataStore features | V2/V3 equivalent feature groups with existing partial tests | Not started |
 | 4 | Vendors, Actions, AuthorizationStrategies, Information, Jobs, Tenants, Profiles, Connect | Remaining first-sweep feature coverage | Not started |

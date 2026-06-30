@@ -60,6 +60,14 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
 
         [Test]
+        public void Should_Have_Error_When_DataStoreIds_Is_Null()
+        {
+            var model = new AddApiClient.AddApiClientRequest { Name = "ValidName", ApplicationId = 1, DataStoreIds = null };
+            var result = _validator.Validate(model);
+            result.Errors.Any(x => x.PropertyName == nameof(model.DataStoreIds)).ShouldBeTrue();
+        }
+
+        [Test]
         public void Should_Not_Have_Error_For_Valid_Model()
         {
             var model = new AddApiClient.AddApiClientRequest
@@ -73,5 +81,4 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         }
     }
 }
-
 
