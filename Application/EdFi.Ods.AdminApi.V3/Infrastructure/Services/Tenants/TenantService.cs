@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -25,7 +26,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getDataStoresQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, string tenantName);
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getDataStoresQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDbDataStoresQuery getDbDataStoresQuery, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -112,6 +113,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
     public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
         IGetDataStoresQuery getDataStoresQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetDbDataStoresQuery getDbDataStoresQuery,
         string tenantName)
     {
         var tenant = await GetTenantByTenantIdAsync(tenantName);
@@ -135,6 +137,34 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                     var edOrgs = edOrgsList.Where(eo => eo.InstanceId == dataStore.DataStoreId).ToList();
                     dataStore.EducationOrganizations = EducationOrganizationMapper.ToModelList(edOrgs);
                 }
+            }
+
+            var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+
+            var linkedDbDataStoresByDataStoreId = allDbDataStores
+                .Where(d => d.OdsInstanceId is not null)
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
+
+            foreach (var dataStore in tenantDetails.DataStores)
+            {
+                if (linkedDbDataStoresByDataStoreId.TryGetValue(dataStore.DataStoreId, out var dbDataStore))
+                {
+                    dataStore.Status = dbDataStore.Status;
+                    dataStore.DatabaseTemplate = dbDataStore.DatabaseTemplate;
+                    dataStore.DatabaseName = dbDataStore.DatabaseName;
+                }
+                else
+                {
+                    dataStore.Status = DbInstanceStatus.Created.ToString();
+                }
+            }
+
+            var unlinkedDbDataStores = allDbDataStores.Where(d => d.OdsInstanceId is null).ToList();
+            var negativeId = -1;
+            foreach (var dbDataStore in unlinkedDbDataStores)
+            {
+                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDbDataStoreModel(dbDataStore, negativeId--));
             }
 
             return tenantDetails;

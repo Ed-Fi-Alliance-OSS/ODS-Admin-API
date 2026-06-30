@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.OdsInstances;
 using EdFi.Ods.AdminApi.Features.Tenants;
@@ -25,12 +26,16 @@ public class ReadTenantsTest
 {
     private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
     private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
+    private IGetDbInstancesQuery _getDbInstancesQuery = null!;
 
     [SetUp]
     public void SetUp()
     {
         _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
         _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
+        _getDbInstancesQuery = A.Fake<IGetDbInstancesQuery>();
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([]);
     }
 
     [Test]
@@ -70,9 +75,9 @@ public class ReadTenantsTest
         A.CallTo(() => request.Path).Returns(new PathString("/tenants/tenant1/OdsInstances/edOrgs"));
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
-        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -97,7 +102,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
         });
     }
 
@@ -121,7 +126,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
         });
     }
 
@@ -148,9 +153,9 @@ public class ReadTenantsTest
         A.CallTo(() => request.Path).Returns(new PathString("/swagger/index.html"));
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
-        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -178,9 +183,9 @@ public class ReadTenantsTest
         A.CallTo(() => request.Path).Returns(new PathString("/tenants/tenant1/OdsInstances/edOrgs"));
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
-        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -208,9 +213,9 @@ public class ReadTenantsTest
         A.CallTo(() => request.Path).Returns(new PathString("/SWAGGER/index.html"));
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
-        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -238,9 +243,9 @@ public class ReadTenantsTest
         A.CallTo(() => request.Path).Returns(new PathString("/tenants/tenant1/OdsInstances/edOrgs"));
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
-        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }
@@ -265,7 +270,7 @@ public class ReadTenantsTest
 
         Should.ThrowAsync<ValidationException>(async () =>
         {
-            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+            await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
         });
     }
 
@@ -292,9 +297,9 @@ public class ReadTenantsTest
         A.CallTo(() => request.Path).Returns(new PathString());
         A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
         A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
-        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, tenantName)).Returns(tenantDetailModel);
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
 
-        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, memoryCache, options, swaggerOptions, tenantName);
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(request, tenantsService, _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, memoryCache, options, swaggerOptions, tenantName);
 
         result.ShouldNotBeNull();
     }

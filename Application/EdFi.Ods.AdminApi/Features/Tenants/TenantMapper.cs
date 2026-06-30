@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.Features.Tenants;
 
@@ -22,5 +23,17 @@ public static class TenantMapper
     public static List<TenantOdsInstanceModel> ToOdsInstanceModelList(IEnumerable<OdsInstance> source)
     {
         return source.Select(ToOdsInstanceModel).ToList();
+    }
+
+    public static TenantOdsInstanceModel ToUnlinkedDbInstanceModel(DbInstance source, int negativeId)
+    {
+        return new TenantOdsInstanceModel
+        {
+            OdsInstanceId = negativeId,
+            Name = source.Name,
+            Status = source.Status,
+            DatabaseTemplate = source.DatabaseTemplate,
+            DatabaseName = source.DatabaseName,
+        };
     }
 }

@@ -33,6 +33,9 @@ public class TenantOdsInstanceModel
     public int OdsInstanceId { get; set; }
     public string Name { get; set; }
     public string? InstanceType { get; set; }
+    public string? Status { get; set; }
+    public string? DatabaseTemplate { get; set; }
+    public string? DatabaseName { get; set; }
 
     [SwaggerSchema(Title = "EducationOrganizations")]
     public List<EducationOrganizationModel> EducationOrganizations { get; set; }
