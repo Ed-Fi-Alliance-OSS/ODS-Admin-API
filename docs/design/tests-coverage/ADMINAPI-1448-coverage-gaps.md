@@ -71,3 +71,13 @@ Source: `artifacts\Coverage Report\index.html`
 | Total branch coverage | 19.9% | Not measured before Task 2 | Not measured before Task 10 |
 | V2 line coverage | 22.2% | Not measured before Task 2 | Not measured before Task 10 |
 | V3 line coverage | 32.8% | Not measured before Task 2 | Not measured before Task 10 |
+
+## Work batch order
+
+| Batch | Features | Reason | Status |
+| --- | --- | --- | --- |
+| 1 | Applications, ApiClients | High endpoint value and existing test patterns | Not started |
+| 2 | ClaimSets and ResourceClaims | High uncovered-line count and validation/mapping complexity | Not started |
+| 3 | ODS/DataStore features | V2/V3 equivalent feature groups with existing partial tests | Not started |
+| 4 | Vendors, Actions, AuthorizationStrategies, Information, Jobs, Tenants, Profiles, Connect | Remaining first-sweep feature coverage | Not started |
+| 5 | Common and infrastructure directly exercised by V2/V3 features | Shared logic needed to support endpoint behavior | Not started |
