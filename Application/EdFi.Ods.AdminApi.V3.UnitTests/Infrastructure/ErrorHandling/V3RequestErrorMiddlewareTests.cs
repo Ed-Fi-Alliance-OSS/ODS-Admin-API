@@ -193,4 +193,56 @@ public class V3RequestErrorMiddlewareTests
         var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
         body.ShouldBe(existingBody);
     }
+
+    [Test]
+    public async Task InvokeAsync_WhenTokenEndpointReturnsInvalidScope_SetsProblemJsonContentTypeAndPreservesBody()
+    {
+        const string existingBody = "{\"error\":\"invalid_scope\",\"error_description\":\"Invalid scope.\"}";
+
+        var middleware = new V3RequestErrorMiddleware(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(existingBody);
+        });
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/connect/token";
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context);
+
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+        context.Response.ContentType.ShouldBe("application/problem+json");
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
+        body.ShouldBe(existingBody);
+    }
+
+    [Test]
+    public async Task InvokeAsync_WhenTokenEndpointReturnsSuccess_CopiesResponseBodyWithoutChangingContentType()
+    {
+        const string existingBody = "{\"access_token\":\"token-value\"}";
+
+        var middleware = new V3RequestErrorMiddleware(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(existingBody);
+        });
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/connect/token";
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context);
+
+        context.Response.StatusCode.ShouldBe(StatusCodes.Status200OK);
+        context.Response.ContentType.ShouldBe("application/json");
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
+        body.ShouldBe(existingBody);
+    }
 }
