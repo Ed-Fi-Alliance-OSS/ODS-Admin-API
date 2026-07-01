@@ -32,7 +32,7 @@ Source: `artifacts\Coverage Report\index.html`
 
 | Date | Command | V2 line coverage | V3 line coverage | Common line coverage | Total line coverage | Notes |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| 2026-06-29 | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | Not measured before Task 2 | Not measured before Task 2 | Not measured before Task 2 | Not measured before Task 2 | V1 excluded |
+| 2026-07-01 | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 34.7% | 39.3% | 44.8% | 38.4% | V1 excluded; all unit tests passed and `coveragereport\index.html` generated |
 
 ## Feature inventory
 
@@ -86,10 +86,10 @@ Source: `artifacts\Coverage Report\index.html`
 
 | Metric | Before V1 exclusion | After V1 exclusion | Final |
 | --- | ---: | ---: | ---: |
-| Total line coverage | 23% | Not measured before Task 2 | Not measured before Task 10 |
-| Total branch coverage | 19.9% | Not measured before Task 2 | Not measured before Task 10 |
-| V2 line coverage | 22.2% | Not measured before Task 2 | Not measured before Task 10 |
-| V3 line coverage | 32.8% | Not measured before Task 2 | Not measured before Task 10 |
+| Total line coverage | 23% | 38.4% | 38.4% |
+| Total branch coverage | 19.9% | 32.8% | 32.8% |
+| V2 line coverage | 22.2% | 34.7% | 34.7% |
+| V3 line coverage | 32.8% | 39.3% | 39.3% |
 
 ## Work batch order
 
