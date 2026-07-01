@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Features;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -42,5 +43,6 @@ public class AdminApiModeValidationMiddlewareTests
 
         using var doc = JsonDocument.Parse(responseBody);
         doc.RootElement.GetProperty("detail").GetString().ShouldBe("Wrong API version for this instance mode.");
+        doc.RootElement.GetProperty("type").GetString().ShouldBe(AdminApiProblemTypes.BadRequestVersionMismatch);
     }
 }

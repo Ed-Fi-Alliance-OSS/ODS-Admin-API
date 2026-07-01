@@ -40,6 +40,11 @@ script:post-response {
       expect(response.errors.Action.length).to.equal(1);
       expect(response.errors.Action[0]).to.contain("action is not enabled for the resource claim");
   });
+  
+  test("POST OverrideAuthStrategy - Action not enabled: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

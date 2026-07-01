@@ -33,6 +33,11 @@ script:post-response {
        expect(response.errors.ConnectionString[0]).to.contain("The connection string is not valid.");
   });
   
+  test("POST DataStore Derivatives Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
   
 }
 

@@ -28,6 +28,11 @@ script:post-response {
       expect(response.title).to.contain("profile");
       expect(response.title).to.contain(bru.getVar("NotExistProfileId"));
   });
+  
+  test("GET Profile NotFound: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+  });
 }
 
 settings {

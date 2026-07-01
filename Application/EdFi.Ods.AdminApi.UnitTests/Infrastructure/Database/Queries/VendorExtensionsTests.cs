@@ -3,6 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+#nullable enable
+
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using NUnit.Framework;
@@ -37,6 +39,13 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Database.Queries
 
             reservedVendor.IsSystemReservedVendor().ShouldBeTrue();
             customVendor.IsSystemReservedVendor().ShouldBeFalse();
+        }
+
+        [Test]
+        public void IsSystemReservedVendor_ReturnsFalse_ForNullVendor()
+        {
+            Vendor? nullVendor = null;
+            VendorExtensions.IsSystemReservedVendor(nullVendor!).ShouldBeFalse();
         }
     }
 }

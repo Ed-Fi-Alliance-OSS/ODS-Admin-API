@@ -74,7 +74,23 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
 
             Should.ThrowAsync<ValidationException>(async () => await AddVendor.Handle(validator, command, request, httpContext));
         }
+
+        [Test]
+        public void Validator_WithNullNamespacePrefixes_IsValid()
+        {
+            var validator = new AddVendor.Validator();
+            var request = new AddVendor.AddVendorRequest
+            {
+                Company = "Acme Vendor",
+                NamespacePrefixes = null,
+                ContactName = "Alice",
+                ContactEmailAddress = "alice@acme.org"
+            };
+
+            var result = validator.Validate(request);
+
+            result.IsValid.ShouldBeTrue();
+        }
     }
 }
-
 

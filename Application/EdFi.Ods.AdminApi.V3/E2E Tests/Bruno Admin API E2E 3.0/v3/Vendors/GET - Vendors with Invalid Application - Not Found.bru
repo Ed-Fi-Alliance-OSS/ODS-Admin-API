@@ -29,6 +29,11 @@ script:post-response {
       expect(response.title).to.contain("0");
   });
   
+  test("GET Vendors NotFound: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+  });
+  
 }
 
 settings {

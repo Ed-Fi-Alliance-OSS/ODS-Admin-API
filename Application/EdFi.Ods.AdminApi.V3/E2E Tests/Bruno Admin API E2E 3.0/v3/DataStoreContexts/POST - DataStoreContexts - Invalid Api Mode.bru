@@ -85,6 +85,11 @@ script:post-response {
   test("Response title is helpful and accurate", function () {
       expect(response.detail.toLowerCase()).to.contain("wrong api version for this instance mode.");
   });
+  
+  test("Type check: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:version-mismatch");
+  });
 }
 
 settings {

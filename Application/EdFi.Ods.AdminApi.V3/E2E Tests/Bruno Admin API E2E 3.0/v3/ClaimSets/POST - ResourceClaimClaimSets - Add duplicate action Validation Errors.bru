@@ -48,6 +48,11 @@ script:post-response {
       expect(response.errors.ResourceClaimActions[1]).to.contain("action is duplicated");
   });
   
+  test("POST ResourceClaimAction Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {

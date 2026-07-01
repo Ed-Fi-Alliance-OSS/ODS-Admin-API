@@ -34,6 +34,11 @@ script:post-response {
       expect(response.title.toLowerCase()).to.contain("validation");
   });
   
+  test("PUT DataStoreContexts Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {

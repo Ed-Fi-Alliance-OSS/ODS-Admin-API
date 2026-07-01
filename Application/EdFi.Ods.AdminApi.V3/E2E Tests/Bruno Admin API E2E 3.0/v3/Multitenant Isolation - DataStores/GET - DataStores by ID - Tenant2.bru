@@ -141,9 +141,14 @@ script:post-response {
   
       test("GET DataStores NotFound: Response title is helpful and accurate", function () {
           const response = res.getBody();
-  
+
           expect(response.title).to.contain("Not found");
           expect(response.title).to.contain("DataStore");
+      });
+
+      test("GET DataStores NotFound: type URN is correct", function () {
+          const response = res.getBody();
+          expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
       });
   }
 }

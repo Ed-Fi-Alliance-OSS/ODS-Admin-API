@@ -13,6 +13,7 @@ public static class V3ProblemDetailsFactory
         int status,
         string title,
         string detail,
+        string type,
         string? correlationId = null,
         IDictionary<string, object?>? extensions = null
     )
@@ -22,7 +23,7 @@ public static class V3ProblemDetailsFactory
             Status = status,
             Title = title,
             Detail = detail,
-            Type = "about:blank"
+            Type = type
         };
 
         if (!string.IsNullOrWhiteSpace(correlationId))
@@ -50,6 +51,7 @@ public static class V3ProblemDetailsFactory
             status: StatusCodes.Status400BadRequest,
             title: "Validation failed",
             detail: detail,
+            type: AdminApiProblemTypes.BadRequestValidation,
             correlationId: correlationId,
             extensions: new Dictionary<string, object?>
             {

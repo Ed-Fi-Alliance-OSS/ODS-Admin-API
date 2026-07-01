@@ -191,5 +191,10 @@ script:post-response {
       test("GET Tenants DataStores EdOrgs: Status code is Found", function () {
           expect(res.getStatus()).to.equal(404);
       });
+
+      test("GET Tenants DataStores EdOrgs: type URN is correct", function () {
+          const response = res.getBody();
+          expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+      });
   }
 }

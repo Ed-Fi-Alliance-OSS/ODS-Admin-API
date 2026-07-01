@@ -45,6 +45,11 @@ script:post-response {
       expect(response.errors["EducationOrganizationIds"].length).to.equal(1);
   });
   
+  test("PUT Application Invalid: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {

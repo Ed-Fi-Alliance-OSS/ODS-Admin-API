@@ -60,6 +60,7 @@ public class GetJobStatus : IFeature
                     status: StatusCodes.Status400BadRequest,
                     title: "Bad Request",
                     detail: "Tenant identifier is required when multi-tenancy is enabled.",
+                    type: AdminApiProblemTypes.BadRequest,
                     correlationId: httpContext.TraceIdentifier);
 
                 return Results.Json(problemDetails, statusCode: StatusCodes.Status400BadRequest, contentType: "application/problem+json");

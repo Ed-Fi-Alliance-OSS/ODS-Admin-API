@@ -34,6 +34,11 @@ script:post-response {
       expect(response.errors["Id"].length).to.equal(1);
       expect(response.errors["Id"][0]).to.contain("Request body id must match the id in the url.");
   });
+
+  test("PUT DataStoreDerivatives ID Missing in Body: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
 }
 
 settings {

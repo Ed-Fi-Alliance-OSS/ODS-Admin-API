@@ -19,6 +19,15 @@ public class DataStoreWithEducationOrganizationsModel
     [SwaggerSchema(Description = "Type of data store")]
     public string? DataStoreType { get; set; }
 
+    [SwaggerSchema(Description = "Current provisioning status of the data store")]
+    public string? Status { get; set; }
+
+    [SwaggerSchema(Description = "Database template used for this data store")]
+    public string? DatabaseTemplate { get; set; }
+
+    [SwaggerSchema(Description = "Database name for this data store")]
+    public string? DatabaseName { get; set; }
+
     [SwaggerSchema(Description = "List of education organizations in this data store")]
     public List<EducationOrganizationModel> EducationOrganizations { get; set; } = new();
 }

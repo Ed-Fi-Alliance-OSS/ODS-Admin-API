@@ -31,6 +31,11 @@ script:post-response {
       expect(response.errors.Id[0]).to.contain("Applications"); 
   });
   
+  test("DELETE DataStore Applications associated: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+  });
+  
 }
 
 settings {

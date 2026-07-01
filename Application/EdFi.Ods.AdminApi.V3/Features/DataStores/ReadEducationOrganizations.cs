@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -35,11 +36,14 @@ public class ReadEducationOrganizations : IFeature
 
     public static async Task<IResult> GetEducationOrganizations(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
+        [FromServices] IGetDbDataStoresQuery getDbDataStoresQuery,
         [AsParameters] CommonQueryParams commonQueryParams)
     {
         var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
             commonQueryParams,
             dataStoreId: null);
+
+        MergeDbDataStoreData(educationOrganizations, getDbDataStoresQuery, includeUnlinked: true);
 
         return Results.Ok(educationOrganizations);
     }
@@ -47,6 +51,7 @@ public class ReadEducationOrganizations : IFeature
     public static async Task<IResult> GetEducationOrganizationsByDataStore(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
         [FromServices] IGetDataStoreQuery getDataStoreQuery,
+        [FromServices] IGetDbDataStoresQuery getDbDataStoresQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
         int dataStoreId)
     {
@@ -56,6 +61,52 @@ public class ReadEducationOrganizations : IFeature
             commonQueryParams,
             dataStoreId: dataStoreId);
 
+        MergeDbDataStoreData(educationOrganizations, getDbDataStoresQuery, includeUnlinked: false);
+
         return Results.Ok(educationOrganizations);
+    }
+
+    private static void MergeDbDataStoreData(
+        List<DataStoreWithEducationOrganizationsModel> instances,
+        IGetDbDataStoresQuery getDbDataStoresQuery,
+        bool includeUnlinked)
+    {
+        var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+
+        var linkedById = allDbDataStores
+            .Where(d => d.OdsInstanceId is not null)
+            .GroupBy(d => d.OdsInstanceId!.Value)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
+
+        foreach (var instance in instances)
+        {
+            if (linkedById.TryGetValue(instance.Id, out var dbDataStore))
+            {
+                instance.Status = dbDataStore.Status;
+                instance.DatabaseTemplate = dbDataStore.DatabaseTemplate;
+                instance.DatabaseName = dbDataStore.DatabaseName;
+            }
+            else
+            {
+                instance.Status = DbInstanceStatus.Created.ToString();
+            }
+        }
+
+        if (includeUnlinked)
+        {
+            var negativeId = -1;
+            foreach (var dbDataStore in allDbDataStores.Where(d => d.OdsInstanceId is null))
+            {
+                instances.Add(new DataStoreWithEducationOrganizationsModel
+                {
+                    Id = negativeId--,
+                    Name = dbDataStore.Name ?? string.Empty,
+                    Status = dbDataStore.Status,
+                    DatabaseTemplate = dbDataStore.DatabaseTemplate,
+                    DatabaseName = dbDataStore.DatabaseName,
+                    EducationOrganizations = new()
+                });
+            }
+        }
     }
 }

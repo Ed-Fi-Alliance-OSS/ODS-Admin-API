@@ -14,6 +14,11 @@ script:post-response {
   test("POST ResetAuthorizationStrategies: Status code is Not Found", function () {
       expect(res.getStatus()).to.equal(404);
   });
+  
+  test("POST ResetAuthorizationStrategies: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+  });
 }
 
 settings {
