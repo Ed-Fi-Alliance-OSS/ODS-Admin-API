@@ -1,4 +1,4 @@
- #!/bin/sh
+#!/bin/sh
 # SPDX-License-Identifier: Apache-2.0
 # Licensed to the Ed-Fi Alliance under one or more agreements.
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
@@ -62,8 +62,8 @@ if [ ! -s "$PGDATA/PG_VERSION" ]; then
     done
 
     echo "Setting user password..."
-         escaped_password=$(printf '%s' "$POSTGRES_PASSWORD" | sed "s/'/''/g")
-     su-exec postgres psql -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -c "ALTER USER \"${POSTGRES_USER}\" WITH PASSWORD '${escaped_password}';"
+    su-exec postgres psql -p "$POSTGRES_PORT" -U "$POSTGRES_USER" \
+        -c "ALTER USER \"${POSTGRES_USER}\" WITH PASSWORD '${POSTGRES_PASSWORD}';"
 
     echo "Creating and restoring Ods_Minimal_Template from $MINIMAL_SQL_PATH..."
     su-exec postgres psql -p "$POSTGRES_PORT" -U "$POSTGRES_USER" \
