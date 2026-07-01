@@ -11,7 +11,7 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_PORT: "${POSTGRES_PORT:-5432}" 
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       TPDM_ENABLED: "${TPDM_ENABLED:-true}"
       SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
       MINIMAL_SQL_PATH: "${MINIMAL_SQL_PATH:-/var/opt/pgsql/data/sql-backups/EdFi.Ods.Minimal.Template.sql}"
