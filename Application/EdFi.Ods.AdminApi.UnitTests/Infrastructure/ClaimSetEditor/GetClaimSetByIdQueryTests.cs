@@ -34,6 +34,7 @@ public class GetClaimSetByIdQueryTests
 
         result.ShouldNotBeNull();
         result.Name.ShouldBe("TestSet");
+        result.Id.ShouldBe(cs.ClaimSetId);
         result.IsEditable.ShouldBeTrue();
     }
 
