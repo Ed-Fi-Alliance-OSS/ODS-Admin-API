@@ -85,12 +85,48 @@ Source: `artifacts\Coverage Report\index.html`
 
 ## Final summary
 
-| Metric | Before V1 exclusion | After V1 exclusion | Final |
+| Metric | Before V1 exclusion | After V1 exclusion | After ADMINAPI-1448b |
 | --- | ---: | ---: | ---: |
 | Total line coverage | 23% | 38.4% | 49.6% |
 | Total branch coverage | 19.9% | 32.8% | 38.4% |
 | V2 line coverage | 22.2% | 34.7% | 47.1% |
 | V3 line coverage | 32.8% | 39.3% | 52.4% |
+
+## Remaining gaps to reach 70% line coverage
+
+Analysis as of 2026-07-03 after ADMINAPI-1448b. Total uncovered coverable lines: 7,683. Lines needed to reach 70%: ~2,969.
+
+| Group | Uncovered lines | Current % | Approach | Estimated lift | Priority |
+| --- | ---: | ---: | --- | ---: | --- |
+| Features (handlers/mappers/models) | 2,910 | 49% | FakeItEasy mock handlers + AutoMapper profile tests | +10-12pp | High |
+| Infrastructure (extensions, helpers, middleware) | 1,784 | 37% | Mixed; some testable with fakes, some not | +5-7pp | Medium |
+| ClaimSetEditor commands | 1,295 | 25% | EF InMemory SqlServerSecurityContext | +8pp | High |
+| Database.Commands (remaining) | 791 | 40% | EF InMemory SqlServerUsersContext | +5pp | High |
+| Services | 598 | 70% | Near threshold already | +1-2pp | Low |
+| Database.Queries | 199 | 89% | Near saturation | +1pp | Done |
+
+### Classes not worth pursuing for coverage
+
+| Class | Lines | Reason |
+| --- | ---: | --- |
+| `WebApplicationBuilderExtensions` | 581 | DI/startup registration; cannot be unit-tested without full host |
+| `SecurityExtensions` (OpenIddict) | 237 | OpenIddict pipeline setup; integration-only |
+| `SwaggerDefaultParameterFilter` V2+V3 | 140 each | Cyclomatic complexity 92, Crap Score 8556; extremely brittle to test |
+| `Program.Main` | ~64 | Host startup; not unit-testable |
+| `EducationOrganizationService`, `JobStatusService` | ~127+51 | Require Quartz scheduler or real DB; defer to integration tests |
+
+## Discovered issues and risks
+
+Issues observed while writing tests or reading source code during ADMINAPI-1448/b. Not yet confirmed as bugs — each needs team review.
+
+| Issue | Assembly | Class/File | Severity | Description | Recommended action |
+| --- | --- | --- | --- | --- | --- |
+| Redundant null guard may be unreachable | V2/V3 | `GetApplicationByIdQuery` | Low | `GetApplicationByIdQuery.Execute` throws `NotFoundException<int>` before any null guard in the calling handler. The handler null branch is likely dead code. | Confirm and remove unreachable branch, or add test proving it can be reached. |
+| `OverrideDefaultAuthorizationStrategyCommand` has Crap Score 8556 | V2/V3 | `OverrideDefaultAuthorizationStrategyCommand` | Medium | Cyclomatic complexity 34 and 0% coverage means zero regression protection on a complex auth override path. | Add ClaimSetEditor command tests in next sweep; consider refactoring into smaller methods. |
+| `GetResourcesByClaimSetIdQuery` has Crap Score 1190 on `GetDefaultAuthStrategies` | V2/V3 | `GetResourcesByClaimSetIdQuery` | Medium | `GetDefaultAuthStrategies` has cyclomatic complexity 34 and remains only partially covered. Complex parent/child inheritance logic around inherited auth strategies could silently regress. | Extend existing test coverage to cover the child resource with parent default strategy branch. |
+| `ValidateApplicationExistsQuery` has nested complex boolean expression | V2/V3 | `ValidateApplicationExistsQuery.Execute` | Low/Medium | The duplicate detection logic uses deeply nested `&&` / `\|\|` conditions that are hard to reason about. Crap Score 1980. Several branch paths are untested. | Write property-based or parameterized tests covering all combinations of profiles/edOrgs/OdsInstances present vs. absent. |
+| `ConnectController` OpenIddict security paths lack unit tests | V2 | `ConnectController`, `TokenService`, `RegisterService` | Medium | Client credential grant, invalid scope, and missing client scenarios are security-sensitive. Currently covered only partially through controller branching tests. | Introduce abstractions around `IOpenIddictApplicationManager` to enable unit-level security path tests. |
+| `SqlServerSandboxProvisioner` partially covered | V2 | `SqlServerSandboxProvisioner` | Low | 114 covered / 71 uncovered. The uncovered paths are SQL Server provisioning failure/retry paths. | Add integration test or in-memory provisioner fake for failure paths. |
 
 ## Work batch order
 
@@ -102,3 +138,4 @@ Source: `artifacts\Coverage Report\index.html`
 | 4 | Vendors, Actions, AuthorizationStrategies, Information, Jobs, Tenants, Profiles, Connect | Remaining first-sweep feature coverage | Task 8 added/reviewed targeted V2/V3 unit coverage; targeted V2 remaining tests passed and targeted V3 remaining tests passed |
 | 5 | Common and infrastructure directly exercised by V2/V3 features | Shared logic needed to support endpoint behavior | Task 9 added existing-behavior coverage for shared tenant resolution (`TenantResolverMiddleware`), V2/V3 claim-set editor enumeration/action helpers, and V3 token-endpoint error middleware preservation paths. Targeted tests passed: Common 59/59, V2 infrastructure 137/137, V3 infrastructure 147/147. |
 | 6 | V2/V3 Database.Queries and ClaimSetEditor (EF InMemory sweep) | Largest 0% coverage group; EF InMemory tests, no real DB | ADMINAPI-1448b: added ~100 test files covering all V2/V3 UsersContext/SecurityContext queries, ClaimSetEditor, and AddApplicationCommand/EditApplicationCommand. Final V2: 458 passed; V3: 448 passed. Coverage increased from 38.4% → 49.6% total line. |
+| 7 | Remaining DB.Commands, ClaimSetEditor commands, Feature mappers/handlers | Second EF InMemory + FakeItEasy sweep to reach 70% | In progress |
