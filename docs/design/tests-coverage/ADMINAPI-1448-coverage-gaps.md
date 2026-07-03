@@ -37,6 +37,7 @@ Source: `artifacts\Coverage Report\index.html`
 | 2026-07-03 (after Batches 3b-3d) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 54.8% | 57.6% | 45% | 55.4% | Handler tests: AddApplication/EditApplication/CopyClaimSet/DeleteClaimSet V2, AddDataStore/DeleteDataStore V3, ReadApplication V3; V2: 514 passed, 10 skipped; V3: 484 passed; V1 excluded |
 | 2026-07-03 (after Batch 3e) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 55.6% | 58.1% | 45% | 56.1% | Handler tests: EditResourceClaimActions validator, ProfileValidator V2, EditDataStore V3; V2: 529 passed, 10 skipped; V3: 486 passed; V1 excluded |
 | 2026-07-03 (after Batches 3f-3h) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 56.9% | 62.2% | 45% | 58.3% | Handler tests: V3 EditDataStoreDerivative/Context/ClaimSet/DeleteClaimSet, EditAuthStrategy V3, EditClaimSetCommand V3, ReadResourceClaims V2+V3, ReadOdsInstance, CopyClaimSetCommand InMemory; V2: 537 passed, 10 skipped; V3: 501 passed; V1 excluded |
+| 2026-07-03 (after Feature classes sweep) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 57.9% | 63.5% | 45% | 59.3% | 20 new test files covering read/delete Feature handlers at <40%: ReadApplicationsByVendor/OdsInstance, ReadOdsInstanceContext/Derivative, ExportClaimSet, DeleteResourceClaim V2+V3, ReadResourceClaimActions, ReadResourceClaimActionAuthStrategies V2+V3, ReadDataStore/Context/Derivative V3, ReadApplicationsByDataStore V3; V2: 550 passed; V3: 515 passed; V1 excluded |
 
 ## Feature inventory
 
@@ -90,10 +91,10 @@ Source: `artifacts\Coverage Report\index.html`
 
 | Metric | Before V1 exclusion | After V1 exclusion | After ADMINAPI-1448b | After Batch 7 (2026-07-03) |
 | --- | ---: | ---: | ---: | ---: |
-| Total line coverage | 23% | 38.4% | 49.6% | **58.3%** |
-| Total branch coverage | 19.9% | 32.8% | 38.4% | **44.4%** |
-| V2 line coverage | 22.2% | 34.7% | 47.1% | **56.9%** |
-| V3 line coverage | 32.8% | 39.3% | 52.4% | **62.2%** |
+| Total line coverage | 23% | 38.4% | 49.6% | **59.3%** |
+| Total branch coverage | 19.9% | 32.8% | 38.4% | **44.7%** |
+| V2 line coverage | 22.2% | 34.7% | 47.1% | **57.9%** |
+| V3 line coverage | 32.8% | 39.3% | 52.4% | **63.5%** |
 
 ## Remaining gaps to reach 70% line coverage
 
