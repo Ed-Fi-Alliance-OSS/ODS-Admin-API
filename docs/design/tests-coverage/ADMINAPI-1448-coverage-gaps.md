@@ -34,6 +34,7 @@ Source: `artifacts\Coverage Report\index.html`
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | 2026-07-01 | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 34.7% | 39.3% | 44.8% | 38.4% | V1 excluded; all unit tests passed and `coveragereport\index.html` generated |
 | 2026-07-03 (after Batches 1+2+3a) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 52.3% | 56.1% | 45% | 53.6% | ADMINAPI-1448b Batches 1-3a: remaining DB.Commands (V2+V3), ClaimSetEditor commands, handler tests; V2: 501 passed, 10 skipped; V3: 474 passed; V1 excluded |
+| 2026-07-03 (after Batches 3b-3d) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 54.8% | 57.6% | 45% | 55.4% | Handler tests: AddApplication/EditApplication/CopyClaimSet/DeleteClaimSet V2, AddDataStore/DeleteDataStore V3, ReadApplication V3; V2: 514 passed, 10 skipped; V3: 484 passed; V1 excluded |
 
 ## Feature inventory
 
