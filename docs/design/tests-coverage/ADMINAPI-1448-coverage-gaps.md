@@ -36,6 +36,7 @@ Source: `artifacts\Coverage Report\index.html`
 | 2026-07-03 (after Batches 1+2+3a) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 52.3% | 56.1% | 45% | 53.6% | ADMINAPI-1448b Batches 1-3a: remaining DB.Commands (V2+V3), ClaimSetEditor commands, handler tests; V2: 501 passed, 10 skipped; V3: 474 passed; V1 excluded |
 | 2026-07-03 (after Batches 3b-3d) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 54.8% | 57.6% | 45% | 55.4% | Handler tests: AddApplication/EditApplication/CopyClaimSet/DeleteClaimSet V2, AddDataStore/DeleteDataStore V3, ReadApplication V3; V2: 514 passed, 10 skipped; V3: 484 passed; V1 excluded |
 | 2026-07-03 (after Batch 3e) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 55.6% | 58.1% | 45% | 56.1% | Handler tests: EditResourceClaimActions validator, ProfileValidator V2, EditDataStore V3; V2: 529 passed, 10 skipped; V3: 486 passed; V1 excluded |
+| 2026-07-03 (after Batches 3f-3h) | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 56.9% | 62.2% | 45% | 58.3% | Handler tests: V3 EditDataStoreDerivative/Context/ClaimSet/DeleteClaimSet, EditAuthStrategy V3, EditClaimSetCommand V3, ReadResourceClaims V2+V3, ReadOdsInstance, CopyClaimSetCommand InMemory; V2: 537 passed, 10 skipped; V3: 501 passed; V1 excluded |
 
 ## Feature inventory
 
