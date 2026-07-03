@@ -33,6 +33,7 @@ Source: `artifacts\Coverage Report\index.html`
 | Date | Command | V2 line coverage | V3 line coverage | Common line coverage | Total line coverage | Notes |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
 | 2026-07-01 | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 34.7% | 39.3% | 44.8% | 38.4% | V1 excluded; all unit tests passed and `coveragereport\index.html` generated |
+| 2026-07-03 | `.\build.ps1 -Command UnitTest -Configuration Debug -RunCoverageAnalysis` | 47.1% | 52.4% | 45% | 49.6% | ADMINAPI-1448b EF InMemory query/command sweep; V2: 458 passed, 10 skipped; V3: 448 passed; V1 excluded |
 
 ## Feature inventory
 
@@ -86,10 +87,10 @@ Source: `artifacts\Coverage Report\index.html`
 
 | Metric | Before V1 exclusion | After V1 exclusion | Final |
 | --- | ---: | ---: | ---: |
-| Total line coverage | 23% | 38.4% | 38.4% |
-| Total branch coverage | 19.9% | 32.8% | 32.8% |
-| V2 line coverage | 22.2% | 34.7% | 34.7% |
-| V3 line coverage | 32.8% | 39.3% | 39.3% |
+| Total line coverage | 23% | 38.4% | 49.6% |
+| Total branch coverage | 19.9% | 32.8% | 38.4% |
+| V2 line coverage | 22.2% | 34.7% | 47.1% |
+| V3 line coverage | 32.8% | 39.3% | 52.4% |
 
 ## Work batch order
 
@@ -99,4 +100,5 @@ Source: `artifacts\Coverage Report\index.html`
 | 2 | ClaimSets and ResourceClaims | High uncovered-line count and validation/mapping complexity | Task 6 added targeted V2/V3 validator and mapper unit coverage; DB-heavy handler paths documented as skipped |
 | 3 | ODS/DataStore features | V2/V3 equivalent feature groups with existing partial tests | Task 7 added/reviewed targeted ODS/DataStore unit coverage; V2 ODS targeted tests passed (63 passed, 10 skipped, 0 failed, 73 total) and V3 DataStores targeted tests passed (56 passed, 0 failed, 56 total) |
 | 4 | Vendors, Actions, AuthorizationStrategies, Information, Jobs, Tenants, Profiles, Connect | Remaining first-sweep feature coverage | Task 8 added/reviewed targeted V2/V3 unit coverage; targeted V2 remaining tests passed and targeted V3 remaining tests passed |
-| 5 | Common and infrastructure directly exercised by V2/V3 features | Shared logic needed to support endpoint behavior | Task 9 added existing-behavior coverage for shared tenant resolution (`TenantResolverMiddleware`), V2/V3 claim-set editor enumeration/action helpers, and V3 token-endpoint error middleware preservation paths. Coverage hotspots reviewed from `coveragereport\EdFi.Ods.AdminApi.Common_TenantResolverMiddleware.html`, `coveragereport\EdFi.Ods.AdminApi_Enumeration_2.html`, `coveragereport\EdFi.Ods.AdminApi.V3_Enumeration_2.html`, `coveragereport\EdFi.Ods.AdminApi_Action.html`, `coveragereport\EdFi.Ods.AdminApi.V3_Action.html`, and `coveragereport\EdFi.Ods.AdminApi.V3_V3RequestErrorMiddleware.html`. Targeted tests passed: Common 59/59, V2 infrastructure 137/137, V3 infrastructure 147/147. |
+| 5 | Common and infrastructure directly exercised by V2/V3 features | Shared logic needed to support endpoint behavior | Task 9 added existing-behavior coverage for shared tenant resolution (`TenantResolverMiddleware`), V2/V3 claim-set editor enumeration/action helpers, and V3 token-endpoint error middleware preservation paths. Targeted tests passed: Common 59/59, V2 infrastructure 137/137, V3 infrastructure 147/147. |
+| 6 | V2/V3 Database.Queries and ClaimSetEditor (EF InMemory sweep) | Largest 0% coverage group; EF InMemory tests, no real DB | ADMINAPI-1448b: added ~100 test files covering all V2/V3 UsersContext/SecurityContext queries, ClaimSetEditor, and AddApplicationCommand/EditApplicationCommand. Final V2: 458 passed; V3: 448 passed. Coverage increased from 38.4% → 49.6% total line. |
