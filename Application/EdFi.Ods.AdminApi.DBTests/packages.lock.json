@@ -62,9 +62,9 @@
       },
       "Npgsql": {
         "type": "Direct",
-        "requested": "[10.0.2, )",
-        "resolved": "10.0.2",
-        "contentHash": "q5RfBI+wywJSFUNDE1L4ZbHEHCFTblo8Uf6A6oe4feOUFYiUQXyAf9GBh5qEZpvJaHiEbpBPkQumjEhXCJxdrg==",
+        "requested": "[10.0.3, )",
+        "resolved": "10.0.3",
+        "contentHash": "7nb5YzXuvWWJxB0J8DiyL3we+X4FOctZrt0fIBnucOIaIevFEEwGQVZKtiu9olXdlNAK1eNgqSral6r/jlhI4w==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
         }
@@ -826,7 +826,7 @@
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "Microsoft.Identity.Client": "[4.73.1, )",
           "NJsonSchema": "[11.0.2, )",
-          "Npgsql": "[10.0.2, )",
+          "Npgsql": "[10.0.3, )",
           "OpenIddict.AspNetCore": "[4.10.1, )",
           "OpenIddict.EntityFrameworkCore": "[4.10.1, )",
           "Quartz": "[3.15.1, )",
@@ -849,7 +849,7 @@
           "Microsoft.Extensions.Caching.Memory": "[10.0.8, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "NJsonSchema": "[11.0.2, )",
-          "Npgsql": "[10.0.2, )",
+          "Npgsql": "[10.0.3, )",
           "Quartz": "[3.15.1, )",
           "Swashbuckle.AspNetCore": "[7.1.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )"
@@ -885,7 +885,7 @@
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Newtonsoft.Json": "[13.0.3, )",
-          "Npgsql": "[10.0.2, )",
+          "Npgsql": "[10.0.3, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.1, )",
           "OpenIddict.AspNetCore": "[4.10.1, )",
           "OpenIddict.EntityFrameworkCore": "[4.10.1, )",
@@ -912,7 +912,7 @@
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "Microsoft.Identity.Client": "[4.73.1, )",
           "NJsonSchema": "[11.0.2, )",
-          "Npgsql": "[10.0.2, )",
+          "Npgsql": "[10.0.3, )",
           "OpenIddict.AspNetCore": "[4.10.1, )",
           "OpenIddict.EntityFrameworkCore": "[4.10.1, )",
           "Quartz": "[3.15.1, )",
