@@ -70,7 +70,7 @@
     <PackageVersion Include="System.Drawing.Common" Version="8.0.0" />
     <PackageVersion Include="System.Formats.Asn1" Version="9.0.0" />
     <!-- log4net -->
-    <PackageVersion Include="log4net" Version="3.3.0" />
+    <PackageVersion Include="log4net" Version="3.3.2" />
     <!-- EdFi.Admin.DataAccess and EdFi.Security.DataAccess  -->
     <PackageVersion Include="EdFi.Suite3.Common" Version="7.4.296" />
     <PackageVersion Include="Autofac.Extras.DynamicProxy" Version="7.1.0" />
