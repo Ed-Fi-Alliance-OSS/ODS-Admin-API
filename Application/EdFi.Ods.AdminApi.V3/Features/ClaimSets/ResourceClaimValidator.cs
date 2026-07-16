@@ -10,7 +10,7 @@ namespace EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 
 public static class ResourceClaimValidator
 {
-    private static List<string>? _duplicateResources = [];
+    private const string ReportedDuplicatesKey = "ResourceClaimValidator_ReportedDuplicates";
 
     public static void Validate<T>(Lookup<string, ResourceClaim> dbResourceClaims, List<string> dbActions,
         List<string?> dbAuthStrategies, ClaimSetResourceClaimModel resourceClaim, List<ClaimSetResourceClaimModel> existingResourceClaims,
@@ -24,7 +24,13 @@ public static class ResourceClaimValidator
 
         ValidateCRUD(resourceClaim.Actions, dbActions, context, propertyName);
 
-        var resources = dbResourceClaims[resourceClaim.Name!.ToLower()].ToList();
+        if (string.IsNullOrEmpty(resourceClaim.Name))
+        {
+            context.AddFailure(propertyName, "Resource claim name can not be empty.");
+            return;
+        }
+
+        var resources = dbResourceClaims[resourceClaim.Name.ToLower()].ToList();
         ValidateIfExist(context, propertyName, resources);
         ValidateAuthStrategies(dbAuthStrategies, resourceClaim, context, propertyName);
         ValidateAuthStrategiesOverride(dbAuthStrategies, resourceClaim, context, propertyName);
@@ -55,13 +61,23 @@ public static class ResourceClaimValidator
     {
         if (existingResourceClaims.Count(x => x.Name == resourceClaim.Name) > 1)
         {
-            if (_duplicateResources == null || resourceClaim.Name == null ||
-                _duplicateResources.Contains(resourceClaim.Name))
+            if (resourceClaim.Name == null)
             {
                 return;
             }
 
-            _duplicateResources.Add(resourceClaim.Name);
+            if (!context.RootContextData.TryGetValue(ReportedDuplicatesKey, out var reportedValue) ||
+                reportedValue is not HashSet<string> reportedDuplicates)
+            {
+                reportedDuplicates = new HashSet<string>();
+                context.RootContextData[ReportedDuplicatesKey] = reportedDuplicates;
+            }
+
+            if (!reportedDuplicates.Add(resourceClaim.Name))
+            {
+                return;
+            }
+
             context.AddFailure(propertyName, "Only unique resource claims can be added. The following is a duplicate resource: '{ResourceClaimName}'.");
         }
     }

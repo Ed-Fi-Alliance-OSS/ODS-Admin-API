@@ -5,7 +5,6 @@
 
 using EdFi.Ods.AdminApi.V3.Features.Applications;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json.Serialization;
 
