@@ -28,7 +28,7 @@ script:post-response {
   
   test("GET Claimsets: Response result contains requested claimset", function () {
       const results = res.getBody();
-      expect(results[0].name).to.eql(bru.getEnvVar("FILTERCLAIMSETSNAME"));
+      expect(results[0].claimSetName).to.eql(bru.getEnvVar("FILTERCLAIMSETSNAME"));
   });
 }
 

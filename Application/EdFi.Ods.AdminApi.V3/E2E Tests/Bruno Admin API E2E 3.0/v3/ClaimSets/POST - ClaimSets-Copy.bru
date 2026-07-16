@@ -145,8 +145,8 @@ script:post-response {
       console.log("✅ ClaimSets Returned:", copiedClaimSetResponse.data.id);
       test("POST ClaimSets: Response result claimset has expected name and resource claims", function () {
        expect(copiedClaimSetResponse.data).to.have.property("id");
-       expect(copiedClaimSetResponse.data).to.have.property("name");
-       expect(copiedClaimSetResponse.data.name).contains("CopiedClaimSet-from");
+       expect(copiedClaimSetResponse.data).to.have.property("claimSetName");
+       expect(copiedClaimSetResponse.data.claimSetName).contains("CopiedClaimSet-from");
        expect(copiedClaimSetResponse.data.resourceClaims).to.not.be.empty;
        const resourceclaimexists = copiedClaimSetResponse.data.resourceClaims.some(r => r.name === "educationStandards");
        expect(resourceclaimexists).to.equal(true);

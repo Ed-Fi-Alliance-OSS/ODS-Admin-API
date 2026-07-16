@@ -90,14 +90,13 @@ public class ImportClaimSet : IFeature
 
             RuleFor(m => m).Custom((claimSet, context) =>
             {
-                var resourceClaimValidator = new ResourceClaimValidator();
                 var actions = getAllActionsQuery.Execute().Select(x => x.ActionName).ToList();
 
                 if (claimSet.ResourceClaims != null && claimSet.ResourceClaims.Any())
                 {
                     foreach (var resourceClaim in claimSet.ResourceClaims)
                     {
-                        resourceClaimValidator.Validate(resourceClaims, actions, authStrategyNames,
+                        ResourceClaimValidator.Validate(resourceClaims, actions, authStrategyNames,
                             resourceClaim, claimSet.ResourceClaims.ToList(), context, claimSet.Name);
                     }
                 }

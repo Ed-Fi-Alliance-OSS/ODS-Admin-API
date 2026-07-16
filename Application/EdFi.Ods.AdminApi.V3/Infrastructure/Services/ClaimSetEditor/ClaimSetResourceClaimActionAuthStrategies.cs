@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using Swashbuckle.AspNetCore.Annotations;
+using System.Text.Json.Serialization;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 
@@ -17,6 +18,7 @@ public interface IClaimSetResourceClaimActionAuthStrategies
 [SwaggerSchema(Title = "ClaimSetResourceClaimActionAuthorizationStrategies")]
 public class ClaimSetResourceClaimActionAuthStrategies : IClaimSetResourceClaimActionAuthStrategies
 {
+    [JsonIgnore]
     public int? ActionId { get; set; }
     public string? ActionName { get; set; }
     public IEnumerable<AuthorizationStrategy>? AuthorizationStrategies { get; set; }

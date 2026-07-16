@@ -8,11 +8,11 @@ using FluentValidation;
 
 namespace EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 
-public class ResourceClaimValidator
+public static class ResourceClaimValidator
 {
     private static List<string>? _duplicateResources = [];
 
-    public void Validate<T>(Lookup<string, ResourceClaim> dbResourceClaims, List<string> dbActions,
+    public static void Validate<T>(Lookup<string, ResourceClaim> dbResourceClaims, List<string> dbActions,
         List<string?> dbAuthStrategies, ClaimSetResourceClaimModel resourceClaim, List<ClaimSetResourceClaimModel> existingResourceClaims,
         ValidationContext<T> context, string? claimSetName)
     {
@@ -28,7 +28,7 @@ public class ResourceClaimValidator
         ValidateIfExist(context, propertyName, resources);
         ValidateAuthStrategies(dbAuthStrategies, resourceClaim, context, propertyName);
         ValidateAuthStrategiesOverride(dbAuthStrategies, resourceClaim, context, propertyName);
-        ValidateChildren(dbResourceClaims, dbActions, dbAuthStrategies, resourceClaim, context, claimSetName, propertyName, resources);
+        ValidateParentClaimName(resourceClaim, context, propertyName, resources);
     }
 
     public static void Validate<T>(Lookup<int, ResourceClaim> dbResourceClaims, List<string> dbActions, IResourceClaimOnClaimSetRequest editResourceClaimOnClaimSetRequest,
@@ -66,33 +66,26 @@ public class ResourceClaimValidator
         }
     }
 
-    private void ValidateChildren<T>(Lookup<string, ResourceClaim> dbResourceClaims, List<string> dbActions,
-        List<string?> dbAuthStrategies, ClaimSetResourceClaimModel resourceClaim,
-        ValidationContext<T> context, string? claimSetName, string propertyName, List<ResourceClaim> resources)
+    private static void ValidateParentClaimName<T>(ClaimSetResourceClaimModel resourceClaim,
+        ValidationContext<T> context, string propertyName, List<ResourceClaim> resources)
     {
-        if (resourceClaim.Children.Any())
+        if (resourceClaim.ParentClaimName == null)
         {
-            foreach (var child in resourceClaim.Children)
-            {
-                var childResources = dbResourceClaims[child.Name!.ToLower()].ToList();
-                if (childResources.Any())
-                {
-                    foreach (var childResource in childResources)
-                    {
-                        context.MessageFormatter.AppendArgument("ChildResource", childResource.Name);
-                        if (childResource.ParentId == 0)
-                        {
-                            context.AddFailure(propertyName, "'{ChildResource}' can not be added as a child resource.");
-                        }
+            return;
+        }
 
-                        else if (!resources.Where(x => x is not null).Select(x => x.Id).Contains(childResource.ParentId))
-                        {
-                            context.MessageFormatter.AppendArgument("CorrectParentResource", childResource.ParentName);
-                            context.AddFailure(propertyName, "Child resource: '{ChildResource}' added to the wrong parent resource. Correct parent resource is: '{CorrectParentResource}'.");
-                        }
-                    }
-                }
-                Validate(dbResourceClaims, dbActions, dbAuthStrategies, child, resourceClaim.Children, context, claimSetName);
+        foreach (var resource in resources)
+        {
+            context.MessageFormatter.AppendArgument("ChildResource", resource.Name);
+
+            if (resource.ParentClaimName == null)
+            {
+                context.AddFailure(propertyName, "'{ChildResource}' can not be added as a child resource.");
+            }
+            else if (!resource.ParentClaimName.Equals(resourceClaim.ParentClaimName, StringComparison.OrdinalIgnoreCase))
+            {
+                context.MessageFormatter.AppendArgument("CorrectParentResource", resource.ParentName);
+                context.AddFailure(propertyName, "Child resource: '{ChildResource}' added to the wrong parent resource. Correct parent resource is: '{CorrectParentResource}'.");
             }
         }
     }
@@ -100,9 +93,9 @@ public class ResourceClaimValidator
     private static void ValidateAuthStrategiesOverride<T>(List<string?> dbAuthStrategies,
         ClaimSetResourceClaimModel resourceClaim, ValidationContext<T> context, string propertyName)
     {
-        if (resourceClaim.AuthorizationStrategyOverridesForCRUD != null && resourceClaim.AuthorizationStrategyOverridesForCRUD.Any())
+        if (resourceClaim.AuthorizationStrategyOverrides != null && resourceClaim.AuthorizationStrategyOverrides.Any())
         {
-            foreach (var authStrategyOverrideWithAction in resourceClaim.AuthorizationStrategyOverridesForCRUD)
+            foreach (var authStrategyOverrideWithAction in resourceClaim.AuthorizationStrategyOverrides)
             {
                 if (authStrategyOverrideWithAction?.AuthorizationStrategies != null)
                 {
@@ -122,9 +115,9 @@ public class ResourceClaimValidator
     private static void ValidateAuthStrategies<T>(List<string?> dbAuthStrategies,
         ClaimSetResourceClaimModel resourceClaim, ValidationContext<T> context, string propertyName)
     {
-        if (resourceClaim.DefaultAuthorizationStrategiesForCRUD != null && resourceClaim.DefaultAuthorizationStrategiesForCRUD.Any())
+        if (resourceClaim.DefaultAuthorizationStrategies != null && resourceClaim.DefaultAuthorizationStrategies.Any())
         {
-            foreach (var defaultASWithAction in resourceClaim.DefaultAuthorizationStrategiesForCRUD)
+            foreach (var defaultASWithAction in resourceClaim.DefaultAuthorizationStrategies)
             {
                 if (defaultASWithAction?.AuthorizationStrategies == null)
                 {

@@ -9,6 +9,16 @@ using SecurityAuthorizationStrategy = EdFi.Security.DataAccess.Models.Authorizat
 
 namespace EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 
+/// <summary>
+/// The only translation seam between the internal, nested ClaimSetEditor resource-claim tree
+/// (<see cref="ResourceClaim"/>, used by GetResourcesByClaimSetIdQuery, AuthStrategyResolver,
+/// AddOrEditResourcesOnClaimSetCommand, and the per-node editing endpoints EditAuthStrategy /
+/// EditResourceClaimActions / DeleteResourceClaim) and the public, flat v3
+/// <see cref="ClaimSetResourceClaimModel"/> shape (claimName/parentClaimName based, per the
+/// Claim Set Export/Import API Design doc). This is "Approach A": the internal pipeline is left
+/// nested/tree-shaped on purpose (it's shared with unrelated editing endpoints), and all
+/// flattening/unflattening happens only here.
+/// </summary>
 public static class ClaimSetMapper
 {
     public static ClaimSetModel ToModel(ClaimSet source)
@@ -52,34 +62,55 @@ public static class ClaimSetMapper
         return source.Select(ToSimpleApplicationModel).ToList();
     }
 
-    public static ClaimSetResourceClaimModel ToClaimSetResourceClaimModel(ResourceClaim source)
-    {
-        return new ClaimSetResourceClaimModel
-        {
-            Id = source.Id,
-            Name = source.Name,
-            Actions = source.Actions,
-            DefaultAuthorizationStrategiesForCRUD = source.DefaultAuthorizationStrategiesForCRUD,
-            AuthorizationStrategyOverridesForCRUD = source.AuthorizationStrategyOverridesForCRUD,
-            Children = ToClaimSetResourceClaimModelList(source.Children)
-        };
-    }
-
+    /// <summary>
+    /// Flattens the internal nested resource-claim tree into the public flat list, recording
+    /// each node's parent's ClaimName as its parentClaimName (null for roots).
+    /// </summary>
     public static List<ClaimSetResourceClaimModel> ToClaimSetResourceClaimModelList(IEnumerable<ResourceClaim> source)
     {
-        return source.Select(ToClaimSetResourceClaimModel).ToList();
+        var flatList = new List<ClaimSetResourceClaimModel>();
+        foreach (var resourceClaim in source)
+        {
+            FlattenResourceClaim(resourceClaim, null, flatList);
+        }
+        return flatList;
     }
 
+    private static void FlattenResourceClaim(ResourceClaim source, string? parentClaimName, List<ClaimSetResourceClaimModel> flatList)
+    {
+        flatList.Add(new ClaimSetResourceClaimModel
+        {
+            Name = source.Name,
+            ClaimName = source.ClaimName,
+            ParentClaimName = parentClaimName,
+            Actions = source.Actions,
+            DefaultAuthorizationStrategies = source.DefaultAuthorizationStrategiesForCRUD,
+            AuthorizationStrategyOverrides = source.AuthorizationStrategyOverridesForCRUD
+        });
+
+        foreach (var child in source.Children)
+        {
+            FlattenResourceClaim(child, source.ClaimName, flatList);
+        }
+    }
+
+    /// <summary>
+    /// Maps one inbound flat DTO entry to an internal ResourceClaim. Children is always left
+    /// empty: AddOrEditResourcesOnClaimSetCommand.Execute already flattens
+    /// (resources.SelectMany(x => x.Children)) and matches purely by Name, so a flat 1:1
+    /// mapping is sufficient and no tree reconstruction is required.
+    /// </summary>
     public static ResourceClaim ToResourceClaim(ClaimSetResourceClaimModel source)
     {
         return new ResourceClaim
         {
-            Id = source.Id,
             Name = source.Name,
+            ClaimName = source.ClaimName,
+            ParentClaimName = source.ParentClaimName,
             Actions = source.Actions,
-            DefaultAuthorizationStrategiesForCRUD = source.DefaultAuthorizationStrategiesForCRUD,
-            AuthorizationStrategyOverridesForCRUD = source.AuthorizationStrategyOverridesForCRUD,
-            Children = ToResourceClaimList(source.Children)
+            DefaultAuthorizationStrategiesForCRUD = source.DefaultAuthorizationStrategies,
+            AuthorizationStrategyOverridesForCRUD = source.AuthorizationStrategyOverrides,
+            Children = new List<ResourceClaim>()
         };
     }
 
@@ -129,5 +160,3 @@ public static class ClaimSetMapper
         return source.Select(item => ToAuthorizationStrategy(item, isInheritedFromParent)).ToList();
     }
 }
-
-

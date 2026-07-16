@@ -50,7 +50,7 @@ public class ClaimSetMapperTests
     }
 
     [Test]
-    public void ToResourceClaim_MapsNestedResourceClaimModelValues()
+    public void ToResourceClaim_MapsFlatResourceClaimModelValues()
     {
         var actions = new List<ResourceClaimAction>
         {
@@ -58,22 +58,65 @@ public class ClaimSetMapperTests
         };
         var source = new ClaimSetResourceClaimModel
         {
-            Id = 20,
-            Name = "Parent",
+            Name = "candidatePreparation",
+            ClaimName = "http://ed-fi.org/identity/claims/candidatePreparation",
+            ParentClaimName = "http://ed-fi.org/identity/claims/domains/educationStandards",
             Actions = actions,
-            Children = new List<ClaimSetResourceClaimModel>
-            {
-                new() { Id = 21, Name = "Child" }
-            }
+            DefaultAuthorizationStrategies = new List<ClaimSetResourceClaimActionAuthStrategies>(),
+            AuthorizationStrategyOverrides = new List<ClaimSetResourceClaimActionAuthStrategies>()
         };
 
         var model = ClaimSetMapper.ToResourceClaim(source);
 
-        model.Id.ShouldBe(20);
-        model.Name.ShouldBe("Parent");
+        model.Name.ShouldBe(source.Name);
+        model.ClaimName.ShouldBe(source.ClaimName);
+        model.ParentClaimName.ShouldBe(source.ParentClaimName);
         model.Actions.ShouldBeSameAs(actions);
-        model.Children.Single().Id.ShouldBe(21);
-        model.Children.Single().Name.ShouldBe("Child");
+        model.Children.ShouldBeEmpty();
+    }
+
+    [Test]
+    public void ToResourceClaimList_MapsEachEntryIndependently()
+    {
+        var source = new List<ClaimSetResourceClaimModel>
+        {
+            new() { Name = "educationStandards", ClaimName = "http://ed-fi.org/identity/claims/domains/educationStandards", ParentClaimName = null },
+            new() { Name = "candidatePreparation", ClaimName = "http://ed-fi.org/identity/claims/candidatePreparation", ParentClaimName = "http://ed-fi.org/identity/claims/domains/educationStandards" }
+        };
+
+        var result = ClaimSetMapper.ToResourceClaimList(source);
+
+        result.Count.ShouldBe(2);
+        result[0].Children.ShouldBeEmpty();
+        result[1].Children.ShouldBeEmpty();
+        result[1].ParentClaimName.ShouldBe(source[1].ParentClaimName);
+    }
+
+    [Test]
+    public void ToClaimSetResourceClaimModelList_FlattensNestedTreeWithParentClaimName()
+    {
+        var child = new ResourceClaim
+        {
+            Name = "candidatePreparation",
+            ClaimName = "http://ed-fi.org/identity/claims/candidatePreparation",
+            Actions = new List<ResourceClaimAction>(),
+            Children = new List<ResourceClaim>()
+        };
+        var parent = new ResourceClaim
+        {
+            Name = "educationStandards",
+            ClaimName = "http://ed-fi.org/identity/claims/domains/educationStandards",
+            Actions = new List<ResourceClaimAction>(),
+            Children = new List<ResourceClaim> { child }
+        };
+
+        var result = ClaimSetMapper.ToClaimSetResourceClaimModelList(new List<ResourceClaim> { parent });
+
+        result.Count.ShouldBe(2);
+        result[0].Name.ShouldBe("educationStandards");
+        result[0].ParentClaimName.ShouldBeNull();
+        result[1].Name.ShouldBe("candidatePreparation");
+        result[1].ParentClaimName.ShouldBe("http://ed-fi.org/identity/claims/domains/educationStandards");
     }
 
     [Test]

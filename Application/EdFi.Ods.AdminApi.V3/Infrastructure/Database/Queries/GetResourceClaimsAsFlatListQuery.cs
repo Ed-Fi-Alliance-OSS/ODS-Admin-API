@@ -30,7 +30,9 @@ public class GetResourceClaimsAsFlatListQuery : IGetResourceClaimsAsFlatListQuer
                 Id = x.ResourceClaimId,
                 Name = x.ResourceName,
                 ParentId = x.ParentResourceClaimId ?? 0,
-                ParentName = x.ParentResourceClaim.ResourceName
+                ParentName = x.ParentResourceClaim.ResourceName,
+                ClaimName = x.ClaimName,
+                ParentClaimName = x.ParentResourceClaim.ClaimName
             })
             .Distinct()
             .OrderBy(x => x.Name)
