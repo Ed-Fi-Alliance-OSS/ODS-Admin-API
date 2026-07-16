@@ -75,6 +75,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor
             {
                 Id = x.Key.ResourceClaimId,
                 Name = x.Key.ResourceName,
+                ClaimName = x.Key.ClaimName,
                 Actions = x.Where(x => x.Action != null).Select(x =>
                              new ResourceClaimAction { Name = x.Action.ActionName, Enabled = true}).ToList(),
                 IsParent = true,
@@ -298,6 +299,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor
                     Id = x.Key.ResourceClaimId,
                     ParentId = x.Key.ParentResourceClaimId ?? 0,
                     Name = x.Key.ResourceName,
+                    ClaimName = x.Key.ClaimName,
                     Actions = x.Where(x => x.Action != null).Select(x =>
                              new ResourceClaimAction { Name = x.Action.ActionName, Enabled = true }).ToList(),
                     IsParent = false,

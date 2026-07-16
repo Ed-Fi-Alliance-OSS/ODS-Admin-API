@@ -62,7 +62,7 @@ script:post-response {
     if (claimSetResponse.status === 200 && claimSetResponse.data) {
       console.log("✅ ClaimSets Returned:", claimSetResponse.data.id);
       test("PUT ClaimSets: Response result includes updated claimset", function () {
-          expect(claimSetResponse.data.name).to.equal("UpdatedTestClaimSet");
+          expect(claimSetResponse.data.claimSetName).to.equal("UpdatedTestClaimSet");
           expect(claimSetResponse.data._isSystemReserved).to.equal(false);
           expect(claimSetResponse.data._applications).to.be.empty;
           expect(claimSetResponse.data.resourceClaims).to.not.be.empty;

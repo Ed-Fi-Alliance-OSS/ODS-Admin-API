@@ -33,6 +33,7 @@ public class GetResourcesByClaimSetIdQueryTests : SecurityDataTestBase
             results.Length.ShouldBe(testResourceClaimsForId.Length);
             results.Select(x => x.Name).ShouldBe(testResourceClaimsForId.Select(x => x.ResourceName), true);
             results.Select(x => x.Id).ShouldBe(testResourceClaimsForId.Select(x => x.ResourceClaimId), true);
+            results.Select(x => x.ClaimName).ShouldBe(testResourceClaimsForId.Select(x => x.ClaimName), true);
             results.All(x => x.Actions.All(x => x.Name.Equals("Create") && x.Enabled)).ShouldBe(true);
         }
     }
@@ -86,6 +87,7 @@ public class GetResourcesByClaimSetIdQueryTests : SecurityDataTestBase
                 var parentResult = results.First(x => x.Id == testParentResourceClaim.ResourceClaimId);
                 parentResult.Children.Select(x => x.Name).ShouldBe(testChildren.Select(x => x.ResourceName), true);
                 parentResult.Children.Select(x => x.Id).ShouldBe(testChildren.Select(x => x.ResourceClaimId), true);
+                parentResult.Children.Select(x => x.ClaimName).ShouldBe(testChildren.Select(x => x.ClaimName), true);
                 parentResult.Children.All(x => x.Actions.All(x => x.Name.Equals("Create") && x.Enabled)).ShouldBe(true);
             }
 

@@ -22,15 +22,15 @@ script:post-response {
       const claimSetId = bru.getVar("CreatedClaimSetId");
       
       expect(result.id).to.equal(parseInt(claimSetId));
-      expect(result.name).to.equal(`TestClaimSet-${bru.getVar("ClaimSetGUID")}`);
+      expect(result.claimSetName).to.equal(`TestClaimSet-${bru.getVar("ClaimSetGUID")}`);
       expect(result._isSystemReserved).to.equal(false);
       expect(result._applications).to.be.empty;
       expect(result.resourceClaims).to.not.be.empty;
-  
+
       const educationOrganizationsResourceClaim = result.resourceClaims.find(r => r.name === "educationOrganizations")
       expect(educationOrganizationsResourceClaim).to.be.an("object", "The educationOrganizations resource claim was not found.")
-      expect(educationOrganizationsResourceClaim.authorizationStrategyOverridesForCRUD).to.not.be.empty;
-      const overrideAuthCreate = educationOrganizationsResourceClaim.authorizationStrategyOverridesForCRUD.find(r => r.actionName === "Create")
+      expect(educationOrganizationsResourceClaim.authorizationStrategyOverrides).to.not.be.empty;
+      const overrideAuthCreate = educationOrganizationsResourceClaim.authorizationStrategyOverrides.find(r => r.actionName === "Create")
       expect(overrideAuthCreate).to.be.an("object", "The Create authorization override was not found.")
       //validates that default wasn't added
       expect(overrideAuthCreate.authorizationStrategies.length).to.equal(1);
@@ -52,6 +52,12 @@ script:post-response {
               "name": {
                 "type": "string"
               },
+              "claimName": {
+                "type": ["string", "null"]
+              },
+              "parentClaimName": {
+                "type": ["string", "null"]
+              },
                "actions": {
                "type": "array",
                "items": [
@@ -64,18 +70,15 @@ script:post-response {
                       "enabled": {
                         "type": "boolean"
                       }
-                  } 
+                  }
                   } ]
               },
-              "_defaultAuthorizationStrategiesForCRUD": {
+              "_defaultAuthorizationStrategies": {
                 "type": "array",
                 "items": [
                   {
                     "type": "object",
                     "properties": {
-                      "actionId": {
-                        "type": "integer"
-                      },
                       "actionName": {
                         "type": "string"
                       },
@@ -85,33 +88,23 @@ script:post-response {
                             {
                               "type": "object",
                               "properties": {
-                                  "authStrategyId": {
-                                  "type": "integer"
-                                  },
                                   "authStrategyName": {
                                   "type": "string"
-                                  },
-                                  "isInheritedFromParent": {
-                                  "type": "boolean"
-                                  }                      
-  
+                                  }
                               }
                             }
                         ]
-                      }                    
+                      }
                     }
                   }
                 ]
               },
-              "authorizationStrategyOverridesForCRUD": {
+              "authorizationStrategyOverrides": {
                 "type": "array",
                  "items": [
                   {
                     "type": "object",
                     "properties": {
-                      "actionId": {
-                        "type": "integer"
-                      },
                       "actionName": {
                         "type": "string"
                       },
@@ -121,34 +114,23 @@ script:post-response {
                             {
                               "type": "object",
                               "properties": {
-                                  "authStrategyId": {
-                                  "type": "integer"
-                                  },
                                   "authStrategyName": {
                                   "type": "string"
-                                  },
-                                  "isInheritedFromParent": {
-                                  "type": "boolean"
                                   }
                               }
                             }
                         ]
-                      }                    
+                      }
                     }
                   }
                 ]
-              },
-              "children": {
-                "type": "array",
-                "items": {}
               }
             },
             "required": [
               "name",
               "actions",
-              "_defaultAuthorizationStrategiesForCRUD",
-              "authorizationStrategyOverridesForCRUD",
-              "children"
+              "_defaultAuthorizationStrategies",
+              "authorizationStrategyOverrides"
             ]
           }
         ]
@@ -156,7 +138,7 @@ script:post-response {
       "id": {
         "type": "integer"
       },
-      "name": {
+      "claimSetName": {
         "type": "string"
       },
       "_isSystemReserved": {
@@ -170,7 +152,7 @@ script:post-response {
     "required": [
       "resourceClaims",
       "id",
-      "name",
+      "claimSetName",
       "_isSystemReserved",
       "_applications"
     ]

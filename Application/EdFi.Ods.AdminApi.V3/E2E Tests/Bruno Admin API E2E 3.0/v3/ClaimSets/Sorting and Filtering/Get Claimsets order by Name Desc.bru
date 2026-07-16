@@ -50,7 +50,7 @@ script:post-response {
           return clone; 
       }
       
-      let expectedSortedOrder = sortByProperty(results, 'name', -1);
+      let expectedSortedOrder = sortByProperty(results, 'claimSetName', -1);
       
       expect(results).to.eql(expectedSortedOrder);
   });
