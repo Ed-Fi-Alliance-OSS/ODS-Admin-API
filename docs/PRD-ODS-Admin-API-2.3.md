@@ -221,7 +221,7 @@ External systems and dependencies:
 - **FR-VERSION-2** The application SHALL reject requests whose version prefix conflicts with the configured API mode.
 - **FR-VERSION-3** The application SHALL expose v2 functionality under `/v2/*` routes when running in v2 mode.
 - **FR-VERSION-4** The application SHALL expose an anonymous `GET /` endpoint that returns version and build metadata for the active API mode ("Discovery endpoint").
-- **FR-VERSION-5** The application SHOULD generate Swagger/OpenAPI descriptions for all configured API versions when Swagger is enabled.
+- **FR-VERSION-5** The application SHALL generate Swagger/OpenAPI descriptions for all configured API versions when Swagger is enabled.
 
 ### 3.2 Authentication, registration, and tokens
 
@@ -233,7 +233,7 @@ External systems and dependencies:
 - **FR-AUTH-6** Access tokens SHALL use the configured issuer URL and require the `edfi_admin_api/full_access` scope.
 - **FR-AUTH-7** Protected endpoints SHALL require authenticated bearer tokens with the implemented full-access scope unless explicitly marked anonymous.
 - **FR-AUTH-8** Production deployments SHALL provide a signing key when not running in development mode.
-- **FR-AUTH-9** The application SHOULD continue supporting self-contained authentication for backwards compatibility.
+- **FR-AUTH-9** The application SHALL continue supporting self-contained authentication for backwards compatibility.
 - **FR-AUTH-10** The product MAY use an external OIDC provider for Admin App scenarios, but the authorization model still has one scope.
 
 > [!WARNING]
@@ -334,8 +334,8 @@ External systems and dependencies:
 - **FR-QUERY-1** Collection endpoints SHALL support `offset` and `limit` query parameters where documented.
 - **FR-QUERY-2** Default offset and limit SHALL be configurable.
 - **FR-QUERY-3** Collection endpoints SHALL support `orderBy` and `direction` parameters where documented.
-- **FR-QUERY-4** Direction values SHOULD support ascending and descending semantics as documented in the OpenAPI markdown.
-- **FR-QUERY-5** Resource-specific filter parameters SHOULD match documented model fields such as ID, name, company, namespace prefix, claim set name, ODS instance name, and other entity-specific fields.
+- **FR-QUERY-4** Direction values SHALL support ascending and descending semantics as documented in the OpenAPI markdown.
+- **FR-QUERY-5** Resource-specific filter parameters SHALL match documented model fields such as ID, name, company, namespace prefix, claim set name, ODS instance name, and other entity-specific fields.
 
 ### 3.11 Error handling and responses
 
@@ -343,7 +343,7 @@ External systems and dependencies:
 - **FR-ERROR-2** Missing resources SHALL return HTTP 404 where the feature uses not-found exception behavior.
 - **FR-ERROR-3** Unauthorized requests SHALL return HTTP 401.
 - **FR-ERROR-4** Authenticated but unauthorized requests SHALL return HTTP 403.
-- **FR-ERROR-5** Business conflicts SHOULD return HTTP 409 where endpoint metadata and command behavior support conflict responses.
+- **FR-ERROR-5** Business conflicts SHALL return HTTP 409 where endpoint metadata and command behavior support conflict responses.
 - **FR-ERROR-6** Unhandled server failures SHALL return HTTP 500 with a structured error response.
 - **FR-ERROR-7** Invalid token scopes SHALL return OAuth-compatible invalid-scope error details.
 - **FR-ERROR-8** Error responses and logs SHALL include enough trace information to correlate a request with server logs.
@@ -354,9 +354,9 @@ External systems and dependencies:
 
 - **NFR-COMPAT-1** The 2.x line SHALL support ODS/API 7.0 and greater as the primary compatibility target.
 - **NFR-COMPAT-2** The repository SHALL retain v1 compatibility code for older ODS/API administration scenarios where still supported.
-- **NFR-COMPAT-3** Migration guidance SHOULD support Docker and IIS installation patterns.
+- **NFR-COMPAT-3** Migration guidance SHALL support Docker and IIS installation patterns.
 - **NFR-COMPAT-4** Build automation SHALL accept an API version supplied by release automation.
-- **NFR-COMPAT-5** The API SHOULD preserve self-contained authentication for existing deployments while allowing external OIDC design evolution.
+- **NFR-COMPAT-5** The API SHALL preserve self-contained authentication for existing deployments while allowing external OIDC design evolution.
 
 ### 4.2 Security and Privacy
 
@@ -366,9 +366,8 @@ External systems and dependencies:
 - **NFR-SEC-4** Client secrets SHALL meet configured complexity and length requirements at registration.
 - **NFR-SEC-5** Credential reset SHALL generate new secret material instead of reusing previous secrets.
 - **NFR-SEC-6** Tenant connection strings and encryption keys SHALL be treated as sensitive configuration.
-- **NFR-SEC-7** Swagger SHOULD be disabled in production unless intentionally enabled and protected by deployment controls.
-- **NFR-SEC-8** Registration SHOULD be disabled after bootstrap in deployments that do not require open client self-registration.
-- **NFR-SEC-9** Rate limiting SHOULD protect high-risk anonymous endpoints such as registration.
+- **NFR-SEC-7** Swagger SHALL be disabled in production unless intentionally enabled and protected by deployment controls.
+- **NFR-SEC-8** Registration SHALL be disabled after bootstrap in deployments that do not require open client self-registration.
 
 ### 4.3 Reliability and operations
 
@@ -385,22 +384,21 @@ External systems and dependencies:
 - **NFR-OBS-1** The application SHALL use log4net for application logging.
 - **NFR-OBS-2** Request logging SHALL run before routing, authentication, and endpoint execution.
 - **NFR-OBS-3** Logs SHALL include request path and trace identifier.
-- **NFR-OBS-4** Error logs SHOULD include structured error context.
-- **NFR-OBS-5** The application SHOULD support external log collection through deployment-specific log4net configuration.
-- **NFR-OBS-6** The product does not currently show explicit APM or distributed tracing integration in source; this SHOULD remain an open operational consideration.
+- **NFR-OBS-4** Error logs SHALL include structured error context.
+- **NFR-OBS-5** The application SHALL support external log collection through deployment-specific log4net configuration.
 
 ### 4.5 Performance and Scalability
 
 - **NFR-PERF-1** Collection endpoints SHALL support pagination to avoid unbounded result sets.
-- **NFR-PERF-2** Query behavior SHOULD support sorting and filtering for common administrative lookup scenarios.
-- **NFR-PERF-3** Tenant configuration SHOULD be cached where supported by tenant service behavior.
+- **NFR-PERF-2** Query behavior SHALL support sorting and filtering for common administrative lookup scenarios.
+- **NFR-PERF-3** Tenant configuration SHALL be cached where supported by tenant service behavior.
 
 ### 4.6 Accessibility and Usability
 
 - **NFR-UX-1** The REST API SHALL provide Swagger/OpenAPI metadata when Swagger is enabled.
 - **NFR-UX-2** Swagger SHALL include OAuth client-credentials configuration for interactive testing.
 - **NFR-UX-3** Error responses SHALL be actionable for invalid requests, missing entities, malformed JSON, and authentication failures.
-- **NFR-UX-4** HTTP example files SHOULD remain aligned with current endpoints and authentication behavior.
+- **NFR-UX-4** HTTP example files SHALL remain aligned with current endpoints and authentication behavior.
 
 ### 4.7 Software Development Lifecycle
 
