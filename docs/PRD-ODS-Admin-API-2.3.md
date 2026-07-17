@@ -234,17 +234,7 @@ External systems and dependencies:
 - **FR-AUTH-7** Protected endpoints SHALL require authenticated bearer tokens with the implemented full-access scope unless explicitly marked anonymous.
 - **FR-AUTH-8** Production deployments SHALL provide a signing key when not running in development mode.
 - **FR-AUTH-9** The application SHALL continue supporting self-contained authentication for backwards compatibility.
-- **FR-AUTH-10** The product MAY use an external OIDC provider for Admin App scenarios, but the authorization model still has one scope.
-
-> [!WARNING]
-> SF TODOs before merging this pull request:
->
-> - confirm if Keycloak can be used with ODS Admin API outside of the Admin App context.
-> - remove "admin console" design docs _if_ they are not relevant to the released Admin App v4.
-> - CONFLICT-1: `docs/design/auth/README.md` describes new `tenant_access` and `worker` scopes for 2.3+, while source defines only ``EdFi_Admin`_api/full_access`.
-> - CONFLICT-2: Admin Console endpoint artifacts appear in generated or design documentation, but they are out of scope for this release and should be treated as leftover artifacts rather than functional requirements.
-> - CONFLICT-3: Some generated API documentation refers to scope `api` in warning blocks, while implemented security constants define ``EdFi_Admin`_api/full_access`.
-> - CONFLICT-4: The OpenAPI documentation is labeled 2.3.0-pre or 2.3.0, while the user identified the branch as 2.3.1.
+- **FR-AUTH-10** The product MAY allow use of an external OIDC provider, but the authorization model still has one scope.
 
 ### 3.3 Vendor Management
 
@@ -319,12 +309,10 @@ External systems and dependencies:
 - **FR-TENANT-3** In multi-tenant v2 mode, the API SHALL resolve tenant context from the `tenant` request header.
 - **FR-TENANT-4** Tenant IDs SHALL contain only alphanumeric characters and hyphens and SHALL be limited to the implemented maximum length.
 - **FR-TENANT-5** The API SHALL reject write requests that require a tenant when the tenant header is missing in multi-tenant mode.
-- **FR-TENANT-6** Swagger requests MAY use `SwaggerSettings:DefaultTenant` when multi-tenancy is enabled and a tenant header is absent.
-- **FR-TENANT-7** The tenant service SHALL return configured tenants when multi-tenancy is enabled.
-- **FR-TENANT-8** The tenant service SHALL return a default tenant when multi-tenancy is disabled.
-- **FR-TENANT-9** Tenant configuration SHALL include separate `EdFi_Admin` and `EdFi_Security` connection strings per tenant.
-- **FR-TENANT-10** Tenant connection strings SHALL NOT be exposed as plain API response details in tenant listing behavior.
-- **FR-TENANT-11** In multi-tenant mode, all client credentials SHALL be able to access all tenants.
+- **FR-TENANT-6** The tenant service SHALL return configured tenants when multi-tenancy is enabled.
+- **FR-TENANT-7** Tenant configuration SHALL include separate `EdFi_Admin` and `EdFi_Security` connection strings per tenant.
+- **FR-TENANT-8** Tenant connection strings SHALL NOT be exposed as plain API response details in tenant listing behavior.
+- **FR-TENANT-9** In multi-tenant mode, all client credentials SHALL be able to access all tenants.
 
 > [!TIP]
 > Multi-tenancy _in this context_ is an _administrative_ feature, not a _security_ feature.
@@ -361,7 +349,7 @@ External systems and dependencies:
 ### 4.2 Security and Privacy
 
 - **NFR-SEC-1** Protected endpoints SHALL require JWT bearer authentication.
-- **NFR-SEC-2** Authorization SHALL require the implemented Admin API full-access scope unless endpoint behavior explicitly allows anonymous access.
+- **NFR-SEC-2** Authorization SHALL require the implemented `admin_api/full_access` scope unless endpoint behavior explicitly allows anonymous access.
 - **NFR-SEC-3** Production deployments SHALL require configured signing material rather than relying on development-only ephemeral keys.
 - **NFR-SEC-4** Client secrets SHALL meet configured complexity and length requirements at registration.
 - **NFR-SEC-5** Credential reset SHALL generate new secret material instead of reusing previous secrets.
@@ -434,21 +422,21 @@ Data ownership:
 Integration points:
 
 - OAuth token endpoint for automation clients.
-- Optional external OIDC provider described in design documentation.
+- Optionally configure to use Keycloak as an OAuth2 identity provider (IdP) instead of using the built in provider.
 - Database connections for `EdFi_Admin` and `EdFi_Security`.
 - Swagger/OpenAPI for client discovery and manual testing.
 - Docker and IIS deployment paths.
 
 ## 6. Out of scope and known limitations
 
-- OUT-1: Admin API does not provision or mutate ODS/API business data; it manages administrative and security configuration.
-- OUT-2: Admin API does not currently expose implemented fine-grained scopes beyond `edfi_admin_api/full_access`.
-- OUT-3: Dynamic tenant provisioning through mutable API endpoints is not supported, consistent with the ODS/API; tenants are configured statically.
-- OUT-4: Token lifetime is hardcoded to 30 minutes in source and is not shown as a configurable product setting.
-- OUT-5: Key rotation and external key-management integration.
-- OUT-6: Admin API returns generated client credentials directly in the API response. Secure one-time distribution mechanisms (e.g., Admin App's optional Yopass-based link) are an Admin App concern, not implemented in Admin API.
+- **OUT-1**: Admin API does not provision or mutate ODS/API business data; it manages administrative and security configuration.
+- **OUT-2**: Admin API does not currently expose implemented fine-grained scopes beyond `edfi_admin_api/full_access`.
+- **OUT-3**: Dynamic tenant provisioning through mutable API endpoints is not supported, consistent with the ODS/API; tenants are configured statically.
+- **OUT-4**: Token lifetime is hardcoded to 30 minutes in source and is not shown as a configurable product setting.
+- **OUT-5**: Key rotation and external key-management integration.
+- **OUT-6**: Admin API returns generated client credentials directly in the API response. Secure one-time distribution mechanisms (e.g., Admin App's optional Yopass-based link) are an Admin App concern, not implemented in Admin API.
 
-## 8. Glossary
+## 7. Glossary
 
 - **Admin API**: REST API for administering ODS/API configuration, client credentials, and authorization metadata.
 - **Admin App**: UI-oriented administrative application described in design documentation as using Admin API as a backend service.
@@ -460,8 +448,8 @@ Integration points:
 - **`EdFi_Security`**: Database containing ODS/API security metadata such as claim sets, resource claims, actions, and authorization strategies.
 - **ODS/API**: Ed-Fi Operational Data Store and API.
 - **ODS instance**: Administrative representation of an ODS/API database instance, including name, type, and connection string.
-- **ODS instance** context: Key/value metadata associated with an ODS instance.
-- **ODS instance** derivative: Related ODS instance connection such as a read replica or snapshot.
+- **ODS instance context**: Key/value metadata associated with an ODS instance.
+- **ODS instance derivative**: Related ODS instance connection such as a read replica or snapshot.
 - **OpenIddict**: .NET library used by Admin API for self-contained OAuth/OpenID Connect server functionality.
 - **Profile**: ODS/API profile definition that constrains API content through XML profile configuration.
 - **Resource** claim: ODS/API authorization resource protected by claim-set rules.

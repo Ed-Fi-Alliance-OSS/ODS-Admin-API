@@ -73,7 +73,7 @@ To add the claim `http://schemas.microsoft.com/ws/2008/06/identity/claims/role` 
 5. Fill in the following details:
    * **Name**: Enter a name for the new mapper.
    * **Mapper Type**: Select `Role Name Mapper` from the dropdown.
-   * **Token Claim Name**: Enter the name `http://schemas\.microsoft\.com/ws/2008/06/identity/claims/role`.
+   * **Token Claim Name**: Enter the name `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`.
    * **Claim JSON Type**: Select `String` or `Array` depending on your needs.
    * **Add to ID token**: Check this box if you want to add the claim to the ID token.
    * **Add to access token**: Check this box if you want to add the claim to the access token.
