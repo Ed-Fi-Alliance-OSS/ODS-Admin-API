@@ -233,7 +233,7 @@ External systems and dependencies:
 - **FR-AUTH-6** Access tokens SHALL use the configured issuer URL and require the `edfi_admin_api/full_access` scope.
 - **FR-AUTH-7** Protected endpoints SHALL require authenticated bearer tokens with the implemented full-access scope unless explicitly marked anonymous.
 - **FR-AUTH-8** Production deployments SHALL provide a signing key when not running in development mode.
-- **FR-AUTH-9** The application SHALL continue supporting self-contained authentication for backwards compatibility.
+- **FR-AUTH-9** The application SHALL support built-in authentication without requiring an external identity provider.
 - **FR-AUTH-10** The product MAY allow use of an external OIDC provider, but the authorization model still has one scope.
 
 ### 3.3 Vendor Management
@@ -336,6 +336,11 @@ External systems and dependencies:
 - **FR-ERROR-7** Invalid token scopes SHALL return OAuth-compatible invalid-scope error details.
 - **FR-ERROR-8** Error responses and logs SHALL include enough trace information to correlate a request with server logs.
 
+### 3.12 Rate Limiting
+
+- **FR-RATE-1** The API SHALL enforce a rate limit on client requests and return HTTP 429 (Too Many Requests) when a client application exceeds the limit within the configured time frame.
+- **FR-RATE-2** Rate limit specifications — including request count and time frame — SHALL be configurable per deployment.
+
 ## 4. Non-functional requirements
 
 ### 4.1 Compatibility and upgradeability
@@ -344,7 +349,6 @@ External systems and dependencies:
 - **NFR-COMPAT-2** The repository SHALL retain v1 compatibility code for older ODS/API administration scenarios where still supported.
 - **NFR-COMPAT-3** Migration guidance SHALL support Docker and IIS installation patterns.
 - **NFR-COMPAT-4** Build automation SHALL accept an API version supplied by release automation.
-- **NFR-COMPAT-5** The API SHALL preserve self-contained authentication for existing deployments while allowing external OIDC design evolution.
 
 ### 4.2 Security and Privacy
 
@@ -365,12 +369,12 @@ External systems and dependencies:
 - **NFR-REL-4** Database provider selection SHALL fail fast when an unsupported database engine is configured.
 - **NFR-REL-5** Invalid API mode configuration SHALL fail explicitly rather than silently choosing behavior.
 - **NFR-REL-6** Multi-tenant database resolution SHALL fail explicitly when tenant configuration is missing or incomplete.
-- **NFR-REL-7** The application SHALL use a distinct schema (i.e. `adminapi`) for managing database objects that support the application. For example, the credentials for accessing ODS Admin API are stored in a table under the `adminapi` schema.
+- **NFR-REL-7** The application SHALL use a distinct schema for managing database objects that support the application. For example, the credentials for accessing ODS Admin API are stored in a table under ODS Admin API's unique schema.
 
 ### 4.4 Observability
 
-- **NFR-OBS-1** The application SHALL use log4net for application logging.
-- **NFR-OBS-2** Request logging SHALL run before routing, authentication, and endpoint execution.
+- **NFR-OBS-1** The application SHALL use log4net for application logging. Although this is an architectural detail, it has been elevated to a product requirement in order to avoid breaking changes the log output formatting.
+- **NFR-OBS-2** Request must be logged even when they fail before reaching an endpoint.
 - **NFR-OBS-3** Logs SHALL include request path and trace identifier.
 - **NFR-OBS-4** Error logs SHALL include structured error context.
 - **NFR-OBS-5** The application SHALL support external log collection through deployment-specific log4net configuration.
@@ -397,20 +401,6 @@ External systems and dependencies:
 - **NFR-SDLC-5**: The application SHALL be shipped in native packaging format and as production-ready images (OCI-compliant).
 
 ## 5. System architecture
-
-| Component | Current responsibility | Primary sources |
-| --- | --- | --- |
-| ASP.NET Core host | Starts the web application, logging, middleware pipeline, health checks, feature endpoints, controllers, and Swagger | `Program.cs`, `WebApplicationBuilderExtensions.cs`, `WebApplicationExtensions.cs` |
-| Feature endpoints | Implement resource-specific REST behavior using feature classes and `AdminApiEndpointBuilder` | `Application/EdFi.Ods.AdminApi/Features/*`, `Application/EdFi.Ods.AdminApi.V1/Features/*` |
-| Authentication and authorization | Provides OpenIddict client-credentials token server, JWT bearer validation, and full-access scope policy | `SecurityExtensions.cs`, `SecurityConstants.cs`, `AuthorizationPolicies.cs`, `ConnectController.cs` |
-| Admin API database context | Stores OpenIddict application, authorization, scope, and token entities in the admin database | `AdminApiDbContext.cs`, SQL artifact files |
-| `EdFi_Admin` data access | Reads and writes vendors, applications, API clients, profiles, ODS instances, and related administrative data | Admin data access contexts, command and query classes |
-| `EdFi_Security` data access | Reads and writes claim sets, resource claims, actions, authorization strategies, and claim-set associations | Security data access contexts, claim-set editor services |
-| Multi-tenancy infrastructure | Resolves tenant from request header and routes database access to tenant-specific connection strings | `TenantIdentificationMiddleware.cs`, `TenantConfigurationProvider.cs`, `TenantService.cs` |
-| Validation layer | Enforces request shape, required fields, referential integrity, uniqueness checks, and length constraints | FluentValidation validators in feature classes, command tests |
-| Request logging and error handling | Logs requests and converts exceptions into structured HTTP responses | `RequestLoggingMiddleware.cs` |
-| Swagger/OpenAPI | Produces versioned API documentation with OAuth metadata and custom schema filters | Swagger configuration and documentation filters |
-| Docker deployment assets | Provide local/test deployment topologies for PostgreSQL, SQL Server, single-tenant, multi-tenant, and optional IdP scenarios | `docs/docker.md`, `Docker/**` |
 
 Data ownership:
 
