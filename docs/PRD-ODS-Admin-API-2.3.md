@@ -31,23 +31,165 @@ Current-state alignment:
 
 ## 1.2 Target users and personas
 
-- **Platform host system administrator**: Operates an Ed-Fi ODS/API platform and needs full administrative access to configure vendors, applications, client credentials, claim sets, profiles, and ODS instances.
-- **DevOps engineer**: Deploys Admin API into Docker, IIS, or hosted environments; configures database engines, connection strings, signing keys, path bases, logging, rate limiting, Swagger, and tenant settings.
-- **Admin App integrator**: Uses Admin API as a backend service for UI-driven administration, especially around tenants, applications, credentials, and health-oriented operational views.
-- **Vendor or application onboarding operator**: Creates vendors, applications, API clients, profile associations, ODS instance associations, and education organization access grants.
-- **Security administrator**: Reviews and modifies claim sets, resource claim actions, authorization strategy overrides, and generated client credentials.
-- **Developer or implementer**: Uses Swagger, HTTP examples, E2E tests, and DB tests to validate API behavior during extension or upgrade work.
+Admin API is a backend service. Most of the personas below reach it indirectly, through Admin App or through their own automation, rather than through a UI of its own. Persona definitions for administrator, operator, and vendor-side roles are adopted from the Admin App PRD (`Ed-Fi-AdminApp/docs/PRD-AdminApp-v4.0.md`) so the two products describe the same people consistently. A few personas below are specific to direct use of Admin API and have no Admin App equivalent.
+
+#### Platform host system administrator
+
+Consider a system administrator at a state education agency (SEA) or managed service provider (MSP) whose primary mission is to collect LEA data for mandatory state reporting, or to operate Ed-Fi deployments on behalf of multiple education organizations. This administrator is in a hybrid IT role, serving both as a programmer and an IT administrator, responsible for deployment and maintenance of the Ed-Fi Technology Suite. MSP administrators (a category that also covers Ed-Fi Alliance staff managing certification demonstration environments) have a wider scope of responsibility, spanning multiple SEAs, LEAs, and Data Hubs.
+
+**Primary motivations**
+
+- Configure vendors, applications, client credentials, claim sets, profiles, and ODS instances needed to operate a deployment.
+- Get in and out of administrative tasks quickly, whether working directly against Admin API or through Admin App.
+
+**Technical depth**
+
+- Broad, but not deep, responsibilities spanning programming, data engineering, deployment, and technical support.
+- Skills rooted in support and deployment of .NET applications, using SQL Server or PostgreSQL, hosted on Windows/IIS, Linux, or Docker.
+
+**Key challenges**
+
+- Lack of time for professional development; prefers automatable, scriptable administration over manual database edits.
+
+#### Operator
+
+The Operator may be an IT-oriented or business-oriented employee at the hosting organization (MSP, SEA, Ed-Fi Alliance) or at the organization for whom the deployment is being managed (Data Hub, LEA). They are delegated users responsible for onboarding vendors and applications and managing credentials — typically through Admin App, but sometimes directly against Admin API for automation.
+
+**Primary motivations**
+
+- Create and manage vendors, applications, API clients, profile associations, ODS instance associations, and education organization access grants for integrations that submit data on behalf of an LEA.
+- Get in and out of the task quickly, back to other pressing concerns.
+
+**Technical depth**
+
+- Skilled at using web-based applications or calling documented REST APIs, but not at deploying or managing infrastructure.
+
+**Key challenges**
+
+- Depends on others for management of the underlying infrastructure and database engines.
+
+#### Vendor Application Administrator
+
+Typically, an LEA has an application operator who manages the LEA's deployment of the third-party application that integrates with the Ed-Fi API, with direct responsibility for entering client credentials into that application. This persona does not call Admin API directly; they receive the `client_id`/`client_secret` that Admin API generates, delivered through Admin App or another distribution mechanism.
+
+**Primary motivations**
+
+- Receive client credentials for connecting to a given Ed-Fi API deployment.
+- Keep those credentials safe, so malicious actors cannot perform illicit actions with them.
+
+**Technical depth**
+
+- Skilled at using web-based applications, but not at deploying or managing infrastructure.
+
+#### DevOps engineer
+
+Deploys Admin API into Docker, IIS, or hosted environments; configures database engines, connection strings, signing keys, path bases, logging, rate limiting, Swagger, and tenant settings. Unlike the personas above, this persona is responsible for the Admin API service itself, not only the data it manages.
+
+#### Admin App integrator
+
+Uses Admin API as a backend service for UI-driven administration, especially around tenants, applications, credentials, and health-oriented operational views. This is the Admin App development team itself, consuming Admin API's REST surface.
+
+#### Security administrator
+
+Reviews and modifies claim sets, resource claim actions, and authorization strategy overrides directly through Admin API. This persona exists because, as of Admin App v4.0, Admin App only supports viewing, exporting, and importing claim sets — an in-app claim set editor is on Admin App's roadmap — so detailed claim-set editing currently requires direct use of Admin API.
+
+#### Developer or implementer
+
+Uses Swagger, HTTP examples, E2E tests, and DB tests to validate API behavior during extension or upgrade work.
 
 ## 1.3 Jobs to be done
 
-- When I am standing up an Ed-Fi ODS/API deployment, I want to register an administrative API client and obtain a token so that automation can call protected Admin API endpoints.
-- When I onboard a vendor, I want to create the vendor with namespace prefixes and contact information so that applications can be associated with the correct vendor identity.
-- When I onboard an application, I want to create the application with vendor, claim set, education organization IDs, ODS instance IDs, and optional profiles so that the ODS/API can authorize client access correctly.
-- When credentials are compromised or rotated, I want to reset API client or application credentials so that access can continue with a new secret while preserving the intended application relationship.
-- When I operate a multi-tenant deployment, I want tenant-aware requests to resolve the correct `EdFi_Admin` and `EdFi_Security` connection strings so that each tenant's administration remains isolated.
-- When I troubleshoot the service, I want health, request logging, trace IDs, and structured error responses so that operational failures can be diagnosed quickly.
-- When I manage authorization, I want to view resource claims, actions, authorization strategies, claim sets, and claim-set resource claim actions so that access rules are visible and editable.
-- When I migrate between Admin API versions, I want predictable binary replacement and deployment-specific instructions so that upgrades do not require undocumented manual steps.
+JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned with the Admin App PRD so both documents describe the same underlying job consistently. The remaining entries are specific to direct or automated use of Admin API.
+
+### JTBD 1: Issue Credentials
+
+**Personas**: all
+
+**When** supporting a new application integration to an existing Ed-Fi API deployment, \
+**I want** to perform basic CRUD operations for Vendors, Applications, API Clients, and Credentials, \
+**so that** I can distribute OAuth credentials ("key and secret") to the vendor.
+
+**How Admin API Helps**: Exposes REST endpoints for the full CRUD lifecycle of vendors, applications, and API clients, generating a `client_id`/`client_secret` pair on creation (FR-VENDOR-1, FR-APP-1, FR-APP-5, FR-CLIENT-1).
+
+**Variations**: Resetting (rotating) credentials for an existing application or API client preserves the key and generates a new secret, so access can continue without re-onboarding (FR-APP-10, FR-CLIENT-6).
+
+### JTBD 2: Register Administrative Automation Clients
+
+**Personas**: Platform host system administrator, DevOps engineer, Admin App integrator
+
+**When** standing up an Ed-Fi ODS/API deployment, \
+**I want** to register an administrative API client and obtain a token, \
+**so that** automation — including Admin App — can call protected Admin API endpoints.
+
+**How Admin API Helps**: Supports OAuth 2.0 client-credentials token issuance (`POST /connect/token`) and self-contained client registration (`POST /connect/register`) when enabled (FR-AUTH-1, FR-AUTH-2).
+
+### JTBD 3: Configure ODS Instances
+
+**Personas**: Platform host system administrator, DevOps engineer, Admin App integrator (on behalf of system administrators)
+
+**When** launching a school year database ("instance") for a tenant deployment, \
+**I want** to create and manage ODS instance, context, and derivative records, \
+**so that** applications can be associated with the correct database instance.
+
+**How Admin API Helps**: Provides CRUD endpoints for ODS instances, ODS instance contexts, and ODS instance derivatives (FR-ODS-1 through FR-ODS-10).
+
+> [!NOTE]
+> Unlike Admin App's broader "configure new environments/instances" job, Admin API does not create environments or tenants — tenant configuration is static (see OUT-6). This job is limited to ODS instance records within an already-configured tenant.
+
+### JTBD 4: Manage Authorization
+
+**Personas**: Security administrator, Platform host system administrator
+
+**When** I manage authorization for a deployment, \
+**I want** to view and edit resource claims, actions, authorization strategies, claim sets, and claim-set resource claim actions, \
+**so that** access rules are visible and editable.
+
+**How Admin API Helps**: Exposes read/write endpoints for claim sets and read-only endpoints for resource claims, actions, and authorization strategies (FR-CLAIM-1 through FR-CLAIM-8). Admin App currently only supports viewing, exporting, and importing claim sets, so detailed editing depends on Admin API directly until Admin App's in-app claim set editor ships.
+
+### JTBD 5: Transfer Claim Sets Between Environments
+
+**Personas**: Platform host system administrator, DevOps engineer
+
+**When** I have a claim set that is configured correctly in one environment, \
+**I want** to copy, export, and import that claim set to another environment or tenant, \
+**so that** I can avoid manual claim set configuration and reduce the risk of errors when setting up a new environment.
+
+**How Admin API Helps**: Provides copy, export, and import endpoints for claim sets that preserve enough structure to move authorization configuration between environments (FR-CLAIM-1, FR-CLAIM-8).
+
+**Examples**:
+
+1. Configure a claim set in a staging environment, then export and import it to production.
+2. Export a claim set used in one tenant and copy it to another tenant.
+
+### JTBD 6: Isolate Multi-Tenant Administration
+
+**Personas**: Platform host system administrator, DevOps engineer
+
+**When** I operate a multi-tenant deployment, \
+**I want** tenant-aware requests to resolve the correct `EdFi_Admin` and `EdFi_Security` connection strings, \
+**so that** each tenant's administration remains isolated.
+
+**How Admin API Helps**: Resolves tenant context from the `tenant` request header and routes to tenant-specific connection strings (FR-TENANT-1 through FR-TENANT-10).
+
+### JTBD 7: Troubleshoot Operational Issues
+
+**Personas**: DevOps engineer, Developer or implementer
+
+**When** I troubleshoot the service, \
+**I want** health checks, request logging, trace IDs, and structured error responses, \
+**so that** operational failures can be diagnosed quickly.
+
+**How Admin API Helps**: Exposes a `/health` endpoint, correlates logs with trace identifiers, and returns structured error responses (FR-ERROR-1 through FR-ERROR-8, NFR-REL-1 through NFR-REL-3).
+
+### JTBD 8: Upgrade Between Admin API Versions
+
+**Personas**: DevOps engineer, Developer or implementer
+
+**When** I migrate between Admin API versions, \
+**I want** predictable binary replacement and deployment-specific instructions, \
+**so that** upgrades do not require undocumented manual steps.
+
+**How Admin API Helps**: Documents migration guidance for Docker and IIS installation patterns and accepts a release-supplied API version in build automation (NFR-COMPAT-3, NFR-COMPAT-4).
 
 ## 2. Enterprise Architecture
 
@@ -315,6 +457,7 @@ Out of scope for the current observed product:
 - OUT-8: Token lifetime is hardcoded to 30 minutes in source and is not shown as a configurable product setting.
 - OUT-9: Key rotation and external key-management integration are not documented as current product behavior.
 - OUT-10: Performance limits and operational sizing guidance are not present in the repository documentation reviewed.
+- OUT-11: Admin API returns generated client credentials directly in the API response. Secure one-time distribution mechanisms (e.g., Admin App's optional Yopass-based link) are an Admin App concern, not implemented in Admin API.
 
 Known documentation conflicts:
 
@@ -362,6 +505,7 @@ Decision log:
 - API client: Credentialed client record used to access ODS/API through key and secret material.
 - Application: Administrative representation of an ODS/API client application, associated with vendor, claim set, education organizations, ODS instances, profiles, and API client credentials.
 - Claim set: Named collection of authorization rules used by ODS/API security.
+- Ed-Org: Education Organization. A school, district, or other educational entity whose data an application or API client is authorized to access. Admin API references Ed-Orgs by ID (education organization IDs); it does not create or manage Ed-Org records itself.
 - `EdFi_Admin`: Database containing administrative configuration such as vendors, applications, API clients, profiles, and ODS instance metadata.
 - `EdFi_Security`: Database containing ODS/API security metadata such as claim sets, resource claims, actions, and authorization strategies.
 - ODS/API: Ed-Fi Operational Data Store and API.
