@@ -4,7 +4,7 @@
 
 The Ed-Fi ODS/API Admin API is a programmatic interface to administrate ODS/API
 platform instances. Admin API 2.0 will support ODS/API version 7.0 and greater.
-For support of ODS/API 3.4 through 6.1, please use the 
+For support of ODS/API 3.4 through 6.1, please use the
 [latest 1.x release](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-AdminAPI/releases).
 
 > **Note**
@@ -42,7 +42,7 @@ knowledge of the code base and architecture.
 
 ## Legal Information
 
-Copyright (c) 2023 Ed-Fi Alliance, LLC and contributors.
+Copyright (c) 2026 Ed-Fi Alliance, LLC and contributors.
 
 Licensed under the [Apache License, Version 2.0](LICENSE) (the "License").
 
