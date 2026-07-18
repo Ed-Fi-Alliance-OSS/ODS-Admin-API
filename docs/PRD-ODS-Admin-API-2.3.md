@@ -1,11 +1,11 @@
 # Product Requirements Document: ODS Admin API 2.3
 
-> Status: completed \
-> Version: 2.3 \
-> Owner: Stephen Fuqua \
-> Product: Ed-Fi ODS Admin API \
-> Repository: `Ed-Fi-Alliance-OSS/ODS-Admin-API` \
-> Jira: `ADMINAPI`
+> **Status**: completed \
+> **Version**: 2.3 \
+> **Owner**: Stephen Fuqua \
+> **Product**: Ed-Fi ODS Admin API \
+> **Repository**: `Ed-Fi-Alliance-OSS/ODS-Admin-API` \
+> **Jira**: `ADMINAPI`
 
 ## 1. Product Overview
 
@@ -29,67 +29,17 @@ Admin API is a backend service. Most of the personas below reach it indirectly, 
 
 #### Platform Host System Administrator
 
-Consider a system administrator at a state education agency (SEA) or managed service provider (MSP) whose primary mission is to collect LEA data for mandatory state reporting, or to operate Ed-Fi deployments on behalf of multiple education organizations. This administrator is in a hybrid IT role, serving both as a programmer and an IT administrator, responsible for deployment and maintenance of the Ed-Fi Technology Suite. MSP administrators (a category that also covers Ed-Fi Alliance staff managing certification demonstration environments) have a wider scope of responsibility, spanning multiple SEAs, LEAs, and Data Hubs.
+This administrator is likely in a hybrid IT role, serving both as a programmer and an IT administrator, responsible for deployment and maintenance of the Ed-Fi Technology Suite.  Deploys Admin API into Docker, IIS, or hosted environments; configures database engines, connection strings, signing keys, path bases, logging, rate limiting, Swagger, and tenant settings.
 
-**Primary motivations**
-
-- Configure vendors, applications, client credentials, claim sets, profiles, and ODS instances needed to operate a deployment.
-- Get in and out of administrative tasks quickly, whether working directly against Admin API or through Admin App.
-
-**Technical depth**
-
-- Broad, but not deep, responsibilities spanning programming, data engineering, deployment, and technical support.
-- Skills rooted in support and deployment of .NET applications, using SQL Server or PostgreSQL, hosted on Windows/IIS, Linux, or Docker.
-
-**Key challenges**
-
-- Lack of time for professional development; prefers automatable, scriptable administration over manual database edits.
-
-#### Operator
-
-The Operator may be an IT-oriented or business-oriented employee at the hosting organization (MSP, SEA, Ed-Fi Alliance) or at the organization for whom the deployment is being managed (Data Hub, LEA). They are delegated users responsible for onboarding vendors and applications and managing credentials — typically through Admin App, but sometimes directly against Admin API for automation.
-
-**Primary motivations**
-
-- Create and manage vendors, applications, API clients, profile associations, ODS instance associations, and education organization access grants for integrations that submit data on behalf of an LEA.
-- Get in and out of the task quickly, back to other pressing concerns.
-
-**Technical depth**
-
-- Skilled at using web-based applications or calling documented REST APIs, but not at deploying or managing infrastructure.
-
-**Key challenges**
-
-- Depends on others for management of the underlying infrastructure and database engines.
-
-#### Vendor Application Administrator
-
-Typically, an LEA has an application operator who manages the LEA's deployment of the third-party application that integrates with the Ed-Fi API, with direct responsibility for entering client credentials into that application. This persona does not call Admin API directly; they receive the `client_id`/`client_secret` that Admin API generates, delivered through Admin App or another distribution mechanism.
-
-**Primary motivations**
-
-- Receive client credentials for connecting to a given Ed-Fi API deployment.
-- Keep those credentials safe, so malicious actors cannot perform illicit actions with them.
-
-**Technical depth**
-
-- Skilled at using web-based applications, but not at deploying or managing infrastructure.
-
-#### DevOps Engineer
-
-Deploys Admin API into Docker, IIS, or hosted environments; configures database engines, connection strings, signing keys, path bases, logging, rate limiting, Swagger, and tenant settings. Unlike the personas above, this persona is responsible for the Admin API service itself, not only the data it manages.
-
-#### Admin App Integrator
-
-Uses Admin API as a backend service for UI-driven administration, especially around tenants, applications, credentials, and health-oriented operational views. This is the Admin App development team itself, consuming Admin API's REST surface.
+In addition, configures vendors, applications, client credentials, claim sets, profiles, and ODS instances needed to operate a deployment. Alternatively, builds integration points to the ODS Admin API, allowing other personas to interact with the application indirectly.
 
 #### Security Administrator
 
-Reviews and modifies claim sets, resource claim actions, and authorization strategy overrides directly through Admin API. This persona exists because, as of Admin App v4.0, Admin App only supports viewing, exporting, and importing claim sets — an in-app claim set editor is on Admin App's roadmap — so detailed claim-set editing currently requires direct use of Admin API.
+Reviews and modifies claim sets, resource claim actions, and authorization strategy overrides directly through ODS Admin API, or indirectly through an interface provided by the System Administrator.
 
-#### Developer or Implementer
+#### Developer
 
-Uses Swagger, HTTP examples, E2E tests, and DB tests to validate API behavior during extension or upgrade work.
+Uses Swagger, HTTP examples, E2E tests, and DB tests to validate API behavior during extension or upgrade work. Uses ODS Admin API as a backend service for UI-driven administration, especially around tenants, applications, credentials, and health-oriented operational views.
 
 ### 1.3 Jobs to Be Done
 
@@ -109,7 +59,7 @@ JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned w
 
 #### JTBD 2: Register Administrative Automation Clients
 
-**Personas**: Platform host system administrator, DevOps engineer, Admin App integrator
+**Personas**: Platform host system administrator, Developer
 
 **When** standing up an Ed-Fi ODS/API deployment, \
 **I want** to register an administrative API client and obtain a token, \
@@ -119,7 +69,7 @@ JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned w
 
 #### JTBD 3: Configure ODS Instances
 
-**Personas**: Platform host system administrator, DevOps engineer, Admin App integrator (on behalf of system administrators)
+**Personas**: Platform host system administrator, Developer
 
 **When** launching a school year database ("instance") for a tenant deployment, \
 **I want** to create and manage ODS instance, context, and derivative records, \
@@ -142,7 +92,7 @@ JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned w
 
 #### JTBD 5: Transfer Claim Sets Between Environments
 
-**Personas**: Platform host system administrator, DevOps engineer
+**Personas**: Platform host system administrator
 
 **When** I have a claim set that is configured correctly in one environment, \
 **I want** to copy, export, and import that claim set to another environment or tenant, \
@@ -157,7 +107,7 @@ JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned w
 
 #### JTBD 6: Isolate Multi-Tenant Administration
 
-**Personas**: Platform host system administrator, DevOps engineer
+**Personas**: Platform host system administrator
 
 **When** I operate a multi-tenant deployment, \
 **I want** tenant-aware requests to resolve the correct `EdFi_Admin` and `EdFi_Security` connection strings, \
@@ -167,7 +117,7 @@ JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned w
 
 #### JTBD 7: Troubleshoot Operational Issues
 
-**Personas**: DevOps engineer, Developer or implementer
+**Personas**: Platform host system administrator, Developer
 
 **When** I troubleshoot the service, \
 **I want** health checks, request logging, trace IDs, and structured error responses, \
@@ -177,7 +127,7 @@ JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned w
 
 #### JTBD 8: Upgrade Between Admin API Versions
 
-**Personas**: DevOps engineer, Developer or implementer
+**Personas**: Platform host system administrator, Developer
 
 **When** I migrate between Admin API versions, \
 **I want** predictable binary replacement and deployment-specific instructions, \
