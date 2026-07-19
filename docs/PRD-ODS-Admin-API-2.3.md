@@ -303,7 +303,7 @@ External systems and dependencies:
 ### 4.2 Security and Privacy
 
 - **NFR-SEC-1** Protected endpoints SHALL require JWT bearer authentication.
-- **NFR-SEC-2** Authorization SHALL require the implemented `admin_api/full_access` scope unless endpoint behavior explicitly allows anonymous access.
+- **NFR-SEC-2** Authorization SHALL require the implemented `edfi_admin_api/full_access` scope unless endpoint behavior explicitly allows anonymous access.
 - **NFR-SEC-3** Production deployments SHALL require configured signing material rather than relying on development-only ephemeral keys.
 - **NFR-SEC-4** Client secrets SHALL meet configured complexity and length requirements at registration.
 - **NFR-SEC-5** Credential reset SHALL generate new secret material instead of reusing previous secrets.
@@ -345,7 +345,7 @@ External systems and dependencies:
 ### 4.7 Software Development Lifecycle
 
 - **NFR-SDLC-1**: The application SHALL maintain consistent code quality through formatting and linting.
-- **NFR-SDLC-2**: The application SHALL achieve 100% unit test coverage of business logic, exclusive of I/O operations at the API and query layers.
+- **NFR-SDLC-2**: The application SHALL achieve 100% unit test coverage of business logic, exclusive of I/O operations at the API and query layers. This is the objective, not the current state: as of the 2.3 release, actual coverage is approximately 55-59% overall (with the v1 code path untested), tracked in `docs/design/tests-coverage/ADMINAPI-1448-coverage-gaps.md`.
 - **NFR-SDLC-3**: The application SHALL cover all happy paths and common failure scenarios in integration tests.
 - **NFR-SDLC-4**: The application SHALL have automated integration builds and push-button package management.
 - **NFR-SDLC-5**: The application SHALL be shipped in native packaging format and as production-ready images (OCI-compliant).
