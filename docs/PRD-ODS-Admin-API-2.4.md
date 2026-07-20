@@ -48,8 +48,7 @@ the next release, but they will not be described in this document.
 
 #### Should Have Objectives
 
-1. Provide an API health check endpoint that provides record counts from the ODS
-   databases.
+1. Support audit logging for all interactions with the application.
 
 ### 1.3 Carried-Forward Product Context
 
@@ -103,14 +102,7 @@ also surface each instance's provisioning status so administrators can see
 which database instances are not yet linked to an education organization
 structure.
 
-### JTBD 10: Database Record Health Check
-
-TBD — no PR in this delta implements the record-count health check described
-in Should Have Objective #1. Related but distinct discoverability
-improvements (API specification version and tenancy status on the
-Information endpoint) are captured under JTBD 12.
-
-### JTBD 11: Database Instance Provisioning (New)
+### JTBD 10: Database Instance Provisioning (New)
 
 **Personas:** SEA System Administrator, Managed Service Provider System
 Administrator, Operator
@@ -130,7 +122,7 @@ instance name and template, then asynchronously provisions (or de-provisions)
 the instance via a background job. Progress is visible through granular
 lifecycle status values and a general-purpose job-status endpoint.
 
-### JTBD 12: Tenant and Version Discovery (New)
+### JTBD 11: Tenant and Version Discovery (New)
 
 **Personas:** SEA System Administrator, Managed Service Provider System
 Administrator, Operator, Ed-Fi Alliance Certification Manager
@@ -191,7 +183,7 @@ previously returned database connection strings have been removed.
   database name, and SHALL include database instances that are not yet
   linked to an ODS instance when listing all instances.
 
-### 3.4 Database Instances (JTBD 11)
+### 3.4 Database Instances (JTBD 10)
 
 - **FR-DBINST-1**: The API SHALL allow an administrator to create a database
   instance from a named, approved database template via `POST /v2/dbinstances` /
@@ -229,7 +221,7 @@ previously returned database connection strings have been removed.
   /v3/jobs/{jobId}`, including when the job was created and, if applicable, when
   it finished.
 
-### 3.6 Tenants and Deployment Discovery (JTBD 12)
+### 3.6 Tenants and Deployment Discovery (JTBD 11)
 
 - **FR-TENANT-1**: The API SHALL NOT expose tenant database connection string
   details through any tenant list or detail endpoint.
