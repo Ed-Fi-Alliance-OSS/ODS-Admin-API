@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: Apache-2.0
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+using System; using System.Collections.Generic; using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Features.ResourceClaimActions;
+using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using FakeItEasy; using NUnit.Framework; using Shouldly;
+namespace EdFi.Ods.AdminApi.UnitTests.Features.ResourceClaimActions;
+[TestFixture] public class ReadResourceClaimActionsTests {
+    [Test] public async Task GetResourceClaimsActions_ReturnsOkWithList() {
+        var fakeQuery = A.Fake<IGetResourceClaimActionsQuery>();
+        A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, null)).Returns(new List<ResourceClaimActionModel> {
+            new ResourceClaimActionModel { ResourceClaimId = 1, ResourceName = "schools" }
+        });
+        var result = await ReadResourceClaimActions.GetResourceClaimsActions(fakeQuery, new CommonQueryParams(0,25), null);
+        result.ShouldNotBeNull();
+    }
+}

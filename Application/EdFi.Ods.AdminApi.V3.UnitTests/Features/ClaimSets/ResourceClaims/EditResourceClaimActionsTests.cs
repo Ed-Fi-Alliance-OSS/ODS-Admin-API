@@ -3,50 +3,65 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using EdFi.Ods.AdminApi.Common.Constants;
+using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.V3.Features.ClaimSets.ResourceClaims;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
-using FluentValidation;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
+using SecurityAction = EdFi.Security.DataAccess.Models.Action;
 
-namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ClaimSets.ResourceClaims
+namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ClaimSets.ResourceClaims;
+
+[TestFixture]
+public class EditResourceClaimActionsTests
 {
-    [TestFixture]
-    public class EditResourceClaimActionsTests
+    [Test]
+    public async Task Validator_WhenNullResourceClaimActions_FailsValidation()
     {
-        [Test]
-        public void HandleEditResourceClaims_WithMismatchedClaimSetId_ThrowsValidationException()
+        var fakeGetById = A.Fake<IGetClaimSetByIdQuery>();
+        A.CallTo(() => fakeGetById.Execute(A<int>._)).Returns(new ClaimSet { Id = 1, Name = "CS1", IsEditable = true });
+        var fakeGetFlat = A.Fake<IGetResourceClaimsAsFlatListQuery>();
+        A.CallTo(() => fakeGetFlat.Execute()).Returns(new List<ResourceClaim>());
+        var fakeGetActions = A.Fake<IGetAllActionsQuery>();
+        A.CallTo(() => fakeGetActions.Execute()).Returns(new List<SecurityAction>());
+
+        var validator = new EditResourceClaimActions.ResourceClaimClaimSetValidator(fakeGetById, fakeGetFlat, fakeGetActions);
+        var request = new EditResourceClaimActions.AddResourceClaimOnClaimSetRequest
         {
-            var request = new EditResourceClaimActions.EditResourceClaimOnClaimSetRequest
-            {
-                ClaimSetId = 999,
-                ResourceClaimId = 2,
-                ResourceClaimActions = new List<ResourceClaimAction>()
-            };
+            ClaimSetId = 1, ResourceClaimId = 1, ResourceClaimActions = null
+        };
+        var result = await validator.ValidateAsync(request);
+        result.IsValid.ShouldBeFalse();
+    }
 
-            var exception = Should.Throw<ValidationException>(() => EditResourceClaimActions.HandleEditResourceClaims(null!, null!, null!, null!, request, 1, 2).GetAwaiter().GetResult());
-
-            exception.Errors.Single(x => x.PropertyName == nameof(request.ClaimSetId)).ErrorMessage
-                .ShouldBe(ErrorMessagesConstants.RequestBodyIdMismatch);
-        }
-
-        [Test]
-        public void HandleEditResourceClaims_WithMismatchedResourceClaimId_ThrowsValidationException()
+    [Test]
+    public async Task Validator_WhenSystemReservedClaimSet_FailsValidation()
+    {
+        var fakeGetById = A.Fake<IGetClaimSetByIdQuery>();
+        A.CallTo(() => fakeGetById.Execute(A<int>._)).Returns(new ClaimSet { Id = 1, Name = "SysCS", IsEditable = false });
+        var fakeGetFlat = A.Fake<IGetResourceClaimsAsFlatListQuery>();
+        A.CallTo(() => fakeGetFlat.Execute()).Returns(new List<ResourceClaim>
         {
-            var request = new EditResourceClaimActions.EditResourceClaimOnClaimSetRequest
-            {
-                ClaimSetId = 1,
-                ResourceClaimId = 999,
-                ResourceClaimActions = new List<ResourceClaimAction>()
-            };
+            new ResourceClaim { Id = 10, Name = "schools" }
+        });
+        var fakeGetActions = A.Fake<IGetAllActionsQuery>();
+        A.CallTo(() => fakeGetActions.Execute()).Returns(new List<SecurityAction>
+        {
+            new SecurityAction { ActionId = 1, ActionName = "Read", ActionUri = "uri" }
+        });
 
-            var exception = Should.Throw<ValidationException>(() => EditResourceClaimActions.HandleEditResourceClaims(null!, null!, null!, null!, request, 1, 2).GetAwaiter().GetResult());
-
-            exception.Errors.Single(x => x.PropertyName == nameof(request.ResourceClaimId)).ErrorMessage
-                .ShouldBe(ErrorMessagesConstants.RequestBodyIdMismatch);
-        }
+        var validator = new EditResourceClaimActions.ResourceClaimClaimSetValidator(fakeGetById, fakeGetFlat, fakeGetActions);
+        var request = new EditResourceClaimActions.AddResourceClaimOnClaimSetRequest
+        {
+            ClaimSetId = 1,
+            ResourceClaimId = 10,
+            ResourceClaimActions = new List<ResourceClaimAction> { new ResourceClaimAction { Name = "Read", Enabled = true } }
+        };
+        var result = await validator.ValidateAsync(request);
+        result.IsValid.ShouldBeFalse();
     }
 }

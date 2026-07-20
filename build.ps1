@@ -262,7 +262,7 @@ function RunTests {
         Invoke-Execute {
             if ($script:RunCoverageAnalysis)
             {
-                & dotnet test $_ --collect 'XPlat Code Coverage' --logger "trx;LogFileName=$($_).trx" --nologo
+                & dotnet test $_ --collect 'XPlat Code Coverage' --settings "$solutionRoot/coverlet.runsettings" --logger "trx;LogFileName=$($_).trx" --nologo
             }
             else
             {

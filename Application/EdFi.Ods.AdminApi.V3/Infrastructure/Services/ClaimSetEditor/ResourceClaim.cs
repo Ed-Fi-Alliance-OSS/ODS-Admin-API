@@ -14,6 +14,21 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor
         public int ParentId { get; set; }
         public string? ParentName { get; set; }
         public string? Name { get; set; }
+
+        /// <summary>
+        /// The resource claim's full claim URI (e.g. "http://ed-fi.org/identity/claims/candidatePreparation").
+        /// Populated from the security database's ResourceClaim.ClaimName column. Used by
+        /// ClaimSetMapper to build the public v3 claimName/parentClaimName payload shape and by
+        /// ResourceClaimValidator to validate import parent/child relationships.
+        /// </summary>
+        public string? ClaimName { get; set; }
+
+        /// <summary>
+        /// The claim URI of this resource claim's parent, or null if this is a root resource claim.
+        /// Populated only where the query explicitly projects it (see GetResourceClaimsAsFlatListQuery).
+        /// </summary>
+        public string? ParentClaimName { get; set; }
+
         public List<ResourceClaimAction>? Actions { get; set; }
         [JsonIgnore]
         public bool IsParent { get; set; }

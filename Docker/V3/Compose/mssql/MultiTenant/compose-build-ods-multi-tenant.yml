@@ -17,11 +17,16 @@ services:
       ACCEPT_EULA: "Y"
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       SQLSERVER_PASSWORD: ${SQLSERVER_PASSWORD:-P@55w0rd}
+      SQLSERVER_PORT: ${SQLSERVER_PORT:-1433}
       TPDM_ENABLED: ${TPDM_ENABLED:-true}
       MSSQL_PID: ${MSSQL_PID:-Express}
+      SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
+      MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Minimal.Template.bak}"
+      POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Populated.Template.bak}"
     volumes:
       - vol-db-ods-tenant1:/var/opt/mssql/data
       - vol-db-ods-tenant1:/var/opt/mssql/log
+      - ${SQL_BACKUPS_FOLDER}:/var/opt/mssql/data/sql-backups/:ro
     restart: always
     container_name: ed-fi-db-ods-tenant1
     hostname: ed-fi-db-ods-tenant1
@@ -43,11 +48,16 @@ services:
       ACCEPT_EULA: "Y"
       SQLSERVER_USER: ${SQLSERVER_USER:-edfi}
       SQLSERVER_PASSWORD: ${SQLSERVER_PASSWORD:-P@55w0rd}
+      SQLSERVER_PORT: ${SQLSERVER_PORT:-1433}
       TPDM_ENABLED: ${TPDM_ENABLED:-true}
       MSSQL_PID: ${MSSQL_PID:-Express}
+      SQL_BACKUPS_FOLDER: "${SQL_BACKUPS_FOLDER}"
+      MINIMAL_BAK_PATH: "${MINIMAL_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Minimal.Template.bak}"
+      POPULATED_BAK_PATH: "${POPULATED_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Populated.Template.bak}"
     volumes:
       - vol-db-ods-tenant2:/var/opt/mssql/data
       - vol-db-ods-tenant2:/var/opt/mssql/log
+      - ${SQL_BACKUPS_FOLDER}:/var/opt/mssql/data/sql-backups/:ro
     restart: always
     container_name: ed-fi-db-ods-tenant2
     hostname: ed-fi-db-ods-tenant2
@@ -77,7 +87,7 @@ services:
       Tenants__tenant2__ConnectionStrings__EdFi_Admin: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       Tenants__tenant2__ConnectionStrings__EdFi_Security: "Data Source=db-admin-tenant2,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
     volumes:
-      - ${LOGS_FOLDER}:/app/logs
+      - ${LOGS_FOLDER:-./logs}:/app/logs
     depends_on:
       - db-ods-tenant1
       - db-ods-tenant2

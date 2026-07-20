@@ -48,13 +48,15 @@ services:
       AppSettings__MultiTenancy: ${MULTITENANCY_ENABLED:-false}
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
       AppSettings__PreventDuplicateApplications: ${PREVENT_DUPLICATE_APPLICATIONS:-false}
+      AppSettings__SqlServerMinimalBakFile: "${MINIMAL_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Minimal.Template.bak}"
+      AppSettings__SqlServerSampleBakFile: "${POPULATED_BAK_PATH:-/var/opt/mssql/data/sql-backups/EdFi.Ods.Populated.Template.bak}"
       Authentication__AllowRegistration: true
       Authentication__IssuerUrl: ${ISSUER_URL}
       Authentication__SigningKey: ${SIGNING_KEY}
       ConnectionStrings__EdFi_Admin: "Data Source=db-admin,1433;Initial Catalog=EdFi_Admin;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       ConnectionStrings__EdFi_Security: "Data Source=db-admin,1433;Initial Catalog=EdFi_Security;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
-      ConnectionStrings__EdFi_Ods: "Data Source=db-admin,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
-      ConnectionStrings__EdFi_Master: "Data Source=db-admin,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Ods: "Data Source=db-ods,1433;Initial Catalog=EdFi_Ods;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
+      ConnectionStrings__EdFi_Master: "Data Source=db-ods,1433;Initial Catalog=master;User Id=${SQLSERVER_USER};Password=${SQLSERVER_PASSWORD}; Integrated Security=False;Encrypt=false;TrustServerCertificate=true"
       EnableDockerEnvironment: true
       IpRateLimiting__EnableEndpointRateLimiting: ${IPRATELIMITING__ENABLEENDPOINTRATELIMITING:-false}
       IpRateLimiting__StackBlockedRequests: ${IPRATELIMITING__STACKBLOCKEDREQUESTS:-false}

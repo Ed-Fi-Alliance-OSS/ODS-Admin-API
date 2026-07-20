@@ -32,11 +32,25 @@ if [[ "$TPDM_ENABLED" = true ]]; then
   export MINIMAL_BACKUP=EdFi_Ods_Minimal_Template_TPDM_Core.bak
 fi
 
+# Determine the backup file path to use
+# Prefer mounted volume path if provided and exists, otherwise fall back to built-in path
+BACKUP_PATH="${MINIMAL_BAK_PATH}"
+
+if [[ ! -f "$BACKUP_PATH" ]]; then
+  # Try the built-in location
+  BACKUP_PATH="/app/backups/${MINIMAL_BACKUP}"
+  if [[ ! -f "$BACKUP_PATH" ]]; then
+    >&2 echo "ERROR: Backup file not found at $MINIMAL_BAK_PATH or /app/backups/${MINIMAL_BACKUP}"
+    exit 1
+  fi
+fi
+
 # If the EdFi_Ods_Minimal_Template is restored, we skip restoring it again
 if [[ ! -f "/var/opt/mssql/data/EdFi_Ods_Minimal_Template.mdf" ]]; then
   echo "Loading EdFi_Ods_Minimal_Template database from backup..."
+  echo "Using backup file: $BACKUP_PATH"
   /opt/mssql-tools18/bin/sqlcmd -C -U ${SQLSERVER_USER} -P ${SQLSERVER_PASSWORD} -Q "
-    RESTORE DATABASE [EdFi_Ods] FROM DISK = N'/app/backups/${MINIMAL_BACKUP}'
+    RESTORE DATABASE [EdFi_Ods] FROM DISK = N'${BACKUP_PATH}'
     WITH MOVE 'EdFi_Ods_Populated_Template_Test' TO '/var/opt/mssql/data/EdFi_Ods_Minimal_Template.mdf', 
          MOVE 'EdFi_Ods_Populated_Template_Test_Log' TO '/var/opt/mssql/log/EdFi_Ods_Minimal_Template_log.ldf';"
 fi

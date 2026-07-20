@@ -11,6 +11,17 @@ set +x
 export MSSQL_SA_PASSWORD=$SQLSERVER_PASSWORD
 export ACCEPT_EULA=Y
 
+# Set backup path defaults (use built-in backups if not provided)
+export MINIMAL_BAK_PATH=${MINIMAL_BAK_PATH:-/app/backups/EdFi_Ods_Minimal_Template.bak}
+export POPULATED_BAK_PATH=${POPULATED_BAK_PATH:-/app/backups/EdFi_Ods_Populated_Template.bak}
+
+# Log backup configuration
+if [[ -n "$SQL_BACKUPS_FOLDER" ]]; then
+  >&2 echo "Using custom backups from: $SQL_BACKUPS_FOLDER"
+else
+  >&2 echo "Using built-in backups from container image"
+fi
+
 /app/setup-db.sh &
 
 /opt/mssql/bin/sqlservr

@@ -33,33 +33,30 @@ body:json {
             "enabled": true
           }
         ],      
-        "authorizationStrategyOverridesForCRUD": [],
-        "children": [
-             {
-              "name": "academicSubjectDescriptor",
-              "actions": [
-                  {
-                  "name": "Create",
-                  "enabled": true
-                  },
-                  {
-                  "name": "Read",
-                  "enabled": true
-                  },
-                  {
-                  "name": "Update",
-                  "enabled": true
-                  },
-                  {
-                  "name": "Delete",
-                  "enabled": true
-                  }  
-          
-              ],
-              "authorizationStrategyOverridesForCRUD": [],
-              "children": []
-              }
-        ]
+        "authorizationStrategyOverrides": []
+      },
+      {
+        "name": "academicSubjectDescriptor",
+        "parentClaimName": "http://ed-fi.org/identity/claims/domains/educationStandards",
+        "actions": [
+            {
+            "name": "Create",
+            "enabled": true
+            },
+            {
+            "name": "Read",
+            "enabled": true
+            },
+            {
+            "name": "Update",
+            "enabled": true
+            },
+            {
+            "name": "Delete",
+            "enabled": true
+            }
+        ],
+        "authorizationStrategyOverrides": []
       },
       {
         "name": "gradeLevelDescriptor",
@@ -82,8 +79,7 @@ body:json {
           }
         ],
        
-        "authorizationStrategyOverridesForCRUD": [],
-        "children": []
+        "authorizationStrategyOverrides": []
       },
       {      
         "name": "publicationStatusDescriptor",
@@ -105,8 +101,7 @@ body:json {
             "enabled": true
           }
         ],     
-        "authorizationStrategyOverridesForCRUD": [],
-        "children": []
+        "authorizationStrategyOverrides": []
       }
     ],
     "name": "WrongRelationship-{{InvalidParentClaimSetGUID}}"
