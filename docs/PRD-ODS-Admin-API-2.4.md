@@ -155,13 +155,19 @@ previously returned database connection strings have been removed.
 > Unless otherwise specified, functional requirements apply equally to the v2
 > and v3 modes.
 
-### Credentials (JTBD 1)
+### 3.1 API mode, versioning, and endpoint registration
+
+- **FR-VERSION-5** (modified) The application SHALL generate Swagger/OpenAPI
+  descriptions for all configured API versions ~~when Swagger is enabled~~, served
+  at route `/metadata/specifications`.
+
+### 3.2 Credentials (JTBD 1)
 
 - **FR-CRED-1**: The v3 ApiClients endpoint SHALL expose the client
   credential identifier as `clientId` (replacing the legacy `key` field) and
   SHALL NOT return the deprecated `useSandbox` or `sandboxType` fields.
 
-### Education Organizations (JTBD 9)
+### 3.3 Education Organizations (JTBD 9)
 
 - **FR-EDORG-1**: The API SHALL periodically refresh cached education
   organization data for each configured ODS instance at an
@@ -185,7 +191,7 @@ previously returned database connection strings have been removed.
   database name, and SHALL include database instances that are not yet
   linked to an ODS instance when listing all instances.
 
-### Database Instances (JTBD 11)
+### 3.4 Database Instances (JTBD 11)
 
 - **FR-DBINST-1**: The API SHALL allow an administrator to create a database
   instance from a named, approved database template via `POST /v2/dbinstances` /
@@ -215,7 +221,7 @@ previously returned database connection strings have been removed.
   `DeleteError`) so administrators can track provisioning progress and
   failures.
 
-### Asynchronous Job Tracking
+### 3.5 Asynchronous Job Tracking
 
 - **FR-JOB-1**: The API SHALL allow an administrator to query the status of an
   asynchronous background job (such as database instance provisioning or
@@ -223,7 +229,7 @@ previously returned database connection strings have been removed.
   /v3/jobs/{jobId}`, including when the job was created and, if applicable, when
   it finished.
 
-### Tenants and Deployment Discovery (JTBD 12)
+### 3.6 Tenants and Deployment Discovery (JTBD 12)
 
 - **FR-TENANT-1**: The API SHALL NOT expose tenant database connection string
   details through any tenant list or detail endpoint.
@@ -233,7 +239,7 @@ previously returned database connection strings have been removed.
 - **FR-TENANT-3**: The Information endpoint SHALL report the active API
   specification version (`specificationVersion`).
 
-### v3 API Conventions (Objective 4)
+### 3.7 v3 API Conventions (Objective 4)
 
 - **FR-V3-0**: The v3 API mode SHALL duplicate the `v2` API mode except as
   described in the remaining functional requirements.
@@ -251,7 +257,7 @@ previously returned database connection strings have been removed.
   `dataStores` and the database instance resource `dbDataStores`, including
   corresponding field names (for example `dataStoreId`, `dataStoreType`).
 
-### Claim Sets / Security
+### 3.8 Claim Sets / Security
 
 - **FR-CLAIM-9**: The API SHALL reject requests to create, copy, edit, or
   import a claim set whose name contains whitespace.
@@ -262,8 +268,32 @@ previously returned database connection strings have been removed.
 
 ## 4. Non-Functional Requirements
 
-This release PRD only adds non-functional requirements that directly affect
-end-user behavior for the v2.4 functionality.
+### 4.1 Security and Privacy - Audit Logging
+
+> [!TIP]
+> Audit logging is a stretch goal for the 2.4 release
+
+- **NFR-AUDIT-1**: The application SHOULD log all application authentication
+  events, whether successful or not, to an audit log table. The authentication
+  audit log at minimum would contain: source IP address, client_id, timestamp.
+- **NFR-AUDIT-2**: The application SHOULD log all actions, writing them to an
+  audit log table. The action audit log at minimum would contain client_id,
+  timestamp, HTTP verb, HTTP URL.
+- **NFR-AUDIT-4**: When deleting an object, the audit log MAY include the unique
+  natural key attribute for improved diagnostics; for example, if deleting an
+  `ApiClient` object, recording the `client_id` of the deleted object would be
+  better than only recording the synthetic id (which is embedded in the URL).
+
+> [!NOTE]
+> Please note that AUDIT-4 is a "MAY" requirement, meaning that it is
+> stretch goal on top of a stretch goal - acknowledging that it requires more
+> work than the regular logging.
+
+- **NFR-AUDIT-3**: The application SHOULD make audit logging configurable, so
+  that System Administrators may choose when to enable or disable.
+- **NFR-AUDIT-4**: The audit log SHALL NOT be accessible from an HTTP endpoint.
+
+### 4.2 Software Development Lifecycle
 
 - ***NFR-SDLC-6**: The application SHALL use the currently-supported framework
   SDK (.NET 10).
