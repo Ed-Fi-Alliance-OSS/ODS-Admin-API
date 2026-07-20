@@ -259,6 +259,7 @@ internal class TenantServiceTests
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
         result.OdsInstances[0].Status.ShouldBe(DbInstanceStatus.Created.ToString());
+        result.OdsInstances[0].DbInstanceId.ShouldBeNull();
         result.OdsInstances[0].DatabaseTemplate.ShouldBeNull();
         result.OdsInstances[0].DatabaseName.ShouldBeNull();
     }
@@ -291,6 +292,7 @@ internal class TenantServiceTests
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
         var instance = result.OdsInstances[0];
+        instance.DbInstanceId.ShouldBe(10);
         instance.Status.ShouldBe(DbInstanceStatus.CreateInProgress.ToString());
         instance.DatabaseTemplate.ShouldBe("Minimal");
         instance.DatabaseName.ShouldBe("EdFi_ODS_2");
@@ -324,8 +326,8 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(2);
-        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -1 && i.Name == "Unlinked-A");
-        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -2 && i.Name == "Unlinked-B");
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -1 && i.Name == "Unlinked-A" && i.DbInstanceId == 20);
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -2 && i.Name == "Unlinked-B" && i.DbInstanceId == 21);
     }
 
     [Test]
@@ -360,11 +362,13 @@ internal class TenantServiceTests
         result!.OdsInstances.Count.ShouldBe(2);
 
         var linkedInstance = result.OdsInstances.Single(i => i.OdsInstanceId == 5);
+        linkedInstance.DbInstanceId.ShouldBe(30);
         linkedInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
         linkedInstance.DatabaseTemplate.ShouldBe("Minimal");
         linkedInstance.DatabaseName.ShouldBe("EdFi_ODS_5");
 
         var unlinkedInstance = result.OdsInstances.Single(i => i.OdsInstanceId == -1);
+        unlinkedInstance.DbInstanceId.ShouldBe(31);
         unlinkedInstance.Name.ShouldBe("Unlinked-C");
         unlinkedInstance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
     }

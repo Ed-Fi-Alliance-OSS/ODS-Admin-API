@@ -13,6 +13,9 @@ public class OdsInstanceWithEducationOrganizationsModel
     [SwaggerSchema(Description = "ODS instance identifier", Nullable = false)]
     public int Id { get; set; }
 
+    [SwaggerSchema(Description = "DbInstance identifier for this ODS instance")]
+    public int? DbInstanceId { get; set; }
+
     [SwaggerSchema(Description = "ODS instance name", Nullable = false)]
     public string Name { get; set; } = string.Empty;
 

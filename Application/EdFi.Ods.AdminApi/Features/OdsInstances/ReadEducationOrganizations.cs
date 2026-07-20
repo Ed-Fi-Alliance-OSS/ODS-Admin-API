@@ -82,6 +82,7 @@ public class ReadEducationOrganizations : IFeature
         {
             if (linkedById.TryGetValue(instance.Id, out var dbInstance))
             {
+                instance.DbInstanceId = dbInstance.Id;
                 instance.Status = dbInstance.Status;
                 instance.DatabaseTemplate = dbInstance.DatabaseTemplate;
                 instance.DatabaseName = dbInstance.DatabaseName;
@@ -100,6 +101,7 @@ public class ReadEducationOrganizations : IFeature
                 instances.Add(new OdsInstanceWithEducationOrganizationsModel
                 {
                     Id = negativeId--,
+                    DbInstanceId = dbInstance.Id,
                     Name = dbInstance.Name ?? string.Empty,
                     Status = dbInstance.Status,
                     DatabaseTemplate = dbInstance.DatabaseTemplate,
