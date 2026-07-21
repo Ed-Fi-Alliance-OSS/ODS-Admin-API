@@ -26,12 +26,102 @@ grant_type=client_credentials&scope=edfi_admin_api/full_access
 
 
 ### Get claimsets V1
-GET {{adminapi_url}}/v1/claimsets
+GET {{adminapi_url}}/v1/claimSets
 Content-Type: application/json
 Authorization: bearer {{token}}
 
 
 ### Get claimsets V2
-GET {{adminapi_url}}/v2/claimsets
+GET {{adminapi_url}}/v2/claimSets
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get claimsets V3
+GET {{adminapi_url}}/v3/claimSets
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Import claimset V3
+# @name importClaimSetV3
+POST {{adminapi_url}}/v3/claimSets/import
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+    "name": "ClaimSet_Import_Example_PLEASE_DELETE",
+    "resourceClaims": [
+        {
+            "name": "managedDescriptors",
+            "claimName": "http://ed-fi.org/ods/identity/claims/domains/managedDescriptors",
+            "parentClaimName": null,
+            "actions": [
+                {
+                  "name": "Create",
+                  "enabled": true
+                },
+                {
+                  "name": "Read",
+                  "enabled": true
+                },
+                {
+                  "name": "Update",
+                  "enabled": true
+                },
+                {
+                  "name": "Delete",
+                  "enabled": true
+                }
+            ],
+            "_defaultAuthorizationStrategies": [
+                {
+                    "actionName": "Create",
+                    "authorizationStrategies": [
+                        {
+                            "authStrategyName": "NamespaceBased"
+                        }
+                    ]
+                },
+                {
+                    "actionName": "Read",
+                    "authorizationStrategies": [
+                        {
+                            "authStrategyName": "NoFurtherAuthorizationRequired"
+                        }
+                    ]
+                },
+                {
+                    "actionName": "Update",
+                    "authorizationStrategies": [
+                        {
+                            "authStrategyName": "NamespaceBased"
+                        }
+                    ]
+                },
+                {
+                    "actionName": "Delete",
+                    "authorizationStrategies": [
+                        {
+                            "authStrategyName": "NamespaceBased"
+                        }
+                    ]
+                }
+            ],
+            "authorizationStrategyOverrides": []
+        }
+    ]
+}
+
+### Get claimset details V3
+GET {{importClaimSetV3.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Export claimset V3
+GET {{importClaimSetV3.response.headers.Location}}/export
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Delete claimset V3
+DELETE {{importClaimSetV3.response.headers.Location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
