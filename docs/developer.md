@@ -194,9 +194,38 @@ The source code includes two main types of test projects:
 
 * **Integration tests** (`*.DBTests`):  
   These tests exercise the repository layer and require a database connection.
+  * Connection strings are read from each `*.DBTests` project's `appsettings.json`
+    (e.g. `Application/EdFi.Ods.AdminApi.DBTests/appsettings.json`), which by
+    default points to `localhost` using the `EdFi_Admin_Test` / `EdFi_Security_Test`
+    databases with SQL auth (`sa` / `P@55w0rd`). Provision those databases first —
+    see [Resetting the Database State](#resetting-the-database-state) above.
   * Run with: `build.ps1 -Command IntegrationTest`
+  * To use different credentials instead of editing `appsettings.json`, pass
+    `-UseIntegratedSecurity`, `-DbUsername`, and `-DbPassword` to the same command.
   * To collect code coverage, use: `build.ps1 -Command IntegrationTest -RunCoverageAnalysis`  
     This will also generate an HTML report in the `coveragereport` directory.
+
+* **Running a subset of tests**:  
+  Both `UnitTest` and `IntegrationTest` accept a `-TestFilter` parameter, passed
+  through to `dotnet test --filter`. Use it to run only the tests you've modified
+  instead of a full suite, for example:
+
+  ```powershell
+  build.ps1 -Command UnitTest -TestFilter "FullyQualifiedName~SomeTestClassName"
+  build.ps1 -Command IntegrationTest -TestFilter "FullyQualifiedName~SomeTestClassName"
+  ```
+
+  Note that `IntegrationTest` still resets the test databases for every supported
+  ODS version and runs all `*.DBTests` projects — `-TestFilter` only narrows which
+  tests execute within each project, and projects with no matching tests report
+  zero tests run rather than being skipped.
+
+  * Add `-NoBuild` to skip the implicit build step (passes `--no-build` to
+    `dotnet test`), useful when you've already built and are just re-running tests:
+
+  ```powershell
+  build.ps1 -Command UnitTest -TestFilter "FullyQualifiedName~SomeTestClassName" -NoBuild
+  ```
 
 Alternatively, you can run both unit and integration tests together with:  
 `build.ps1 -Command BuildAndTest [-RunCoverageAnalysis]`
