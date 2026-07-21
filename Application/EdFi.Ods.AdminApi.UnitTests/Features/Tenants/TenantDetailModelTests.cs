@@ -41,6 +41,7 @@ public class TenantDetailModelTests
         var odsInstance = new TenantOdsInstanceModel()
         {
             OdsInstanceId = 1,
+            DbInstanceId = 10,
             EducationOrganizations = [educationOrganization]
         };
 
@@ -53,6 +54,7 @@ public class TenantDetailModelTests
         // Assert
         tenantDetailModel.TenantName.ShouldBe(tenantName);
         tenantDetailModel.OdsInstances.ShouldBe([odsInstance]);
+        tenantDetailModel.OdsInstances[0].DbInstanceId.ShouldBe(10);
         tenantDetailModel.OdsInstances[0].EducationOrganizations.ShouldBe([educationOrganization]);
     }
 

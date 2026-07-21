@@ -150,6 +150,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
             {
                 if (linkedDbInstancesByOdsId.TryGetValue(odsInstance.OdsInstanceId, out var dbInstance))
                 {
+                    odsInstance.DbInstanceId = dbInstance.Id;
                     odsInstance.Status = dbInstance.Status;
                     odsInstance.DatabaseTemplate = dbInstance.DatabaseTemplate;
                     odsInstance.DatabaseName = dbInstance.DatabaseName;

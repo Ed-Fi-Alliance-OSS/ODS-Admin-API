@@ -56,6 +56,7 @@ public class ReadEducationOrganizationsTests
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
         ok.Value!.Count.ShouldBe(1);
+        ok.Value[0].DbInstanceId.ShouldBe(10);
         ok.Value[0].Status.ShouldBe("Healthy");
         ok.Value[0].DatabaseTemplate.ShouldBe("Minimal");
         ok.Value[0].DatabaseName.ShouldBe("EdFi_Ods");
@@ -77,6 +78,7 @@ public class ReadEducationOrganizationsTests
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
+        ok.Value![0].DbInstanceId.ShouldBeNull();
         ok.Value![0].Status.ShouldBe(DbInstanceStatus.Created.ToString());
         ok.Value[0].DatabaseTemplate.ShouldBeNull();
         ok.Value[0].DatabaseName.ShouldBeNull();
@@ -100,8 +102,10 @@ public class ReadEducationOrganizationsTests
         ok.ShouldNotBeNull();
         ok.Value!.Count.ShouldBe(2);
         ok.Value[0].Id.ShouldBe(-1);
+        ok.Value[0].DbInstanceId.ShouldBe(1);
         ok.Value[0].Name.ShouldBe("Unlinked-A");
         ok.Value[1].Id.ShouldBe(-2);
+        ok.Value[1].DbInstanceId.ShouldBe(2);
         ok.Value[1].Name.ShouldBe("Unlinked-B");
         ok.Value.ShouldAllBe(i => i.EducationOrganizations.Count == 0);
     }
@@ -152,6 +156,7 @@ public class ReadEducationOrganizationsTests
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
+        ok.Value![0].DbInstanceId.ShouldBe(5);
         ok.Value![0].Status.ShouldBe("Healthy");
         ok.Value[0].DatabaseTemplate.ShouldBe("Minimal");
         ok.Value[0].DatabaseName.ShouldBe("EdFi_Ods_7");

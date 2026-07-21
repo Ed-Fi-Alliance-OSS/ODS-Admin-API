@@ -93,6 +93,7 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
 
             results.Count.ShouldBe(1);
             var result = results[0];
+            result.Id.ShouldBe(dbInstance.Id);
             result.OdsInstanceId.ShouldBe(42);
             result.Status.ShouldBe("Created");
             result.DatabaseTemplate.ShouldBe("Minimal");
