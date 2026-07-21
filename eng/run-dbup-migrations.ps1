@@ -17,6 +17,8 @@ Param(
         "useIntegratedSecurity" = $true
         "adminDatabaseName" = "EdFi_Admin"
         "securityDatabaseName" = "EdFi_Security"
+        "dbDeployVersion" = "4.1.52"
+        "standardVersion" = "5.2.0"
     }
 )
 
@@ -36,6 +38,8 @@ $arguments = @{
     Username = $config.databaseUser
     Password = $config.databasePassword
     NuGetFeed = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+    DbDeployVersion = $config.dbDeployVersion
+    StandardVersion = $config.standardVersion
 }
 
 Write-Output "Installing the Admin API tables to $($arguments.DatabaseName)"
@@ -57,6 +61,8 @@ $arguments = @{
     Username = $config.databaseUser
     Password = $config.databasePassword
     NuGetFeed = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
+    DbDeployVersion = $config.dbDeployVersion
+    StandardVersion = $config.standardVersion
 }
 
 Write-Output "Installing the Admin API tables to $($arguments.DatabaseName)"
