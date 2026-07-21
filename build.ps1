@@ -44,6 +44,18 @@
         Output: test results displayed in the console and saved to XML files.
 
     .EXAMPLE
+        .\build.ps1 unittest -TestFilter "FullyQualifiedName~SomeTestClassName"
+
+        Runs only the tests matching the given dotnet test filter expression.
+        Works with both UnitTest and IntegrationTest commands.
+
+    .EXAMPLE
+        .\build.ps1 unittest -NoBuild
+
+        Skips the implicit build step in `dotnet test` by passing "--no-build".
+        Works with both UnitTest and IntegrationTest commands.
+
+    .EXAMPLE
         .\build.ps1 push -NuGetApiKey $env:nuget_key
 
     .EXAMPLE
@@ -135,7 +147,16 @@ param(
 
     # Option to run integration tests with no integrated security
     [string]
-    $DbPassword
+    $DbPassword,
+
+    # Optional dotnet test filter expression (e.g. "FullyQualifiedName~SomeClassName")
+    # to run a subset of tests within the UnitTest or IntegrationTest commands.
+    [string]
+    $TestFilter,
+
+    # Skip building before running tests; passes "--no-build" to dotnet test.
+    [switch]
+    $NoBuild
 )
 
 $Env:MSBUILDDISABLENODEREUSE = "1"
@@ -171,6 +192,8 @@ $script:coverageOutputFile = "coverage.cobertura.xml"
 $script:targetDir = "coveragereport"
 
 $script:RunCoverageAnalysis = $RunCoverageAnalysis
+$script:TestFilter = $TestFilter
+$script:NoBuild = $NoBuild
 
 Import-Module -Name "$PSScriptRoot/eng/build-helpers.psm1" -Force
 Import-Module -Name "$PSScriptRoot/eng/package-manager.psm1" -Force
@@ -260,13 +283,19 @@ function RunTests {
     $testAssemblies | ForEach-Object {
         Write-Output "Executing: dotnet test $($_)"
         Invoke-Execute {
+            $filterArgs = @()
+            if ($script:TestFilter) { $filterArgs = @('--filter', $script:TestFilter) }
+
+            $noBuildArgs = @()
+            if ($script:NoBuild) { $noBuildArgs = @('--no-build') }
+
             if ($script:RunCoverageAnalysis)
             {
-                & dotnet test $_ --collect 'XPlat Code Coverage' --settings "$solutionRoot/coverlet.runsettings" --logger "trx;LogFileName=$($_).trx" --nologo
+                & dotnet test $_ --collect 'XPlat Code Coverage' --settings "$solutionRoot/coverlet.runsettings" --logger "trx;LogFileName=$($_).trx" --nologo @filterArgs @noBuildArgs
             }
             else
             {
-                & dotnet test $_ --logger "trx;LogFileName=$($_).trx" --nologo
+                & dotnet test $_ --logger "trx;LogFileName=$($_).trx" --nologo @filterArgs @noBuildArgs
             }
         }
     }
