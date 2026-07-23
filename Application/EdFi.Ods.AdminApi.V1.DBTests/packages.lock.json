@@ -131,8 +131,8 @@
       },
       "Autofac": {
         "type": "Transitive",
-        "resolved": "6.5.0",
-        "contentHash": "sm6HWWBDEoTPGXeyOchMygJ/7L89VxmVH72BFxakG88J34AVjA8RMi5jbv3PdpUtXI/d9ZLKOaxCmOSIo2K4aA=="
+        "resolved": "9.3.0",
+        "contentHash": "OXigGAa1oFYbHmI9lEEYYSRQvbtGC3AnNdg+4BEhHa0x8XlJrYOS7Sg5fZtmlrHPLp+gRsDnz2aqbsglNUnv0g=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -871,7 +871,7 @@
           "Asp.Versioning.Http": "[8.1.1, )",
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
           "AspNetCore.HealthChecks.SqlServer": "[9.0.0, )",
-          "Autofac.Extras.DynamicProxy": "[7.1.0, )",
+          "Autofac.Extras.DynamicProxy": "[8.0.0, )",
           "EFCore.NamingConventions": "[10.0.1, )",
           "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
           "EdFi.Suite3.Common": "[7.4.296, )",
@@ -927,12 +927,12 @@
       },
       "Autofac.Extras.DynamicProxy": {
         "type": "CentralTransitive",
-        "requested": "[7.1.0, )",
-        "resolved": "7.1.0",
-        "contentHash": "Da6Szv7A1LK/cTdeoyqS45zb/BC5vep8+86f6C1oh2UhZaYtiijlNfLWamp3lxe0uUQ33kFe1dDCjsvfwJWzLg==",
+        "requested": "[8.0.0, )",
+        "resolved": "8.0.0",
+        "contentHash": "0EBAve2CmfOsxAPbmO0dJwgLHtrdlSwjxSIcIwSZ03fgPUIyt8Y8LaOp2o8ieSMW8XUpx6vCTE334irE4J/CUA==",
         "dependencies": {
-          "Autofac": "6.5.0",
-          "Castle.Core": "5.1.1"
+          "Autofac": "9.3.0",
+          "Castle.Core": "5.2.1"
         }
       },
       "Azure.Identity": {
