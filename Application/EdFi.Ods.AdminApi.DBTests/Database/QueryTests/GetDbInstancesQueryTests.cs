@@ -4,7 +4,9 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
@@ -16,6 +18,9 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetDbInstancesQueryTests : AdminApiDbContextTestBase
 {
+    private static IEnumerable<string> AllStatuses =>
+        Enum.GetValues<DbInstanceStatus>().Select(status => status.ToString());
+
     [Test]
     public void ShouldRetrieveDbInstances()
     {
@@ -148,6 +153,24 @@ public class GetDbInstancesQueryTests : AdminApiDbContextTestBase
             var results = query.Execute(new CommonQueryParams(), null, null);
             var ids = results.Select(r => r.Id).ToList();
             ids.ShouldBe(ids.OrderBy(x => x).ToList());
+        });
+    }
+
+    [Test]
+    [TestCaseSource(nameof(AllStatuses))]
+    public void ShouldIncludeDbInstances_ForAllStatuses_WhenNoFiltersApplied(string status)
+    {
+        Save(
+            new DbInstance { Name = $"Status-{status}", OdsInstanceId = 111, Status = status, DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow },
+            new DbInstance { Name = "Active Instance", OdsInstanceId = 222, Status = "Created", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow }
+        );
+
+        Transaction(context =>
+        {
+            var query = new GetDbInstancesQuery(context, Testing.GetAppSettings());
+            var results = query.Execute(new CommonQueryParams(0, null), null, null);
+            results.Count.ShouldBe(2);
+            results.ShouldContain(r => r.Name == $"Status-{status}" && r.Status == status);
         });
     }
 }

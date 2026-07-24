@@ -161,7 +161,17 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 }
             }
 
-            var unlinkedDbInstances = allDbInstances.Where(d => d.OdsInstanceId is null).ToList();
+            var existingOdsInstanceIds = tenantDetails.OdsInstances
+                .Select(i => i.OdsInstanceId)
+                .ToHashSet();
+
+            var unlinkedDbInstances = allDbInstances
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDbInstances
+                    .Where(d => d.OdsInstanceId is not null && !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
+                .ToList();
             var negativeId = -1;
             foreach (var dbInstance in unlinkedDbInstances)
             {
