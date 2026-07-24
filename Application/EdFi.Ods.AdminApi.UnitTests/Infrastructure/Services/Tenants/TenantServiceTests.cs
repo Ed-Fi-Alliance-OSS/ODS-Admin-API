@@ -409,4 +409,47 @@ internal class TenantServiceTests
         result.OdsInstances[0].DbInstanceId.ShouldBe(42);
         result.OdsInstances[0].Status.ShouldBe(status);
     }
+
+    [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_AppendsLatestDbInstancePerMissingOdsInstanceId()
+    {
+        _appSettings.AppSettings.MultiTenancy = false;
+        var service = new TenantService(_options, _memoryCache);
+
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([]);
+
+        var older = new DbInstance
+        {
+            Id = 50,
+            Name = "Orphan-Older",
+            OdsInstanceId = 9003,
+            Status = DbInstanceStatus.CreateFailed.ToString(),
+            DatabaseTemplate = "Minimal",
+            DatabaseName = "EdFi_ODS_9003_old",
+            LastRefreshed = System.DateTime.UtcNow.AddMinutes(-10)
+        };
+
+        var newer = new DbInstance
+        {
+            Id = 51,
+            Name = "Orphan-Newer",
+            OdsInstanceId = 9003,
+            Status = DbInstanceStatus.Deleted.ToString(),
+            DatabaseTemplate = "Minimal",
+            DatabaseName = "EdFi_ODS_9003_new",
+            LastModifiedDate = System.DateTime.UtcNow
+        };
+
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([older, newer]);
+
+        var result = await service.GetTenantEdOrgsByInstancesAsync(
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+
+        result.ShouldNotBeNull();
+        result!.OdsInstances.Count.ShouldBe(1);
+        result.OdsInstances[0].DbInstanceId.ShouldBe(51);
+        result.OdsInstances[0].Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
+        result.OdsInstances[0].Name.ShouldBe("Orphan-Newer");
+    }
 }

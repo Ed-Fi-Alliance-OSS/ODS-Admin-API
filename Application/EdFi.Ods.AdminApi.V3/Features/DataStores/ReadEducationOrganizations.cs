@@ -99,7 +99,14 @@ public class ReadEducationOrganizations : IFeature
                 .ToHashSet();
 
             var negativeId = -1;
-            foreach (var dbDataStore in allDbDataStores.Where(d => d.OdsInstanceId is null || !existingDataStoreIds.Contains(d.OdsInstanceId.Value)))
+            var unlinkedOrOrphanedDbDataStores = allDbDataStores
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDbDataStores
+                    .Where(d => d.OdsInstanceId is not null && !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()));
+
+            foreach (var dbDataStore in unlinkedOrOrphanedDbDataStores)
             {
                 instances.Add(new DataStoreWithEducationOrganizationsModel
                 {

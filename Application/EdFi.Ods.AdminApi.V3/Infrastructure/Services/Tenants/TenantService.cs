@@ -165,7 +165,11 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 .ToHashSet();
 
             var unlinkedDbDataStores = allDbDataStores
-                .Where(d => d.OdsInstanceId is null || !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDbDataStores
+                    .Where(d => d.OdsInstanceId is not null && !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
                 .ToList();
             var negativeId = -1;
             foreach (var dbDataStore in unlinkedDbDataStores)
@@ -185,5 +189,4 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
         return tenants ?? [];
     }
 }
-
 

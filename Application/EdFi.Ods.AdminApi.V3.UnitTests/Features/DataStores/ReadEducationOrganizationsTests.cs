@@ -132,6 +132,27 @@ public class ReadEducationOrganizationsTests
     }
 
     [Test]
+    public async Task GetEducationOrganizations_AppendsLatestDbDataStorePerMissingDataStoreId()
+    {
+        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
+            .Returns(new List<DataStoreWithEducationOrganizationsModel>());
+        A.CallTo(() => _getDbDataStoresQuery.Execute(A<CommonQueryParams>._, null, null))
+            .Returns(new List<DbInstance>
+            {
+                new DbInstance { Id = 20, Name = "Orphan-Older", OdsInstanceId = 999, Status = DbInstanceStatus.CreateFailed.ToString(), DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_Old", LastRefreshed = DateTime.UtcNow.AddMinutes(-10) },
+                new DbInstance { Id = 21, Name = "Orphan-Newer", OdsInstanceId = 999, Status = DbInstanceStatus.Deleted.ToString(), DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_New", LastModifiedDate = DateTime.UtcNow }
+            });
+
+        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbDataStoresQuery, _queryParams);
+
+        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<DataStoreWithEducationOrganizationsModel>>;
+        ok.ShouldNotBeNull();
+        ok.Value!.Count.ShouldBe(1);
+        ok.Value[0].Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
+        ok.Value[0].Name.ShouldBe("Orphan-Newer");
+    }
+
+    [Test]
     public async Task GetEducationOrganizationsByDataStore_DoesNotAppendUnlinkedDbDataStores()
     {
         var dataStoreId = 3;
