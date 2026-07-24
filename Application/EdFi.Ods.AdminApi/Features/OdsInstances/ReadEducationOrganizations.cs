@@ -95,8 +95,19 @@ public class ReadEducationOrganizations : IFeature
 
         if (includeUnlinked)
         {
+            var existingOdsInstanceIds = instances
+                .Select(i => i.Id)
+                .ToHashSet();
+
             var negativeId = -1;
-            foreach (var dbInstance in allDbInstances.Where(d => d.OdsInstanceId is null))
+            var unlinkedOrOrphanedDbInstances = allDbInstances
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDbInstances
+                    .Where(d => d.OdsInstanceId is not null && !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()));
+
+            foreach (var dbInstance in unlinkedOrOrphanedDbInstances)
             {
                 instances.Add(new OdsInstanceWithEducationOrganizationsModel
                 {
