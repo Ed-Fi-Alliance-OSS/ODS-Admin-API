@@ -45,7 +45,7 @@ script:post-response {
   
   test("POST ClaimSet NotFound: type URN is correct", function () {
       const response = res.getBody();
-      expect(response.type).to.equal("urn:ed-fi:admin-api:not-found");
+      expect(response.type).to.equal("urn:ed-fi:management-api:not-found");
   });
   
   

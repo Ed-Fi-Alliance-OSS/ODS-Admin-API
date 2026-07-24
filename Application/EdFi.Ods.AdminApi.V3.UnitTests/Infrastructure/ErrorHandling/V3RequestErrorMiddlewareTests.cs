@@ -169,8 +169,8 @@ public class V3RequestErrorMiddlewareTests
     [Test]
     public async Task InvokeAsync_WhenPipelineAlreadyReturnsProblemDetails_DoesNotOverwriteBody()
     {
-        const string existingBody =
-            "{\"type\":\"urn:ed-fi:admin-api:bad-request:version-mismatch\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Wrong API version for this instance mode.\"}";
+        var existingBody =
+            $"{{\"type\":\"{AdminApiProblemTypes.BadRequestVersionMismatch}\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Wrong API version for this instance mode.\"}}";
 
         var middleware = new V3RequestErrorMiddleware(async context =>
         {

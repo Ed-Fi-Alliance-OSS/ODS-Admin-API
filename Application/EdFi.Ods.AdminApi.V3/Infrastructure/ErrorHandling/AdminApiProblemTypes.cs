@@ -7,10 +7,10 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 
 public static class AdminApiProblemTypes
 {
-    public const string BadRequestValidation = "urn:ed-fi:admin-api:bad-request:validation";
-    public const string NotFound = "urn:ed-fi:admin-api:not-found";
-    public const string BadRequestData = "urn:ed-fi:admin-api:bad-request:data";
-    public const string BadRequest = "urn:ed-fi:admin-api:bad-request";
-    public const string InternalServerError = "urn:ed-fi:admin-api:internal-server-error";
-    public const string BadRequestVersionMismatch = "urn:ed-fi:admin-api:bad-request:version-mismatch";
+    public const string BadRequestValidation = "urn:ed-fi:management-api:bad-request:validation";
+    public const string NotFound = "urn:ed-fi:management-api:not-found";
+    public const string BadRequestData = "urn:ed-fi:management-api:bad-request:data";
+    public const string BadRequest = "urn:ed-fi:management-api:bad-request";
+    public const string InternalServerError = "urn:ed-fi:management-api:internal-server-error";
+    public const string BadRequestVersionMismatch = "urn:ed-fi:management-api:bad-request:version-mismatch";
 }

@@ -53,7 +53,7 @@ script:post-response {
   
   test("PUT ClaimSets Invalid Json: type URN is correct", function () {
       const response = res.getBody();
-      expect(response.type).to.equal("urn:ed-fi:admin-api:bad-request:validation");
+      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:validation");
   });
 }
 
