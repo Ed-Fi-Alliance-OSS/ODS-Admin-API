@@ -94,8 +94,12 @@ public class ReadEducationOrganizations : IFeature
 
         if (includeUnlinked)
         {
+            var existingDataStoreIds = instances
+                .Select(i => i.Id)
+                .ToHashSet();
+
             var negativeId = -1;
-            foreach (var dbDataStore in allDbDataStores.Where(d => d.OdsInstanceId is null))
+            foreach (var dbDataStore in allDbDataStores.Where(d => d.OdsInstanceId is null || !existingDataStoreIds.Contains(d.OdsInstanceId.Value)))
             {
                 instances.Add(new DataStoreWithEducationOrganizationsModel
                 {

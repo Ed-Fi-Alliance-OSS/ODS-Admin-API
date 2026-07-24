@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
@@ -29,6 +30,10 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.Tenants;
 [TestFixture]
 internal class TenantServiceTests
 {
+    private static IEnumerable<string> AllStatuses =>
+        Enum.GetValues<DbInstanceStatus>()
+            .Select(status => status.ToString());
+
     private IOptionsSnapshot<AppSettingsFile> _options = null!;
     private IMemoryCache _memoryCache = null!;
     private AppSettingsFile _appSettings = null!;
@@ -371,5 +376,37 @@ internal class TenantServiceTests
         unlinkedInstance.DbInstanceId.ShouldBe(31);
         unlinkedInstance.Name.ShouldBe("Unlinked-C");
         unlinkedInstance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+    }
+
+    [Test]
+    [TestCaseSource(nameof(AllStatuses))]
+    public async Task GetTenantEdOrgsByInstancesAsync_AddsDbInstance_WhenLinkedToMissingOdsInstance_ForAllStatuses(string status)
+    {
+        _appSettings.AppSettings.MultiTenancy = false;
+        var service = new TenantService(_options, _memoryCache);
+
+        A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([]);
+
+        var orphan = new DbInstance
+        {
+            Id = 42,
+            Name = $"Orphan-{status}",
+            OdsInstanceId = 9002,
+            Status = status,
+            DatabaseTemplate = "Minimal",
+            DatabaseName = "EdFi_ODS_9002",
+            LastRefreshed = System.DateTime.UtcNow
+        };
+        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([orphan]);
+
+        var result = await service.GetTenantEdOrgsByInstancesAsync(
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+
+        result.ShouldNotBeNull();
+        result!.OdsInstances.Count.ShouldBe(1);
+        result.OdsInstances[0].OdsInstanceId.ShouldBe(-1);
+        result.OdsInstances[0].DbInstanceId.ShouldBe(42);
+        result.OdsInstances[0].Status.ShouldBe(status);
     }
 }

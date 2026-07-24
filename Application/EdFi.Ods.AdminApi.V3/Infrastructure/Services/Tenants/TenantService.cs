@@ -160,7 +160,13 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 }
             }
 
-            var unlinkedDbDataStores = allDbDataStores.Where(d => d.OdsInstanceId is null).ToList();
+            var existingDataStoreIds = tenantDetails.DataStores
+                .Select(i => i.DataStoreId)
+                .ToHashSet();
+
+            var unlinkedDbDataStores = allDbDataStores
+                .Where(d => d.OdsInstanceId is null || !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
+                .ToList();
             var negativeId = -1;
             foreach (var dbDataStore in unlinkedDbDataStores)
             {
@@ -179,6 +185,5 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
         return tenants ?? [];
     }
 }
-
 
 

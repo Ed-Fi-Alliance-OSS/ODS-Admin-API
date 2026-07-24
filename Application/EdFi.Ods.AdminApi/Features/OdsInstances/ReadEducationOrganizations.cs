@@ -95,8 +95,12 @@ public class ReadEducationOrganizations : IFeature
 
         if (includeUnlinked)
         {
+            var existingOdsInstanceIds = instances
+                .Select(i => i.Id)
+                .ToHashSet();
+
             var negativeId = -1;
-            foreach (var dbInstance in allDbInstances.Where(d => d.OdsInstanceId is null))
+            foreach (var dbInstance in allDbInstances.Where(d => d.OdsInstanceId is null || !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value)))
             {
                 instances.Add(new OdsInstanceWithEducationOrganizationsModel
                 {

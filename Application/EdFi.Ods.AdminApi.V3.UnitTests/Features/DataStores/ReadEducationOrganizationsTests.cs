@@ -4,6 +4,8 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Collections.Generic;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -20,6 +22,10 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DataStores;
 [TestFixture]
 public class ReadEducationOrganizationsTests
 {
+    private static IEnumerable<string> AllStatuses =>
+        Enum.GetValues<DbInstanceStatus>()
+            .Select(status => status.ToString());
+
     private IGetEducationOrganizationsQuery _getEdOrgsQuery = null!;
     private IGetDbDataStoresQuery _getDbDataStoresQuery = null!;
     private IGetDataStoreQuery _getDataStoreQuery = null!;
@@ -102,6 +108,27 @@ public class ReadEducationOrganizationsTests
         ok.Value[1].Id.ShouldBe(-2);
         ok.Value[1].Name.ShouldBe("Unlinked-B");
         ok.Value.ShouldAllBe(i => i.EducationOrganizations.Count == 0);
+    }
+
+    [Test]
+    [TestCaseSource(nameof(AllStatuses))]
+    public async Task GetEducationOrganizations_AppendsOrphanedLinkedDbDataStore_ForAllStatuses(string status)
+    {
+        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
+            .Returns(new List<DataStoreWithEducationOrganizationsModel>());
+        A.CallTo(() => _getDbDataStoresQuery.Execute(A<CommonQueryParams>._, null, null))
+            .Returns(new List<DbInstance>
+            {
+                new DbInstance { Id = 10, Name = $"Orphan-{status}", OdsInstanceId = 999, Status = status, DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_AnyStatus" }
+            });
+
+        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbDataStoresQuery, _queryParams);
+
+        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<DataStoreWithEducationOrganizationsModel>>;
+        ok.ShouldNotBeNull();
+        ok.Value!.Count.ShouldBe(1);
+        ok.Value[0].Id.ShouldBe(-1);
+        ok.Value[0].Status.ShouldBe(status);
     }
 
     [Test]
