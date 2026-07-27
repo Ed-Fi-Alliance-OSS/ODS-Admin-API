@@ -304,7 +304,7 @@ internal class TenantServiceTests
     }
 
     [Test]
-    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedDbInstances_WithSuccessiveNegativeIds()
+    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedDbInstances_WithNullIds()
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
@@ -331,8 +331,8 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(2);
-        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -1 && i.Name == "Unlinked-A" && i.DbInstanceId == 20);
-        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == -2 && i.Name == "Unlinked-B" && i.DbInstanceId == 21);
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == null && i.Name == "Unlinked-A" && i.DbInstanceId == 20);
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == null && i.Name == "Unlinked-B" && i.DbInstanceId == 21);
     }
 
     [Test]
@@ -372,10 +372,11 @@ internal class TenantServiceTests
         linkedInstance.DatabaseTemplate.ShouldBe("Minimal");
         linkedInstance.DatabaseName.ShouldBe("EdFi_ODS_5");
 
-        var unlinkedInstance = result.OdsInstances.Single(i => i.OdsInstanceId == -1);
+        var unlinkedInstance = result.OdsInstances.Single(i => i.Name == "Unlinked-C");
         unlinkedInstance.DbInstanceId.ShouldBe(31);
         unlinkedInstance.Name.ShouldBe("Unlinked-C");
         unlinkedInstance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+        unlinkedInstance.OdsInstanceId.ShouldBeNull();
     }
 
     [Test]
@@ -405,7 +406,7 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
-        result.OdsInstances[0].OdsInstanceId.ShouldBe(-1);
+        result.OdsInstances[0].OdsInstanceId.ShouldBeNull();
         result.OdsInstances[0].DbInstanceId.ShouldBe(42);
         result.OdsInstances[0].Status.ShouldBe(status);
     }

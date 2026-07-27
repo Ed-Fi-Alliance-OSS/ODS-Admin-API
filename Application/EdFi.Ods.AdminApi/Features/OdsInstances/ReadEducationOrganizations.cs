@@ -16,15 +16,6 @@ public class ReadEducationOrganizations : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/odsInstances/edOrgs", GetEducationOrganizations)
-            .WithSummaryAndDescription(
-                "Retrieves all education organizations grouped by ODS instance",
-                "Returns all education organizations from all ODS instances in a nested structure"
-            )
-            .WithRouteOptions(b => b.WithResponse<List<OdsInstanceWithEducationOrganizationsModel>>(200))
-            .BuildForVersions(AdminApiVersions.V2);
-
-        AdminApiEndpointBuilder
             .MapGet(endpoints, "/odsInstances/{instanceId}/edOrgs", GetEducationOrganizationsByInstance)
             .WithSummaryAndDescription(
                 "Retrieves education organizations for a specific ODS instance",
@@ -32,20 +23,6 @@ public class ReadEducationOrganizations : IFeature
             )
             .WithRouteOptions(b => b.WithResponse<List<OdsInstanceWithEducationOrganizationsModel>>(200))
             .BuildForVersions(AdminApiVersions.V2);
-    }
-
-    public static async Task<IResult> GetEducationOrganizations(
-        [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
-        [FromServices] IGetDbInstancesQuery getDbInstancesQuery,
-        [AsParameters] CommonQueryParams commonQueryParams)
-    {
-        var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
-            commonQueryParams,
-            instanceId: null);
-
-        MergeDbInstanceData(educationOrganizations, getDbInstancesQuery, includeUnlinked: true);
-
-        return Results.Ok(educationOrganizations);
     }
 
     public static async Task<IResult> GetEducationOrganizationsByInstance(
@@ -61,15 +38,13 @@ public class ReadEducationOrganizations : IFeature
             commonQueryParams,
             instanceId: instanceId);
 
-        MergeDbInstanceData(educationOrganizations, getDbInstancesQuery, includeUnlinked: false);
-
+        MergeDbInstanceData(educationOrganizations, getDbInstancesQuery);
         return Results.Ok(educationOrganizations);
     }
 
     private static void MergeDbInstanceData(
         List<OdsInstanceWithEducationOrganizationsModel> instances,
-        IGetDbInstancesQuery getDbInstancesQuery,
-        bool includeUnlinked)
+        IGetDbInstancesQuery getDbInstancesQuery)
     {
         var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
@@ -80,7 +55,7 @@ public class ReadEducationOrganizations : IFeature
 
         foreach (var instance in instances)
         {
-            if (linkedById.TryGetValue(instance.Id, out var dbInstance))
+            if (instance.Id is int instanceId && linkedById.TryGetValue(instanceId, out var dbInstance))
             {
                 instance.DbInstanceId = dbInstance.Id;
                 instance.Status = dbInstance.Status;
@@ -90,35 +65,6 @@ public class ReadEducationOrganizations : IFeature
             else
             {
                 instance.Status = DbInstanceStatus.Created.ToString();
-            }
-        }
-
-        if (includeUnlinked)
-        {
-            var existingOdsInstanceIds = instances
-                .Select(i => i.Id)
-                .ToHashSet();
-
-            var negativeId = -1;
-            var unlinkedOrOrphanedDbInstances = allDbInstances
-                .Where(d => d.OdsInstanceId is null)
-                .Concat(allDbInstances
-                    .Where(d => d.OdsInstanceId is not null && !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value))
-                    .GroupBy(d => d.OdsInstanceId!.Value)
-                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()));
-
-            foreach (var dbInstance in unlinkedOrOrphanedDbInstances)
-            {
-                instances.Add(new OdsInstanceWithEducationOrganizationsModel
-                {
-                    Id = negativeId--,
-                    DbInstanceId = dbInstance.Id,
-                    Name = dbInstance.Name ?? string.Empty,
-                    Status = dbInstance.Status,
-                    DatabaseTemplate = dbInstance.DatabaseTemplate,
-                    DatabaseName = dbInstance.DatabaseName,
-                    EducationOrganizations = new()
-                });
             }
         }
     }

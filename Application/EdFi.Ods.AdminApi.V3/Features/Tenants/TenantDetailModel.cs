@@ -30,7 +30,7 @@ public class TenantDetailModel
 public class TenantDataStoreModel
 {
     [JsonPropertyName("id")]
-    public int DataStoreId { get; set; }
+    public int? DataStoreId { get; set; }
     public string Name { get; set; }
     public string? DataStoreType { get; set; }
     public string? Status { get; set; }
@@ -46,6 +46,5 @@ public class TenantDataStoreModel
         EducationOrganizations = [];
     }
 }
-
 
 
