@@ -126,7 +126,10 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             tenantDetails.DataStores = TenantMapper.ToDataStoreModelList(dataStores);
 
-            var dataStoreIdsList = tenantDetails.DataStores.Select(i => i.DataStoreId).ToArray();
+            var dataStoreIdsList = tenantDetails.DataStores
+                .Where(i => i.DataStoreId is int)
+                .Select(i => i.DataStoreId!.Value)
+                .ToArray();
 
             if (dataStoreIdsList is not null && dataStoreIdsList.Length > 0)
             {
@@ -148,7 +151,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             foreach (var dataStore in tenantDetails.DataStores)
             {
-                if (linkedDbDataStoresByDataStoreId.TryGetValue(dataStore.DataStoreId, out var dbDataStore))
+                if (dataStore.DataStoreId is int dataStoreId && linkedDbDataStoresByDataStoreId.TryGetValue(dataStoreId, out var dbDataStore))
                 {
                     dataStore.Status = dbDataStore.Status;
                     dataStore.DatabaseTemplate = dbDataStore.DatabaseTemplate;
@@ -161,7 +164,8 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
             }
 
             var existingDataStoreIds = tenantDetails.DataStores
-                .Select(i => i.DataStoreId)
+                .Where(i => i.DataStoreId is int)
+                .Select(i => i.DataStoreId!.Value)
                 .ToHashSet();
 
             var unlinkedDbDataStores = allDbDataStores
@@ -171,10 +175,9 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                     .GroupBy(d => d.OdsInstanceId!.Value)
                     .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
                 .ToList();
-            var negativeId = -1;
             foreach (var dbDataStore in unlinkedDbDataStores)
             {
-                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDbDataStoreModel(dbDataStore, negativeId--));
+                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDbDataStoreModel(dbDataStore));
             }
 
             return tenantDetails;
@@ -189,4 +192,3 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
         return tenants ?? [];
     }
 }
-

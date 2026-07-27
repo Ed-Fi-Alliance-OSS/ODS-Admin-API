@@ -83,6 +83,57 @@ public class ReadTenantsTest
     }
 
     [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_ReturnsNullId_WhenOdsInstanceIdIsNull()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        var swaggerOptions = A.Fake<IOptions<SwaggerSettings>>();
+        string tenantName = "tenant1", tenantHeader = "tenant1";
+
+        var tenantDetailModel = new TenantDetailModel
+        {
+            TenantName = tenantName,
+            OdsInstances =
+            [
+                new TenantOdsInstanceModel
+                {
+                    OdsInstanceId = null,
+                    Name = "Unlinked",
+                    EducationOrganizations = []
+                }
+            ]
+        };
+
+        var request = A.Fake<HttpRequest>();
+        var headers = A.Fake<IHeaderDictionary>();
+        A.CallTo(() => request.Headers).Returns(headers);
+        A.CallTo(() => headers["tenant"]).Returns(new StringValues(tenantHeader));
+        A.CallTo(() => headers.Referer).Returns(StringValues.Empty);
+        A.CallTo(() => request.Path).Returns(new PathString("/tenants/tenant1/OdsInstances/edOrgs"));
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
+        A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName)).Returns(tenantDetailModel);
+
+        var result = await ReadTenants.GetTenantEdOrgsByInstancesAsync(
+            request,
+            tenantsService,
+            _getOdsInstancesQuery,
+            _getEducationOrganizationQuery,
+            _getDbInstancesQuery,
+            memoryCache,
+            options,
+            swaggerOptions,
+            tenantName);
+
+        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<TenantDetailsResponse>;
+        ok.ShouldNotBeNull();
+        ok.Value.ShouldNotBeNull();
+        ok.Value.OdsInstances!.Count.ShouldBe(1);
+        ok.Value.OdsInstances[0].OdsInstanceId.ShouldBeNull();
+    }
+
+    [Test]
     public void GetTenantEdOrgsByInstancesAsync_ThrowsValidationException_WhenTenantHeaderAndTenantNameAreDifferent()
     {
         var tenantsService = A.Fake<ITenantsService>();
@@ -304,4 +355,3 @@ public class ReadTenantsTest
         result.ShouldNotBeNull();
     }
 }
-

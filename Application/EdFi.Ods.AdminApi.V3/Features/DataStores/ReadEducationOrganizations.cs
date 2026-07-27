@@ -16,15 +16,6 @@ public class ReadEducationOrganizations : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapGet(endpoints, "/dataStores/edOrgs", GetEducationOrganizations)
-            .WithSummaryAndDescription(
-                "Retrieves all education organizations grouped by data store",
-                "Returns all education organizations from all data stores in a nested structure"
-            )
-            .WithRouteOptions(b => b.WithResponse<List<DataStoreWithEducationOrganizationsModel>>(200))
-            .BuildForVersions(AdminApiVersions.V3);
-
-        AdminApiEndpointBuilder
             .MapGet(endpoints, "/dataStores/{dataStoreId}/edOrgs", GetEducationOrganizationsByDataStore)
             .WithSummaryAndDescription(
                 "Retrieves education organizations for a specific data store",
@@ -32,20 +23,6 @@ public class ReadEducationOrganizations : IFeature
             )
             .WithRouteOptions(b => b.WithResponse<List<DataStoreWithEducationOrganizationsModel>>(200))
             .BuildForVersions(AdminApiVersions.V3);
-    }
-
-    public static async Task<IResult> GetEducationOrganizations(
-        [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
-        [FromServices] IGetDbDataStoresQuery getDbDataStoresQuery,
-        [AsParameters] CommonQueryParams commonQueryParams)
-    {
-        var educationOrganizations = await getEducationOrganizationsQuery.ExecuteAsync(
-            commonQueryParams,
-            dataStoreId: null);
-
-        MergeDbDataStoreData(educationOrganizations, getDbDataStoresQuery, includeUnlinked: true);
-
-        return Results.Ok(educationOrganizations);
     }
 
     public static async Task<IResult> GetEducationOrganizationsByDataStore(
@@ -61,15 +38,13 @@ public class ReadEducationOrganizations : IFeature
             commonQueryParams,
             dataStoreId: dataStoreId);
 
-        MergeDbDataStoreData(educationOrganizations, getDbDataStoresQuery, includeUnlinked: false);
-
+        MergeDbDataStoreData(educationOrganizations, getDbDataStoresQuery);
         return Results.Ok(educationOrganizations);
     }
 
     private static void MergeDbDataStoreData(
         List<DataStoreWithEducationOrganizationsModel> instances,
-        IGetDbDataStoresQuery getDbDataStoresQuery,
-        bool includeUnlinked)
+        IGetDbDataStoresQuery getDbDataStoresQuery)
     {
         var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
@@ -80,7 +55,7 @@ public class ReadEducationOrganizations : IFeature
 
         foreach (var instance in instances)
         {
-            if (linkedById.TryGetValue(instance.Id, out var dbDataStore))
+            if (instance.Id is int dataStoreId && linkedById.TryGetValue(dataStoreId, out var dbDataStore))
             {
                 instance.Status = dbDataStore.Status;
                 instance.DatabaseTemplate = dbDataStore.DatabaseTemplate;
@@ -89,34 +64,6 @@ public class ReadEducationOrganizations : IFeature
             else
             {
                 instance.Status = DbInstanceStatus.Created.ToString();
-            }
-        }
-
-        if (includeUnlinked)
-        {
-            var existingDataStoreIds = instances
-                .Select(i => i.Id)
-                .ToHashSet();
-
-            var negativeId = -1;
-            var unlinkedOrOrphanedDbDataStores = allDbDataStores
-                .Where(d => d.OdsInstanceId is null)
-                .Concat(allDbDataStores
-                    .Where(d => d.OdsInstanceId is not null && !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
-                    .GroupBy(d => d.OdsInstanceId!.Value)
-                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()));
-
-            foreach (var dbDataStore in unlinkedOrOrphanedDbDataStores)
-            {
-                instances.Add(new DataStoreWithEducationOrganizationsModel
-                {
-                    Id = negativeId--,
-                    Name = dbDataStore.Name ?? string.Empty,
-                    Status = dbDataStore.Status,
-                    DatabaseTemplate = dbDataStore.DatabaseTemplate,
-                    DatabaseName = dbDataStore.DatabaseName,
-                    EducationOrganizations = new()
-                });
             }
         }
     }

@@ -10,8 +10,8 @@ namespace EdFi.Ods.AdminApi.Features.OdsInstances;
 [SwaggerSchema(Title = "OdsInstanceWithEducationOrganizations")]
 public class OdsInstanceWithEducationOrganizationsModel
 {
-    [SwaggerSchema(Description = "ODS instance identifier", Nullable = false)]
-    public int Id { get; set; }
+    [SwaggerSchema(Description = "ODS instance identifier")]
+    public int? Id { get; set; }
 
     [SwaggerSchema(Description = "DbInstance identifier for this ODS instance")]
     public int? DbInstanceId { get; set; }

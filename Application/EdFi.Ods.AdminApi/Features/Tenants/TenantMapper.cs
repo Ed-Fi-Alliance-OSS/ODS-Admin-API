@@ -25,11 +25,11 @@ public static class TenantMapper
         return source.Select(ToOdsInstanceModel).ToList();
     }
 
-    public static TenantOdsInstanceModel ToUnlinkedDbInstanceModel(DbInstance source, int negativeId)
+    public static TenantOdsInstanceModel ToUnlinkedDbInstanceModel(DbInstance source)
     {
         return new TenantOdsInstanceModel
         {
-            OdsInstanceId = negativeId,
+            OdsInstanceId = null,
             DbInstanceId = source.Id,
             Name = source.Name,
             Status = source.Status,
