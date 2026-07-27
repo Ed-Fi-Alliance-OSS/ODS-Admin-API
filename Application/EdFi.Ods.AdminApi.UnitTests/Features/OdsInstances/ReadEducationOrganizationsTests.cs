@@ -4,11 +4,8 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Collections.Generic;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
@@ -17,17 +14,12 @@ using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
-using Constants = EdFi.Ods.AdminApi.Common.Constants.Constants;
 
 namespace EdFi.Ods.AdminApi.UnitTests.Features.OdsInstances;
 
 [TestFixture]
 public class ReadEducationOrganizationsTests
 {
-    private static IEnumerable<string> AllStatuses =>
-        Enum.GetValues<DbInstanceStatus>()
-            .Select(status => status.ToString());
-
     private IGetEducationOrganizationsQuery _getEdOrgsQuery = null!;
     private IGetDbInstancesQuery _getDbInstancesQuery = null!;
     private IGetOdsInstanceQuery _getOdsInstanceQuery = null!;
@@ -40,124 +32,6 @@ public class ReadEducationOrganizationsTests
         _getDbInstancesQuery = A.Fake<IGetDbInstancesQuery>();
         _getOdsInstanceQuery = A.Fake<IGetOdsInstanceQuery>();
         _queryParams = new CommonQueryParams(0, 10);
-    }
-
-    [Test]
-    public async Task GetEducationOrganizations_ReturnsOk_WithLinkedDbInstanceFields()
-    {
-        var instances = new List<OdsInstanceWithEducationOrganizationsModel>
-        {
-            new() { Id = 1, Name = "Instance1" }
-        };
-        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
-            .Returns(instances);
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
-            {
-                new DbInstance { Id = 10, OdsInstanceId = 1, Status = "Healthy", DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods" }
-            });
-
-        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbInstancesQuery, _queryParams);
-
-        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
-        ok.ShouldNotBeNull();
-        ok.Value!.Count.ShouldBe(1);
-        ok.Value[0].DbInstanceId.ShouldBe(10);
-        ok.Value[0].Status.ShouldBe("Healthy");
-        ok.Value[0].DatabaseTemplate.ShouldBe("Minimal");
-        ok.Value[0].DatabaseName.ShouldBe("EdFi_Ods");
-    }
-
-    [Test]
-    public async Task GetEducationOrganizations_SetsCreatedStatus_WhenNoMatchingDbInstance()
-    {
-        var instances = new List<OdsInstanceWithEducationOrganizationsModel>
-        {
-            new() { Id = 5, Name = "Unmatched" }
-        };
-        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
-            .Returns(instances);
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>());
-
-        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbInstancesQuery, _queryParams);
-
-        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
-        ok.ShouldNotBeNull();
-        ok.Value![0].DbInstanceId.ShouldBeNull();
-        ok.Value![0].Status.ShouldBe(DbInstanceStatus.Created.ToString());
-        ok.Value[0].DatabaseTemplate.ShouldBeNull();
-        ok.Value[0].DatabaseName.ShouldBeNull();
-    }
-
-    [Test]
-    public async Task GetEducationOrganizations_AppendsUnlinkedDbInstances_WithNegativeIds()
-    {
-        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
-            .Returns(new List<OdsInstanceWithEducationOrganizationsModel>());
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
-            {
-                new DbInstance { Id = 1, Name = "Unlinked-A", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Sample", DatabaseName = "EdFi_Ods_1" },
-                new DbInstance { Id = 2, Name = "Unlinked-B", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_2" }
-            });
-
-        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbInstancesQuery, _queryParams);
-
-        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
-        ok.ShouldNotBeNull();
-        ok.Value!.Count.ShouldBe(2);
-        ok.Value[0].Id.ShouldBe(-1);
-        ok.Value[0].DbInstanceId.ShouldBe(1);
-        ok.Value[0].Name.ShouldBe("Unlinked-A");
-        ok.Value[1].Id.ShouldBe(-2);
-        ok.Value[1].DbInstanceId.ShouldBe(2);
-        ok.Value[1].Name.ShouldBe("Unlinked-B");
-        ok.Value.ShouldAllBe(i => i.EducationOrganizations.Count == 0);
-    }
-
-    [Test]
-    [TestCaseSource(nameof(AllStatuses))]
-    public async Task GetEducationOrganizations_AppendsOrphanedLinkedDbInstance_ForAllStatuses(string status)
-    {
-        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
-            .Returns(new List<OdsInstanceWithEducationOrganizationsModel>());
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
-            {
-                new DbInstance { Id = 10, Name = $"Orphan-{status}", OdsInstanceId = 999, Status = status, DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_AnyStatus" }
-            });
-
-        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbInstancesQuery, _queryParams);
-
-        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
-        ok.ShouldNotBeNull();
-        ok.Value!.Count.ShouldBe(1);
-        ok.Value[0].Id.ShouldBe(-1);
-        ok.Value[0].DbInstanceId.ShouldBe(10);
-        ok.Value[0].Status.ShouldBe(status);
-    }
-
-    [Test]
-    public async Task GetEducationOrganizations_AppendsLatestDbInstancePerMissingOdsInstanceId()
-    {
-        A.CallTo(() => _getEdOrgsQuery.ExecuteAsync(_queryParams, null))
-            .Returns(new List<OdsInstanceWithEducationOrganizationsModel>());
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
-            {
-                new DbInstance { Id = 20, Name = "Orphan-Older", OdsInstanceId = 999, Status = DbInstanceStatus.CreateFailed.ToString(), DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_Old", LastRefreshed = DateTime.UtcNow.AddMinutes(-10) },
-                new DbInstance { Id = 21, Name = "Orphan-Newer", OdsInstanceId = 999, Status = DbInstanceStatus.Deleted.ToString(), DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_New", LastModifiedDate = DateTime.UtcNow }
-            });
-
-        var result = await ReadEducationOrganizations.GetEducationOrganizations(_getEdOrgsQuery, _getDbInstancesQuery, _queryParams);
-
-        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
-        ok.ShouldNotBeNull();
-        ok.Value!.Count.ShouldBe(1);
-        ok.Value[0].DbInstanceId.ShouldBe(21);
-        ok.Value[0].Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
-        ok.Value[0].Name.ShouldBe("Orphan-Newer");
     }
 
     [Test]

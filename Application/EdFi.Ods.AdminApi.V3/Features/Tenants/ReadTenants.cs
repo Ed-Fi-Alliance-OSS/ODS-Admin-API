@@ -91,6 +91,3 @@ public class TenantDetailsResponse
     [JsonPropertyName("dataStores")]
     public List<TenantDataStoreModel>? DataStores { get; set; }
 }
-
-
-

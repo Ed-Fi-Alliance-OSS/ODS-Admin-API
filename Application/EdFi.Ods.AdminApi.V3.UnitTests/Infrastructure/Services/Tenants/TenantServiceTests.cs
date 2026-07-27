@@ -301,7 +301,7 @@ internal class TenantServiceTests
     }
 
     [Test]
-    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedDbDataStores_WithSuccessiveNegativeIds()
+    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedDbDataStores_WithNullIds()
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
@@ -328,8 +328,8 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(2);
-        result.DataStores.ShouldContain(d => d.DataStoreId == -1 && d.Name == "Unlinked-A");
-        result.DataStores.ShouldContain(d => d.DataStoreId == -2 && d.Name == "Unlinked-B");
+        result.DataStores.ShouldContain(d => d.DataStoreId == null && d.Name == "Unlinked-A");
+        result.DataStores.ShouldContain(d => d.DataStoreId == null && d.Name == "Unlinked-B");
     }
 
     [Test]
@@ -368,9 +368,10 @@ internal class TenantServiceTests
         linkedDataStore.DatabaseTemplate.ShouldBe("Minimal");
         linkedDataStore.DatabaseName.ShouldBe("EdFi_ODS_5");
 
-        var unlinkedDataStore = result.DataStores.Single(d => d.DataStoreId == -1);
+        var unlinkedDataStore = result.DataStores.Single(d => d.Name == "Unlinked-C");
         unlinkedDataStore.Name.ShouldBe("Unlinked-C");
         unlinkedDataStore.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+        unlinkedDataStore.DataStoreId.ShouldBeNull();
     }
 
     [Test]
@@ -400,7 +401,7 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(1);
-        result.DataStores[0].DataStoreId.ShouldBe(-1);
+        result.DataStores[0].DataStoreId.ShouldBeNull();
         result.DataStores[0].Status.ShouldBe(status);
     }
 
@@ -446,4 +447,3 @@ internal class TenantServiceTests
         result.DataStores[0].Name.ShouldBe("Orphan-Newer");
     }
 }
-

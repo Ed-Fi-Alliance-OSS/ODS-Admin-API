@@ -126,7 +126,10 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             tenantDetails.OdsInstances = TenantMapper.ToOdsInstanceModelList(odsInstances);
 
-            var OdsInstanceIdsList = tenantDetails.OdsInstances.Select(i => i.OdsInstanceId).ToArray();
+            var OdsInstanceIdsList = tenantDetails.OdsInstances
+                .Where(i => i.OdsInstanceId is int)
+                .Select(i => i.OdsInstanceId!.Value)
+                .ToArray();
 
             if (OdsInstanceIdsList is not null && OdsInstanceIdsList.Length > 0)
             {
@@ -148,7 +151,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
 
             foreach (var odsInstance in tenantDetails.OdsInstances)
             {
-                if (linkedDbInstancesByOdsId.TryGetValue(odsInstance.OdsInstanceId, out var dbInstance))
+                if (odsInstance.OdsInstanceId is int odsInstanceId && linkedDbInstancesByOdsId.TryGetValue(odsInstanceId, out var dbInstance))
                 {
                     odsInstance.DbInstanceId = dbInstance.Id;
                     odsInstance.Status = dbInstance.Status;
@@ -162,7 +165,8 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
             }
 
             var existingOdsInstanceIds = tenantDetails.OdsInstances
-                .Select(i => i.OdsInstanceId)
+                .Where(i => i.OdsInstanceId is int)
+                .Select(i => i.OdsInstanceId!.Value)
                 .ToHashSet();
 
             var unlinkedDbInstances = allDbInstances
@@ -172,10 +176,9 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                     .GroupBy(d => d.OdsInstanceId!.Value)
                     .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
                 .ToList();
-            var negativeId = -1;
             foreach (var dbInstance in unlinkedDbInstances)
             {
-                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedDbInstanceModel(dbInstance, negativeId--));
+                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedDbInstanceModel(dbInstance));
             }
 
             return tenantDetails;

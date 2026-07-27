@@ -83,6 +83,57 @@ public class ReadTenantsTest
     }
 
     [Test]
+    public async Task GetTenantEdOrgsByInstancesAsync_ReturnsNullId_WhenDataStoreIdIsNull()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        var swaggerOptions = A.Fake<IOptions<SwaggerSettings>>();
+        string tenantName = "tenant1", tenantHeader = "tenant1";
+
+        var tenantDetailModel = new TenantDetailModel
+        {
+            TenantName = tenantName,
+            DataStores =
+            [
+                new TenantDataStoreModel
+                {
+                    DataStoreId = null,
+                    Name = "Unlinked",
+                    EducationOrganizations = []
+                }
+            ]
+        };
+
+        var request = A.Fake<HttpRequest>();
+        var headers = A.Fake<IHeaderDictionary>();
+        A.CallTo(() => request.Headers).Returns(headers);
+        A.CallTo(() => headers["tenant"]).Returns(new StringValues(tenantHeader));
+        A.CallTo(() => headers.Referer).Returns(StringValues.Empty);
+        A.CallTo(() => request.Path).Returns(new PathString("/tenants/tenant1/OdsInstances/edOrgs"));
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
+        A.CallTo(() => swaggerOptions.Value).Returns(new SwaggerSettings { EnableSwagger = true });
+        A.CallTo(() => tenantsService.GetTenantEdOrgsByInstancesAsync(_getDataStoresQuery, _getEducationOrganizationQuery, _getDbDataStoresQuery, tenantName)).Returns(tenantDetailModel);
+
+        var result = await ReadTenants.GetTenantEdOrgsByDataStoresAsync(
+            request,
+            tenantsService,
+            _getDataStoresQuery,
+            _getEducationOrganizationQuery,
+            _getDbDataStoresQuery,
+            memoryCache,
+            options,
+            swaggerOptions,
+            tenantName);
+
+        var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<TenantDetailsResponse>;
+        ok.ShouldNotBeNull();
+        ok.Value.ShouldNotBeNull();
+        ok.Value.DataStores!.Count.ShouldBe(1);
+        ok.Value.DataStores[0].DataStoreId.ShouldBeNull();
+    }
+
+    [Test]
     public void GetTenantEdOrgsByInstancesAsync_ThrowsValidationException_WhenTenantHeaderAndTenantNameAreDifferent()
     {
         var tenantsService = A.Fake<ITenantsService>();
@@ -304,8 +355,6 @@ public class ReadTenantsTest
         result.ShouldNotBeNull();
     }
 }
-
-
 
 
 

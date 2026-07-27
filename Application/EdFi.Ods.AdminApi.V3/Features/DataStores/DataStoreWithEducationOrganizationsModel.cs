@@ -10,8 +10,8 @@ namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 [SwaggerSchema(Title = "DataStoreWithEducationOrganizations")]
 public class DataStoreWithEducationOrganizationsModel
 {
-    [SwaggerSchema(Description = "Data store identifier", Nullable = false)]
-    public int Id { get; set; }
+    [SwaggerSchema(Description = "Data store identifier")]
+    public int? Id { get; set; }
 
     [SwaggerSchema(Description = "Data store name", Nullable = false)]
     public string Name { get; set; } = string.Empty;
