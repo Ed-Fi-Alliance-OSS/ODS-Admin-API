@@ -19,12 +19,12 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 
 [TestFixture]
-public class AddDbDataStoreCommandTests
+public class AddDataStoreManageCommandTests
 {
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
-            .UseInMemoryDatabase(databaseName: $"AddDbInstanceCommand_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"AddDataStoreManageCommand_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -36,11 +36,11 @@ public class AddDbDataStoreCommandTests
     }
 
     [Test]
-    public void Execute_WithValidModel_PersistsDbInstance()
+    public void Execute_WithValidModel_PersistsOdsInstanceManage()
     {
         using var context = CreateContext();
-        var command = new AddDbDataStoreCommand(context);
-        var model = new AddDbInstanceModelStub
+        var command = new AddDataStoreManageCommand(context);
+        var model = new AddDataStoreManageModelStub
         {
             Name = "Test Instance",
             DatabaseTemplate = "Minimal"
@@ -49,16 +49,16 @@ public class AddDbDataStoreCommandTests
         var result = command.Execute(model);
 
         result.Id.ShouldBeGreaterThan(0);
-        context.DbInstances.Any(d => d.Id == result.Id).ShouldBeTrue();
+        context.OdsInstanceManages.Any(d => d.Id == result.Id).ShouldBeTrue();
     }
 
     [Test]
     public void Execute_WithValidModel_SetsExpectedFieldValues()
     {
         using var context = CreateContext();
-        var command = new AddDbDataStoreCommand(context);
+        var command = new AddDataStoreManageCommand(context);
         var before = DateTime.UtcNow;
-        var model = new AddDbInstanceModelStub
+        var model = new AddDataStoreManageModelStub
         {
             Name = "  Test Instance  ",
             DatabaseTemplate = " Minimal "
@@ -68,7 +68,7 @@ public class AddDbDataStoreCommandTests
 
         result.Name.ShouldBe("Test Instance");
         result.DatabaseTemplate.ShouldBe("Minimal");
-        result.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+        result.Status.ShouldBe(OdsInstanceManageStatus.PendingCreate.ToString());
         result.OdsInstanceId.ShouldBeNull();
         result.OdsInstanceName.ShouldBeNull();
         result.DatabaseName.ShouldBeNull();
@@ -81,8 +81,8 @@ public class AddDbDataStoreCommandTests
     public void Execute_WithSampleTemplate_PersistsWithCorrectTemplate()
     {
         using var context = CreateContext();
-        var command = new AddDbDataStoreCommand(context);
-        var model = new AddDbInstanceModelStub
+        var command = new AddDataStoreManageCommand(context);
+        var model = new AddDataStoreManageModelStub
         {
             Name = "Sample Instance",
             DatabaseTemplate = "Sample"
@@ -91,10 +91,10 @@ public class AddDbDataStoreCommandTests
         var result = command.Execute(model);
 
         result.DatabaseTemplate.ShouldBe("Sample");
-        context.DbInstances.Any(d => d.Id == result.Id && d.DatabaseTemplate == "Sample").ShouldBeTrue();
+        context.OdsInstanceManages.Any(d => d.Id == result.Id && d.DatabaseTemplate == "Sample").ShouldBeTrue();
     }
 
-    private sealed class AddDbInstanceModelStub : IAddDbDataStoreModel
+    private sealed class AddDataStoreManageModelStub : IAddDataStoreManageModel
     {
         public string? Name { get; set; }
         public string? DatabaseTemplate { get; set; }
@@ -102,6 +102,3 @@ public class AddDbDataStoreCommandTests
 }
 
 #nullable restore
-
-
-

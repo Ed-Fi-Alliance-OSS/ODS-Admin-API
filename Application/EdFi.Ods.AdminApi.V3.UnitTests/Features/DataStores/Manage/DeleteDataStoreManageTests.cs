@@ -12,7 +12,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.DbDataStores;
+using EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FakeItEasy;
@@ -26,13 +26,13 @@ using Shouldly;
 
 #nullable enable
 
-namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DbDataStores;
+namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DataStores.Manage;
 
 [TestFixture]
-public class DeleteDbDataStoreTests
+public class DeleteDataStoreManageTests
 {
-    private IGetDbDataStoreByIdQuery _getDbInstanceByIdQuery = null!;
-    private IDeleteDbDataStoreCommand _deleteDbInstanceCommand = null!;
+    private IGetDataStoreManageByIdQuery _getDataStoreManageByIdQuery = null!;
+    private IDeleteDataStoreManageCommand _deleteDataStoreManageCommand = null!;
     private ISchedulerFactory _schedulerFactory = null!;
     private IContextProvider<TenantConfiguration> _tenantConfigurationProvider = null!;
     private IOptions<AppSettings> _options = null!;
@@ -40,8 +40,8 @@ public class DeleteDbDataStoreTests
     [SetUp]
     public void SetUp()
     {
-        _getDbInstanceByIdQuery = A.Fake<IGetDbDataStoreByIdQuery>();
-        _deleteDbInstanceCommand = A.Fake<IDeleteDbDataStoreCommand>();
+        _getDataStoreManageByIdQuery = A.Fake<IGetDataStoreManageByIdQuery>();
+        _deleteDataStoreManageCommand = A.Fake<IDeleteDataStoreManageCommand>();
 
         var scheduler = A.Fake<IScheduler>();
         A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
@@ -58,18 +58,18 @@ public class DeleteDbDataStoreTests
     }
 
     private Task<IResult> Handle(int id)
-        => DeleteDbDataStore.Handle(
-            _getDbInstanceByIdQuery,
-            _deleteDbInstanceCommand,
+        => DeleteDataStoreManage.Handle(
+            _getDataStoreManageByIdQuery,
+            _deleteDataStoreManageCommand,
             _schedulerFactory,
             _tenantConfigurationProvider,
             _options,
             id);
 
     [Test]
-    public async Task Handle_WhenDbInstanceNotFound_ThrowsNotFoundException()
+    public async Task Handle_WhenDataStoreManageNotFound_ThrowsNotFoundException()
     {
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(99)).Returns(null);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(99)).Returns(null);
 
         await Should.ThrowAsync<NotFoundException<int>>(() => Handle(99));
     }
@@ -77,182 +77,181 @@ public class DeleteDbDataStoreTests
     [Test]
     public async Task Handle_WhenStatusIsCreated_ExecutesCommandAndReturnsAccepted()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 1,
             Name = "Test",
-            Status = DbInstanceStatus.Created.ToString(),
+            Status = OdsInstanceManageStatus.Created.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(1)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(1)).Returns(dataStoreManage);
 
         var result = await Handle(1);
 
         result.ShouldBeOfType<NoContent>();
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(1)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(1)).MustHaveHappenedOnceExactly();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsPendingCreate_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 2,
             Name = "Test",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(2)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(2)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(2));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("provisioned"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsCreateInProgress_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 3,
             Name = "Test",
-            Status = DbInstanceStatus.CreateInProgress.ToString(),
+            Status = OdsInstanceManageStatus.CreateInProgress.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(3)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(3)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(3));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("provisioned"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsCreateFailed_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 4,
             Name = "Test",
-            Status = DbInstanceStatus.CreateFailed.ToString(),
+            Status = OdsInstanceManageStatus.CreateFailed.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(4)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(4)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(4));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("creation failed"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsCreateError_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 5,
             Name = "Test",
-            Status = DbInstanceStatus.CreateError.ToString(),
+            Status = OdsInstanceManageStatus.CreateError.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(5)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(5)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(5));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("creation failed permanently"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsPendingDelete_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 6,
             Name = "Test",
-            Status = DbInstanceStatus.PendingDelete.ToString(),
+            Status = OdsInstanceManageStatus.PendingDelete.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(6)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(6)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(6));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("queued for deletion"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsDeleteInProgress_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 7,
             Name = "Test",
-            Status = DbInstanceStatus.DeleteInProgress.ToString(),
+            Status = OdsInstanceManageStatus.DeleteInProgress.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(7)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(7)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(7));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("currently being deleted"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsDeleteFailed_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 8,
             Name = "Test",
-            Status = DbInstanceStatus.DeleteFailed.ToString(),
+            Status = OdsInstanceManageStatus.DeleteFailed.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(8)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(8)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(8));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("retried automatically"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsDeleteError_ThrowsValidationException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 9,
             Name = "Test",
-            Status = DbInstanceStatus.DeleteError.ToString(),
+            Status = OdsInstanceManageStatus.DeleteError.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(9)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(9)).Returns(dataStoreManage);
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(9));
 
         ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("deletion failed permanently"));
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
     [Test]
     public async Task Handle_WhenStatusIsDeleted_ThrowsNotFoundException()
     {
-        var dbInstance = new DbInstance
+        var dataStoreManage = new OdsInstanceManage
         {
             Id = 10,
             Name = "Test",
-            Status = DbInstanceStatus.Deleted.ToString(),
+            Status = OdsInstanceManageStatus.Deleted.ToString(),
             DatabaseTemplate = "Minimal",
         };
-        A.CallTo(() => _getDbInstanceByIdQuery.Execute(10)).Returns(dbInstance);
+        A.CallTo(() => _getDataStoreManageByIdQuery.Execute(10)).Returns(dataStoreManage);
 
         await Should.ThrowAsync<NotFoundException<int>>(() => Handle(10));
 
-        A.CallTo(() => _deleteDbInstanceCommand.Execute(A<int>._)).MustNotHaveHappened();
+        A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 }
 
 #nullable restore
-

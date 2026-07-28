@@ -14,7 +14,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Features.DbDataStores;
+using EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using FakeItEasy;
@@ -30,10 +30,10 @@ using Shouldly;
 
 #nullable enable
 
-namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DbDataStores;
+namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DataStores.Manage;
 
 [TestFixture]
-public class AddDbDataStoreTests
+public class AddDataStoreManageTests
 {
     private static HttpContext CreateHttpContext()
     {
@@ -46,7 +46,7 @@ public class AddDbDataStoreTests
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
-            .UseInMemoryDatabase(databaseName: $"AddDbInstance_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"AddDataStoreManage_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -63,7 +63,7 @@ public class AddDbDataStoreTests
     private static SqlServerUsersContext CreateUsersContext()
     {
         var options = new DbContextOptionsBuilder<SqlServerUsersContext>()
-            .UseInMemoryDatabase(databaseName: $"AddDbInstanceUsers_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"AddDataStoreManageUsers_{Guid.NewGuid()}")
             .Options;
 
         return new SqlServerUsersContext(options);
@@ -100,43 +100,43 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = "Minimal"
         };
 
-        var result = await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
+        var result = await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
 
         result.ShouldBeOfType<Accepted>();
     }
 
     [Test]
-    public async Task Handle_WithValidRequest_PersistsDbInstance()
+    public async Task Handle_WithValidRequest_PersistsOdsInstanceManage()
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = "Sample"
         };
 
-        await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
+        await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
 
-        context.DbInstances.Any(d => d.Name == "My DB Instance").ShouldBeTrue();
+        context.OdsInstanceManages.Any(d => d.Name == "My DB Instance").ShouldBeTrue();
     }
 
     [Test]
@@ -144,8 +144,8 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out var scheduler);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
@@ -156,19 +156,19 @@ public class AddDbDataStoreTests
             .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
             .Returns(Task.FromResult(DateTimeOffset.UtcNow));
 
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = "Minimal"
         };
 
-        await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
+        await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
 
-        var dbInstance = context.DbInstances.Single();
+        var odsInstanceManage = context.OdsInstanceManages.Single();
 
         scheduledJob.ShouldNotBeNull();
-        scheduledJob!.Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-{dbInstance.Id}");
-        scheduledJob.JobDataMap.GetInt(JobConstants.DbInstanceIdKey).ShouldBe(dbInstance.Id);
+        scheduledJob!.Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-{odsInstanceManage.Id}");
+        scheduledJob.JobDataMap.GetInt(JobConstants.OdsInstanceManageIdKey).ShouldBe(odsInstanceManage.Id);
     }
 
     [Test]
@@ -176,8 +176,8 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out var scheduler);
         var tenantProvider = CreateTenantConfigurationProvider("tenant1");
         var options = CreateOptions(multiTenancy: true);
@@ -188,18 +188,18 @@ public class AddDbDataStoreTests
             .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
             .Returns(Task.FromResult(DateTimeOffset.UtcNow));
 
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = "Minimal"
         };
 
-        await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
+        await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
 
-        var dbInstance = context.DbInstances.Single();
+        var odsInstanceManage = context.OdsInstanceManages.Single();
 
         scheduledJob.ShouldNotBeNull();
-        scheduledJob!.Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-tenant1-{dbInstance.Id}");
+        scheduledJob!.Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-tenant1-{odsInstanceManage.Id}");
         scheduledJob.JobDataMap.GetString(JobConstants.TenantNameKey).ShouldBe("tenant1");
     }
 
@@ -208,19 +208,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = string.Empty,
             DatabaseTemplate = "Minimal"
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
@@ -228,19 +228,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = null,
             DatabaseTemplate = "Minimal"
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
@@ -248,19 +248,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = new string('a', 101),
             DatabaseTemplate = "Minimal"
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
@@ -268,19 +268,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = new string('a', 46),
             DatabaseTemplate = "Minimal"
         };
 
-        var result = await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
+        var result = await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
 
         result.ShouldBeOfType<Accepted>();
     }
@@ -290,22 +290,22 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = new string('a', 47),
             DatabaseTemplate = "Minimal"
         };
 
-        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
 
         exception.Errors.ShouldContain(error =>
-            error.PropertyName == nameof(AddDbDataStore.AddDbDataStoreRequest.Name)
+            error.PropertyName == nameof(AddDataStoreManage.AddDataStoreManageRequest.Name)
             && error.ErrorMessage.Contains("portable limit of 63 characters"));
     }
 
@@ -316,19 +316,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = name,
             DatabaseTemplate = "Minimal"
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
@@ -336,19 +336,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = string.Empty
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
@@ -356,19 +356,19 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = null
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
@@ -376,34 +376,34 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "My DB Instance",
             DatabaseTemplate = "InvalidTemplate"
         };
 
-        await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
     }
 
     [Test]
-    public async Task Handle_WithExistingDbInstanceName_ThrowsValidationException()
+    public async Task Handle_WithExistingOdsInstanceManageName_ThrowsValidationException()
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
         var httpContext = CreateHttpContext();
 
-        context.DbInstances.Add(new Common.Infrastructure.Models.DbInstance
+        context.OdsInstanceManages.Add(new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Existing Instance",
             DatabaseTemplate = "Minimal",
@@ -413,17 +413,17 @@ public class AddDbDataStoreTests
         });
         await context.SaveChangesAsync();
 
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "Existing Instance",
             DatabaseTemplate = "Minimal"
         };
 
-        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
 
         exception.Errors.ShouldContain(error =>
-            error.PropertyName == nameof(AddDbDataStore.AddDbDataStoreRequest.Name)
-            && error.ErrorMessage == "A DbDataStore named 'Existing Instance' already exists.");
+            error.PropertyName == nameof(AddDataStoreManage.AddDataStoreManageRequest.Name)
+            && error.ErrorMessage == "A DataStoreManage named 'Existing Instance' already exists.");
     }
 
     [Test]
@@ -431,8 +431,8 @@ public class AddDbDataStoreTests
     {
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
-        var validator = new AddDbDataStore.Validator(context, usersContext);
-        var command = new AddDbDataStoreCommand(context);
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
         var schedulerFactory = CreateSchedulerFactory(out _);
         var tenantProvider = CreateTenantConfigurationProvider();
         var options = CreateOptions();
@@ -446,20 +446,18 @@ public class AddDbDataStoreTests
         });
         await usersContext.SaveChangesAsync();
 
-        var request = new AddDbDataStore.AddDbDataStoreRequest
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
         {
             Name = "Existing Instance",
             DatabaseTemplate = "Minimal"
         };
 
-        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDbDataStore.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
+        var exception = await Should.ThrowAsync<ValidationException>(async () => await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext));
 
         exception.Errors.ShouldContain(error =>
-            error.PropertyName == nameof(AddDbDataStore.AddDbDataStoreRequest.Name)
+            error.PropertyName == nameof(AddDataStoreManage.AddDataStoreManageRequest.Name)
             && error.ErrorMessage == "A DataStore named 'Existing Instance' already exists.");
     }
 }
 
 #nullable restore
-
-

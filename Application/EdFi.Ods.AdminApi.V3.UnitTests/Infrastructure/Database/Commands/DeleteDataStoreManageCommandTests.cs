@@ -21,12 +21,12 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 
 [TestFixture]
-public class DeleteDbDataStoreCommandTests
+public class DeleteDataStoreManageCommandTests
 {
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
-            .UseInMemoryDatabase(databaseName: $"DeleteDbInstanceCommand_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"DeleteDataStoreManageCommand_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(
@@ -40,21 +40,21 @@ public class DeleteDbDataStoreCommandTests
     public void Execute_SetsStatusToPendingDelete()
     {
         using var context = CreateContext();
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
-        context.DbInstances.Add(instance);
+        context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteDbDataStoreCommand(context);
+        var command = new DeleteDataStoreManageCommand(context);
         command.Execute(instance.Id);
 
-        var updated = context.DbInstances.Single(d => d.Id == instance.Id);
-        updated.Status.ShouldBe(DbInstanceStatus.PendingDelete.ToString());
+        var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
+        updated.Status.ShouldBe(OdsInstanceManageStatus.PendingDelete.ToString());
     }
 
     [Test]
@@ -62,20 +62,20 @@ public class DeleteDbDataStoreCommandTests
     {
         using var context = CreateContext();
         var before = DateTime.UtcNow;
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
-        context.DbInstances.Add(instance);
+        context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteDbDataStoreCommand(context);
+        var command = new DeleteDataStoreManageCommand(context);
         command.Execute(instance.Id);
 
-        var updated = context.DbInstances.Single(d => d.Id == instance.Id);
+        var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
         updated.LastModifiedDate.ShouldNotBeNull();
         updated.LastModifiedDate!.Value.ShouldBeGreaterThanOrEqualTo(before);
     }
@@ -84,7 +84,7 @@ public class DeleteDbDataStoreCommandTests
     public void Execute_WithNonExistentId_ThrowsNotFoundException()
     {
         using var context = CreateContext();
-        var command = new DeleteDbDataStoreCommand(context);
+        var command = new DeleteDataStoreManageCommand(context);
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(9999));
     }
@@ -93,23 +93,20 @@ public class DeleteDbDataStoreCommandTests
     public void Execute_WhenStatusIsDeleted_ThrowsNotFoundException()
     {
         using var context = CreateContext();
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.Deleted.ToString(),
+            Status = OdsInstanceManageStatus.Deleted.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
-        context.DbInstances.Add(instance);
+        context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteDbDataStoreCommand(context);
+        var command = new DeleteDataStoreManageCommand(context);
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(instance.Id));
     }
 }
 
 #nullable restore
-
-
-
