@@ -11,25 +11,25 @@ using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetDbDataStoresQuery
+public interface IGetDataStoreManagesQuery
 {
-    List<DbInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name);
+    List<OdsInstanceManage> Execute(CommonQueryParams commonQueryParams, int? id, string? name);
 }
 
-public class GetDbDataStoresQuery : IGetDbDataStoresQuery
+public class GetDataStoreManagesQuery : IGetDataStoreManagesQuery
 {
     private readonly AdminApiDbContext _context;
     private readonly IOptions<AppSettings> _options;
 
-    public GetDbDataStoresQuery(AdminApiDbContext context, IOptions<AppSettings> options)
+    public GetDataStoreManagesQuery(AdminApiDbContext context, IOptions<AppSettings> options)
     {
         _context = context;
         _options = options;
     }
 
-    public List<DbInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name)
+    public List<OdsInstanceManage> Execute(CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        return _context.DbInstances
+        return _context.OdsInstanceManages
             .Where(d => id == null || d.Id == id)
             .Where(d => name == null || d.Name == name)
             .OrderBy(d => d.Id)
@@ -37,6 +37,3 @@ public class GetDbDataStoresQuery : IGetDbDataStoresQuery
             .ToList();
     }
 }
-
-
-

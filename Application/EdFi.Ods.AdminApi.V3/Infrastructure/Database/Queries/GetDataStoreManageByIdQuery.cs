@@ -7,25 +7,22 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public interface IGetDbDataStoreByIdQuery
+public interface IGetDataStoreManageByIdQuery
 {
-    DbInstance? Execute(int id);
+    OdsInstanceManage? Execute(int id);
 }
 
-public class GetDbDataStoreByIdQuery : IGetDbDataStoreByIdQuery
+public class GetDataStoreManageByIdQuery : IGetDataStoreManageByIdQuery
 {
     private readonly AdminApiDbContext _context;
 
-    public GetDbDataStoreByIdQuery(AdminApiDbContext context)
+    public GetDataStoreManageByIdQuery(AdminApiDbContext context)
     {
         _context = context;
     }
 
-    public DbInstance? Execute(int id)
+    public OdsInstanceManage? Execute(int id)
     {
-        return _context.DbInstances.SingleOrDefault(d => d.Id == id);
+        return _context.OdsInstanceManages.SingleOrDefault(d => d.Id == id);
     }
 }
-
-
-

@@ -8,35 +8,32 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public interface IDeleteDbDataStoreCommand
+public interface IDeleteDataStoreManageCommand
 {
     void Execute(int id);
 }
 
-public class DeleteDbDataStoreCommand : IDeleteDbDataStoreCommand
+public class DeleteDataStoreManageCommand : IDeleteDataStoreManageCommand
 {
     private readonly AdminApiDbContext _context;
 
-    public DeleteDbDataStoreCommand(AdminApiDbContext context)
+    public DeleteDataStoreManageCommand(AdminApiDbContext context)
     {
         _context = context;
     }
 
     public void Execute(int id)
     {
-        var dbInstance =
-            _context.DbInstances.Find(id)
-            ?? throw new NotFoundException<int>("dbInstance", id);
+        var odsInstanceManage =
+            _context.OdsInstanceManages.Find(id)
+            ?? throw new NotFoundException<int>("dataStoreManage", id);
 
-        if (dbInstance.Status == DbInstanceStatus.Deleted.ToString())
-            throw new NotFoundException<int>("dbInstance", id);
+        if (odsInstanceManage.Status == OdsInstanceManageStatus.Deleted.ToString())
+            throw new NotFoundException<int>("dataStoreManage", id);
 
-        dbInstance.Status = DbInstanceStatus.PendingDelete.ToString();
-        dbInstance.LastModifiedDate = DateTime.UtcNow;
+        odsInstanceManage.Status = OdsInstanceManageStatus.PendingDelete.ToString();
+        odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
 
         _context.SaveChanges();
     }
 }
-
-
-

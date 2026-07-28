@@ -8,16 +8,16 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
-public class AddDbDataStoreCommand
+public class AddDataStoreManageCommand
 {
     private readonly AdminApiDbContext _context;
 
-    public AddDbDataStoreCommand(AdminApiDbContext context)
+    public AddDataStoreManageCommand(AdminApiDbContext context)
     {
         _context = context;
     }
 
-    public DbInstance Execute(IAddDbDataStoreModel model)
+    public OdsInstanceManage Execute(IAddDataStoreManageModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Name))
             throw new ArgumentException("Name is required.", nameof(model));
@@ -26,11 +26,11 @@ public class AddDbDataStoreCommand
 
         var now = DateTime.UtcNow;
 
-        var dbInstance = new DbInstance
+        var odsInstanceManage = new OdsInstanceManage
         {
             Name = model.Name.Trim(),
             DatabaseTemplate = model.DatabaseTemplate.Trim(),
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             OdsInstanceId = null,
             OdsInstanceName = null,
             DatabaseName = null,
@@ -38,17 +38,14 @@ public class AddDbDataStoreCommand
             LastModifiedDate = now
         };
 
-        _context.DbInstances.Add(dbInstance);
+        _context.OdsInstanceManages.Add(odsInstanceManage);
         _context.SaveChanges();
-        return dbInstance;
+        return odsInstanceManage;
     }
 }
 
-public interface IAddDbDataStoreModel
+public interface IAddDataStoreManageModel
 {
     string? Name { get; }
     string? DatabaseTemplate { get; }
 }
-
-
-

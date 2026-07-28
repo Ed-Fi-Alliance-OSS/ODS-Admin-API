@@ -6,7 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
-using EdFi.Ods.AdminApi.V3.Features.DbDataStores;
+using EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
@@ -52,22 +52,22 @@ public class CreateInstanceJob(
     private readonly IConfiguration _configuration = configuration;
     private readonly IDbConnectionStringBuilderAdapterFactory _connectionStringBuilderAdapterFactory = connectionStringBuilderAdapterFactory;
 
-    internal static JobKey CreateJobKey(int dbInstanceId, string? tenantName)
-        => new(BuildJobIdentity(dbInstanceId, tenantName));
+    internal static JobKey CreateJobKey(int odsInstanceManageId, string? tenantName)
+        => new(BuildJobIdentity(odsInstanceManageId, tenantName));
 
-    internal static string BuildJobIdentity(int dbInstanceId, string? tenantName)
+    internal static string BuildJobIdentity(int odsInstanceManageId, string? tenantName)
         => string.IsNullOrWhiteSpace(tenantName)
-            ? $"{JobConstants.CreateInstanceJobName}-{dbInstanceId}"
-            : $"{JobConstants.CreateInstanceJobName}-{tenantName}-{dbInstanceId}";
+            ? $"{JobConstants.CreateInstanceJobName}-{odsInstanceManageId}"
+            : $"{JobConstants.CreateInstanceJobName}-{tenantName}-{odsInstanceManageId}";
 
     protected override async Task ExecuteJobAsync(IJobExecutionContext context)
     {
-        if (!context.MergedJobDataMap.ContainsKey(JobConstants.DbInstanceIdKey))
+        if (!context.MergedJobDataMap.ContainsKey(JobConstants.OdsInstanceManageIdKey))
         {
-            throw new InvalidOperationException($"{JobConstants.DbInstanceIdKey} must be provided for {JobConstants.CreateInstanceJobName}.");
+            throw new InvalidOperationException($"{JobConstants.OdsInstanceManageIdKey} must be provided for {JobConstants.CreateInstanceJobName}.");
         }
 
-        var dbInstanceId = context.MergedJobDataMap.GetInt(JobConstants.DbInstanceIdKey);
+        var odsInstanceManageId = context.MergedJobDataMap.GetInt(JobConstants.OdsInstanceManageIdKey);
         var multiTenancyEnabled = _options.Value.MultiTenancy;
         var tenantName = GetTenantName(context, multiTenancyEnabled);
 
@@ -78,7 +78,7 @@ public class CreateInstanceJob(
         TenantConfiguration? tenantConfiguration = null;
         var adminApiDbContext = _dbContext;
         var resolvedUsersContext = _usersContext;
-        DbInstance? dbInstance = null;
+        OdsInstanceManage? odsInstanceManage = null;
 
         try
         {
@@ -95,7 +95,7 @@ public class CreateInstanceJob(
                 // on IContextProvider<TenantConfiguration> (e.g. ConfigConnectionStringsProvider) resolve
                 // the correct per-tenant connection strings (EdFi_Master, EdFi_Ods, etc.).
                 // The tenant name is always known at this point because it was stored in the job data map
-                // when CreatePendingDbInstancesDispatcherJob scheduled this job.
+                // when CreatePendingDataStoreManagesDispatcherJob scheduled this job.
                 _tenantConfigurationContextProvider.Set(tenantConfiguration);
                 tenantAdminApiDbContext = _tenantSpecificDbContextProvider.GetAdminApiDbContext(tenantName!);
                 tenantUsersContext = _tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
@@ -103,52 +103,52 @@ public class CreateInstanceJob(
                 resolvedUsersContext = tenantUsersContext;
             }
 
-            dbInstance = await adminApiDbContext.DbInstances
-                .FirstOrDefaultAsync(instance => instance.Id == dbInstanceId);
+            odsInstanceManage = await adminApiDbContext.OdsInstanceManages
+                .FirstOrDefaultAsync(instance => instance.Id == odsInstanceManageId);
 
-            if (dbInstance is null)
+            if (odsInstanceManage is null)
             {
-                throw new InvalidOperationException($"DbInstance '{dbInstanceId}' was not found.");
+                throw new InvalidOperationException($"OdsInstanceManage '{odsInstanceManageId}' was not found.");
             }
 
-            if (!IsEligibleForProcessing(dbInstance))
+            if (!IsEligibleForProcessing(odsInstanceManage))
             {
                 return;
             }
 
-            ValidatePendingState(dbInstance);
+            ValidatePendingState(odsInstanceManage);
 
-            var finalName = dbInstance.Name;
+            var finalName = odsInstanceManage.Name;
             ValidateFinalName(finalName);
             var existingDataStore = await GetExistingDataStoreByNameAsync(resolvedUsersContext, finalName);
 
             var now = DateTime.UtcNow;
-            dbInstance.Status = DbInstanceStatus.CreateInProgress.ToString();
-            if (string.IsNullOrWhiteSpace(dbInstance.DatabaseName))
+            odsInstanceManage.Status = OdsInstanceManageStatus.CreateInProgress.ToString();
+            if (string.IsNullOrWhiteSpace(odsInstanceManage.DatabaseName))
             {
-                dbInstance.DatabaseName = DbDataStoreDatabaseNameFormatter.Build(
-                    dbInstance.Name,
-                    dbInstance.DatabaseTemplate);
+                odsInstanceManage.DatabaseName = DataStoreManageDatabaseNameFormatter.Build(
+                    odsInstanceManage.Name,
+                    odsInstanceManage.DatabaseTemplate);
             }
 
-            dbInstance.LastModifiedDate = now;
-            dbInstance.LastRefreshed = now;
+            odsInstanceManage.LastModifiedDate = now;
+            odsInstanceManage.LastRefreshed = now;
             await adminApiDbContext.SaveChangesAsync();
 
             await _sandboxProvisioner.AddSandboxAsync(
-                dbInstance.DatabaseName,
-                GetSandboxType(dbInstance.DatabaseTemplate));
+                odsInstanceManage.DatabaseName,
+                GetSandboxType(odsInstanceManage.DatabaseTemplate));
 
-            var encryptedConnectionString = BuildEncryptedConnectionString(dbInstance.DatabaseName, tenantName);
+            var encryptedConnectionString = BuildEncryptedConnectionString(odsInstanceManage.DatabaseName, tenantName);
 
             var dataStore = existingDataStore ?? new OdsInstance
             {
                 Name = finalName,
-                InstanceType = dbInstance.DatabaseTemplate,
+                InstanceType = odsInstanceManage.DatabaseTemplate,
                 ConnectionString = encryptedConnectionString
             };
 
-            dataStore.InstanceType = dbInstance.DatabaseTemplate;
+            dataStore.InstanceType = odsInstanceManage.DatabaseTemplate;
             dataStore.ConnectionString = encryptedConnectionString;
 
             if (existingDataStore is null)
@@ -158,21 +158,21 @@ public class CreateInstanceJob(
 
             await resolvedUsersContext.SaveChangesAsync(CancellationToken.None);
 
-            dbInstance.OdsInstanceId = dataStore.OdsInstanceId;
-            dbInstance.OdsInstanceName = finalName;
-            dbInstance.Status = DbInstanceStatus.Created.ToString();
-            dbInstance.LastModifiedDate = DateTime.UtcNow;
-            dbInstance.LastRefreshed = DateTime.UtcNow;
+            odsInstanceManage.OdsInstanceId = dataStore.OdsInstanceId;
+            odsInstanceManage.OdsInstanceName = finalName;
+            odsInstanceManage.Status = OdsInstanceManageStatus.Created.ToString();
+            odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
+            odsInstanceManage.LastRefreshed = DateTime.UtcNow;
 
             await adminApiDbContext.SaveChangesAsync();
         }
         catch
         {
-            if (dbInstance is not null)
+            if (odsInstanceManage is not null)
             {
-                dbInstance.Status = DbInstanceStatus.CreateFailed.ToString();
-                dbInstance.LastModifiedDate = DateTime.UtcNow;
-                dbInstance.LastRefreshed = DateTime.UtcNow;
+                odsInstanceManage.Status = OdsInstanceManageStatus.CreateFailed.ToString();
+                odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
+                odsInstanceManage.LastRefreshed = DateTime.UtcNow;
                 await adminApiDbContext.SaveChangesAsync();
             }
 
@@ -260,29 +260,29 @@ public class CreateInstanceJob(
             $"DatabaseTemplate '{databaseTemplate}' cannot be mapped to {nameof(SandboxType)}.");
     }
 
-    private static bool IsEligibleForProcessing(DbInstance dbInstance)
+    private static bool IsEligibleForProcessing(OdsInstanceManage odsInstanceManage)
     {
-        if (!Enum.TryParse<DbInstanceStatus>(dbInstance.Status, ignoreCase: true, out var status))
+        if (!Enum.TryParse<OdsInstanceManageStatus>(odsInstanceManage.Status, ignoreCase: true, out var status))
         {
             throw new InvalidOperationException(
-                $"DbInstance '{dbInstance.Id}' has unsupported status '{dbInstance.Status}'.");
+                $"OdsInstanceManage '{odsInstanceManage.Id}' has unsupported status '{odsInstanceManage.Status}'.");
         }
 
-        return status == DbInstanceStatus.PendingCreate;
+        return status == OdsInstanceManageStatus.PendingCreate;
     }
 
-    private static void ValidatePendingState(DbInstance dbInstance)
+    private static void ValidatePendingState(OdsInstanceManage odsInstanceManage)
     {
-        if (dbInstance.OdsInstanceId.HasValue || !string.IsNullOrWhiteSpace(dbInstance.OdsInstanceName))
+        if (odsInstanceManage.OdsInstanceId.HasValue || !string.IsNullOrWhiteSpace(odsInstanceManage.OdsInstanceName))
         {
             throw new InvalidOperationException(
-                $"DbInstance '{dbInstance.Id}' is in an invalid pending state because ODS references already exist.");
+                $"OdsInstanceManage '{odsInstanceManage.Id}' is in an invalid pending state because ODS references already exist.");
         }
 
-        if (string.IsNullOrWhiteSpace(dbInstance.DatabaseTemplate))
+        if (string.IsNullOrWhiteSpace(odsInstanceManage.DatabaseTemplate))
         {
             throw new InvalidOperationException(
-                $"DbInstance '{dbInstance.Id}' is missing DatabaseTemplate.");
+                $"OdsInstanceManage '{odsInstanceManage.Id}' is missing DatabaseTemplate.");
         }
     }
 
