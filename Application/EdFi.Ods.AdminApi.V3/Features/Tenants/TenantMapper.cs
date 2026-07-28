@@ -30,6 +30,7 @@ public static class TenantMapper
         return new TenantDataStoreModel
         {
             DataStoreId = null,
+            DataStoreManageId = source.Id,
             Name = source.Name,
             Status = source.Status,
             DatabaseTemplate = source.DatabaseTemplate,

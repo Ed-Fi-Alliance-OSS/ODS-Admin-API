@@ -263,6 +263,7 @@ internal class TenantServiceTests
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(1);
         result.DataStores[0].Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
+        result.DataStores[0].DataStoreManageId.ShouldBeNull();
         result.DataStores[0].DatabaseTemplate.ShouldBeNull();
         result.DataStores[0].DatabaseName.ShouldBeNull();
     }
@@ -295,6 +296,7 @@ internal class TenantServiceTests
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(1);
         var dataStore = result.DataStores[0];
+        dataStore.DataStoreManageId.ShouldBe(10);
         dataStore.Status.ShouldBe(OdsInstanceManageStatus.CreateInProgress.ToString());
         dataStore.DatabaseTemplate.ShouldBe("Minimal");
         dataStore.DatabaseName.ShouldBe("EdFi_ODS_2");
@@ -328,8 +330,8 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(2);
-        result.DataStores.ShouldContain(d => d.DataStoreId == null && d.Name == "Unlinked-A");
-        result.DataStores.ShouldContain(d => d.DataStoreId == null && d.Name == "Unlinked-B");
+        result.DataStores.ShouldContain(d => d.DataStoreId == null && d.Name == "Unlinked-A" && d.DataStoreManageId == 20);
+        result.DataStores.ShouldContain(d => d.DataStoreId == null && d.Name == "Unlinked-B" && d.DataStoreManageId == 21);
     }
 
     [Test]
@@ -364,11 +366,13 @@ internal class TenantServiceTests
         result!.DataStores.Count.ShouldBe(2);
 
         var linkedDataStore = result.DataStores.Single(d => d.DataStoreId == 5);
+        linkedDataStore.DataStoreManageId.ShouldBe(30);
         linkedDataStore.Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
         linkedDataStore.DatabaseTemplate.ShouldBe("Minimal");
         linkedDataStore.DatabaseName.ShouldBe("EdFi_ODS_5");
 
         var unlinkedDataStore = result.DataStores.Single(d => d.Name == "Unlinked-C");
+        unlinkedDataStore.DataStoreManageId.ShouldBe(31);
         unlinkedDataStore.Name.ShouldBe("Unlinked-C");
         unlinkedDataStore.Status.ShouldBe(OdsInstanceManageStatus.PendingCreate.ToString());
         unlinkedDataStore.DataStoreId.ShouldBeNull();
@@ -402,6 +406,7 @@ internal class TenantServiceTests
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(1);
         result.DataStores[0].DataStoreId.ShouldBeNull();
+        result.DataStores[0].DataStoreManageId.ShouldBe(42);
         result.DataStores[0].Status.ShouldBe(status);
     }
 
@@ -443,6 +448,7 @@ internal class TenantServiceTests
 
         result.ShouldNotBeNull();
         result!.DataStores.Count.ShouldBe(1);
+        result.DataStores[0].DataStoreManageId.ShouldBe(51);
         result.DataStores[0].Status.ShouldBe(OdsInstanceManageStatus.Deleted.ToString());
         result.DataStores[0].Name.ShouldBe("Orphan-Newer");
     }

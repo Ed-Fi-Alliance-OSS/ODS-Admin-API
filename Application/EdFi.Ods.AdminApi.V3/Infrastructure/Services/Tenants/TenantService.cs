@@ -153,6 +153,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
             {
                 if (dataStore.DataStoreId is int dataStoreId && linkedDataStoreManagesByDataStoreId.TryGetValue(dataStoreId, out var dataStoreManage))
                 {
+                    dataStore.DataStoreManageId = dataStoreManage.Id;
                     dataStore.Status = dataStoreManage.Status;
                     dataStore.DatabaseTemplate = dataStoreManage.DatabaseTemplate;
                     dataStore.DatabaseName = dataStoreManage.DatabaseName;
