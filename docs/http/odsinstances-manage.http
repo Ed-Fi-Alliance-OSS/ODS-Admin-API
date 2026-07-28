@@ -23,8 +23,8 @@ grant_type=client_credentials&scope=edfi_admin_api/full_access
 
 
 ### Create a DB instance (Minimal template)
-# @name createDbInstanceMinimal
-POST {{adminapi_url}}/v2/dbinstances
+# @name createOdsInstanceManageMinimal
+POST {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
@@ -35,8 +35,8 @@ Tenant: {{tenant}}
 }
 
 ### Create a DB instance (Sample template)
-# @name createDbInstanceSample
-POST {{adminapi_url}}/v2/dbinstances
+# @name createOdsInstanceManageSample
+POST {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
@@ -47,8 +47,8 @@ Tenant: {{tenant}}
 }
 
 ### Create a DB instance (Minimal template)
-# @name createDbInstanceMinimal
-POST {{adminapi_url}}/v2/dbinstances
+# @name createOdsInstanceManageMinimal
+POST {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
@@ -59,20 +59,20 @@ Tenant: {{tenant}}
 }
 
 ### DELETE a DB instance (Minimal)
-DELETE {{adminapi_url}}/v2{{createDbInstanceMinimal.response.headers.location}}
+DELETE {{adminapi_url}}/v2{{createOdsInstanceManageMinimal.response.headers.location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### DELETE a DB instance (Sample)
-DELETE {{adminapi_url}}/v2{{createDbInstanceSample.response.headers.location}}
+DELETE {{adminapi_url}}/v2{{createOdsInstanceManageSample.response.headers.location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 
 ### Get all DB instances
-GET {{adminapi_url}}/v2/dbinstances
+GET {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
@@ -84,37 +84,37 @@ Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### Get all DB instances with pagination
-GET {{adminapi_url}}/v2/dbinstances?offset=0&limit=10
+GET {{adminapi_url}}/v2/odsinstances/manage?offset=0&limit=10
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### Get all DB instances filtered by name
-GET {{adminapi_url}}/v2/dbinstances?name=My DB Instance
+GET {{adminapi_url}}/v2/odsinstances/manage?name=My DB Instance
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### Get DB instance by ID (Minimal)
-GET {{adminapi_url}}/v2{{createDbInstanceMinimal.response.headers.location}}
+GET {{adminapi_url}}/v2{{createOdsInstanceManageMinimal.response.headers.location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### Get DB instance by ID (Sample)
-GET {{adminapi_url}}/v2{{createDbInstanceSample.response.headers.location}}
+GET {{adminapi_url}}/v2{{createOdsInstanceManageSample.response.headers.location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### Get DB instance by ID - not found
-GET {{adminapi_url}}/v2/dbinstances/0
+GET {{adminapi_url}}/v2/odsinstances/manage/0
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
 
 ### Create DB instance - invalid (missing required fields)
-POST {{adminapi_url}}/v2/dbinstances
+POST {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
@@ -125,7 +125,7 @@ Tenant: {{tenant}}
 }
 
 ### Create DB instance - invalid (invalid name)
-POST {{adminapi_url}}/v2/dbinstances
+POST {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
@@ -136,7 +136,7 @@ Tenant: {{tenant}}
 }
 
 ### Create DB instance - invalid template
-POST {{adminapi_url}}/v2/dbinstances
+POST {{adminapi_url}}/v2/odsinstances/manage
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: {{tenant}}
