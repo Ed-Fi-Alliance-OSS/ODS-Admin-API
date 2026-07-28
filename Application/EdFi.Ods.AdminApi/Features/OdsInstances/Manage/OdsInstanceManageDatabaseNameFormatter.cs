@@ -5,9 +5,9 @@
 
 using System.Text.RegularExpressions;
 
-namespace EdFi.Ods.AdminApi.Features.DbInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
-internal static class DbInstanceDatabaseNameFormatter
+internal static class OdsInstanceManageDatabaseNameFormatter
 {
     private const string CanonicalPrefix = "EdFi_Ods";
 

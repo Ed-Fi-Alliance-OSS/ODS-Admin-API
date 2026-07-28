@@ -5,10 +5,10 @@
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.Features.DbInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
-[SwaggerSchema(Title = "DbInstance")]
-public class DbInstanceModel
+[SwaggerSchema(Title = "OdsInstanceManage")]
+public class OdsInstanceManageModel
 {
     public int? Id { get; set; }
     public string? Name { get; set; }

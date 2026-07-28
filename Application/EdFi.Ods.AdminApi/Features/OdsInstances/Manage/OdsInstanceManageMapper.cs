@@ -5,13 +5,13 @@
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
-namespace EdFi.Ods.AdminApi.Features.DbInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
-public static class DbInstanceMapper
+public static class OdsInstanceManageMapper
 {
-    public static DbInstanceModel ToModel(DbInstance source)
+    public static OdsInstanceManageModel ToModel(OdsInstanceManage source)
     {
-        return new DbInstanceModel
+        return new OdsInstanceManageModel
         {
             Id = source.Id,
             Name = source.Name,
@@ -25,7 +25,7 @@ public static class DbInstanceMapper
         };
     }
 
-    public static List<DbInstanceModel> ToModelList(IEnumerable<DbInstance> source)
+    public static List<OdsInstanceManageModel> ToModelList(IEnumerable<OdsInstanceManage> source)
     {
         return source.Select(ToModel).ToList();
     }

@@ -8,38 +8,38 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
-namespace EdFi.Ods.AdminApi.Features.DbInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
-public class ReadDbInstance : IFeature
+public class ReadOdsInstanceManage : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapGet(endpoints, "/dbInstances", GetDbInstances)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstances/manage", GetOdsInstanceManages)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponse<DbInstanceModel[]>(200))
+            .WithRouteOptions(b => b.WithResponse<OdsInstanceManageModel[]>(200))
             .BuildForVersions(AdminApiVersions.V2);
 
-        AdminApiEndpointBuilder.MapGet(endpoints, "/dbInstances/{id}", GetDbInstance)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/odsInstances/manage/{id}", GetOdsInstanceManage)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponse<DbInstanceModel>(200))
+            .WithRouteOptions(b => b.WithResponse<OdsInstanceManageModel>(200))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
-    public static Task<IResult> GetDbInstances(IGetDbInstancesQuery query,
+    public static Task<IResult> GetOdsInstanceManages(IGetOdsInstanceManagesQuery query,
         [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        var list = DbInstanceMapper.ToModelList(query.Execute(commonQueryParams, id, name));
+        var list = OdsInstanceManageMapper.ToModelList(query.Execute(commonQueryParams, id, name));
         return Task.FromResult(Results.Ok(list));
     }
 
-    public static Task<IResult> GetDbInstance(IGetDbInstanceByIdQuery query, int id)
+    public static Task<IResult> GetOdsInstanceManage(IGetOdsInstanceManageByIdQuery query, int id)
     {
-        var dbInstance = query.Execute(id);
-        if (dbInstance == null)
+        var odsInstanceManage = query.Execute(id);
+        if (odsInstanceManage == null)
         {
-            throw new NotFoundException<int>("dbInstance", id);
+            throw new NotFoundException<int>("odsInstanceManage", id);
         }
-        var model = DbInstanceMapper.ToModel(dbInstance);
+        var model = OdsInstanceManageMapper.ToModel(odsInstanceManage);
         return Task.FromResult(Results.Ok(model));
     }
 }

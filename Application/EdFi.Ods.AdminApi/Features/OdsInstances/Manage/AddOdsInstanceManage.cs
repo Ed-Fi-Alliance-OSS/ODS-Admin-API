@@ -24,20 +24,20 @@ using Microsoft.Extensions.Options;
 using Quartz;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.Features.DbInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
-public class AddDbInstance : IFeature
+public class AddOdsInstanceManage : IFeature
 {
     private const int MaxSynchronizedNameLength = 100;
-    private const int MaxDbInstanceNameLength = MaxSynchronizedNameLength;
-    private static readonly Regex _validDbInstanceNamePattern = new(
+    private const int MaxOdsInstanceManageNameLength = MaxSynchronizedNameLength;
+    private static readonly Regex _validOdsInstanceManageNamePattern = new(
         "^[A-Za-z0-9 _]+$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapPost(endpoints, "/dbInstances", Handle)
+            .MapPost(endpoints, "/odsInstances/manage", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V2);
@@ -45,15 +45,15 @@ public class AddDbInstance : IFeature
 
     public async static Task<IResult> Handle(
         Validator validator,
-        AddDbInstanceCommand addDbInstanceCommand,
+        AddOdsInstanceManageCommand addOdsInstanceManageCommand,
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         [FromServices] IOptions<AppSettings> options,
-        AddDbInstanceRequest request)
+        AddOdsInstanceManageRequest request)
     {
         await validator.GuardAsync(request);
 
-        var added = addDbInstanceCommand.Execute(request);
+        var added = addOdsInstanceManageCommand.Execute(request);
 
         var tenantIdentifier = options.Value.MultiTenancy
             ? tenantConfigurationProvider.Get()?.TenantIdentifier
@@ -61,7 +61,7 @@ public class AddDbInstance : IFeature
 
         var jobBuilder = JobBuilder.Create<CreateInstanceJob>()
             .WithIdentity(CreateInstanceJob.CreateJobKey(added.Id, tenantIdentifier))
-            .UsingJobData(JobConstants.DbInstanceIdKey, added.Id);
+            .UsingJobData(JobConstants.OdsInstanceManageIdKey, added.Id);
 
         if (!string.IsNullOrWhiteSpace(tenantIdentifier))
         {
@@ -80,16 +80,16 @@ public class AddDbInstance : IFeature
         }
         catch (ObjectAlreadyExistsException)
         {
-            // The CreatePendingDbInstancesDispatcherJob may have already scheduled this job
+            // The CreatePendingOdsInstanceManagesDispatcherJob may have already scheduled this job
             // (e.g. it fired between the DB insert and this ScheduleJob call). Treat duplicate
-            // scheduling as success — the job is already queued and will process the DbInstance.
+            // scheduling as success — the job is already queued and will process the OdsInstanceManage.
         }
 
-        return Results.Accepted($"/dbinstances/{added.Id}", null);
+        return Results.Accepted($"/odsinstances/manage/{added.Id}", null);
     }
 
-    [SwaggerSchema(Title = "AddDbInstanceRequest")]
-    public class AddDbInstanceRequest : IAddDbInstanceModel
+    [SwaggerSchema(Title = "AddOdsInstanceManageRequest")]
+    public class AddOdsInstanceManageRequest : IAddOdsInstanceManageModel
     {
         [SwaggerSchema(Description = "Name of the database instance", Nullable = false)]
         public string? Name { get; set; }
@@ -98,7 +98,7 @@ public class AddDbInstance : IFeature
         public string? DatabaseTemplate { get; set; }
     }
 
-    public class Validator : AbstractValidator<AddDbInstanceRequest>
+    public class Validator : AbstractValidator<AddOdsInstanceManageRequest>
     {
         private static readonly string[] _validDatabaseTemplates = Enum.GetNames<SandboxType>();
         private readonly AdminApiDbContext _adminApiDbContext;
@@ -111,9 +111,9 @@ public class AddDbInstance : IFeature
 
             RuleFor(m => m.Name)
                 .NotEmpty()
-                .MaximumLength(MaxDbInstanceNameLength)
-                .WithMessage($"'{{PropertyName}}' must be {MaxDbInstanceNameLength} characters or fewer so the synchronized ODS instance name fits within {MaxSynchronizedNameLength} characters.")
-                .Matches(_validDbInstanceNamePattern)
+                .MaximumLength(MaxOdsInstanceManageNameLength)
+                .WithMessage($"'{{PropertyName}}' must be {MaxOdsInstanceManageNameLength} characters or fewer so the synchronized ODS instance name fits within {MaxSynchronizedNameLength} characters.")
+                .Matches(_validOdsInstanceManageNamePattern)
                 .WithMessage("'{PropertyName}' may only contain letters, numbers, spaces, and underscores.");
 
             RuleFor(m => m.DatabaseTemplate).NotEmpty().MaximumLength(100)
@@ -124,8 +124,8 @@ public class AddDbInstance : IFeature
             {
                 if (string.IsNullOrWhiteSpace(request.Name)
                     || string.IsNullOrWhiteSpace(request.DatabaseTemplate)
-                    || request.Name.Length > MaxDbInstanceNameLength
-                    || !_validDbInstanceNamePattern.IsMatch(request.Name)
+                    || request.Name.Length > MaxOdsInstanceManageNameLength
+                    || !_validOdsInstanceManageNamePattern.IsMatch(request.Name)
                     || !_validDatabaseTemplates.Contains(request.DatabaseTemplate))
                 {
                     return;
@@ -133,29 +133,29 @@ public class AddDbInstance : IFeature
 
                 var normalizedName = request.Name.Trim();
 
-                if (await _adminApiDbContext.DbInstances.AnyAsync(instance => instance.Name == normalizedName && instance.Status != DbInstanceStatus.Deleted.ToString(), cancellationToken))
+                if (await _adminApiDbContext.OdsInstanceManages.AnyAsync(instance => instance.Name == normalizedName && instance.Status != OdsInstanceManageStatus.Deleted.ToString(), cancellationToken))
                 {
                     context.AddFailure(
-                        nameof(AddDbInstanceRequest.Name),
-                        $"A DbInstance named '{normalizedName}' already exists.");
+                        nameof(AddOdsInstanceManageRequest.Name),
+                        $"An OdsInstanceManage named '{normalizedName}' already exists.");
                     return;
                 }
 
                 if (await _usersContext.OdsInstances.AnyAsync(instance => instance.Name == normalizedName, cancellationToken))
                 {
                     context.AddFailure(
-                        nameof(AddDbInstanceRequest.Name),
+                        nameof(AddOdsInstanceManageRequest.Name),
                         $"An OdsInstance named '{normalizedName}' already exists.");
                     return;
                 }
 
-                var databaseName = DbInstanceDatabaseNameFormatter.Build(request.Name, request.DatabaseTemplate);
+                var databaseName = OdsInstanceManageDatabaseNameFormatter.Build(request.Name, request.DatabaseTemplate);
 
-                if (databaseName.Length > DbInstanceDatabaseNameFormatter.MaxPortableDatabaseNameLength)
+                if (databaseName.Length > OdsInstanceManageDatabaseNameFormatter.MaxPortableDatabaseNameLength)
                 {
                     context.AddFailure(
-                        nameof(AddDbInstanceRequest.Name),
-                        $"The generated database name '{databaseName}' exceeds the portable limit of {DbInstanceDatabaseNameFormatter.MaxPortableDatabaseNameLength} characters. Shorten Name or DatabaseTemplate.");
+                        nameof(AddOdsInstanceManageRequest.Name),
+                        $"The generated database name '{databaseName}' exceeds the portable limit of {OdsInstanceManageDatabaseNameFormatter.MaxPortableDatabaseNameLength} characters. Shorten Name or DatabaseTemplate.");
                 }
             });
         }

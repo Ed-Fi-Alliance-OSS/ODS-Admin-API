@@ -20,47 +20,47 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Quartz;
 
-namespace EdFi.Ods.AdminApi.Features.DbInstances;
+namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
-public class DeleteDbInstance : IFeature
+public class DeleteOdsInstanceManage : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
-            .MapDelete(endpoints, "/dbInstances/{id}", Handle)
+            .MapDelete(endpoints, "/odsInstances/manage/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
     public static async Task<IResult> Handle(
-        IGetDbInstanceByIdQuery getDbInstanceByIdQuery,
-        IDeleteDbInstanceCommand deleteDbInstanceCommand,
+        IGetOdsInstanceManageByIdQuery getOdsInstanceManageByIdQuery,
+        IDeleteOdsInstanceManageCommand deleteOdsInstanceManageCommand,
         [FromServices] ISchedulerFactory schedulerFactory,
         [FromServices] IContextProvider<TenantConfiguration> tenantConfigurationProvider,
         [FromServices] IOptions<AppSettings> options,
         int id
     )
     {
-        var dbInstance = getDbInstanceByIdQuery.Execute(id);
-        if (dbInstance is null)
-            throw new NotFoundException<int>("dbInstance", id);
+        var odsInstanceManage = getOdsInstanceManageByIdQuery.Execute(id);
+        if (odsInstanceManage is null)
+            throw new NotFoundException<int>("odsInstanceManage", id);
 
-        if (dbInstance.Status == DbInstanceStatus.Deleted.ToString())
-            throw new NotFoundException<int>("dbInstance", id);
+        if (odsInstanceManage.Status == OdsInstanceManageStatus.Deleted.ToString())
+            throw new NotFoundException<int>("odsInstanceManage", id);
 
-        var blockingMessage = GetBlockingStatusMessage(dbInstance.Status);
+        var blockingMessage = GetBlockingStatusMessage(odsInstanceManage.Status);
         if (blockingMessage is not null)
             throw new ValidationException([new ValidationFailure(nameof(id), blockingMessage)]);
 
-        deleteDbInstanceCommand.Execute(id);
+        deleteOdsInstanceManageCommand.Execute(id);
 
         var tenantName = options.Value.MultiTenancy
             ? tenantConfigurationProvider.Get()?.TenantIdentifier
             : null;
         var jobData = new Dictionary<string, object>
         {
-            [JobConstants.DbInstanceIdKey] = id
+            [JobConstants.OdsInstanceManageIdKey] = id
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))
@@ -80,7 +80,7 @@ public class DeleteDbInstance : IFeature
         }
         catch (ObjectAlreadyExistsException)
         {
-            // The DeletePendingDbInstancesDispatcherJob may have already scheduled this job.
+            // The DeletePendingOdsInstanceManagesDispatcherJob may have already scheduled this job.
             // Treat duplicate scheduling as success — the job is already queued.
         }
 
@@ -89,18 +89,18 @@ public class DeleteDbInstance : IFeature
 
     private static string? GetBlockingStatusMessage(string status)
     {
-        if (Enum.TryParse<DbInstanceStatus>(status, ignoreCase: true, out var parsed))
+        if (Enum.TryParse<OdsInstanceManageStatus>(status, ignoreCase: true, out var parsed))
         {
             return parsed switch
             {
-                DbInstanceStatus.PendingCreate    => "DbInstance is being provisioned. Wait for creation to complete.",
-                DbInstanceStatus.CreateInProgress => "DbInstance is currently being provisioned. Wait for creation to complete.",
-                DbInstanceStatus.CreateFailed     => "DbInstance creation failed. It will be retried automatically by the background job.",
-                DbInstanceStatus.CreateError      => "DbInstance creation failed permanently. Manual database intervention required before deleting.",
-                DbInstanceStatus.PendingDelete    => "DbInstance is already queued for deletion.",
-                DbInstanceStatus.DeleteInProgress => "DbInstance is currently being deleted.",
-                DbInstanceStatus.DeleteFailed     => "DbInstance deletion failed. It will be retried automatically by the background job.",
-                DbInstanceStatus.DeleteError      => "DbInstance deletion failed permanently. Manual database intervention required.",
+                OdsInstanceManageStatus.PendingCreate    => "OdsInstanceManage is being provisioned. Wait for creation to complete.",
+                OdsInstanceManageStatus.CreateInProgress => "OdsInstanceManage is currently being provisioned. Wait for creation to complete.",
+                OdsInstanceManageStatus.CreateFailed     => "OdsInstanceManage creation failed. It will be retried automatically by the background job.",
+                OdsInstanceManageStatus.CreateError      => "OdsInstanceManage creation failed permanently. Manual database intervention required before deleting.",
+                OdsInstanceManageStatus.PendingDelete    => "OdsInstanceManage is already queued for deletion.",
+                OdsInstanceManageStatus.DeleteInProgress => "OdsInstanceManage is currently being deleted.",
+                OdsInstanceManageStatus.DeleteFailed     => "OdsInstanceManage deletion failed. It will be retried automatically by the background job.",
+                OdsInstanceManageStatus.DeleteError      => "OdsInstanceManage deletion failed permanently. Manual database intervention required.",
                 _ => null,
             };
         }
@@ -108,4 +108,3 @@ public class DeleteDbInstance : IFeature
         return null;
     }
 }
-
