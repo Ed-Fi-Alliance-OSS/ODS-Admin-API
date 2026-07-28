@@ -1,11 +1,11 @@
 meta {
-  name: DbInstances
+  name: OdsInstances Manage
   type: http
   seq: 1
 }
 
 post {
-  url: {{API_URL}}/v2/dbinstances
+  url: {{API_URL}}/v2/odsinstances/manage
   body: json
   auth: inherit
 }
@@ -18,15 +18,15 @@ body:json {
 }
 
 script:post-response {
-  test("POST DbInstances: Status code is Accepted", function () {
+  test("POST OdsInstances Manage: Status code is Accepted", function () {
     expect(res.getStatus()).to.equal(202);
   });
 
-  test("POST DbInstances: Response includes location in header", function () {
+  test("POST OdsInstances Manage: Response includes location in header", function () {
     expect(res.getHeaders()).to.have.property("location");
     const id = res.getHeader("location").split("/")[2];
     if (id) {
-      bru.setVar("CreatedDbInstanceId", id);
+      bru.setVar("CreatedOdsInstanceManageId", id);
     }
   });
 }

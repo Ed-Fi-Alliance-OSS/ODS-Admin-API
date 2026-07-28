@@ -1,0 +1,32 @@
+meta {
+  name: OdsInstances Manage - Not Found
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v2/odsinstances/manage/0
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstance Manage Not Found: Status code is Not Found", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  const response = res.getBody();
+
+  test("GET OdsInstance Manage Not Found: Response matches error format", function () {
+    expect(response).to.have.property("title");
+  });
+
+  test("GET OdsInstance Manage Not Found: Response title is helpful and accurate", function () {
+    expect(response.title).to.contain("Not found");
+    expect(response.title.toLowerCase()).to.contain("odsinstancemanage");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

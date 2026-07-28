@@ -1,5 +1,5 @@
 meta {
-  name: DbInstances - Delete - Success
+  name: OdsInstances Manage - Delete - Success
   type: http
   seq: 13
   skip: true
@@ -8,7 +8,7 @@ meta {
 script:pre-request {
   // DISABLED: The CI pipeline does not seed the Minimal/Sample ODS template databases
   // (EdFi_Ods_Minimal_Template / EdFi_Ods_Populated_Template) before running the E2E suite.
-  // Without those source databases the provisioner cannot copy them and the DbInstance
+  // Without those source databases the provisioner cannot copy them and the OdsInstance Manage
   // transitions to Error status, causing this pre-request to throw and block the whole run.
   // To re-enable: remove this early-return block and remove 'skip: true' from meta.
   // See docs/design/DBINSTANCE-PROVISIONING-JOBS.md § Pending work.
@@ -27,7 +27,7 @@ script:pre-request {
   const axios = require('axios');
   const API_URL = bru.getEnvVar("API_URL");
   const TOKEN = bru.getEnvVar("TOKEN");
-  const deleteDbInstanceName = `Delete Test DB Instance ${Date.now()}`;
+  const deleteOdsInstanceManageName = `Delete Test DB Instance ${Date.now()}`;
   const requestTimeoutMs = 30000;
   const provisioningTimeoutMs = 180000;
   const pollingIntervalMs = 5000;
@@ -56,66 +56,66 @@ script:pre-request {
   const sleep = (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs));
 
   try {
-    console.log(`Creating delete test DbInstance: ${deleteDbInstanceName}`);
+    console.log(`Creating delete test OdsInstance Manage: ${deleteOdsInstanceManageName}`);
 
-    const createResponse = await axios.post(`${API_URL}/v2/dbinstances`, {
-      name: deleteDbInstanceName,
+    const createResponse = await axios.post(`${API_URL}/v2/odsinstances/manage`, {
+      name: deleteOdsInstanceManageName,
       databaseTemplate: "Minimal"
     }, axiosConfig);
 
     if (createResponse.status !== 202) {
-      logAxiosFailure("Failed to create delete test DbInstance", createResponse);
-      throw new Error(`Failed to create delete test DbInstance - Status: ${createResponse.status}`);
+      logAxiosFailure("Failed to create delete test OdsInstance Manage", createResponse);
+      throw new Error(`Failed to create delete test OdsInstance Manage - Status: ${createResponse.status}`);
     }
 
     const locationHeader = createResponse.headers.location;
     const locationValue = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
 
     if (!locationValue) {
-      console.log("❌ Create delete test DbInstance response did not include a location header");
+      console.log("❌ Create delete test OdsInstance Manage response did not include a location header");
       console.log("Headers:", JSON.stringify(createResponse.headers, null, 2));
-      throw new Error("Create delete test DbInstance response did not include a location header.");
+      throw new Error("Create delete test OdsInstance Manage response did not include a location header.");
     }
 
-    const freshPendingDbInstanceId = locationValue.split("/").pop();
+    const freshPendingOdsInstanceManageId = locationValue.split("/").pop();
 
-    if (!freshPendingDbInstanceId) {
-      throw new Error(`Could not parse DbInstance id from location header '${locationValue}'.`);
+    if (!freshPendingOdsInstanceManageId) {
+      throw new Error(`Could not parse OdsInstance Manage id from location header '${locationValue}'.`);
     }
 
-    bru.setVar("FreshPendingDbInstanceId", freshPendingDbInstanceId);
-    bru.setVar("DeleteDbInstanceName", deleteDbInstanceName);
+    bru.setVar("FreshPendingOdsInstanceManageId", freshPendingOdsInstanceManageId);
+    bru.setVar("DeleteOdsInstanceManageName", deleteOdsInstanceManageName);
 
     const provisioningDeadline = Date.now() + provisioningTimeoutMs;
     let isReadyToDelete = false;
 
     while (Date.now() < provisioningDeadline) {
-      const statusResponse = await axios.get(`${API_URL}/v2/dbinstances/${freshPendingDbInstanceId}`, axiosConfig);
+      const statusResponse = await axios.get(`${API_URL}/v2/odsinstances/manage/${freshPendingOdsInstanceManageId}`, axiosConfig);
 
       if (statusResponse.status !== 200) {
-        logAxiosFailure("Failed to poll delete test DbInstance", statusResponse);
-        throw new Error(`Failed to poll delete test DbInstance - Status: ${statusResponse.status}`);
+        logAxiosFailure("Failed to poll delete test OdsInstance Manage", statusResponse);
+        throw new Error(`Failed to poll delete test OdsInstance Manage - Status: ${statusResponse.status}`);
       }
 
       const currentStatus = statusResponse.data?.status;
-      console.log(`Delete test DbInstance ${freshPendingDbInstanceId} status: ${currentStatus}`);
+      console.log(`Delete test OdsInstance Manage ${freshPendingOdsInstanceManageId} status: ${currentStatus}`);
 
       if (currentStatus === "Completed" || currentStatus === "DeleteFailed") {
-        console.log(`✅ Delete test DbInstance ${freshPendingDbInstanceId} is ready to be deleted`);
+        console.log(`✅ Delete test OdsInstance Manage ${freshPendingOdsInstanceManageId} is ready to be deleted`);
         isReadyToDelete = true;
         break;
       }
 
       if (currentStatus === "Error") {
-        logAxiosFailure("Delete test DbInstance provisioning ended in Error", statusResponse);
-        throw new Error(`Delete test DbInstance provisioning ended in Error for id ${freshPendingDbInstanceId}.`);
+        logAxiosFailure("Delete test OdsInstance Manage provisioning ended in Error", statusResponse);
+        throw new Error(`Delete test OdsInstance Manage provisioning ended in Error for id ${freshPendingOdsInstanceManageId}.`);
       }
 
       await sleep(pollingIntervalMs);
     }
 
     if (!isReadyToDelete) {
-      throw new Error(`Timed out waiting for delete test DbInstance ${freshPendingDbInstanceId} to become deletable.`);
+      throw new Error(`Timed out waiting for delete test OdsInstance Manage ${freshPendingOdsInstanceManageId} to become deletable.`);
     }
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);
@@ -124,7 +124,7 @@ script:pre-request {
 }
 
 delete {
-  url: {{API_URL}}/v2/dbinstances/{{FreshPendingDbInstanceId}}
+  url: {{API_URL}}/v2/odsinstances/manage/{{FreshPendingOdsInstanceManageId}}
   body: none
   auth: inherit
 }
@@ -137,19 +137,19 @@ script:post-response {
   const responseStatus = res.getStatus();
 
   if (responseStatus !== expectedStatus) {
-    console.log("❌ DELETE DbInstance Success request failed");
-    console.log("DbInstanceId:", bru.getVar("FreshPendingDbInstanceId"));
-    console.log("DbInstanceName:", bru.getVar("DeleteDbInstanceName"));
+    console.log("❌ DELETE OdsInstance Manage Success request failed");
+    console.log("OdsInstanceManageId:", bru.getVar("FreshPendingOdsInstanceManageId"));
+    console.log("OdsInstanceManageName:", bru.getVar("DeleteOdsInstanceManageName"));
     console.log("Status:", responseStatus);
     console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
   }
 
-  test("DELETE DbInstance Success: Status code is No Content", function () {
+  test("DELETE OdsInstance Manage Success: Status code is No Content", function () {
     expect(responseStatus).to.equal(expectedStatus);
   });
 
-  bru.deleteVar("FreshPendingDbInstanceId");
-  bru.deleteVar("DeleteDbInstanceName");
+  bru.deleteVar("FreshPendingOdsInstanceManageId");
+  bru.deleteVar("DeleteOdsInstanceManageName");
 }
 
 settings {

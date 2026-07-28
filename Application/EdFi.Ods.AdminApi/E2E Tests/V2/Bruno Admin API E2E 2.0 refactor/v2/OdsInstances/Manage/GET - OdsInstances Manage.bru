@@ -1,11 +1,11 @@
 meta {
-  name: DbInstances - Get All
+  name: OdsInstances Manage - Get All
   type: http
   seq: 5
 }
 
 get {
-  url: {{API_URL}}/v2/dbinstances?offset={{offset}}&limit={{limit}}
+  url: {{API_URL}}/v2/odsinstances/manage?offset={{offset}}&limit={{limit}}
   body: none
   auth: inherit
 }
@@ -16,15 +16,15 @@ params:query {
 }
 
 script:post-response {
-  test("GET DbInstances: Status code is OK", function () {
+  test("GET OdsInstances Manage: Status code is OK", function () {
     expect(res.getStatus()).to.equal(200);
   });
 
-  test("GET DbInstances: Response is an array", function () {
+  test("GET OdsInstances Manage: Response is an array", function () {
     expect(res.getBody()).to.be.an("array");
   });
 
-  test("GET DbInstances: Response includes created instance", function () {
+  test("GET OdsInstances Manage: Response includes created instance", function () {
     expect(res.getBody().length).to.be.greaterThan(0);
   });
 
@@ -50,7 +50,7 @@ script:post-response {
     }
   };
 
-  test("GET DbInstances: Response matches schema", function () {
+  test("GET OdsInstances Manage: Response matches schema", function () {
     const valid = ajv.validate(schema, res.getBody());
     expect(valid).to.be.true;
   });

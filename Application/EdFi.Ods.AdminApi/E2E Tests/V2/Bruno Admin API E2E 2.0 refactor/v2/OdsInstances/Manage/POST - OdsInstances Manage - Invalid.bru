@@ -1,11 +1,11 @@
 meta {
-  name: DbInstances - Invalid
+  name: OdsInstances Manage - Invalid
   type: http
   seq: 2
 }
 
 post {
-  url: {{API_URL}}/v2/dbinstances
+  url: {{API_URL}}/v2/odsinstances/manage
   body: json
   auth: inherit
 }
@@ -18,22 +18,22 @@ body:json {
 }
 
 script:post-response {
-  test("POST DbInstances Invalid: Status code is Bad Request", function () {
+  test("POST OdsInstances Manage Invalid: Status code is Bad Request", function () {
     expect(res.getStatus()).to.equal(400);
   });
 
   const response = res.getBody();
 
-  test("POST DbInstances Invalid: Response matches error format", function () {
+  test("POST OdsInstances Manage Invalid: Response matches error format", function () {
     expect(response).to.have.property("title");
     expect(response).to.have.property("errors");
   });
 
-  test("POST DbInstances Invalid: Response title is helpful and accurate", function () {
+  test("POST OdsInstances Manage Invalid: Response title is helpful and accurate", function () {
     expect(response.title.toLowerCase()).to.contain("validation");
   });
 
-  test("POST DbInstances Invalid: Response errors include messages by property", function () {
+  test("POST OdsInstances Manage Invalid: Response errors include messages by property", function () {
     expect(response.errors["Name"].length).to.be.greaterThan(0);
     expect(response.errors["DatabaseTemplate"].length).to.be.greaterThan(0);
   });
