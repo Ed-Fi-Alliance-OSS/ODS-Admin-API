@@ -30,23 +30,33 @@ public class AuditEventRecorder(
             return;
         }
 
-        var tenant = tenantContextProvider.Get();
-        var adminConnectionString = !string.IsNullOrEmpty(tenant?.AdminConnectionString)
-            ? tenant.AdminConnectionString
-            : configuration.GetConnectionStringByName("EdFi_Admin");
-
-        var auditEvent = new AuditEvent
+        try
         {
-            AdminConnectionString = adminConnectionString,
-            EventType = eventType,
-            Timestamp = DateTime.UtcNow,
-            ClientId = clientId,
-            SourceIpAddress = sourceIpAddress,
-            HttpVerb = httpVerb,
-            HttpUrl = httpUrl,
-            StatusCode = statusCode
-        };
+            var tenant = tenantContextProvider.Get();
+            var adminConnectionString = !string.IsNullOrEmpty(tenant?.AdminConnectionString)
+                ? tenant.AdminConnectionString
+                : configuration.GetConnectionStringByName("EdFi_Admin");
 
-        channel.Writer.TryWrite(auditEvent);
+            var auditEvent = new AuditEvent
+            {
+                AdminConnectionString = adminConnectionString,
+                EventType = eventType,
+                Timestamp = DateTime.UtcNow,
+                ClientId = clientId,
+                SourceIpAddress = sourceIpAddress,
+                HttpVerb = httpVerb,
+                HttpUrl = httpUrl,
+                StatusCode = statusCode
+            };
+
+            channel.Writer.TryWrite(auditEvent);
+        }
+        catch
+        {
+            // Audit logging must never block or fail the original request (fail-open).
+            // Any failure resolving the connection string or constructing the event is
+            // swallowed here; fallback logging of dropped events is handled by the
+            // background writer (Task 3), not this recorder.
+        }
     }
 }

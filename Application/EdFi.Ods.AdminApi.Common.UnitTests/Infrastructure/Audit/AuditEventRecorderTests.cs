@@ -81,4 +81,22 @@ public class AuditEventRecorderTests
         auditEvent!.AdminConnectionString.ShouldBe("tenant-connection-string");
         auditEvent.ClientId.ShouldBeNull();
     }
+
+    [Test]
+    public void Record_WhenConnectionStringResolutionThrows_DoesNotThrowAndDoesNotEnqueueEvent()
+    {
+        var channel = new AuditLogChannel();
+        var tenantContext = new ContextProvider<TenantConfiguration>(new AsyncLocalContextStorage());
+        var configurationWithNoConnectionString = new ConfigurationBuilder().Build();
+        var recorder = new AuditEventRecorder(
+            channel,
+            Options.Create(new AuditLoggingSettings { Enabled = true }),
+            tenantContext,
+            configurationWithNoConnectionString);
+
+        Should.NotThrow(() =>
+            recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v3/apiClients", 201));
+
+        channel.Reader.TryRead(out _).ShouldBeFalse();
+    }
 }
