@@ -33,7 +33,7 @@ public class ReadTenants : IFeature
         [FromServices] ITenantsService tenantsService,
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IGetDbInstancesQuery getDbInstancesQuery,
+        IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery,
         IMemoryCache memoryCache,
         IOptions<AppSettings> options,
         IOptions<SwaggerSettings> _swaggerOptions,
@@ -59,7 +59,7 @@ public class ReadTenants : IFeature
         }
 
         var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(
-            getOdsInstancesQuery, getEducationOrganizationQuery, getDbInstancesQuery, tenantName);
+            getOdsInstancesQuery, getEducationOrganizationQuery, getOdsInstanceManagesQuery, tenantName);
 
         if (tenant is null)
             return Results.NotFound();
