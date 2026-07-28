@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
-public class DbInstance
+public class OdsInstanceManage
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
