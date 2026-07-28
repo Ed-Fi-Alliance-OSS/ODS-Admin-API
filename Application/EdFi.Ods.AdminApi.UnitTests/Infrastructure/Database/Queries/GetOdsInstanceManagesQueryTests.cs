@@ -22,12 +22,12 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Database.Queries;
 
 [TestFixture]
-public class GetDbInstancesQueryTests
+public class GetOdsInstanceManagesQueryTests
 {
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
-            .UseInMemoryDatabase(databaseName: $"GetDbInstancesQueryTests_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"GetOdsInstanceManagesQueryTests_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -43,15 +43,15 @@ public class GetDbInstancesQueryTests
         Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
 
     [Test]
-    public void Execute_WithoutFilters_ReturnsAllDbInstances()
+    public void Execute_WithoutFilters_ReturnsAllOdsInstanceManages()
     {
         using var context = CreateContext();
-        context.DbInstances.AddRange(
-            new DbInstance { Name = "Sandbox A", Status = "Healthy", DatabaseTemplate = "Minimal" },
-            new DbInstance { Name = "Sandbox B", Status = "Healthy", DatabaseTemplate = "Minimal" });
+        context.OdsInstanceManages.AddRange(
+            new OdsInstanceManage { Name = "Sandbox A", Status = "Healthy", DatabaseTemplate = "Minimal" },
+            new OdsInstanceManage { Name = "Sandbox B", Status = "Healthy", DatabaseTemplate = "Minimal" });
         context.SaveChanges();
 
-        var query = new GetDbInstancesQuery(context, DefaultOptions());
+        var query = new GetOdsInstanceManagesQuery(context, DefaultOptions());
 
         var result = query.Execute(new CommonQueryParams(0, 25), null, null);
 
@@ -60,15 +60,15 @@ public class GetDbInstancesQueryTests
     }
 
     [Test]
-    public void Execute_WithNameFilter_ReturnsMatchingDbInstance()
+    public void Execute_WithNameFilter_ReturnsMatchingOdsInstanceManage()
     {
         using var context = CreateContext();
-        context.DbInstances.AddRange(
-            new DbInstance { Name = "Sandbox A", Status = "Healthy", DatabaseTemplate = "Minimal" },
-            new DbInstance { Name = "Sandbox B", Status = "Healthy", DatabaseTemplate = "Minimal" });
+        context.OdsInstanceManages.AddRange(
+            new OdsInstanceManage { Name = "Sandbox A", Status = "Healthy", DatabaseTemplate = "Minimal" },
+            new OdsInstanceManage { Name = "Sandbox B", Status = "Healthy", DatabaseTemplate = "Minimal" });
         context.SaveChanges();
 
-        var query = new GetDbInstancesQuery(context, DefaultOptions());
+        var query = new GetOdsInstanceManagesQuery(context, DefaultOptions());
 
         var result = query.Execute(new CommonQueryParams(0, 25), null, "Sandbox B");
 

@@ -15,7 +15,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
-using EdFi.Ods.AdminApi.Features.DbInstances;
+using EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
@@ -74,13 +74,13 @@ public class CreateInstanceJobTests
         return new NonDisposingSqlServerUsersContext(options);
     }
 
-    private static IJobExecutionContext CreateJobExecutionContext(int dbInstanceId, string tenantName = null)
+    private static IJobExecutionContext CreateJobExecutionContext(int odsInstanceManageId, string tenantName = null)
     {
         var jobExecutionContext = A.Fake<IJobExecutionContext>();
         var jobDetail = A.Fake<IJobDetail>();
         var jobDataMap = new JobDataMap
         {
-            { JobConstants.DbInstanceIdKey, dbInstanceId }
+            { JobConstants.OdsInstanceManageIdKey, odsInstanceManageId }
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))
@@ -152,11 +152,11 @@ public class CreateInstanceJobTests
     [TestCase("EdFi Ods", "Minimal", "EdFi_Ods_Minimal")]
     public void BuildDatabaseName_UsesCanonicalFormat(string name, string databaseTemplate, string expectedDatabaseName)
     {
-        DbInstanceDatabaseNameFormatter.Build(name, databaseTemplate).ShouldBe(expectedDatabaseName);
+        OdsInstanceManageDatabaseNameFormatter.Build(name, databaseTemplate).ShouldBe(expectedDatabaseName);
     }
 
     [Test]
-    public async Task Execute_CreatesOdsInstance_AndCompletesDbInstance()
+    public async Task Execute_CreatesOdsInstance_AndCompletesOdsInstanceManage()
     {
         var configuration = CreateConfiguration();
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
@@ -173,16 +173,16 @@ public class CreateInstanceJobTests
             .Invokes((string connectionString, byte[] _) => plaintextConnectionString = connectionString)
             .ReturnsLazily((string connectionString, byte[] _) => $"encrypted::{connectionString}");
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -199,16 +199,16 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        var persistedDbInstance = adminApiContext.DbInstances.Single();
+        var persistedOdsInstanceManage = adminApiContext.OdsInstanceManages.Single();
         var persistedOdsInstance = usersContext.OdsInstances.Single();
         const string expectedDatabaseName = "EdFi_Ods_Sandbox_Minimal";
 
-        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
-        persistedDbInstance.DatabaseName.ShouldBe(expectedDatabaseName);
-        persistedDbInstance.OdsInstanceId.ShouldNotBeNull();
-        persistedDbInstance.OdsInstanceName.ShouldBe("Sandbox");
+        persistedOdsInstanceManage.Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
+        persistedOdsInstanceManage.DatabaseName.ShouldBe(expectedDatabaseName);
+        persistedOdsInstanceManage.OdsInstanceId.ShouldNotBeNull();
+        persistedOdsInstanceManage.OdsInstanceName.ShouldBe("Sandbox");
         persistedOdsInstance.Name.ShouldBe("Sandbox");
         persistedOdsInstance.InstanceType.ShouldBe("Minimal");
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(expectedDatabaseName, SandboxType.Minimal))
@@ -231,16 +231,16 @@ public class CreateInstanceJobTests
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "My District",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -257,9 +257,9 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().DatabaseName.ShouldBe("EdFi_Ods_My_District_Minimal");
+        adminApiContext.OdsInstanceManages.Single().DatabaseName.ShouldBe("EdFi_Ods_My_District_Minimal");
     }
 
     [Test]
@@ -281,17 +281,17 @@ public class CreateInstanceJobTests
             .Invokes((string connectionString, byte[] _) => plaintextConnectionString = connectionString)
             .ReturnsLazily((string connectionString, byte[] _) => $"encrypted::{connectionString}");
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
             DatabaseName = existingDatabaseName,
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -308,16 +308,16 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().DatabaseName.ShouldBe(existingDatabaseName);
+        adminApiContext.OdsInstanceManages.Single().DatabaseName.ShouldBe(existingDatabaseName);
         plaintextConnectionString.ShouldContain($"Initial Catalog={existingDatabaseName}");
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(existingDatabaseName, SandboxType.Minimal))
             .MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public async Task Execute_DoesNothing_WhenDbInstanceIsNotPending()
+    public async Task Execute_DoesNothing_WhenOdsInstanceManageIsNotPending()
     {
         var configuration = CreateConfiguration();
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
@@ -329,16 +329,16 @@ public class CreateInstanceJobTests
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Created.ToString(),
+            Status = OdsInstanceManageStatus.Created.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -355,16 +355,16 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Created.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(A<string>._, A<SandboxType>._)).MustNotHaveHappened();
         A.CallTo(() => encryptionProvider.Encrypt(A<string>._, A<byte[]>._)).MustNotHaveHappened();
     }
 
     [Test]
-    public async Task Execute_SetsDbInstanceToError_When_ProvisioningFails()
+    public async Task Execute_SetsOdsInstanceManageToError_When_ProvisioningFails()
     {
         var configuration = CreateConfiguration();
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
@@ -379,16 +379,16 @@ public class CreateInstanceJobTests
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(A<string>._, A<SandboxType>._))
             .Throws(new InvalidOperationException("Provisioning failed."));
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -405,16 +405,16 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.CreateFailed.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.CreateFailed.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => jobStatusService.SetStatusAsync(A<string>._, QuartzJobStatus.Error, A<string>._, A<string>.That.Contains("Provisioning failed.")))
             .MustHaveHappenedOnceExactly();
     }
 
     [Test]
-    public async Task Execute_SetsDbInstanceToError_WhenPendingStateAlreadyContainsOdsReferences()
+    public async Task Execute_SetsOdsInstanceManageToError_WhenPendingStateAlreadyContainsOdsReferences()
     {
         var configuration = CreateConfiguration();
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}", configuration);
@@ -426,18 +426,18 @@ public class CreateInstanceJobTests
         var encryptionProvider = A.Fake<ISymmetricStringEncryptionProvider>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             OdsInstanceId = 42,
             OdsInstanceName = "Sandbox",
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -454,9 +454,9 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.CreateFailed.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.CreateFailed.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(A<string>._, A<SandboxType>._)).MustNotHaveHappened();
         A.CallTo(() => jobStatusService.SetStatusAsync(A<string>._, QuartzJobStatus.Error, A<string>._, A<string>.That.Contains("invalid pending state")))
@@ -487,16 +487,16 @@ public class CreateInstanceJobTests
             .Invokes((string connectionString, byte[] _) => plaintextConnectionString = connectionString)
             .ReturnsLazily((string connectionString, byte[] _) => $"encrypted::{connectionString}");
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Sample",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        tenantAdminApiContext.DbInstances.Add(dbInstance);
+        tenantAdminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         tenantAdminApiContext.SaveChanges();
 
         var job = new CreateInstanceJob(
@@ -513,14 +513,14 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id, "tenant1"));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id, "tenant1"));
 
-        var persistedDbInstance = tenantAdminApiContext.DbInstances.Single();
+        var persistedOdsInstanceManage = tenantAdminApiContext.OdsInstanceManages.Single();
         var persistedOdsInstance = tenantUsersContext.OdsInstances.Single();
         const string expectedDatabaseName = "EdFi_Ods_Sandbox_Sample";
 
-        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
-        persistedDbInstance.DatabaseName.ShouldBe(expectedDatabaseName);
+        persistedOdsInstanceManage.Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
+        persistedOdsInstanceManage.DatabaseName.ShouldBe(expectedDatabaseName);
         persistedOdsInstance.InstanceType.ShouldBe("Sample");
         plaintextConnectionString.ShouldNotBeNull();
         plaintextConnectionString.ShouldContain($"Initial Catalog={expectedDatabaseName}");
@@ -551,16 +551,16 @@ public class CreateInstanceJobTests
         A.CallTo(() => encryptionProvider.Encrypt(A<string>._, A<byte[]>._))
             .Returns(encryptedConnectionString);
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         usersContext.OdsInstances.Add(new OdsInstance
@@ -585,16 +585,16 @@ public class CreateInstanceJobTests
             configuration,
             new DbConnectionStringBuilderAdapterFactory(new SqlConnectionStringBuilderAdapter()));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        var persistedDbInstance = adminApiContext.DbInstances.Single();
+        var persistedOdsInstanceManage = adminApiContext.OdsInstanceManages.Single();
         var persistedOdsInstance = usersContext.OdsInstances.Single();
         const string expectedDatabaseName = "EdFi_Ods_Sandbox_Minimal";
 
-        persistedDbInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
-        persistedDbInstance.DatabaseName.ShouldBe(expectedDatabaseName);
-        persistedDbInstance.OdsInstanceId.ShouldBe(persistedOdsInstance.OdsInstanceId);
-        persistedDbInstance.OdsInstanceName.ShouldBe("Sandbox");
+        persistedOdsInstanceManage.Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
+        persistedOdsInstanceManage.DatabaseName.ShouldBe(expectedDatabaseName);
+        persistedOdsInstanceManage.OdsInstanceId.ShouldBe(persistedOdsInstance.OdsInstanceId);
+        persistedOdsInstanceManage.OdsInstanceName.ShouldBe("Sandbox");
         persistedOdsInstance.ConnectionString.ShouldBe(encryptedConnectionString);
         usersContext.OdsInstances.Count().ShouldBe(1);
         A.CallTo(() => sandboxProvisioner.AddSandboxAsync(expectedDatabaseName, SandboxType.Minimal))

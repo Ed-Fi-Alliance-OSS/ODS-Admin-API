@@ -18,12 +18,12 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Database.Queries;
 
 [TestFixture]
-public class GetDbInstanceByIdQueryTests
+public class GetOdsInstanceManageByIdQueryTests
 {
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
-            .UseInMemoryDatabase(databaseName: $"GetDbInstanceByIdQueryTests_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"GetOdsInstanceManageByIdQueryTests_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -36,21 +36,21 @@ public class GetDbInstanceByIdQueryTests
     }
 
     [Test]
-    public void Execute_WithExistingId_ReturnsDbInstance()
+    public void Execute_WithExistingId_ReturnsOdsInstanceManage()
     {
         using var context = CreateContext();
-        var dbInstance = new DbInstance
+        var odsInstanceManage = new OdsInstanceManage
         {
             Name = "Sandbox",
             Status = "Healthy",
             DatabaseTemplate = "Minimal"
         };
-        context.DbInstances.Add(dbInstance);
+        context.OdsInstanceManages.Add(odsInstanceManage);
         context.SaveChanges();
 
-        var query = new GetDbInstanceByIdQuery(context);
+        var query = new GetOdsInstanceManageByIdQuery(context);
 
-        var result = query.Execute(dbInstance.Id);
+        var result = query.Execute(odsInstanceManage.Id);
 
         result.ShouldNotBeNull();
         result.Name.ShouldBe("Sandbox");
@@ -60,7 +60,7 @@ public class GetDbInstanceByIdQueryTests
     public void Execute_WithUnknownId_ReturnsNull()
     {
         using var context = CreateContext();
-        var query = new GetDbInstanceByIdQuery(context);
+        var query = new GetOdsInstanceManageByIdQuery(context);
 
         var result = query.Execute(999);
 

@@ -21,12 +21,12 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Database.Commands;
 
 [TestFixture]
-public class DeleteDbInstanceCommandTests
+public class DeleteOdsInstanceManageCommandTests
 {
     private static AdminApiDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AdminApiDbContext>()
-            .UseInMemoryDatabase(databaseName: $"DeleteDbInstanceCommand_{Guid.NewGuid()}")
+            .UseInMemoryDatabase(databaseName: $"DeleteOdsInstanceManageCommand_{Guid.NewGuid()}")
             .Options;
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(
@@ -40,21 +40,21 @@ public class DeleteDbInstanceCommandTests
     public void Execute_SetsStatusToPendingDelete()
     {
         using var context = CreateContext();
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.Created.ToString(),
+            Status = OdsInstanceManageStatus.Created.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
-        context.DbInstances.Add(instance);
+        context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteDbInstanceCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context);
         command.Execute(instance.Id);
 
-        var updated = context.DbInstances.Single(d => d.Id == instance.Id);
-        updated.Status.ShouldBe(DbInstanceStatus.PendingDelete.ToString());
+        var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
+        updated.Status.ShouldBe(OdsInstanceManageStatus.PendingDelete.ToString());
     }
 
     [Test]
@@ -62,20 +62,20 @@ public class DeleteDbInstanceCommandTests
     {
         using var context = CreateContext();
         var before = DateTime.UtcNow;
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.Created.ToString(),
+            Status = OdsInstanceManageStatus.Created.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
-        context.DbInstances.Add(instance);
+        context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteDbInstanceCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context);
         command.Execute(instance.Id);
 
-        var updated = context.DbInstances.Single(d => d.Id == instance.Id);
+        var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
         updated.LastModifiedDate.ShouldNotBeNull();
         updated.LastModifiedDate!.Value.ShouldBeGreaterThanOrEqualTo(before);
     }
@@ -84,7 +84,7 @@ public class DeleteDbInstanceCommandTests
     public void Execute_WithNonExistentId_ThrowsNotFoundException()
     {
         using var context = CreateContext();
-        var command = new DeleteDbInstanceCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context);
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(9999));
     }
@@ -93,17 +93,17 @@ public class DeleteDbInstanceCommandTests
     public void Execute_WhenStatusIsDeleted_ThrowsNotFoundException()
     {
         using var context = CreateContext();
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
-            Status = DbInstanceStatus.Deleted.ToString(),
+            Status = OdsInstanceManageStatus.Deleted.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow,
         };
-        context.DbInstances.Add(instance);
+        context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteDbInstanceCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context);
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(instance.Id));
     }
