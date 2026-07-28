@@ -27,8 +27,17 @@ public class AuditActionLoggingMiddleware(RequestDelegate next, IAuditEventRecor
         var httpVerb = context.Request.Method;
         var httpUrl = context.Request.Path.Value;
 
-        await next(context);
+        try
+        {
+            await next(context);
+        }
+        finally
+        {
+            var statusCode = context.Response.StatusCode is > 0 and < 600
+                ? context.Response.StatusCode
+                : StatusCodes.Status500InternalServerError;
 
-        recorder.Record(AuditEventType.Action, clientId, sourceIpAddress, httpVerb, httpUrl, context.Response.StatusCode);
+            recorder.Record(AuditEventType.Action, clientId, sourceIpAddress, httpVerb, httpUrl, statusCode);
+        }
     }
 }

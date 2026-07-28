@@ -70,4 +70,19 @@ public class AuditActionLoggingMiddlewareTests
             AuditEventType.Action, null, A<string?>._, "DELETE", "/v3/apiClients/1", 204))
             .MustHaveHappenedOnceExactly();
     }
+
+    [Test]
+    public void InvokeAsync_WhenNextThrows_StillRecordsActionEventAndPropagatesException()
+    {
+        var recorder = A.Fake<IAuditEventRecorder>();
+        var middleware = new AuditActionLoggingMiddleware(
+            _ => throw new InvalidOperationException("downstream failure"), recorder);
+        var context = BuildContext("POST", "/v3/apiClients", "client-1", 200);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context));
+
+        A.CallTo(() => recorder.Record(
+            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", A<int?>._))
+            .MustHaveHappenedOnceExactly();
+    }
 }
