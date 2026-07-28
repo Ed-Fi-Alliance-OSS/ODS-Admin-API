@@ -5,10 +5,10 @@
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.V3.Features.DbDataStores;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 
-[SwaggerSchema(Title = "DbDataStore")]
-public class DbDataStoreModel
+[SwaggerSchema(Title = "DataStoreManage")]
+public class DataStoreManageModel
 {
     public int? Id { get; set; }
     public string? Name { get; set; }
@@ -20,4 +20,3 @@ public class DbDataStoreModel
     public DateTime? LastRefreshed { get; set; }
     public DateTime? LastModifiedDate { get; set; }
 }
-

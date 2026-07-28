@@ -5,13 +5,13 @@
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
-namespace EdFi.Ods.AdminApi.V3.Features.DbDataStores;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 
-public static class DbDataStoreMapper
+public static class DataStoreManageMapper
 {
-    public static DbDataStoreModel ToModel(DbInstance source)
+    public static DataStoreManageModel ToModel(OdsInstanceManage source)
     {
-        return new DbDataStoreModel
+        return new DataStoreManageModel
         {
             Id = source.Id,
             Name = source.Name,
@@ -25,10 +25,8 @@ public static class DbDataStoreMapper
         };
     }
 
-    public static List<DbDataStoreModel> ToModelList(IEnumerable<DbInstance> source)
+    public static List<DataStoreManageModel> ToModelList(IEnumerable<OdsInstanceManage> source)
     {
         return source.Select(ToModel).ToList();
     }
 }
-
-

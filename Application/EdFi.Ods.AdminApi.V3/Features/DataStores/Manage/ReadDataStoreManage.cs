@@ -8,41 +8,38 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-namespace EdFi.Ods.AdminApi.V3.Features.DbDataStores;
+namespace EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 
-public class ReadDbDataStore : IFeature
+public class ReadDataStoreManage : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapGet(endpoints, "/dbDataStores", GetDbDataStores)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/dataStores/manage", GetDataStoreManages)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponse<DbDataStoreModel[]>(200))
+            .WithRouteOptions(b => b.WithResponse<DataStoreManageModel[]>(200))
             .BuildForVersions(AdminApiVersions.V3);
 
-        AdminApiEndpointBuilder.MapGet(endpoints, "/dbDataStores/{id}", GetDbDataStore)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/dataStores/manage/{id}", GetDataStoreManage)
             .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponse<DbDataStoreModel>(200))
+            .WithRouteOptions(b => b.WithResponse<DataStoreManageModel>(200))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static Task<IResult> GetDbDataStores(IGetDbDataStoresQuery query,
+    public static Task<IResult> GetDataStoreManages(IGetDataStoreManagesQuery query,
         [AsParameters] CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        var list = DbDataStoreMapper.ToModelList(query.Execute(commonQueryParams, id, name));
+        var list = DataStoreManageMapper.ToModelList(query.Execute(commonQueryParams, id, name));
         return Task.FromResult(Results.Ok(list));
     }
 
-    public static Task<IResult> GetDbDataStore(IGetDbDataStoreByIdQuery query, int id)
+    public static Task<IResult> GetDataStoreManage(IGetDataStoreManageByIdQuery query, int id)
     {
-        var dbInstance = query.Execute(id);
-        if (dbInstance == null)
+        var dataStoreManage = query.Execute(id);
+        if (dataStoreManage == null)
         {
-            throw new NotFoundException<int>("dbDataStore", id);
+            throw new NotFoundException<int>("dataStoreManage", id);
         }
-        var model = DbDataStoreMapper.ToModel(dbInstance);
+        var model = DataStoreManageMapper.ToModel(dataStoreManage);
         return Task.FromResult(Results.Ok(model));
     }
 }
-
-
-
