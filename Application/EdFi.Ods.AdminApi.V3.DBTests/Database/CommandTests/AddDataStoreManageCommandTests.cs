@@ -14,29 +14,29 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class AddDbDataStoreCommandTests : AdminApiDbContextTestBase
+public class AddDataStoreManageCommandTests : AdminApiDbContextTestBase
 {
     [Test]
-    public void ShouldAddDbInstance()
+    public void ShouldAddDataStoreManage()
     {
-        var model = new Mock<IAddDbDataStoreModel>();
+        var model = new Mock<IAddDataStoreManageModel>();
         model.Setup(x => x.Name).Returns("Test Instance");
         model.Setup(x => x.DatabaseTemplate).Returns("Minimal");
 
         var id = 0;
         Transaction(context =>
         {
-            var command = new AddDbDataStoreCommand(context);
+            var command = new AddDataStoreManageCommand(context);
             id = command.Execute(model.Object).Id;
             id.ShouldBeGreaterThan(0);
         });
 
         Transaction(context =>
         {
-            var instance = context.DbInstances.Single(d => d.Id == id);
+            var instance = context.OdsInstanceManages.Single(d => d.Id == id);
             instance.Name.ShouldBe("Test Instance");
             instance.DatabaseTemplate.ShouldBe("Minimal");
-            instance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+            instance.Status.ShouldBe(OdsInstanceManageStatus.PendingCreate.ToString());
             instance.OdsInstanceId.ShouldBeNull();
             instance.OdsInstanceName.ShouldBeNull();
             instance.DatabaseName.ShouldBeNull();
@@ -44,23 +44,23 @@ public class AddDbDataStoreCommandTests : AdminApiDbContextTestBase
     }
 
     [Test]
-    public void ShouldAddDbInstanceWithSampleTemplate()
+    public void ShouldAddDataStoreManageWithSampleTemplate()
     {
-        var model = new Mock<IAddDbDataStoreModel>();
+        var model = new Mock<IAddDataStoreManageModel>();
         model.Setup(x => x.Name).Returns("Sample Instance");
         model.Setup(x => x.DatabaseTemplate).Returns("Sample");
 
         var id = 0;
         Transaction(context =>
         {
-            var command = new AddDbDataStoreCommand(context);
+            var command = new AddDataStoreManageCommand(context);
             id = command.Execute(model.Object).Id;
             id.ShouldBeGreaterThan(0);
         });
 
         Transaction(context =>
         {
-            var instance = context.DbInstances.Single(d => d.Id == id);
+            var instance = context.OdsInstanceManages.Single(d => d.Id == id);
             instance.DatabaseTemplate.ShouldBe("Sample");
         });
     }
@@ -68,20 +68,20 @@ public class AddDbDataStoreCommandTests : AdminApiDbContextTestBase
     [Test]
     public void ShouldTrimNameAndDatabaseTemplate()
     {
-        var model = new Mock<IAddDbDataStoreModel>();
+        var model = new Mock<IAddDataStoreManageModel>();
         model.Setup(x => x.Name).Returns("  Trimmed Instance  ");
         model.Setup(x => x.DatabaseTemplate).Returns("  Minimal  ");
 
         var id = 0;
         Transaction(context =>
         {
-            var command = new AddDbDataStoreCommand(context);
+            var command = new AddDataStoreManageCommand(context);
             id = command.Execute(model.Object).Id;
         });
 
         Transaction(context =>
         {
-            var instance = context.DbInstances.Single(d => d.Id == id);
+            var instance = context.OdsInstanceManages.Single(d => d.Id == id);
             instance.Name.ShouldBe("Trimmed Instance");
             instance.DatabaseTemplate.ShouldBe("Minimal");
         });
@@ -90,7 +90,7 @@ public class AddDbDataStoreCommandTests : AdminApiDbContextTestBase
     [Test]
     public void ShouldSetLastRefreshedAndLastModifiedDate()
     {
-        var model = new Mock<IAddDbDataStoreModel>();
+        var model = new Mock<IAddDataStoreManageModel>();
         model.Setup(x => x.Name).Returns("Timestamp Instance");
         model.Setup(x => x.DatabaseTemplate).Returns("Minimal");
 
@@ -98,13 +98,13 @@ public class AddDbDataStoreCommandTests : AdminApiDbContextTestBase
         var id = 0;
         Transaction(context =>
         {
-            var command = new AddDbDataStoreCommand(context);
+            var command = new AddDataStoreManageCommand(context);
             id = command.Execute(model.Object).Id;
         });
 
         Transaction(context =>
         {
-            var instance = context.DbInstances.Single(d => d.Id == id);
+            var instance = context.OdsInstanceManages.Single(d => d.Id == id);
             instance.LastRefreshed.ShouldBeGreaterThanOrEqualTo(before);
             instance.LastModifiedDate.ShouldNotBeNull();
             instance.LastModifiedDate!.Value.ShouldBeGreaterThanOrEqualTo(before);

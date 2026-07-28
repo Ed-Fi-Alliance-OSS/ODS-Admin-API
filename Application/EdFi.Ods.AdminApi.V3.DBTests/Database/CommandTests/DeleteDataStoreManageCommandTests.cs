@@ -14,15 +14,15 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
-public class DeleteDbDataStoreCommandTests : AdminApiDbContextTestBase
+public class DeleteDataStoreManageCommandTests : AdminApiDbContextTestBase
 {
     [Test]
     public void ShouldSetStatusToPendingDelete()
     {
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Delete Test Instance",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
@@ -30,14 +30,14 @@ public class DeleteDbDataStoreCommandTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var command = new DeleteDbDataStoreCommand(context);
+            var command = new DeleteDataStoreManageCommand(context);
             command.Execute(instance.Id);
         });
 
         Transaction(context =>
         {
-            var updated = context.DbInstances.Single(d => d.Id == instance.Id);
-            updated.Status.ShouldBe(DbInstanceStatus.PendingDelete.ToString());
+            var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
+            updated.Status.ShouldBe(OdsInstanceManageStatus.PendingDelete.ToString());
         });
     }
 
@@ -45,10 +45,10 @@ public class DeleteDbDataStoreCommandTests : AdminApiDbContextTestBase
     public void ShouldUpdateLastModifiedDate()
     {
         var before = DateTime.UtcNow;
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Timestamp Test Instance",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
@@ -56,13 +56,13 @@ public class DeleteDbDataStoreCommandTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var command = new DeleteDbDataStoreCommand(context);
+            var command = new DeleteDataStoreManageCommand(context);
             command.Execute(instance.Id);
         });
 
         Transaction(context =>
         {
-            var updated = context.DbInstances.Single(d => d.Id == instance.Id);
+            var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
             updated.LastModifiedDate.ShouldNotBeNull();
             updated.LastModifiedDate!.Value.ShouldBeGreaterThanOrEqualTo(before);
         });
@@ -71,10 +71,10 @@ public class DeleteDbDataStoreCommandTests : AdminApiDbContextTestBase
     [Test]
     public void ShouldNotHardDeleteRecord()
     {
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "No Hard Delete Instance",
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
@@ -82,13 +82,13 @@ public class DeleteDbDataStoreCommandTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var command = new DeleteDbDataStoreCommand(context);
+            var command = new DeleteDataStoreManageCommand(context);
             command.Execute(instance.Id);
         });
 
         Transaction(context =>
         {
-            var stillExists = context.DbInstances.Any(d => d.Id == instance.Id);
+            var stillExists = context.OdsInstanceManages.Any(d => d.Id == instance.Id);
             stillExists.ShouldBeTrue();
         });
     }
