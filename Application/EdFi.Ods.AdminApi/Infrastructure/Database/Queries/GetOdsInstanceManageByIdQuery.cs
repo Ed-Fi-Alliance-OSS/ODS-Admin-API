@@ -7,22 +7,22 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
-public interface IGetDbInstanceByIdQuery
+public interface IGetOdsInstanceManageByIdQuery
 {
-    DbInstance? Execute(int id);
+    OdsInstanceManage? Execute(int id);
 }
 
-public class GetDbInstanceByIdQuery : IGetDbInstanceByIdQuery
+public class GetOdsInstanceManageByIdQuery : IGetOdsInstanceManageByIdQuery
 {
     private readonly AdminApiDbContext _context;
 
-    public GetDbInstanceByIdQuery(AdminApiDbContext context)
+    public GetOdsInstanceManageByIdQuery(AdminApiDbContext context)
     {
         _context = context;
     }
 
-    public DbInstance? Execute(int id)
+    public OdsInstanceManage? Execute(int id)
     {
-        return _context.DbInstances.SingleOrDefault(d => d.Id == id);
+        return _context.OdsInstanceManages.SingleOrDefault(d => d.Id == id);
     }
 }

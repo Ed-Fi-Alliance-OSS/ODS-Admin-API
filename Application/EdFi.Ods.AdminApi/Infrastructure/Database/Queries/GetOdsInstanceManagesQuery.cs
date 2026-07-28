@@ -11,25 +11,25 @@ using Microsoft.Extensions.Options;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 
-public interface IGetDbInstancesQuery
+public interface IGetOdsInstanceManagesQuery
 {
-    List<DbInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name);
+    List<OdsInstanceManage> Execute(CommonQueryParams commonQueryParams, int? id, string? name);
 }
 
-public class GetDbInstancesQuery : IGetDbInstancesQuery
+public class GetOdsInstanceManagesQuery : IGetOdsInstanceManagesQuery
 {
     private readonly AdminApiDbContext _context;
     private readonly IOptions<AppSettings> _options;
 
-    public GetDbInstancesQuery(AdminApiDbContext context, IOptions<AppSettings> options)
+    public GetOdsInstanceManagesQuery(AdminApiDbContext context, IOptions<AppSettings> options)
     {
         _context = context;
         _options = options;
     }
 
-    public List<DbInstance> Execute(CommonQueryParams commonQueryParams, int? id, string? name)
+    public List<OdsInstanceManage> Execute(CommonQueryParams commonQueryParams, int? id, string? name)
     {
-        return _context.DbInstances
+        return _context.OdsInstanceManages
             .Where(d => id == null || d.Id == id)
             .Where(d => name == null || d.Name == name)
             .OrderBy(d => d.Id)

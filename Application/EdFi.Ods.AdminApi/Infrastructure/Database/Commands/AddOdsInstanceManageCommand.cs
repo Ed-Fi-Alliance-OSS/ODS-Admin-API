@@ -8,16 +8,16 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
-public class AddDbInstanceCommand
+public class AddOdsInstanceManageCommand
 {
     private readonly AdminApiDbContext _context;
 
-    public AddDbInstanceCommand(AdminApiDbContext context)
+    public AddOdsInstanceManageCommand(AdminApiDbContext context)
     {
         _context = context;
     }
 
-    public DbInstance Execute(IAddDbInstanceModel model)
+    public OdsInstanceManage Execute(IAddOdsInstanceManageModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Name))
             throw new ArgumentException("Name is required.", nameof(model));
@@ -26,11 +26,11 @@ public class AddDbInstanceCommand
 
         var now = DateTime.UtcNow;
 
-        var dbInstance = new DbInstance
+        var odsInstanceManage = new OdsInstanceManage
         {
             Name = model.Name.Trim(),
             DatabaseTemplate = model.DatabaseTemplate.Trim(),
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             OdsInstanceId = null,
             OdsInstanceName = null,
             DatabaseName = null,
@@ -38,13 +38,13 @@ public class AddDbInstanceCommand
             LastModifiedDate = now
         };
 
-        _context.DbInstances.Add(dbInstance);
+        _context.OdsInstanceManages.Add(odsInstanceManage);
         _context.SaveChanges();
-        return dbInstance;
+        return odsInstanceManage;
     }
 }
 
-public interface IAddDbInstanceModel
+public interface IAddOdsInstanceManageModel
 {
     string? Name { get; }
     string? DatabaseTemplate { get; }
