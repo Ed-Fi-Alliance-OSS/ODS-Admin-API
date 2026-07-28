@@ -80,7 +80,7 @@
             "style": "underscore"
         },
         "ul-style": {
-            "style": "asterisk"
+            "style": "consistent"
         }
     },
     "[markdown]": {
