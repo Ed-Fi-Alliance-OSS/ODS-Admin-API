@@ -17,9 +17,9 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
 {
     [Test]
-    public void ShouldDistinguishLinkedAndUnlinkedDbInstances()
+    public void ShouldDistinguishLinkedAndUnlinkedOdsInstanceManages()
     {
-        var linked = new DbInstance
+        var linked = new OdsInstanceManage
         {
             Name = "Linked-Instance",
             OdsInstanceId = 999,
@@ -27,7 +27,7 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
             DatabaseTemplate = "Minimal",
             LastRefreshed = DateTime.UtcNow
         };
-        var unlinked = new DbInstance
+        var unlinked = new OdsInstanceManage
         {
             Name = "Unlinked-Instance",
             OdsInstanceId = null,
@@ -39,7 +39,7 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var query = new GetDbInstancesQuery(context, Testing.GetAppSettings());
+            var query = new GetOdsInstanceManagesQuery(context, Testing.GetAppSettings());
             var allResults = query.Execute(new CommonQueryParams(0, null), null, null);
 
             var unlinkedResults = allResults.Where(d => d.OdsInstanceId == null).ToList();
@@ -56,26 +56,26 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
     }
 
     [Test]
-    public void ShouldReturnAllDbInstances_WhenNoFiltersApplied()
+    public void ShouldReturnAllOdsInstanceManages_WhenNoFiltersApplied()
     {
         Save(
-            new DbInstance { Name = "A", OdsInstanceId = 1, Status = "Created", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow },
-            new DbInstance { Name = "B", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Sample", LastRefreshed = DateTime.UtcNow },
-            new DbInstance { Name = "C", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow }
+            new OdsInstanceManage { Name = "A", OdsInstanceId = 1, Status = "Created", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow },
+            new OdsInstanceManage { Name = "B", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Sample", LastRefreshed = DateTime.UtcNow },
+            new OdsInstanceManage { Name = "C", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow }
         );
 
         Transaction(context =>
         {
-            var query = new GetDbInstancesQuery(context, Testing.GetAppSettings());
+            var query = new GetOdsInstanceManagesQuery(context, Testing.GetAppSettings());
             var results = query.Execute(new CommonQueryParams(0, null), null, null);
             results.Count.ShouldBe(3);
         });
     }
 
     [Test]
-    public void ShouldReturnAllDbInstanceFields_ForLinkedInstance()
+    public void ShouldReturnAllOdsInstanceManageFields_ForLinkedInstance()
     {
-        var dbInstance = new DbInstance
+        var odsInstanceManage = new OdsInstanceManage
         {
             Name = "Fully-Linked",
             OdsInstanceId = 42,
@@ -84,16 +84,16 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
             DatabaseName = "EdFi_ODS_42",
             LastRefreshed = DateTime.UtcNow
         };
-        Save(dbInstance);
+        Save(odsInstanceManage);
 
         Transaction(context =>
         {
-            var query = new GetDbInstancesQuery(context, Testing.GetAppSettings());
+            var query = new GetOdsInstanceManagesQuery(context, Testing.GetAppSettings());
             var results = query.Execute(new CommonQueryParams(0, null), null, null);
 
             results.Count.ShouldBe(1);
             var result = results[0];
-            result.Id.ShouldBe(dbInstance.Id);
+            result.Id.ShouldBe(odsInstanceManage.Id);
             result.OdsInstanceId.ShouldBe(42);
             result.Status.ShouldBe("Created");
             result.DatabaseTemplate.ShouldBe("Minimal");
@@ -102,11 +102,11 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
     }
 
     [Test]
-    public void ShouldReturnEmptyList_WhenNoDbInstancesExist()
+    public void ShouldReturnEmptyList_WhenNoOdsInstanceManagesExist()
     {
         Transaction(context =>
         {
-            var query = new GetDbInstancesQuery(context, Testing.GetAppSettings());
+            var query = new GetOdsInstanceManagesQuery(context, Testing.GetAppSettings());
             var results = query.Execute(new CommonQueryParams(0, null), null, null);
             results.ShouldBeEmpty();
         });
@@ -116,13 +116,13 @@ public class GetTenantEdOrgsByInstancesTests : AdminApiDbContextTestBase
     public void ShouldReturnMultipleUnlinkedInstances_InIdOrder()
     {
         Save(
-            new DbInstance { Name = "Z-Unlinked", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow },
-            new DbInstance { Name = "A-Unlinked", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Sample", LastRefreshed = DateTime.UtcNow }
+            new OdsInstanceManage { Name = "Z-Unlinked", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Minimal", LastRefreshed = DateTime.UtcNow },
+            new OdsInstanceManage { Name = "A-Unlinked", OdsInstanceId = null, Status = "PendingCreate", DatabaseTemplate = "Sample", LastRefreshed = DateTime.UtcNow }
         );
 
         Transaction(context =>
         {
-            var query = new GetDbInstancesQuery(context, Testing.GetAppSettings());
+            var query = new GetOdsInstanceManagesQuery(context, Testing.GetAppSettings());
             var results = query.Execute(new CommonQueryParams(0, null), null, null);
             var ids = results.Select(r => r.Id).ToList();
             ids.ShouldBe(ids.OrderBy(x => x).ToList());

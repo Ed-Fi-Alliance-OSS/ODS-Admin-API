@@ -12,23 +12,23 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 
 [TestFixture]
-public class GetDbInstanceByIdQueryTests : AdminApiDbContextTestBase
+public class GetOdsInstanceManageByIdQueryTests : AdminApiDbContextTestBase
 {
     [Test]
     public void ShouldReturnNullForNonExistentId()
     {
         Transaction(context =>
         {
-            var query = new GetDbInstanceByIdQuery(context);
+            var query = new GetOdsInstanceManageByIdQuery(context);
             var result = query.Execute(0);
             result.ShouldBeNull();
         });
     }
 
     [Test]
-    public void ShouldGetDbInstanceById()
+    public void ShouldGetOdsInstanceManageById()
     {
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Test Instance",
             Status = "Pending",
@@ -39,7 +39,7 @@ public class GetDbInstanceByIdQueryTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var query = new GetDbInstanceByIdQuery(context);
+            var query = new GetOdsInstanceManageByIdQuery(context);
             var result = query.Execute(instance.Id);
             result.ShouldNotBeNull();
             result!.Id.ShouldBe(instance.Id);
@@ -52,7 +52,7 @@ public class GetDbInstanceByIdQueryTests : AdminApiDbContextTestBase
     [Test]
     public void ShouldReturnNullWhenIdDoesNotMatch()
     {
-        var instance = new DbInstance
+        var instance = new OdsInstanceManage
         {
             Name = "Another Instance",
             Status = "Pending",
@@ -63,7 +63,7 @@ public class GetDbInstanceByIdQueryTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var query = new GetDbInstanceByIdQuery(context);
+            var query = new GetOdsInstanceManageByIdQuery(context);
             var result = query.Execute(instance.Id + 9999);
             result.ShouldBeNull();
         });
