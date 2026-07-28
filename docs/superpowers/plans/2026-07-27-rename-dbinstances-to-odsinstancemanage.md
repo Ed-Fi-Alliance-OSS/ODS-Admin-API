@@ -71,6 +71,8 @@ Reference this table from every task below instead of repeating it. Every occurr
 | Route `/dbInstances` | `/odsInstances/manage` |
 | `OdsInstanceWithEducationOrganizationsModel.DbInstanceId` | `OdsInstanceManageId` |
 | `MergeDbInstanceData` | `MergeOdsInstanceManageData` |
+| `TenantOdsInstanceModel.DbInstanceId` (`Features\Tenants\TenantDetailModel.cs`) | `OdsInstanceManageId` |
+| `TenantMapper.ToUnlinkedDbInstanceModel` | `TenantMapper.ToUnlinkedOdsInstanceManageModel` |
 
 ### v3-specific (`EdFi.Ods.AdminApi.V3` project)
 
@@ -96,6 +98,7 @@ Reference this table from every task below instead of repeating it. Every occurr
 | Route `/dbDataStores` | `/dataStores/manage` |
 | `MergeDbDataStoreData` | `MergeDataStoreManageData` |
 | *(new field, no old counterpart)* | `DataStoreWithEducationOrganizationsModel.DataStoreManageId` |
+| `TenantMapper.ToUnlinkedDbDataStoreModel` | `TenantMapper.ToUnlinkedDataStoreManageModel` |
 
 Note: `DataStoreModel.DataStoreId`/`DataStoreModel.DataStoreType` (the existing `DataStore`'s own DTO fields, unrelated file) and `DbDataStoreModel.DataStoreId`/`DataStoreName` (already-renamed-at-DTO-level fields carried over unchanged into `DataStoreManageModel`) are **not** touched — only tokens literally containing `DbInstance`/`DbDataStore` change.
 
@@ -361,7 +364,7 @@ Same four-key rename as Step 6, applied to `Application\EdFi.Ods.AdminApi.V3\app
 
 - [ ] **Step 9: Build to confirm no compile errors yet from callers**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.sln` (or the solution file this repo uses — check for a `.sln` at the repo root or under `Application\`).
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln` (or the solution file this repo uses — check for a `.sln` at the repo root or under `Application\`).
 Expected: FAILS — callers in v2/v3 Features/Infrastructure/Jobs still reference the old `DbInstance`/`DbInstanceStatus`/old `JobConstants`/old `AppSettings` names. This is expected at this checkpoint; Tasks 3–15 fix each caller. Confirm the failures are all in files this plan's later tasks will touch (grep the build output for `DbInstance`/`DbDataStore` to sanity-check no unexpected file is affected).
 
 - [ ] **Step 10: Commit**
@@ -758,7 +761,7 @@ In `Application\EdFi.Ods.AdminApi\Infrastructure\Services\Jobs\DeleteInstanceJob
 
 - [ ] **Step 5: Build to confirm the Infrastructure layer compiles in isolation**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.sln`
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln`
 Expected: still FAILS — `Features\DbInstances\*` (Task 4), `Features\OdsInstances\*` (Task 5), `Program.cs`/`WebApplicationBuilderExtensions.cs` (Task 6) haven't been updated yet. Confirm the remaining errors are now confined to those files only (no errors left in `Infrastructure\Database\*` or `Infrastructure\Services\Jobs\*`).
 
 - [ ] **Step 6: Commit**
@@ -1247,7 +1250,7 @@ internal static class OdsInstanceManageDatabaseNameFormatter
 
 - [ ] **Step 8: Build**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.sln`
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln`
 Expected: remaining errors confined to `Features\OdsInstances\OdsInstanceWithEducationOrganizationsModel.cs`/`ReadEducationOrganizations.cs` (Task 5) and `Program.cs`/`WebApplicationBuilderExtensions.cs` (Task 6).
 
 - [ ] **Step 9: Commit**
@@ -1260,15 +1263,21 @@ git commit -m "Move v2 DbInstances feature into OdsInstances/Manage, rename rout
 
 ---
 
-### Task 5: v2 existing `OdsInstances` files — update references to the renamed query/enum
+### Task 5: v2 existing `OdsInstances` and `Tenants` files — update references to the renamed query/enum
+
+**Amendment (discovered during Task 3 implementation):** the original plan missed a whole consumer area — `Features\Tenants\*` and `Infrastructure\Services\Tenants\TenantService.cs` also inject `IGetDbInstancesQuery`/`DbInstance`/`DbInstanceStatus` to build the `/tenants/{tenantName}/odsInstances/edOrgs` response. This section folds that fix into Task 5 rather than adding a new task number.
 
 **Files:**
 - Modify: `Application\EdFi.Ods.AdminApi\Features\OdsInstances\OdsInstanceWithEducationOrganizationsModel.cs`
 - Modify: `Application\EdFi.Ods.AdminApi\Features\OdsInstances\ReadEducationOrganizations.cs`
+- Modify: `Application\EdFi.Ods.AdminApi\Features\Tenants\TenantDetailModel.cs`
+- Modify: `Application\EdFi.Ods.AdminApi\Features\Tenants\TenantMapper.cs`
+- Modify: `Application\EdFi.Ods.AdminApi\Features\Tenants\ReadTenants.cs`
+- Modify: `Application\EdFi.Ods.AdminApi\Infrastructure\Services\Tenants\TenantService.cs`
 
 **Interfaces:**
 - Consumes: `IGetOdsInstanceManagesQuery` (Task 3), `OdsInstanceManageStatus` (Task 2).
-- Produces: `OdsInstanceWithEducationOrganizationsModel.OdsInstanceManageId` (renamed from `DbInstanceId`), consumed by nothing else in this plan (public API response shape only).
+- Produces: `OdsInstanceWithEducationOrganizationsModel.OdsInstanceManageId` (renamed from `DbInstanceId`), `TenantOdsInstanceModel.OdsInstanceManageId` (renamed from `DbInstanceId`), `TenantMapper.ToUnlinkedOdsInstanceManageModel` (renamed from `ToUnlinkedDbInstanceModel`), `ITenantsService.GetTenantEdOrgsByInstancesAsync(..., IGetOdsInstanceManagesQuery, ...)` — all public API response shape / internal wiring only, consumed by nothing else in this plan.
 
 - [ ] **Step 1: Rename the `DbInstanceId` property**
 
@@ -1364,17 +1373,236 @@ public class ReadEducationOrganizations : IFeature
 }
 ```
 
-- [ ] **Step 3: Build**
+- [ ] **Step 3: Rename `TenantOdsInstanceModel.DbInstanceId` in `TenantDetailModel.cs`**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.sln`
-Expected: remaining errors confined to `Program.cs`/`WebApplicationBuilderExtensions.cs` (Task 6).
+Replace:
 
-- [ ] **Step 4: Commit**
+```csharp
+    [JsonPropertyName("id")]
+    public int? OdsInstanceId { get; set; }
+    public int? DbInstanceId { get; set; }
+```
+
+with:
+
+```csharp
+    [JsonPropertyName("id")]
+    public int? OdsInstanceId { get; set; }
+    public int? OdsInstanceManageId { get; set; }
+```
+
+- [ ] **Step 4: Update `TenantMapper.cs`**
+
+Replace the full file content with:
+
+```csharp
+// SPDX-License-Identifier: Apache-2.0
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+
+using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+
+namespace EdFi.Ods.AdminApi.Features.Tenants;
+
+public static class TenantMapper
+{
+    public static TenantOdsInstanceModel ToOdsInstanceModel(OdsInstance source)
+    {
+        return new TenantOdsInstanceModel
+        {
+            OdsInstanceId = source.OdsInstanceId,
+            Name = source.Name,
+            InstanceType = source.InstanceType,
+        };
+    }
+
+    public static List<TenantOdsInstanceModel> ToOdsInstanceModelList(IEnumerable<OdsInstance> source)
+    {
+        return source.Select(ToOdsInstanceModel).ToList();
+    }
+
+    public static TenantOdsInstanceModel ToUnlinkedOdsInstanceManageModel(OdsInstanceManage source)
+    {
+        return new TenantOdsInstanceModel
+        {
+            OdsInstanceId = null,
+            OdsInstanceManageId = source.Id,
+            Name = source.Name,
+            Status = source.Status,
+            DatabaseTemplate = source.DatabaseTemplate,
+            DatabaseName = source.DatabaseName,
+        };
+    }
+}
+```
+
+- [ ] **Step 5: Update `ReadTenants.cs`**
+
+Replace:
+
+```csharp
+        IGetDbInstancesQuery getDbInstancesQuery,
+```
+
+with:
+
+```csharp
+        IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery,
+```
+
+and replace:
+
+```csharp
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(
+            getOdsInstancesQuery, getEducationOrganizationQuery, getDbInstancesQuery, tenantName);
+```
+
+with:
+
+```csharp
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(
+            getOdsInstancesQuery, getEducationOrganizationQuery, getOdsInstanceManagesQuery, tenantName);
+```
+
+Add `using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;` if not already present (it already is — `IGetOdsInstanceManagesQuery` lives in the same namespace as `IGetOdsInstancesQuery`/`IGetEducationOrganizationQuery`, both already imported in this file).
+
+- [ ] **Step 6: Update `TenantService.cs`**
+
+Replace the interface line:
+
+```csharp
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDbInstancesQuery getDbInstancesQuery, string tenantName);
+```
+
+with:
+
+```csharp
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery, string tenantName);
+```
+
+Replace the method signature:
+
+```csharp
+    public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
+        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetDbInstancesQuery getDbInstancesQuery,
+        string tenantName)
+```
+
+with:
+
+```csharp
+    public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
+        IGetOdsInstancesQuery getOdsInstancesQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery,
+        string tenantName)
+```
+
+Replace the method body's use of the renamed query and entity:
+
+```csharp
+            var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+
+            var linkedDbInstancesByOdsId = allDbInstances
+                .Where(d => d.OdsInstanceId is not null)
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
+
+            foreach (var odsInstance in tenantDetails.OdsInstances)
+            {
+                if (odsInstance.OdsInstanceId is int odsInstanceId && linkedDbInstancesByOdsId.TryGetValue(odsInstanceId, out var dbInstance))
+                {
+                    odsInstance.DbInstanceId = dbInstance.Id;
+                    odsInstance.Status = dbInstance.Status;
+                    odsInstance.DatabaseTemplate = dbInstance.DatabaseTemplate;
+                    odsInstance.DatabaseName = dbInstance.DatabaseName;
+                }
+                else
+                {
+                    odsInstance.Status = DbInstanceStatus.Created.ToString();
+                }
+            }
+
+            var existingOdsInstanceIds = tenantDetails.OdsInstances
+                .Where(i => i.OdsInstanceId is int)
+                .Select(i => i.OdsInstanceId!.Value)
+                .ToHashSet();
+
+            var unlinkedDbInstances = allDbInstances
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDbInstances
+                    .Where(d => d.OdsInstanceId is not null && !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
+                .ToList();
+            foreach (var dbInstance in unlinkedDbInstances)
+            {
+                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedDbInstanceModel(dbInstance));
+            }
+```
+
+with:
+
+```csharp
+            var allOdsInstanceManages = getOdsInstanceManagesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+
+            var linkedOdsInstanceManagesByOdsId = allOdsInstanceManages
+                .Where(d => d.OdsInstanceId is not null)
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
+
+            foreach (var odsInstance in tenantDetails.OdsInstances)
+            {
+                if (odsInstance.OdsInstanceId is int odsInstanceId && linkedOdsInstanceManagesByOdsId.TryGetValue(odsInstanceId, out var odsInstanceManage))
+                {
+                    odsInstance.OdsInstanceManageId = odsInstanceManage.Id;
+                    odsInstance.Status = odsInstanceManage.Status;
+                    odsInstance.DatabaseTemplate = odsInstanceManage.DatabaseTemplate;
+                    odsInstance.DatabaseName = odsInstanceManage.DatabaseName;
+                }
+                else
+                {
+                    odsInstance.Status = OdsInstanceManageStatus.Created.ToString();
+                }
+            }
+
+            var existingOdsInstanceIds = tenantDetails.OdsInstances
+                .Where(i => i.OdsInstanceId is int)
+                .Select(i => i.OdsInstanceId!.Value)
+                .ToHashSet();
+
+            var unlinkedOdsInstanceManages = allOdsInstanceManages
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allOdsInstanceManages
+                    .Where(d => d.OdsInstanceId is not null && !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
+                .ToList();
+            foreach (var odsInstanceManage in unlinkedOdsInstanceManages)
+            {
+                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedOdsInstanceManageModel(odsInstanceManage));
+            }
+```
+
+- [ ] **Step 7: Build**
+
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln`
+Expected: remaining errors confined to `Program.cs`/`WebApplicationBuilderExtensions.cs` (Task 6) and all of v3 (Tasks 10-13, not yet done).
+
+- [ ] **Step 8: Commit**
 
 ```bash
 git add "Application/EdFi.Ods.AdminApi/Features/OdsInstances/OdsInstanceWithEducationOrganizationsModel.cs" \
-        "Application/EdFi.Ods.AdminApi/Features/OdsInstances/ReadEducationOrganizations.cs"
-git commit -m "Update v2 OdsInstances EdOrgs merge to use renamed OdsInstanceManage query"
+        "Application/EdFi.Ods.AdminApi/Features/OdsInstances/ReadEducationOrganizations.cs" \
+        "Application/EdFi.Ods.AdminApi/Features/Tenants/TenantDetailModel.cs" \
+        "Application/EdFi.Ods.AdminApi/Features/Tenants/TenantMapper.cs" \
+        "Application/EdFi.Ods.AdminApi/Features/Tenants/ReadTenants.cs" \
+        "Application/EdFi.Ods.AdminApi/Infrastructure/Services/Tenants/TenantService.cs"
+git commit -m "Update v2 OdsInstances and Tenants EdOrgs merges to use renamed OdsInstanceManage query"
 ```
 
 ---
@@ -1479,7 +1707,7 @@ Also find and rename the corresponding `DeletePendingDbInstancesDispatcherJob` r
 
 - [ ] **Step 5: Build the full solution**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.sln`
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln`
 Expected: v2 side (everything except v3's `EdFi.Ods.AdminApi.V3` project) now compiles cleanly. Remaining errors should be entirely inside `Application\EdFi.Ods.AdminApi.V3\` (fixed by Tasks 10–13) and its `.UnitTests`/`.DBTests` counterparts (Tasks 14–15) and `Application\EdFi.Ods.AdminApi.UnitTests`/`.DBTests` (Tasks 7–8, not yet done).
 
 - [ ] **Step 6: Commit**
@@ -1506,9 +1734,14 @@ git commit -m "Update v2 Quartz wiring to use renamed OdsInstanceManage jobs and
 - Modify: `Application\EdFi.Ods.AdminApi.UnitTests\Infrastructure\Services\Jobs\DeletePendingDbInstancesDispatcherJobTests.cs` → rename to `DeletePendingOdsInstanceManagesDispatcherJobTests.cs`
 - Modify: `Application\EdFi.Ods.AdminApi.UnitTests\Infrastructure\Services\Jobs\CreateInstanceJobTests.cs` (renamed in place, filename unchanged)
 - Modify: `Application\EdFi.Ods.AdminApi.UnitTests\Infrastructure\Services\Jobs\DeleteInstanceJobTests.cs` (renamed in place, filename unchanged)
+- Modify: `Application\EdFi.Ods.AdminApi.UnitTests\Features\Tenants\ReadTenantsTest.cs` (filename unchanged — update references to Task 5's renamed Tenants types)
+- Modify: `Application\EdFi.Ods.AdminApi.UnitTests\Features\Tenants\TenantDetailModelTests.cs` (filename unchanged — update references)
+- Modify: `Application\EdFi.Ods.AdminApi.UnitTests\Infrastructure\Services\Tenants\TenantServiceTests.cs` (filename unchanged — update references)
+
+**Amendment (same gap as Task 5):** the three Tenants test files above were missed in the original plan — they test `Features\Tenants\*`/`TenantService.cs`, which Task 5 (amended) now renames. Their production counterparts changed in Task 5, so these tests need matching updates or they won't compile.
 
 **Interfaces:**
-- Consumes: every production type from Tasks 2–6 (`OdsInstanceManage`, `OdsInstanceManageStatus`, `IGetOdsInstanceManagesQuery`, `AddOdsInstanceManageCommand`, `AddOdsInstanceManage`/`ReadOdsInstanceManage`/`DeleteOdsInstanceManage` features, `CreatePendingOdsInstanceManagesDispatcherJob`, etc.).
+- Consumes: every production type from Tasks 2–6 (`OdsInstanceManage`, `OdsInstanceManageStatus`, `IGetOdsInstanceManagesQuery`, `AddOdsInstanceManageCommand`, `AddOdsInstanceManage`/`ReadOdsInstanceManage`/`DeleteOdsInstanceManage` features, `CreatePendingOdsInstanceManagesDispatcherJob`, etc.), plus Task 5's renamed `TenantOdsInstanceModel.OdsInstanceManageId`, `TenantMapper.ToUnlinkedOdsInstanceManageModel`, `ITenantsService.GetTenantEdOrgsByInstancesAsync(..., IGetOdsInstanceManagesQuery, ...)`.
 
 - [ ] **Step 1: Move and rename the query test files (full content known — apply directly)**
 
@@ -1688,12 +1921,16 @@ git mv "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Jobs/Del
 
 For each moved file and for the two in-place files (`CreateInstanceJobTests.cs`, `DeleteInstanceJobTests.cs`), open it and apply every substitution from the "v2-specific" and "Shared" Master Rename Table sections above (class name matching the new filename, `namespace ...UnitTests.Features.DbInstances` → `...UnitTests.Features.OdsInstances.Manage`, every `DbInstance`/`OdsInstance...`-adjacent identifier, string literal route fragments like `"/dbInstances"` → `"/odsInstances/manage"` if any test asserts on the route string, and any `[TestFixture] public class AddDbInstanceTests` → `AddOdsInstanceManageTests`).
 
-- [ ] **Step 3: Run the v2 unit test suite**
+- [ ] **Step 3: Update the three Tenants-area test files (filenames unchanged)**
+
+Open `Application\EdFi.Ods.AdminApi.UnitTests\Features\Tenants\ReadTenantsTest.cs`, `Application\EdFi.Ods.AdminApi.UnitTests\Features\Tenants\TenantDetailModelTests.cs`, and `Application\EdFi.Ods.AdminApi.UnitTests\Infrastructure\Services\Tenants\TenantServiceTests.cs`. Update every reference to match Task 5's renames: `IGetDbInstancesQuery`/`getDbInstancesQuery` → `IGetOdsInstanceManagesQuery`/`getOdsInstanceManagesQuery`, `DbInstance`/`DbInstanceStatus` → `OdsInstanceManage`/`OdsInstanceManageStatus` (mock/fixture setups), `TenantOdsInstanceModel.DbInstanceId` → `.OdsInstanceManageId`, `TenantMapper.ToUnlinkedDbInstanceModel` → `.ToUnlinkedOdsInstanceManageModel`. Do not rename the files or their test class names — only internal references.
+
+- [ ] **Step 4: Run the v2 unit test suite**
 
 Run: `dotnet test Application/EdFi.Ods.AdminApi.UnitTests/EdFi.Ods.AdminApi.UnitTests.csproj`
 Expected: PASS, same test count as before the rename (compare `git stash`'s pre-change `dotnet test` output count if unsure, or just confirm no failures/errors and no tests silently vanished — count should match the pre-rename baseline exactly since this task renames tests, not delete/add them).
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add "Application/EdFi.Ods.AdminApi.UnitTests/Features/OdsInstances/Manage" \
@@ -1705,7 +1942,10 @@ git add "Application/EdFi.Ods.AdminApi.UnitTests/Features/OdsInstances/Manage" \
         "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Jobs/CreatePendingOdsInstanceManagesDispatcherJobTests.cs" \
         "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Jobs/DeletePendingOdsInstanceManagesDispatcherJobTests.cs" \
         "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Jobs/CreateInstanceJobTests.cs" \
-        "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Jobs/DeleteInstanceJobTests.cs"
+        "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Jobs/DeleteInstanceJobTests.cs" \
+        "Application/EdFi.Ods.AdminApi.UnitTests/Features/Tenants/ReadTenantsTest.cs" \
+        "Application/EdFi.Ods.AdminApi.UnitTests/Features/Tenants/TenantDetailModelTests.cs" \
+        "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Services/Tenants/TenantServiceTests.cs"
 git commit -m "Rename v2 unit tests to OdsInstanceManage naming"
 ```
 
@@ -2222,7 +2462,7 @@ Apply the same substitutions as Task 3 Step 4, but for the v3 files: replace `us
 
 - [ ] **Step 5: Build to confirm the v3 Infrastructure layer compiles in isolation**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.V3.sln` (or the appropriate project reference — confirm the v3 project's build command from `docs/developer.md`).
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln` (or the appropriate project reference — confirm the v3 project's build command from `docs/developer.md`).
 Expected: remaining errors confined to `Features\DbDataStores\*` (Task 11), `Features\DataStores\*` (Task 12), and `Program.cs`/`WebApplicationBuilderExtensions.cs` (Task 13, shared file already partially updated in Task 6).
 
 - [ ] **Step 6: Commit**
@@ -2711,7 +2951,7 @@ internal static class DataStoreManageDatabaseNameFormatter
 
 - [ ] **Step 8: Build**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.V3.sln`
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln`
 Expected: remaining errors confined to `Features\DataStores\DataStoreWithEducationOrganizationsModel.cs`/`ReadEducationOrganizations.cs` (Task 12) and `Program.cs`/`WebApplicationBuilderExtensions.cs` V3 branches (Task 13).
 
 - [ ] **Step 9: Commit**
@@ -2724,15 +2964,20 @@ git commit -m "Move v3 DbDataStores feature into DataStores/Manage, rename route
 
 ---
 
-### Task 12: v3 existing `DataStores` files — update references and close the `DataStoreManageId` parity gap
+### Task 12: v3 existing `DataStores` and `Tenants` files — update references and close the `DataStoreManageId` parity gap
+
+**Amendment (same gap as Task 5, mirrored on the v3 side):** `Features\Tenants\*` and `Infrastructure\Services\Tenants\TenantService.cs` inject `IGetDbDataStoresQuery`/`DbInstance`/`DbInstanceStatus` to build the `/tenants/{tenantName}/dataStores/edOrgs` response. v3's `TenantDetailModel.cs` does NOT reference these old names (its `TenantDataStoreModel` has no linking-ID field equivalent to v2's `DbInstanceId` — that's a pre-existing v2/v3 asymmetry, not something to fix here), so only `TenantMapper.cs`, `ReadTenants.cs`, and `TenantService.cs` need changes.
 
 **Files:**
 - Modify: `Application\EdFi.Ods.AdminApi.V3\Features\DataStores\DataStoreWithEducationOrganizationsModel.cs`
 - Modify: `Application\EdFi.Ods.AdminApi.V3\Features\DataStores\ReadEducationOrganizations.cs`
+- Modify: `Application\EdFi.Ods.AdminApi.V3\Features\Tenants\TenantMapper.cs`
+- Modify: `Application\EdFi.Ods.AdminApi.V3\Features\Tenants\ReadTenants.cs`
+- Modify: `Application\EdFi.Ods.AdminApi.V3\Infrastructure\Services\Tenants\TenantService.cs`
 
 **Interfaces:**
 - Consumes: `IGetDataStoreManagesQuery` (Task 10), `OdsInstanceManageStatus` (Task 2).
-- Produces: `DataStoreWithEducationOrganizationsModel.DataStoreManageId` (new field, parity with v2's `OdsInstanceManageId` from Task 5).
+- Produces: `DataStoreWithEducationOrganizationsModel.DataStoreManageId` (new field, parity with v2's `OdsInstanceManageId` from Task 5), `TenantMapper.ToUnlinkedDataStoreManageModel` (renamed from `ToUnlinkedDbDataStoreModel`), `ITenantsService.GetTenantEdOrgsByInstancesAsync(..., IGetDataStoreManagesQuery, ...)`.
 
 - [ ] **Step 1: Add the `DataStoreManageId` field**
 
@@ -2828,17 +3073,214 @@ public class ReadEducationOrganizations : IFeature
 
 (this adds `instance.DataStoreManageId = dataStoreManage.Id;` in the linked branch, which is the new parity behavior — v2's equivalent method already sets `instance.OdsInstanceManageId` the same way.)
 
-- [ ] **Step 3: Build**
+- [ ] **Step 3: Update `TenantMapper.cs`**
 
-Run: `dotnet build Application/EdFi.Ods.AdminApi.V3.sln`
+Replace the full file content with:
+
+```csharp
+// SPDX-License-Identifier: Apache-2.0
+// Licensed to the Ed-Fi Alliance under one or more agreements.
+// The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+// See the LICENSE and NOTICES files in the project root for more information.
+
+using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+
+namespace EdFi.Ods.AdminApi.V3.Features.Tenants;
+
+public static class TenantMapper
+{
+    public static TenantDataStoreModel ToDataStoreModel(OdsInstance source)
+    {
+        return new TenantDataStoreModel
+        {
+            DataStoreId = source.OdsInstanceId,
+            Name = source.Name,
+            DataStoreType = source.InstanceType,
+        };
+    }
+
+    public static List<TenantDataStoreModel> ToDataStoreModelList(IEnumerable<OdsInstance> source)
+    {
+        return source.Select(ToDataStoreModel).ToList();
+    }
+
+    public static TenantDataStoreModel ToUnlinkedDataStoreManageModel(OdsInstanceManage source)
+    {
+        return new TenantDataStoreModel
+        {
+            DataStoreId = null,
+            Name = source.Name,
+            Status = source.Status,
+            DatabaseTemplate = source.DatabaseTemplate,
+            DatabaseName = source.DatabaseName,
+        };
+    }
+}
+```
+
+- [ ] **Step 4: Update `ReadTenants.cs`**
+
+Replace:
+
+```csharp
+        IGetDbDataStoresQuery getDbDataStoresQuery,
+```
+
+with:
+
+```csharp
+        IGetDataStoreManagesQuery getDataStoreManagesQuery,
+```
+
+and replace:
+
+```csharp
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(
+            getDataStoresQuery, getEducationOrganizationQuery, getDbDataStoresQuery, tenantName);
+```
+
+with:
+
+```csharp
+        var tenant = await tenantsService.GetTenantEdOrgsByInstancesAsync(
+            getDataStoresQuery, getEducationOrganizationQuery, getDataStoreManagesQuery, tenantName);
+```
+
+(`IGetDataStoreManagesQuery` lives in the same `EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries` namespace already imported in this file — no new using needed.)
+
+- [ ] **Step 5: Update `TenantService.cs`**
+
+Replace the interface line:
+
+```csharp
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getDataStoresQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDbDataStoresQuery getDbDataStoresQuery, string tenantName);
+```
+
+with:
+
+```csharp
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getDataStoresQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDataStoreManagesQuery getDataStoreManagesQuery, string tenantName);
+```
+
+Replace the method signature:
+
+```csharp
+    public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
+        IGetDataStoresQuery getDataStoresQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetDbDataStoresQuery getDbDataStoresQuery,
+        string tenantName)
+```
+
+with:
+
+```csharp
+    public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
+        IGetDataStoresQuery getDataStoresQuery,
+        IGetEducationOrganizationQuery getEducationOrganizationQuery,
+        IGetDataStoreManagesQuery getDataStoreManagesQuery,
+        string tenantName)
+```
+
+Replace the method body's use of the renamed query/entity:
+
+```csharp
+            var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+
+            var linkedDbDataStoresByDataStoreId = allDbDataStores
+                .Where(d => d.OdsInstanceId is not null)
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
+
+            foreach (var dataStore in tenantDetails.DataStores)
+            {
+                if (dataStore.DataStoreId is int dataStoreId && linkedDbDataStoresByDataStoreId.TryGetValue(dataStoreId, out var dbDataStore))
+                {
+                    dataStore.Status = dbDataStore.Status;
+                    dataStore.DatabaseTemplate = dbDataStore.DatabaseTemplate;
+                    dataStore.DatabaseName = dbDataStore.DatabaseName;
+                }
+                else
+                {
+                    dataStore.Status = DbInstanceStatus.Created.ToString();
+                }
+            }
+
+            var existingDataStoreIds = tenantDetails.DataStores
+                .Where(i => i.DataStoreId is int)
+                .Select(i => i.DataStoreId!.Value)
+                .ToHashSet();
+
+            var unlinkedDbDataStores = allDbDataStores
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDbDataStores
+                    .Where(d => d.OdsInstanceId is not null && !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
+                .ToList();
+            foreach (var dbDataStore in unlinkedDbDataStores)
+            {
+                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDbDataStoreModel(dbDataStore));
+            }
+```
+
+with:
+
+```csharp
+            var allDataStoreManages = getDataStoreManagesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+
+            var linkedDataStoreManagesByDataStoreId = allDataStoreManages
+                .Where(d => d.OdsInstanceId is not null)
+                .GroupBy(d => d.OdsInstanceId!.Value)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
+
+            foreach (var dataStore in tenantDetails.DataStores)
+            {
+                if (dataStore.DataStoreId is int dataStoreId && linkedDataStoreManagesByDataStoreId.TryGetValue(dataStoreId, out var dataStoreManage))
+                {
+                    dataStore.Status = dataStoreManage.Status;
+                    dataStore.DatabaseTemplate = dataStoreManage.DatabaseTemplate;
+                    dataStore.DatabaseName = dataStoreManage.DatabaseName;
+                }
+                else
+                {
+                    dataStore.Status = OdsInstanceManageStatus.Created.ToString();
+                }
+            }
+
+            var existingDataStoreIds = tenantDetails.DataStores
+                .Where(i => i.DataStoreId is int)
+                .Select(i => i.DataStoreId!.Value)
+                .ToHashSet();
+
+            var unlinkedDataStoreManages = allDataStoreManages
+                .Where(d => d.OdsInstanceId is null)
+                .Concat(allDataStoreManages
+                    .Where(d => d.OdsInstanceId is not null && !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
+                    .GroupBy(d => d.OdsInstanceId!.Value)
+                    .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
+                .ToList();
+            foreach (var dataStoreManage in unlinkedDataStoreManages)
+            {
+                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDataStoreManageModel(dataStoreManage));
+            }
+```
+
+- [ ] **Step 6: Build**
+
+Run: `dotnet build Application/Ed-Fi-ODS-AdminApi.sln`
 Expected: remaining errors confined to `Program.cs`/`WebApplicationBuilderExtensions.cs` V3 branches (Task 13).
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add "Application/EdFi.Ods.AdminApi.V3/Features/DataStores/DataStoreWithEducationOrganizationsModel.cs" \
-        "Application/EdFi.Ods.AdminApi.V3/Features/DataStores/ReadEducationOrganizations.cs"
-git commit -m "Update v3 DataStores EdOrgs merge to use renamed DataStoreManage query, add DataStoreManageId for v2 parity"
+        "Application/EdFi.Ods.AdminApi.V3/Features/DataStores/ReadEducationOrganizations.cs" \
+        "Application/EdFi.Ods.AdminApi.V3/Features/Tenants/TenantMapper.cs" \
+        "Application/EdFi.Ods.AdminApi.V3/Features/Tenants/ReadTenants.cs" \
+        "Application/EdFi.Ods.AdminApi.V3/Infrastructure/Services/Tenants/TenantService.cs"
+git commit -m "Update v3 DataStores and Tenants EdOrgs merges to use renamed DataStoreManage query, add DataStoreManageId for v2 parity"
 ```
 
 ---
