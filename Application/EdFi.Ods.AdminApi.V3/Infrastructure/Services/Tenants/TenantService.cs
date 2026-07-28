@@ -26,7 +26,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getDataStoresQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDbDataStoresQuery getDbDataStoresQuery, string tenantName);
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetDataStoresQuery getDataStoresQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDataStoreManagesQuery getDataStoreManagesQuery, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -113,7 +113,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
     public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
         IGetDataStoresQuery getDataStoresQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IGetDbDataStoresQuery getDbDataStoresQuery,
+        IGetDataStoreManagesQuery getDataStoreManagesQuery,
         string tenantName)
     {
         var tenant = await GetTenantByTenantIdAsync(tenantName);
@@ -142,24 +142,24 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 }
             }
 
-            var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+            var allDataStoreManages = getDataStoreManagesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
-            var linkedDbDataStoresByDataStoreId = allDbDataStores
+            var linkedDataStoreManagesByDataStoreId = allDataStoreManages
                 .Where(d => d.OdsInstanceId is not null)
                 .GroupBy(d => d.OdsInstanceId!.Value)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
             foreach (var dataStore in tenantDetails.DataStores)
             {
-                if (dataStore.DataStoreId is int dataStoreId && linkedDbDataStoresByDataStoreId.TryGetValue(dataStoreId, out var dbDataStore))
+                if (dataStore.DataStoreId is int dataStoreId && linkedDataStoreManagesByDataStoreId.TryGetValue(dataStoreId, out var dataStoreManage))
                 {
-                    dataStore.Status = dbDataStore.Status;
-                    dataStore.DatabaseTemplate = dbDataStore.DatabaseTemplate;
-                    dataStore.DatabaseName = dbDataStore.DatabaseName;
+                    dataStore.Status = dataStoreManage.Status;
+                    dataStore.DatabaseTemplate = dataStoreManage.DatabaseTemplate;
+                    dataStore.DatabaseName = dataStoreManage.DatabaseName;
                 }
                 else
                 {
-                    dataStore.Status = DbInstanceStatus.Created.ToString();
+                    dataStore.Status = OdsInstanceManageStatus.Created.ToString();
                 }
             }
 
@@ -168,16 +168,16 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 .Select(i => i.DataStoreId!.Value)
                 .ToHashSet();
 
-            var unlinkedDbDataStores = allDbDataStores
+            var unlinkedDataStoreManages = allDataStoreManages
                 .Where(d => d.OdsInstanceId is null)
-                .Concat(allDbDataStores
+                .Concat(allDataStoreManages
                     .Where(d => d.OdsInstanceId is not null && !existingDataStoreIds.Contains(d.OdsInstanceId.Value))
                     .GroupBy(d => d.OdsInstanceId!.Value)
                     .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
                 .ToList();
-            foreach (var dbDataStore in unlinkedDbDataStores)
+            foreach (var dataStoreManage in unlinkedDataStoreManages)
             {
-                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDbDataStoreModel(dbDataStore));
+                tenantDetails.DataStores.Add(TenantMapper.ToUnlinkedDataStoreManageModel(dataStoreManage));
             }
 
             return tenantDetails;

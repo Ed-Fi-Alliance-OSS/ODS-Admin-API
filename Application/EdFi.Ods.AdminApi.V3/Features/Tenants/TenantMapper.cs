@@ -25,7 +25,7 @@ public static class TenantMapper
         return source.Select(ToDataStoreModel).ToList();
     }
 
-    public static TenantDataStoreModel ToUnlinkedDbDataStoreModel(DbInstance source)
+    public static TenantDataStoreModel ToUnlinkedDataStoreManageModel(OdsInstanceManage source)
     {
         return new TenantDataStoreModel
         {

@@ -13,6 +13,9 @@ public class DataStoreWithEducationOrganizationsModel
     [SwaggerSchema(Description = "Data store identifier")]
     public int? Id { get; set; }
 
+    [SwaggerSchema(Description = "DataStoreManage identifier for this data store")]
+    public int? DataStoreManageId { get; set; }
+
     [SwaggerSchema(Description = "Data store name", Nullable = false)]
     public string Name { get; set; } = string.Empty;
 
