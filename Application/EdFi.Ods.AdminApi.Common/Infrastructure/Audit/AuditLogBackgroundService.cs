@@ -33,20 +33,34 @@ public class AuditLogBackgroundService(AuditLogChannel channel, IAuditLogWriter 
             catch (Exception ex) when (attempt < _retryDelays.Length)
             {
                 _logger.Warn($"Audit log write failed (attempt {attempt + 1}), retrying.", ex);
-                await Task.Delay(_retryDelays[attempt], cancellationToken);
+
+                try
+                {
+                    await Task.Delay(_retryDelays[attempt], cancellationToken);
+                }
+                catch (OperationCanceledException cancelEx)
+                {
+                    LogFallback(auditEvent, cancelEx);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
-                _logger.Error(
-                    $"Audit log write failed after {_retryDelays.Length + 1} attempts; falling back to text log. " +
-                    $"EventType={auditEvent.EventType}, ClientId={auditEvent.ClientId}, " +
-                    $"SourceIpAddress={auditEvent.SourceIpAddress}, HttpVerb={auditEvent.HttpVerb}, " +
-                    $"HttpUrl={auditEvent.HttpUrl}, StatusCode={auditEvent.StatusCode}, Timestamp={auditEvent.Timestamp:O}",
-                    ex);
+                LogFallback(auditEvent, ex);
                 return true;
             }
         }
 
         return true;
+    }
+
+    private static void LogFallback(AuditEvent auditEvent, Exception ex)
+    {
+        _logger.Error(
+            $"Audit log write failed after {_retryDelays.Length + 1} attempts; falling back to text log. " +
+            $"EventType={auditEvent.EventType}, ClientId={auditEvent.ClientId}, " +
+            $"SourceIpAddress={auditEvent.SourceIpAddress}, HttpVerb={auditEvent.HttpVerb}, " +
+            $"HttpUrl={auditEvent.HttpUrl}, StatusCode={auditEvent.StatusCode}, Timestamp={auditEvent.Timestamp:O}",
+            ex);
     }
 }

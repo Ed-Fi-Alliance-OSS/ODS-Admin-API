@@ -73,4 +73,18 @@ public class AuditLogBackgroundServiceTests
         A.CallTo(() => writer.WriteAsync(A<AuditEvent>._, A<CancellationToken>._))
             .MustHaveHappened(3, Times.Exactly);
     }
+
+    [Test]
+    public async Task ProcessEventAsync_WhenCancelledDuringRetryDelay_FallsBackInsteadOfThrowing()
+    {
+        var writer = A.Fake<IAuditLogWriter>();
+        A.CallTo(() => writer.WriteAsync(A<AuditEvent>._, A<CancellationToken>._))
+            .Throws(new InvalidOperationException("transient failure"));
+        var service = new AuditLogBackgroundService(new AuditLogChannel(), writer);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+
+        var fellBackToLogging = await service.ProcessEventAsync(SampleEvent(), writer, cts.Token);
+
+        fellBackToLogging.ShouldBeTrue();
+    }
 }
