@@ -312,7 +312,7 @@ else if (adminApiMode == AdminApiMode.V3)
             {
                 await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDbInstancesDispatcherJob>(
                     scheduler,
-                    jobKey: new JobKey($"{JobConstants.CreatePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobKey: new JobKey($"{JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
                     jobData: new Dictionary<string, object>
                     {
                         [JobConstants.TenantNameKey] = tenantName
@@ -326,7 +326,7 @@ else if (adminApiMode == AdminApiMode.V3)
         {
             await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDbInstancesDispatcherJob>(
                 scheduler,
-                jobKey: new JobKey(JobConstants.CreatePendingDbInstancesDispatcherJobName),
+                jobKey: new JobKey(JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName),
                 jobData: new Dictionary<string, object>(),
                 startImmediately: false,
                 interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
@@ -350,7 +350,7 @@ else if (adminApiMode == AdminApiMode.V3)
             {
                 await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDbInstancesDispatcherJob>(
                     scheduler,
-                    jobKey: new JobKey($"{JobConstants.DeletePendingDbInstancesDispatcherJobName}_{tenantName}"),
+                    jobKey: new JobKey($"{JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
                     jobData: new Dictionary<string, object>
                     {
                         [JobConstants.TenantNameKey] = tenantName
@@ -364,7 +364,7 @@ else if (adminApiMode == AdminApiMode.V3)
         {
             await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDbInstancesDispatcherJob>(
                 scheduler,
-                jobKey: new JobKey(JobConstants.DeletePendingDbInstancesDispatcherJobName),
+                jobKey: new JobKey(JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName),
                 jobData: new Dictionary<string, object>(),
                 startImmediately: false,
                 interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
