@@ -3,7 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Net;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
+using Microsoft.AspNetCore;
 using static OpenIddict.Server.OpenIddictServerEvents;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Security;
@@ -182,6 +185,18 @@ public static class SecurityExtensions
                 {
                     Console.WriteLine($"Authentication failed: {context.Exception.Message}");
                     return Task.CompletedTask;
+                },
+                OnChallenge = context =>
+                {
+                    var recorder = context.HttpContext.RequestServices.GetRequiredService<IAuditEventRecorder>();
+                    recorder.Record(
+                        AuditEventType.AuthenticationFailure,
+                        clientId: null,
+                        context.HttpContext.Connection.RemoteIpAddress?.ToString(),
+                        httpVerb: null,
+                        httpUrl: null,
+                        context.Response.StatusCode == 0 ? (int)HttpStatusCode.Unauthorized : context.Response.StatusCode);
+                    return Task.CompletedTask;
                 }
             };
         })
@@ -240,16 +255,25 @@ public static class SecurityExtensions
 
         services.AddControllers();
         //Security Endpoints
+        services.AddSingleton<DefaultTokenResponseHandler>();
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<IRegisterService, RegisterService>();
     }
-    public class DefaultTokenResponseHandler : IOpenIddictServerHandler<ApplyTokenResponseContext>
+    public class DefaultTokenResponseHandler(IAuditEventRecorder auditEventRecorder) : IOpenIddictServerHandler<ApplyTokenResponseContext>
     {
         private const string DENIED_AUTHENTICATION_MESSAGE =
             "Access Denied. Please review your information and try again.";
         public ValueTask HandleAsync(ApplyTokenResponseContext context)
         {
             var response = context.Response;
+            var httpContext = context.Transaction.GetHttpRequest()?.HttpContext;
+            auditEventRecorder.Record(
+                string.IsNullOrEmpty(response.Error) ? AuditEventType.AuthenticationSuccess : AuditEventType.AuthenticationFailure,
+                context.Request?.ClientId,
+                httpContext?.Connection.RemoteIpAddress?.ToString(),
+                httpVerb: null,
+                httpUrl: null,
+                statusCode: null);
 
             // For invalid_scope errors, set content type to application/problem+json
             if (string.Equals(response.Error, OpenIddictConstants.Errors.InvalidScope, StringComparison.Ordinal))
