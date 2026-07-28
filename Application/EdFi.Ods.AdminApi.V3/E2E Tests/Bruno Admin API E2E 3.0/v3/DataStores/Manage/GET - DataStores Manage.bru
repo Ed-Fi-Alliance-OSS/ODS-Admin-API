@@ -1,11 +1,11 @@
 meta {
-  name: DbDataStores - Get All
+  name: DataStores Manage - Get All
   type: http
   seq: 5
 }
 
 get {
-  url: {{API_URL}}/v3/dbDataStores?offset={{offset}}&limit={{limit}}
+  url: {{API_URL}}/v3/dataStores/manage?offset={{offset}}&limit={{limit}}
   body: none
   auth: inherit
 }
@@ -16,15 +16,15 @@ params:query {
 }
 
 script:post-response {
-  test("GET DbDataStores: Status code is OK", function () {
+  test("GET DataStores Manage: Status code is OK", function () {
     expect(res.getStatus()).to.equal(200);
   });
 
-  test("GET DbDataStores: Response is an array", function () {
+  test("GET DataStores Manage: Response is an array", function () {
     expect(res.getBody()).to.be.an("array");
   });
 
-  test("GET DbDataStores: Response includes created instance", function () {
+  test("GET DataStores Manage: Response includes created instance", function () {
     expect(res.getBody().length).to.be.greaterThan(0);
   });
 
@@ -50,7 +50,7 @@ script:post-response {
     }
   };
 
-  test("GET DbDataStores: Response matches schema", function () {
+  test("GET DataStores Manage: Response matches schema", function () {
     const valid = ajv.validate(schema, res.getBody());
     expect(valid).to.be.true;
   });

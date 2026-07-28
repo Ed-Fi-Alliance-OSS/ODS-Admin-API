@@ -1,11 +1,11 @@
 meta {
-  name: DbDataStores - Invalid Database Template
+  name: DataStores Manage - Invalid Database Template
   type: http
   seq: 3
 }
 
 post {
-  url: {{API_URL}}/v3/dbDataStores
+  url: {{API_URL}}/v3/dataStores/manage
   body: json
   auth: inherit
 }
@@ -18,27 +18,27 @@ body:json {
 }
 
 script:post-response {
-  test("POST DbDataStores Invalid Template: Status code is Bad Request", function () {
+  test("POST DataStores Manage Invalid Template: Status code is Bad Request", function () {
     expect(res.getStatus()).to.equal(400);
   });
 
   const response = res.getBody();
 
-  test("POST DbDataStores Invalid Template: Response matches error format", function () {
+  test("POST DataStores Manage Invalid Template: Response matches error format", function () {
     expect(response).to.have.property("title");
     expect(response).to.have.property("errors");
   });
 
-  test("POST DbDataStores Invalid Template: Response errors include message for DatabaseTemplate", function () {
+  test("POST DataStores Manage Invalid Template: Response errors include message for DatabaseTemplate", function () {
     expect(response.errors["DatabaseTemplate"].length).to.be.greaterThan(0);
   });
 
-  test("POST DbDataStores Invalid Template: Error message mentions allowed values", function () {
+  test("POST DataStores Manage Invalid Template: Error message mentions allowed values", function () {
     const errorMessage = response.errors["DatabaseTemplate"][0].toLowerCase();
     expect(errorMessage).to.match(/minimal|sample/);
   });
-  
-  test("POST DbDataStores Invalid Template: type URN is correct", function () {
+
+  test("POST DataStores Manage Invalid Template: type URN is correct", function () {
       const response = res.getBody();
       expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:validation");
   });

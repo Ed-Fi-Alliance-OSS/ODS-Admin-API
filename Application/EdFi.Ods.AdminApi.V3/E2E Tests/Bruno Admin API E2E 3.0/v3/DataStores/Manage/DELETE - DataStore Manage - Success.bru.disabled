@@ -1,5 +1,5 @@
 meta {
-  name: DbDataStores - Delete - Success
+  name: DataStores Manage - Delete - Success
   type: http
   seq: 13
   skip: true
@@ -8,7 +8,7 @@ meta {
 script:pre-request {
   // DISABLED: The CI pipeline does not seed the Minimal/Sample ODS template databases
   // (EdFi_Ods_Minimal_Template / EdFi_Ods_Populated_Template) before running the E2E suite.
-  // Without those source databases the provisioner cannot copy them and the DbDataStore
+  // Without those source databases the provisioner cannot copy them and the DataStore Manage
   // transitions to Error status, causing this pre-request to throw and block the whole run.
   // To re-enable: remove this early-return block and remove 'skip: true' from meta.
   // See docs/design/INSTANCE-MANAGEMENT-Quartz.md for background on the provisioning job design.
@@ -27,7 +27,7 @@ script:pre-request {
   const axios = require('axios');
   const API_URL = bru.getEnvVar("API_URL");
   const TOKEN = bru.getEnvVar("TOKEN");
-  const deleteDbDataStoreName = `Delete Test DB Instance ${Date.now()}`;
+  const deleteDataStoreManageName = `Delete Test DB Instance ${Date.now()}`;
   const requestTimeoutMs = 30000;
   const provisioningTimeoutMs = 180000;
   const pollingIntervalMs = 5000;
@@ -56,66 +56,66 @@ script:pre-request {
   const sleep = (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs));
 
   try {
-    console.log(`Creating delete test DbDataStore: ${deleteDbDataStoreName}`);
+    console.log(`Creating delete test DataStore Manage: ${deleteDataStoreManageName}`);
 
-    const createResponse = await axios.post(`${API_URL}/v3/dbDataStores`, {
-      name: deleteDbDataStoreName,
+    const createResponse = await axios.post(`${API_URL}/v3/dataStores/manage`, {
+      name: deleteDataStoreManageName,
       databaseTemplate: "Minimal"
     }, axiosConfig);
 
     if (createResponse.status !== 202) {
-      logAxiosFailure("Failed to create delete test DbDataStore", createResponse);
-      throw new Error(`Failed to create delete test DbDataStore - Status: ${createResponse.status}`);
+      logAxiosFailure("Failed to create delete test DataStore Manage", createResponse);
+      throw new Error(`Failed to create delete test DataStore Manage - Status: ${createResponse.status}`);
     }
 
     const locationHeader = createResponse.headers.location;
     const locationValue = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
 
     if (!locationValue) {
-      console.log("❌ Create delete test DbDataStore response did not include a location header");
+      console.log("❌ Create delete test DataStore Manage response did not include a location header");
       console.log("Headers:", JSON.stringify(createResponse.headers, null, 2));
-      throw new Error("Create delete test DbDataStore response did not include a location header.");
+      throw new Error("Create delete test DataStore Manage response did not include a location header.");
     }
 
-    const freshPendingDbDataStoreId = locationValue.split("/").pop();
+    const freshPendingDataStoreManageId = locationValue.split("/").pop();
 
-    if (!freshPendingDbDataStoreId) {
-      throw new Error(`Could not parse DbDataStore id from location header '${locationValue}'.`);
+    if (!freshPendingDataStoreManageId) {
+      throw new Error(`Could not parse DataStore Manage id from location header '${locationValue}'.`);
     }
 
-    bru.setVar("FreshPendingDbDataStoreId", freshPendingDbDataStoreId);
-    bru.setVar("DeleteDbDataStoreName", deleteDbDataStoreName);
+    bru.setVar("FreshPendingDataStoreManageId", freshPendingDataStoreManageId);
+    bru.setVar("DeleteDataStoreManageName", deleteDataStoreManageName);
 
     const provisioningDeadline = Date.now() + provisioningTimeoutMs;
     let isReadyToDelete = false;
 
     while (Date.now() < provisioningDeadline) {
-      const statusResponse = await axios.get(`${API_URL}/v3/dbDataStores/${freshPendingDbDataStoreId}`, axiosConfig);
+      const statusResponse = await axios.get(`${API_URL}/v3/dataStores/manage/${freshPendingDataStoreManageId}`, axiosConfig);
 
       if (statusResponse.status !== 200) {
-        logAxiosFailure("Failed to poll delete test DbDataStore", statusResponse);
-        throw new Error(`Failed to poll delete test DbDataStore - Status: ${statusResponse.status}`);
+        logAxiosFailure("Failed to poll delete test DataStore Manage", statusResponse);
+        throw new Error(`Failed to poll delete test DataStore Manage - Status: ${statusResponse.status}`);
       }
 
       const currentStatus = statusResponse.data?.status;
-      console.log(`Delete test DbDataStore ${freshPendingDbDataStoreId} status: ${currentStatus}`);
+      console.log(`Delete test DataStore Manage ${freshPendingDataStoreManageId} status: ${currentStatus}`);
 
       if (currentStatus === "Completed" || currentStatus === "DeleteFailed") {
-        console.log(`✅ Delete test DbDataStore ${freshPendingDbDataStoreId} is ready to be deleted`);
+        console.log(`✅ Delete test DataStore Manage ${freshPendingDataStoreManageId} is ready to be deleted`);
         isReadyToDelete = true;
         break;
       }
 
       if (currentStatus === "Error") {
-        logAxiosFailure("Delete test DbDataStore provisioning ended in Error", statusResponse);
-        throw new Error(`Delete test DbDataStore provisioning ended in Error for id ${freshPendingDbDataStoreId}.`);
+        logAxiosFailure("Delete test DataStore Manage provisioning ended in Error", statusResponse);
+        throw new Error(`Delete test DataStore Manage provisioning ended in Error for id ${freshPendingDataStoreManageId}.`);
       }
 
       await sleep(pollingIntervalMs);
     }
 
     if (!isReadyToDelete) {
-      throw new Error(`Timed out waiting for delete test DbDataStore ${freshPendingDbDataStoreId} to become deletable.`);
+      throw new Error(`Timed out waiting for delete test DataStore Manage ${freshPendingDataStoreManageId} to become deletable.`);
     }
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);
@@ -124,7 +124,7 @@ script:pre-request {
 }
 
 delete {
-  url: {{API_URL}}/v3/dbDataStores/{{FreshPendingDbDataStoreId}}
+  url: {{API_URL}}/v3/dataStores/manage/{{FreshPendingDataStoreManageId}}
   body: none
   auth: inherit
 }
@@ -137,19 +137,19 @@ script:post-response {
   const responseStatus = res.getStatus();
 
   if (responseStatus !== expectedStatus) {
-    console.log("❌ DELETE DbDataStore Success request failed");
-    console.log("DbDataStoreId:", bru.getVar("FreshPendingDbDataStoreId"));
-    console.log("DbDataStoreName:", bru.getVar("DeleteDbDataStoreName"));
+    console.log("❌ DELETE DataStore Manage Success request failed");
+    console.log("DataStoreManageId:", bru.getVar("FreshPendingDataStoreManageId"));
+    console.log("DataStoreManageName:", bru.getVar("DeleteDataStoreManageName"));
     console.log("Status:", responseStatus);
     console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
   }
 
-  test("DELETE DbDataStore Success: Status code is No Content", function () {
+  test("DELETE DataStore Manage Success: Status code is No Content", function () {
     expect(responseStatus).to.equal(expectedStatus);
   });
 
-  bru.deleteVar("FreshPendingDbDataStoreId");
-  bru.deleteVar("DeleteDbDataStoreName");
+  bru.deleteVar("FreshPendingDataStoreManageId");
+  bru.deleteVar("DeleteDataStoreManageName");
 }
 
 settings {

@@ -1,11 +1,11 @@
 meta {
-  name: DbDataStores - Without Limit
+  name: DataStores Manage - Without Limit
   type: http
   seq: 10
 }
 
 get {
-  url: {{API_URL}}/v3/dbDataStores?offset={{offset}}
+  url: {{API_URL}}/v3/dataStores/manage?offset={{offset}}
   body: none
   auth: inherit
 }
@@ -15,11 +15,11 @@ params:query {
 }
 
 script:post-response {
-  test("GET DbDataStores Without Limit: Status code is OK", function () {
+  test("GET DataStores Manage Without Limit: Status code is OK", function () {
     expect(res.getStatus()).to.equal(200);
   });
 
-  test("GET DbDataStores Without Limit: Response is an array", function () {
+  test("GET DataStores Manage Without Limit: Response is an array", function () {
     expect(res.getBody()).to.be.an("array");
   });
 }
