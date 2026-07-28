@@ -310,7 +310,7 @@ else if (adminApiMode == AdminApiMode.V3)
 
             foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
             {
-                await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDbInstancesDispatcherJob>(
+                await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDataStoreManagesDispatcherJob>(
                     scheduler,
                     jobKey: new JobKey($"{JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
                     jobData: new Dictionary<string, object>
@@ -324,7 +324,7 @@ else if (adminApiMode == AdminApiMode.V3)
         }
         else
         {
-            await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDbInstancesDispatcherJob>(
+            await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDataStoreManagesDispatcherJob>(
                 scheduler,
                 jobKey: new JobKey(JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName),
                 jobData: new Dictionary<string, object>(),
@@ -348,7 +348,7 @@ else if (adminApiMode == AdminApiMode.V3)
 
             foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
             {
-                await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDbInstancesDispatcherJob>(
+                await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDataStoreManagesDispatcherJob>(
                     scheduler,
                     jobKey: new JobKey($"{JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
                     jobData: new Dictionary<string, object>
@@ -362,7 +362,7 @@ else if (adminApiMode == AdminApiMode.V3)
         }
         else
         {
-            await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDbInstancesDispatcherJob>(
+            await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDataStoreManagesDispatcherJob>(
                 scheduler,
                 jobKey: new JobKey(JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName),
                 jobData: new Dictionary<string, object>(),
