@@ -79,7 +79,8 @@ public class ReadEducationOrganizationsTests
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<DataStoreWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
-        ok.Value![0].Status.ShouldBe("Healthy");
+        ok.Value![0].DataStoreManageId.ShouldBe(5);
+        ok.Value[0].Status.ShouldBe("Healthy");
         ok.Value[0].DatabaseTemplate.ShouldBe("Minimal");
         ok.Value[0].DatabaseName.ShouldBe("EdFi_Ods_7");
     }
