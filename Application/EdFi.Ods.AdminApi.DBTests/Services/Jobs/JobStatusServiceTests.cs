@@ -6,6 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
+using AdminApiDbContext = EdFi.Ods.AdminApi.Infrastructure.AdminApiDbContext;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -20,7 +21,7 @@ namespace EdFi.Ods.AdminApi.DBTests.Services.Jobs;
 [TestFixture]
 public class JobStatusServiceTests : AdminApiDbContextTestBase
 {
-    private DbContextOptions<Infrastructure.AdminApiDbContext> _dbContextOptions = null!;
+    private DbContextOptions<AdminApiDbContext> _dbContextOptions = null!;
 
     [SetUp]
     public void SetUpService()
@@ -32,12 +33,12 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     public async Task SetStatusAsync_CreatesNewStatus_WhenNotExists()
     {
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-1", QuartzJobStatus.InProgress, null, "No error");
-        using var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await context.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-1");
         status.ShouldNotBeNull();
         status!.Status.ShouldBe(QuartzJobStatus.InProgress.ToString());
@@ -47,19 +48,19 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     [Test]
     public async Task SetStatusAsync_UpdatesStatus_WhenExists()
     {
-        using (var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()))
+        using (var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration()))
         {
             context.JobStatuses.Add(new JobStatus { JobId = "job-2", Status = "Pending", ErrorMessage = null });
             await context.SaveChangesAsync();
         }
 
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-2", QuartzJobStatus.Completed, null, "Done");
-        using var verifyContext = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var verifyContext = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await verifyContext.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-2");
         status.ShouldNotBeNull();
         status!.Status.ShouldBe(QuartzJobStatus.Completed.ToString());
@@ -71,12 +72,12 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     {
         var tenantName = "tenant1";
         var tenantDbContextOptions = GetAdminApiDbContextOptions(ConnectionString);
-        var tenantDbContext = new Infrastructure.AdminApiDbContext(tenantDbContextOptions, Testing.Configuration());
+        var tenantDbContext = new AdminApiDbContext(tenantDbContextOptions, Testing.Configuration());
 
         var provider = new DummyTenantSpecificDbContextProvider(_dbContextOptions, tenantName, tenantDbContext);
 
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             provider,
             Options.Create(new AppSettings { MultiTenancy = true }));
 
@@ -93,14 +94,14 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     {
         var beforeCall = DateTime.UtcNow;
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-create-timestamp", QuartzJobStatus.InProgress, null);
 
         var afterCall = DateTime.UtcNow;
-        using var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await context.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-create-timestamp");
 
         status.ShouldNotBeNull();
@@ -112,7 +113,7 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     public async Task SetStatusAsync_KeepsCreatedAt_WhenUpdatingStatus()
     {
         var originalCreatedAt = DateTime.UtcNow.AddHours(-1);
-        using (var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()))
+        using (var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration()))
         {
             context.JobStatuses.Add(new JobStatus
             {
@@ -125,13 +126,13 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
         }
 
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-created-at-unchanged", QuartzJobStatus.Completed, null);
 
-        using var verifyContext = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var verifyContext = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await verifyContext.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-created-at-unchanged");
 
         status.ShouldNotBeNull();
@@ -142,13 +143,13 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     public async Task SetStatusAsync_DoesNotSetFinishedAt_WhenStatusIsPending()
     {
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-pending", QuartzJobStatus.Pending, null);
 
-        using var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await context.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-pending");
 
         status.ShouldNotBeNull();
@@ -159,13 +160,13 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     public async Task SetStatusAsync_DoesNotSetFinishedAt_WhenStatusIsInProgress()
     {
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-in-progress", QuartzJobStatus.InProgress, null);
 
-        using var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await context.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-in-progress");
 
         status.ShouldNotBeNull();
@@ -177,14 +178,14 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     {
         var beforeCall = DateTime.UtcNow;
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-completed", QuartzJobStatus.Completed, null);
 
         var afterCall = DateTime.UtcNow;
-        using var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await context.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-completed");
 
         status.ShouldNotBeNull();
@@ -198,14 +199,14 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     {
         var beforeCall = DateTime.UtcNow;
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-error", QuartzJobStatus.Error, null, "Error occurred");
 
         var afterCall = DateTime.UtcNow;
-        using var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await context.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-error");
 
         status.ShouldNotBeNull();
@@ -218,7 +219,7 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
     public async Task SetStatusAsync_SetsFinishedAt_WhenTransitioningFromInProgressToCompleted()
     {
         var originalCreatedAt = DateTime.UtcNow.AddMinutes(-5);
-        using (var context = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()))
+        using (var context = new AdminApiDbContext(_dbContextOptions, Testing.Configuration()))
         {
             context.JobStatuses.Add(new JobStatus
             {
@@ -232,14 +233,14 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
 
         var beforeCall = DateTime.UtcNow;
         var service = new JobStatusService(
-            new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
+            new AdminApiDbContext(_dbContextOptions, Testing.Configuration()),
             new DummyTenantSpecificDbContextProvider(_dbContextOptions),
             Options.Create(new AppSettings { MultiTenancy = false }));
 
         await service.SetStatusAsync("job-transition-complete", QuartzJobStatus.Completed, null);
 
         var afterCall = DateTime.UtcNow;
-        using var verifyContext = new Infrastructure.AdminApiDbContext(_dbContextOptions, Testing.Configuration());
+        using var verifyContext = new AdminApiDbContext(_dbContextOptions, Testing.Configuration());
         var status = await verifyContext.JobStatuses.FirstOrDefaultAsync(j => j.JobId == "job-transition-complete");
 
         status.ShouldNotBeNull();
@@ -251,21 +252,21 @@ public class JobStatusServiceTests : AdminApiDbContextTestBase
 
     // Dummy provider for integration tests
     private class DummyTenantSpecificDbContextProvider(
-        DbContextOptions<Infrastructure.AdminApiDbContext> defaultOptions,
+        DbContextOptions<AdminApiDbContext> defaultOptions,
         string tenantName = null,
-        Infrastructure.AdminApiDbContext tenantDbContext = null) : ITenantSpecificDbContextProvider
+        AdminApiDbContext tenantDbContext = null) : ITenantSpecificDbContextProvider
     {
-        private readonly DbContextOptions<Infrastructure.AdminApiDbContext> _defaultOptions = defaultOptions;
+        private readonly DbContextOptions<AdminApiDbContext> _defaultOptions = defaultOptions;
         private readonly string _tenantName = tenantName;
-        private readonly Infrastructure.AdminApiDbContext _tenantDbContext = tenantDbContext;
+        private readonly AdminApiDbContext _tenantDbContext = tenantDbContext;
 
-        public Infrastructure.AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
+        public AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
         {
             if (_tenantDbContext != null && tenantIdentifier == _tenantName)
                 return _tenantDbContext;
 
             // Fallback to default context for other tenants
-            return new Infrastructure.AdminApiDbContext(_defaultOptions, Testing.Configuration());
+            return new AdminApiDbContext(_defaultOptions, Testing.Configuration());
         }
 
         public IUsersContext GetUsersContext(string tenantIdentifier)

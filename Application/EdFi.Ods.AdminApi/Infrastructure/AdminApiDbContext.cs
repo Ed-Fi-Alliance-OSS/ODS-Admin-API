@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
@@ -22,6 +23,8 @@ public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, ICon
 
     public DbSet<DbInstance> DbInstances { get; set; }
 
+    public DbSet<AuditLog> AuditLogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -34,6 +37,8 @@ public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, ICon
         modelBuilder.Entity<EducationOrganization>().ToTable("EducationOrganizations").HasKey(t => t.Id);
         modelBuilder.Entity<JobStatus>().ToTable("JobStatuses").HasKey(t => t.Id);
         modelBuilder.Entity<DbInstance>().ToTable("DbInstances").HasKey(t => t.Id);
+        modelBuilder.Entity<AuditLog>().ToTable("AuditLogs").HasKey(t => t.Id);
+        modelBuilder.Entity<AuditLog>().Property(t => t.EventType).HasConversion<string>();
 
         var engine = _configuration.Get("AppSettings:DatabaseEngine", "SqlServer");
         modelBuilder.ApplyDatabaseServerSpecificConventions(engine);
