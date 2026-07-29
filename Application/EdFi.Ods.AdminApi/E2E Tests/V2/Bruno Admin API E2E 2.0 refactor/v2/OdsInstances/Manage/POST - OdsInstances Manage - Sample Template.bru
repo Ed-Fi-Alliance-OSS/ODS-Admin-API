@@ -1,0 +1,52 @@
+meta {
+  name: OdsInstances Manage - Sample Template
+  type: http
+  seq: 4
+}
+
+script:pre-request {
+  const sampleOdsInstanceManageName = `Test DB Instance Sample ${Date.now()}`;
+  bru.setVar("SampleOdsInstanceManageName", sampleOdsInstanceManageName);
+  console.log(`Using unique Sample OdsInstance Manage name: ${sampleOdsInstanceManageName}`);
+}
+
+post {
+  url: {{API_URL}}/v2/odsinstances/manage
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "{{SampleOdsInstanceManageName}}",
+    "databaseTemplate": "Sample"
+  }
+}
+
+script:post-response {
+  const expectedStatus = 202;
+  const responseStatus = res.getStatus();
+
+  if (responseStatus !== expectedStatus) {
+    console.log("❌ POST OdsInstances Manage Sample request failed");
+    console.log("Status:", responseStatus);
+    console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
+  }
+
+  test("POST OdsInstances Manage Sample: Status code is Accepted", function () {
+    expect(responseStatus).to.equal(expectedStatus);
+  });
+
+  test("POST OdsInstances Manage Sample: Response includes location in header", function () {
+    expect(res.getHeaders()).to.have.property("location");
+    const id = res.getHeader("location").split("/").pop();
+    if (id) {
+      bru.setVar("CreatedOdsInstanceManageIdSample", id);
+    }
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

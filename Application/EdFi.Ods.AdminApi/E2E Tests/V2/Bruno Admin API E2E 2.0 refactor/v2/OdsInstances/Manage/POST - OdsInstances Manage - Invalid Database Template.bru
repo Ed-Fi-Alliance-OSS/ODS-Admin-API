@@ -1,0 +1,44 @@
+meta {
+  name: OdsInstances Manage - Invalid Database Template
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{API_URL}}/v2/odsinstances/manage
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Test DB Instance",
+    "databaseTemplate": "InvalidTemplate"
+  }
+}
+
+script:post-response {
+  test("POST OdsInstances Manage Invalid Template: Status code is Bad Request", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  test("POST OdsInstances Manage Invalid Template: Response matches error format", function () {
+    expect(response).to.have.property("title");
+    expect(response).to.have.property("errors");
+  });
+
+  test("POST OdsInstances Manage Invalid Template: Response errors include message for DatabaseTemplate", function () {
+    expect(response.errors["DatabaseTemplate"].length).to.be.greaterThan(0);
+  });
+
+  test("POST OdsInstances Manage Invalid Template: Error message mentions allowed values", function () {
+    const errorMessage = response.errors["DatabaseTemplate"][0].toLowerCase();
+    expect(errorMessage).to.match(/minimal|sample/);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -21,7 +21,7 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.OdsInstances;
 public class ReadEducationOrganizationsTests
 {
     private IGetEducationOrganizationsQuery _getEdOrgsQuery = null!;
-    private IGetDbInstancesQuery _getDbInstancesQuery = null!;
+    private IGetOdsInstanceManagesQuery _getOdsInstanceManagesQuery = null!;
     private IGetOdsInstanceQuery _getOdsInstanceQuery = null!;
     private CommonQueryParams _queryParams;
 
@@ -29,13 +29,13 @@ public class ReadEducationOrganizationsTests
     public void SetUp()
     {
         _getEdOrgsQuery = A.Fake<IGetEducationOrganizationsQuery>();
-        _getDbInstancesQuery = A.Fake<IGetDbInstancesQuery>();
+        _getOdsInstanceManagesQuery = A.Fake<IGetOdsInstanceManagesQuery>();
         _getOdsInstanceQuery = A.Fake<IGetOdsInstanceQuery>();
         _queryParams = new CommonQueryParams(0, 10);
     }
 
     [Test]
-    public async Task GetEducationOrganizationsByInstance_DoesNotAppendUnlinkedDbInstances()
+    public async Task GetEducationOrganizationsByInstance_DoesNotAppendUnlinkedOdsInstanceManages()
     {
         var instanceId = 3;
         A.CallTo(() => _getOdsInstanceQuery.Execute(instanceId)).Returns(new OdsInstance { OdsInstanceId = instanceId });
@@ -44,14 +44,14 @@ public class ReadEducationOrganizationsTests
             {
                 new() { Id = instanceId, Name = "Instance3" }
             });
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, null, null))
+            .Returns(new List<OdsInstanceManage>
             {
-                new DbInstance { Id = 1, Name = "Unlinked", OdsInstanceId = null, Status = "PendingCreate" }
+                new OdsInstanceManage { Id = 1, Name = "Unlinked", OdsInstanceId = null, Status = "PendingCreate" }
             });
 
         var result = await ReadEducationOrganizations.GetEducationOrganizationsByInstance(
-            _getEdOrgsQuery, _getOdsInstanceQuery, _getDbInstancesQuery, _queryParams, instanceId);
+            _getEdOrgsQuery, _getOdsInstanceQuery, _getOdsInstanceManagesQuery, _queryParams, instanceId);
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
@@ -60,7 +60,7 @@ public class ReadEducationOrganizationsTests
     }
 
     [Test]
-    public async Task GetEducationOrganizationsByInstance_EnrichesLinkedDbInstanceFields()
+    public async Task GetEducationOrganizationsByInstance_EnrichesLinkedOdsInstanceManageFields()
     {
         var instanceId = 7;
         A.CallTo(() => _getOdsInstanceQuery.Execute(instanceId)).Returns(new OdsInstance { OdsInstanceId = instanceId });
@@ -69,18 +69,18 @@ public class ReadEducationOrganizationsTests
             {
                 new() { Id = instanceId, Name = "Instance7" }
             });
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, null, null))
+            .Returns(new List<OdsInstanceManage>
             {
-                new DbInstance { Id = 5, OdsInstanceId = instanceId, Status = "Healthy", DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_7" }
+                new OdsInstanceManage { Id = 5, OdsInstanceId = instanceId, Status = "Healthy", DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_7" }
             });
 
         var result = await ReadEducationOrganizations.GetEducationOrganizationsByInstance(
-            _getEdOrgsQuery, _getOdsInstanceQuery, _getDbInstancesQuery, _queryParams, instanceId);
+            _getEdOrgsQuery, _getOdsInstanceQuery, _getOdsInstanceManagesQuery, _queryParams, instanceId);
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
-        ok.Value![0].DbInstanceId.ShouldBe(5);
+        ok.Value![0].OdsInstanceManageId.ShouldBe(5);
         ok.Value![0].Status.ShouldBe("Healthy");
         ok.Value[0].DatabaseTemplate.ShouldBe("Minimal");
         ok.Value[0].DatabaseName.ShouldBe("EdFi_Ods_7");
@@ -94,6 +94,6 @@ public class ReadEducationOrganizationsTests
 
         Should.Throw<NotFoundException<int>>(async () =>
             await ReadEducationOrganizations.GetEducationOrganizationsByInstance(
-                _getEdOrgsQuery, _getOdsInstanceQuery, _getDbInstancesQuery, _queryParams, 99));
+                _getEdOrgsQuery, _getOdsInstanceQuery, _getOdsInstanceManagesQuery, _queryParams, 99));
     }
 }

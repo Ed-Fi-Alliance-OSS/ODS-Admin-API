@@ -31,7 +31,7 @@ public class TenantOdsInstanceModel
 {
     [JsonPropertyName("id")]
     public int? OdsInstanceId { get; set; }
-    public int? DbInstanceId { get; set; }
+    public int? OdsInstanceManageId { get; set; }
     public string Name { get; set; }
     public string? InstanceType { get; set; }
     public string? Status { get; set; }

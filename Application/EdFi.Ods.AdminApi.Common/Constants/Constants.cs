@@ -66,7 +66,7 @@ public enum AdminApiMode
     Unversioned
 }
 
-public enum DbInstanceStatus
+public enum OdsInstanceManageStatus
 {
     PendingCreate,
     Created,

@@ -28,7 +28,7 @@ public class ReadEducationOrganizations : IFeature
     public static async Task<IResult> GetEducationOrganizationsByInstance(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
         [FromServices] IGetOdsInstanceQuery getOdsInstanceQuery,
-        [FromServices] IGetDbInstancesQuery getDbInstancesQuery,
+        [FromServices] IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
         int instanceId)
     {
@@ -38,33 +38,33 @@ public class ReadEducationOrganizations : IFeature
             commonQueryParams,
             instanceId: instanceId);
 
-        MergeDbInstanceData(educationOrganizations, getDbInstancesQuery);
+        MergeOdsInstanceManageData(educationOrganizations, getOdsInstanceManagesQuery);
         return Results.Ok(educationOrganizations);
     }
 
-    private static void MergeDbInstanceData(
+    private static void MergeOdsInstanceManageData(
         List<OdsInstanceWithEducationOrganizationsModel> instances,
-        IGetDbInstancesQuery getDbInstancesQuery)
+        IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery)
     {
-        var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+        var allOdsInstanceManages = getOdsInstanceManagesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
-        var linkedById = allDbInstances
+        var linkedById = allOdsInstanceManages
             .Where(d => d.OdsInstanceId is not null)
             .GroupBy(d => d.OdsInstanceId!.Value)
             .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
         foreach (var instance in instances)
         {
-            if (instance.Id is int instanceId && linkedById.TryGetValue(instanceId, out var dbInstance))
+            if (instance.Id is int instanceId && linkedById.TryGetValue(instanceId, out var odsInstanceManage))
             {
-                instance.DbInstanceId = dbInstance.Id;
-                instance.Status = dbInstance.Status;
-                instance.DatabaseTemplate = dbInstance.DatabaseTemplate;
-                instance.DatabaseName = dbInstance.DatabaseName;
+                instance.OdsInstanceManageId = odsInstanceManage.Id;
+                instance.Status = odsInstanceManage.Status;
+                instance.DatabaseTemplate = odsInstanceManage.DatabaseTemplate;
+                instance.DatabaseName = odsInstanceManage.DatabaseName;
             }
             else
             {
-                instance.Status = DbInstanceStatus.Created.ToString();
+                instance.Status = OdsInstanceManageStatus.Created.ToString();
             }
         }
     }
