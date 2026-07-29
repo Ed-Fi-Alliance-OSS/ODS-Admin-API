@@ -16,6 +16,7 @@
     * [Database Layer](#database-layer)
     * [Validation](#validation)
     * [DbInstance Provisioning Jobs](#dbinstance-provisioning-jobs)
+    * [Audit Trail Logging](#audit-trail-logging)
 
 ## Development Pre-Requisites
 
@@ -243,6 +244,14 @@ Validation of API requests is configured via
 The `POST /v2/dbinstances` flow is asynchronous. The endpoint persists a `Pending` `DbInstance`, schedules `CreateInstanceJob`, and returns `202 Accepted` immediately. A separate recurring `CreatePendingDbInstancesDispatcherJob` handles sweep-based recovery and capped retries for records that remain in `Pending` or move to `Error`.
 
 Use [design/DBINSTANCE-PROVISIONING-JOBS.md](design/DBINSTANCE-PROVISIONING-JOBS.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
+
+### Audit Trail Logging
+
+Admin API can record authentication and administrative-action events to a
+database-backed audit trail (`adminapi.AuditLogs`), controlled by a single
+`AuditLogging:Enabled` flag in `appsettings.json`. See
+[audit-logging.md](audit-logging.md) for the configuration flag, the exact
+list of captured events, the table schema, and the fail-open write pipeline.
 
 Feature-specific prerequisites and configuration:
 
