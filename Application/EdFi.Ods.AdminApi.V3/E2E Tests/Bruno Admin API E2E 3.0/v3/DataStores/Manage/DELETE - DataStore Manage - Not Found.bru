@@ -1,0 +1,36 @@
+meta {
+  name: DataStores Manage - Delete - Not Found
+  type: http
+  seq: 12
+}
+
+delete {
+  url: {{API_URL}}/v3/dataStores/manage/0
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE DataStore Manage Not Found: Status code is Not Found", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  const response = res.getBody();
+
+  test("DELETE DataStore Manage Not Found: Response matches error format", function () {
+    expect(response).to.have.property("title");
+  });
+
+  test("DELETE DataStore Manage Not Found: Response title is helpful and accurate", function () {
+    expect(response.title.toLowerCase()).to.contain("not found");
+  });
+
+  test("DELETE DataStore Manage Not Found: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:management-api:not-found");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -31,6 +31,7 @@ public class TenantDataStoreModel
 {
     [JsonPropertyName("id")]
     public int? DataStoreId { get; set; }
+    public int? DataStoreManageId { get; set; }
     public string Name { get; set; }
     public string? DataStoreType { get; set; }
     public string? Status { get; set; }

@@ -97,10 +97,22 @@ script:post-response {
               "id": {
                 "type": ["integer", "null"]
               },
+              "dataStoreManageId": {
+                "type": ["integer", "null"]
+              },
               "name": {
                 "type": "string"
               },
               "dataStoreType": {
+                "type": ["string", "null"]
+              },
+              "status": {
+                "type": ["string", "null"]
+              },
+              "databaseTemplate": {
+                "type": ["string", "null"]
+              },
+              "databaseName": {
                 "type": ["string", "null"]
               },
               "educationOrganizations": {
@@ -171,7 +183,7 @@ script:post-response {
       const objectName = "DataStore";
       const response = await axios.delete(`${API_URL}/v3/dataStores/${bru.getVar("created-DataStoreId")}`, axiosConfig);
   
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 204) {
         console.log(`✅ ${objectName} with ID ${bru.getVar("created-DataStoreId")} removed successfully`);
         bru.deleteVar("created-DataStoreId");
       } else {

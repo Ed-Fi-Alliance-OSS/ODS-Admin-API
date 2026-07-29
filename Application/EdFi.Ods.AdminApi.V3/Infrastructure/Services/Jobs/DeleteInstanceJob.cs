@@ -39,22 +39,22 @@ public class DeleteInstanceJob(
     private readonly ISandboxProvisioner _sandboxProvisioner = sandboxProvisioner;
     private readonly IOptions<AppSettings> _options = options;
 
-    internal static JobKey CreateJobKey(int dbInstanceId, string? tenantName)
-        => new(BuildJobIdentity(dbInstanceId, tenantName));
+    internal static JobKey CreateJobKey(int odsInstanceManageId, string? tenantName)
+        => new(BuildJobIdentity(odsInstanceManageId, tenantName));
 
-    internal static string BuildJobIdentity(int dbInstanceId, string? tenantName)
+    internal static string BuildJobIdentity(int odsInstanceManageId, string? tenantName)
         => string.IsNullOrWhiteSpace(tenantName)
-            ? $"{JobConstants.DeleteInstanceJobName}-{dbInstanceId}"
-            : $"{JobConstants.DeleteInstanceJobName}-{tenantName}-{dbInstanceId}";
+            ? $"{JobConstants.DeleteInstanceJobName}-{odsInstanceManageId}"
+            : $"{JobConstants.DeleteInstanceJobName}-{tenantName}-{odsInstanceManageId}";
 
     protected override async Task ExecuteJobAsync(IJobExecutionContext context)
     {
-        if (!context.MergedJobDataMap.ContainsKey(JobConstants.DbInstanceIdKey))
+        if (!context.MergedJobDataMap.ContainsKey(JobConstants.OdsInstanceManageIdKey))
         {
-            throw new InvalidOperationException($"{JobConstants.DbInstanceIdKey} must be provided for {JobConstants.DeleteInstanceJobName}.");
+            throw new InvalidOperationException($"{JobConstants.OdsInstanceManageIdKey} must be provided for {JobConstants.DeleteInstanceJobName}.");
         }
 
-        var dbInstanceId = context.MergedJobDataMap.GetInt(JobConstants.DbInstanceIdKey);
+        var odsInstanceManageId = context.MergedJobDataMap.GetInt(JobConstants.OdsInstanceManageIdKey);
         var multiTenancyEnabled = _options.Value.MultiTenancy;
         var tenantName = GetTenantName(context, multiTenancyEnabled);
 
@@ -62,7 +62,7 @@ public class DeleteInstanceJob(
         IUsersContext? tenantUsersContext = null;
         var adminApiDbContext = _dbContext;
         var resolvedUsersContext = _usersContext;
-        DbInstance? dbInstance = null;
+        OdsInstanceManage? odsInstanceManage = null;
 
         try
         {
@@ -81,35 +81,35 @@ public class DeleteInstanceJob(
                 resolvedUsersContext = tenantUsersContext;
             }
 
-            dbInstance = await adminApiDbContext.DbInstances
-                .FirstOrDefaultAsync(instance => instance.Id == dbInstanceId);
+            odsInstanceManage = await adminApiDbContext.OdsInstanceManages
+                .FirstOrDefaultAsync(instance => instance.Id == odsInstanceManageId);
 
-            if (dbInstance is null)
+            if (odsInstanceManage is null)
             {
-                throw new InvalidOperationException($"DbInstance '{dbInstanceId}' was not found.");
+                throw new InvalidOperationException($"OdsInstanceManage '{odsInstanceManageId}' was not found.");
             }
 
             // Guard against race conditions — only process PendingDelete rows.
-            if (!Enum.TryParse<DbInstanceStatus>(dbInstance.Status, ignoreCase: true, out var status)
-                || status != DbInstanceStatus.PendingDelete)
+            if (!Enum.TryParse<OdsInstanceManageStatus>(odsInstanceManage.Status, ignoreCase: true, out var status)
+                || status != OdsInstanceManageStatus.PendingDelete)
             {
                 return;
             }
 
-            dbInstance.Status = DbInstanceStatus.DeleteInProgress.ToString();
-            dbInstance.LastModifiedDate = DateTime.UtcNow;
-            dbInstance.LastRefreshed = DateTime.UtcNow;
+            odsInstanceManage.Status = OdsInstanceManageStatus.DeleteInProgress.ToString();
+            odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
+            odsInstanceManage.LastRefreshed = DateTime.UtcNow;
             await adminApiDbContext.SaveChangesAsync();
 
-            if (!string.IsNullOrWhiteSpace(dbInstance.DatabaseName))
+            if (!string.IsNullOrWhiteSpace(odsInstanceManage.DatabaseName))
             {
-                await _sandboxProvisioner.DeleteSandboxesAsync(dbInstance.DatabaseName);
+                await _sandboxProvisioner.DeleteSandboxesAsync(odsInstanceManage.DatabaseName);
             }
 
-            if (dbInstance.OdsInstanceId.HasValue)
+            if (odsInstanceManage.OdsInstanceId.HasValue)
             {
                 var dataStore = await resolvedUsersContext.OdsInstances
-                    .FindAsync(dbInstance.OdsInstanceId.Value);
+                    .FindAsync(odsInstanceManage.OdsInstanceId.Value);
 
                 if (dataStore is not null)
                 {
@@ -118,18 +118,18 @@ public class DeleteInstanceJob(
                 }
             }
 
-            dbInstance.Status = DbInstanceStatus.Deleted.ToString();
-            dbInstance.LastModifiedDate = DateTime.UtcNow;
-            dbInstance.LastRefreshed = DateTime.UtcNow;
+            odsInstanceManage.Status = OdsInstanceManageStatus.Deleted.ToString();
+            odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
+            odsInstanceManage.LastRefreshed = DateTime.UtcNow;
             await adminApiDbContext.SaveChangesAsync();
         }
         catch
         {
-            if (dbInstance is not null)
+            if (odsInstanceManage is not null)
             {
-                dbInstance.Status = DbInstanceStatus.DeleteFailed.ToString();
-                dbInstance.LastModifiedDate = DateTime.UtcNow;
-                dbInstance.LastRefreshed = DateTime.UtcNow;
+                odsInstanceManage.Status = OdsInstanceManageStatus.DeleteFailed.ToString();
+                odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
+                odsInstanceManage.LastRefreshed = DateTime.UtcNow;
                 await adminApiDbContext.SaveChangesAsync();
             }
 

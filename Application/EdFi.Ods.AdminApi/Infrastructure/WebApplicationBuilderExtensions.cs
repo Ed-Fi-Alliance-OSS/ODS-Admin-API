@@ -769,13 +769,13 @@ public static class WebApplicationBuilderExtensions
                 EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.CreateInstanceJob
             >();
             webApplicationBuilder.Services.AddTransient<
-                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.CreatePendingDbInstancesDispatcherJob
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.CreatePendingDataStoreManagesDispatcherJob
             >();
             webApplicationBuilder.Services.AddTransient<
                 EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.DeleteInstanceJob
             >();
             webApplicationBuilder.Services.AddTransient<
-                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.DeletePendingDbInstancesDispatcherJob
+                EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs.DeletePendingDataStoreManagesDispatcherJob
             >();
             webApplicationBuilder.Services.AddTransient<
                 IJobStatusService,
@@ -789,7 +789,7 @@ public static class WebApplicationBuilderExtensions
         else
         {
             webApplicationBuilder.Services.AddTransient<CreateInstanceJob>();
-            webApplicationBuilder.Services.AddTransient<CreatePendingDbInstancesDispatcherJob>();
+            webApplicationBuilder.Services.AddTransient<CreatePendingOdsInstanceManagesDispatcherJob>();
             webApplicationBuilder.Services.AddTransient<RefreshEducationOrganizationsJob>();
             webApplicationBuilder.Services.AddTransient<IJobStatusService, JobStatusService>();
             webApplicationBuilder.Services.AddTransient<

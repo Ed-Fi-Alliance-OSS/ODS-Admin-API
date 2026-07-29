@@ -15,8 +15,9 @@
   * [Application Architecture](#application-architecture)
     * [Database Layer](#database-layer)
     * [Validation](#validation)
-    * [DbInstance Provisioning Jobs](#dbinstance-provisioning-jobs)
+    * [OdsInstanceManage Provisioning Jobs](#odsinstancemanage-provisioning-jobs)
     * [Audit Trail Logging](#audit-trail-logging)
+  * [Feature-specific prerequisites and configuration](#feature-specific-prerequisites-and-configuration)
 
 ## Development Pre-Requisites
 
@@ -239,11 +240,11 @@ credentials.
 Validation of API requests is configured via
 [FluentValidation](https://docs.fluentvalidation.net/en/latest/).
 
-### DbInstance Provisioning Jobs
+### OdsInstanceManage Provisioning Jobs
 
-The `POST /v2/dbinstances` flow is asynchronous. The endpoint persists a `Pending` `DbInstance`, schedules `CreateInstanceJob`, and returns `202 Accepted` immediately. A separate recurring `CreatePendingDbInstancesDispatcherJob` handles sweep-based recovery and capped retries for records that remain in `Pending` or move to `Error`.
+The `POST /v2/odsInstances/manage` flow is asynchronous. The endpoint persists a `Pending` `OdsInstanceManage`, schedules `CreateInstanceJob`, and returns `202 Accepted` immediately. A separate recurring `CreatePendingOdsInstanceManagesDispatcherJob` handles sweep-based recovery and capped retries for records that remain in `Pending` or move to `Error`.
 
-Use [design/DBINSTANCE-PROVISIONING-JOBS.md](design/DBINSTANCE-PROVISIONING-JOBS.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
+Use [design/INSTANCE-MANAGEMENT-Quartz.md](design/INSTANCE-MANAGEMENT-Quartz.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
 
 ### Audit Trail Logging
 
@@ -253,13 +254,13 @@ database-backed audit trail (`adminapi.AuditLogs`), controlled by a single
 [audit-logging.md](audit-logging.md) for the configuration flag, the exact
 list of captured events, the table schema, and the fail-open write pipeline.
 
-Feature-specific prerequisites and configuration:
+## Feature-specific prerequisites and configuration
 
 * `AppSettings:adminApiMode` must be `v2` or `v3` so startup scheduling registers the recurring dispatcher.
-* Admin API DB migrations must be applied because the flow relies on `adminapi.DbInstances` and `adminapi.JobStatuses`.
+* Admin API DB migrations must be applied because the flow relies on `adminapi.OdsInstanceManages` and `adminapi.JobStatuses`.
 * `AppSettings:EncryptionKey` must be a valid base64-encoded key.
 * `ConnectionStrings:EdFi_Ods` supplies the connection-string shape used to generate encrypted `OdsInstance.ConnectionString` values.
 * For PostgreSQL, `ConnectionStrings:EdFi_Master` should point at the maintenance database `postgres`, not an ODS database.
-* `AppSettings:CreateDbInstancesSweepIntervalInMins` controls dispatcher cadence.
-* `AppSettings:CreateDbInstancesMaxRetryAttempts` controls retry capping.
+* `AppSettings:CreateOdsInstanceManagesSweepIntervalInMins` controls dispatcher cadence.
+* `AppSettings:CreateOdsInstanceManagesMaxRetryAttempts` controls retry capping.
 * When `AppSettings:MultiTenancy` is enabled, the active tenant must have tenant-specific connection strings available before the worker runs.

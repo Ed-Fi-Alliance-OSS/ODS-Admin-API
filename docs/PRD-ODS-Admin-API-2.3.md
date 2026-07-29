@@ -1,0 +1,396 @@
+# Product Requirements Document: ODS Admin API 2.3
+
+> **Status**: completed \
+> **Version**: 2.3 \
+> **Owner**: Stephen Fuqua \
+> **Product**: Ed-Fi ODS Admin API \
+> **Repository**: `Ed-Fi-Alliance-OSS/ODS-Admin-API` \
+> **Jira**: `ADMINAPI`
+
+## 1. Product Overview
+
+The ODS Admin API exists because platform hosts need a programmatic, automatable way to administer Ed-Fi ODS/API configuration without directly manipulating `EdFi_Admin` and `EdFi_Security` database tables. The product serves as a headless administrative control plane by exposing REST endpoints for managing vendors, applications, API clients, profiles, claim sets, ODS instances, ODS instance contexts, and authorization metadata used by the Ed-Fi ODS/API.
+
+The REST API implemented by this PRD is called the Ed-Fi Management API. As such, this PRD - in combination with the Ed-Fi Alliance API Design Guidelines - implicitly serves as the requirements for the Ed-Fi Management API.
+
+### 1.1 Strategic Alignment
+
+ODS Admin API serves the Ed-Fi community by making ODS/API administration repeatable, auditable, and scriptable. This matters because education agencies and platform hosts operate ODS/API installations across environments, database engines, vendors, and tenants. A documented API is safer than ad hoc SQL changes and better aligned with automation, CI/CD, and least-privilege operational practices.
+
+Current-state alignment:
+
+- The API supports ODS/API 7.x and greater as the primary target for the 2.x line.
+- Legacy support is preserved through the v1 code path and compatibility documentation for ODS/API 6.x.
+- Docker documentation supports local development and testing for PostgreSQL and SQL Server-oriented deployments, including single-tenant and multi-tenant compose variants.
+
+### 1.2 Target Users and Personas
+
+Admin API is a backend service. Most of the personas below reach it indirectly, through Admin App or through their own automation, rather than through a UI of its own. Persona definitions for administrator, operator, and vendor-side roles are adopted from the Admin App PRD (`Ed-Fi-AdminApp/docs/PRD-AdminApp-v4.0.md`) so the two products describe the same people consistently. A few personas below are specific to direct use of Admin API and have no Admin App equivalent.
+
+#### Platform Host System Administrator
+
+This administrator is likely in a hybrid IT role, serving both as a programmer and an IT administrator, responsible for deployment and maintenance of the Ed-Fi Technology Suite.  Deploys Admin API into Docker, IIS, or hosted environments; configures database engines, connection strings, signing keys, path bases, logging, rate limiting, Swagger, and tenant settings.
+
+In addition, configures vendors, applications, client credentials, claim sets, profiles, and ODS instances needed to operate a deployment. Alternatively, builds integration points to the ODS Admin API, allowing other personas to interact with the application indirectly.
+
+#### Security Administrator
+
+Reviews and modifies claim sets, resource claim actions, and authorization strategy overrides directly through ODS Admin API, or indirectly through an interface provided by the System Administrator.
+
+#### Developer
+
+Uses Swagger, HTTP examples, E2E tests, and DB tests to validate API behavior during extension or upgrade work. Uses ODS Admin API as a backend service for UI-driven administration, especially around tenants, applications, credentials, and health-oriented operational views.
+
+### 1.3 Jobs to Be Done
+
+JTBD 1 and JTBD 5 describe jobs shared with Admin App; the language is aligned with the Admin App PRD so both documents describe the same underlying job consistently. The remaining entries are specific to direct or automated use of Admin API.
+
+#### JTBD 1: Issue Credentials
+
+**Personas**: all
+
+**When** supporting a new application integration to an existing Ed-Fi API deployment, \
+**I want** to perform basic CRUD operations for Vendors, Applications, API Clients, and Credentials, \
+**so that** I can distribute OAuth credentials ("key and secret") to the vendor.
+
+**How Admin API Helps**: Exposes REST endpoints for the full CRUD lifecycle of vendors, applications, and API clients, generating a `client_id`/`client_secret` pair on creation (FR-VENDOR-1, FR-APP-1, FR-APP-5, FR-CLIENT-1).
+
+**Variations**: Resetting (rotating) credentials for an existing application or API client preserves the key and generates a new secret, so access can continue without re-onboarding (FR-APP-10, FR-CLIENT-6).
+
+#### JTBD 2: Register Administrative Automation Clients
+
+**Personas**: Platform host system administrator, Developer
+
+**When** standing up an Ed-Fi ODS/API deployment, \
+**I want** to register an administrative API client and obtain a token, \
+**so that** automation — including Admin App — can call protected Admin API endpoints.
+
+**How Admin API Helps**: Supports OAuth 2.0 client-credentials token issuance (`POST /connect/token`) and self-contained client registration (`POST /connect/register`) when enabled (FR-AUTH-1, FR-AUTH-2).
+
+#### JTBD 3: Configure ODS Instances
+
+**Personas**: Platform host system administrator, Developer
+
+**When** launching a school year database ("instance") for a tenant deployment, \
+**I want** to create and manage ODS instance, context, and derivative records, \
+**so that** applications can be associated with the correct database instance.
+
+**How Admin API Helps**: Provides CRUD endpoints for ODS instances, ODS instance contexts, and ODS instance derivatives (FR-ODS-1 through FR-ODS-10).
+
+> [!NOTE]
+> Unlike Admin App's broader "configure new environments/instances" job, Admin API does not create environments or tenants — tenant configuration is static (see OUT-6). This job is limited to ODS instance records within an already-configured tenant.
+
+#### JTBD 4: Manage Authorization
+
+**Personas**: Security administrator, Platform host system administrator
+
+**When** I manage authorization for a deployment, \
+**I want** to view and edit resource claims, actions, authorization strategies, claim sets, and claim-set resource claim actions, \
+**so that** access rules are visible and editable.
+
+**How Admin API Helps**: Exposes read/write endpoints for claim sets and read-only endpoints for resource claims, actions, and authorization strategies (FR-CLAIM-1 through FR-CLAIM-8). Admin App currently only supports viewing, exporting, and importing claim sets, so detailed editing depends on Admin API directly until Admin App's in-app claim set editor ships.
+
+#### JTBD 5: Transfer Claim Sets Between Environments
+
+**Personas**: Platform host system administrator
+
+**When** I have a claim set that is configured correctly in one environment, \
+**I want** to copy, export, and import that claim set to another environment or tenant, \
+**so that** I can avoid manual claim set configuration and reduce the risk of errors when setting up a new environment.
+
+**How Admin API Helps**: Provides copy, export, and import endpoints for claim sets that preserve enough structure to move authorization configuration between environments (FR-CLAIM-1, FR-CLAIM-8).
+
+**Examples**:
+
+1. Configure a claim set in a staging environment, then export and import it to production.
+2. Export a claim set used in one tenant and copy it to another tenant.
+
+#### JTBD 6: Isolate Multi-Tenant Administration
+
+**Personas**: Platform host system administrator
+
+**When** I operate a multi-tenant deployment, \
+**I want** tenant-aware requests to resolve the correct `EdFi_Admin` and `EdFi_Security` connection strings, \
+**so that** each tenant's administration remains isolated.
+
+**How Admin API Helps**: Resolves tenant context from the `tenant` request header and routes to tenant-specific connection strings (FR-TENANT-1 through FR-TENANT-10).
+
+#### JTBD 7: Troubleshoot Operational Issues
+
+**Personas**: Platform host system administrator, Developer
+
+**When** I troubleshoot the service, \
+**I want** health checks, request logging, trace IDs, and structured error responses, \
+**so that** operational failures can be diagnosed quickly.
+
+**How Admin API Helps**: Exposes a `/health` endpoint, correlates logs with trace identifiers, and returns structured error responses (FR-ERROR-1 through FR-ERROR-8, NFR-REL-1 through NFR-REL-3).
+
+#### JTBD 8: Upgrade Between Admin API Versions
+
+**Personas**: Platform host system administrator, Developer
+
+**When** I migrate between Admin API versions, \
+**I want** predictable binary replacement and deployment-specific instructions, \
+**so that** upgrades do not require undocumented manual steps.
+
+**How Admin API Helps**: Documents migration guidance for Docker and IIS installation patterns and accepts a release-supplied API version in build automation (NFR-COMPAT-3, NFR-COMPAT-4).
+
+## 2. Enterprise Architecture
+
+Admin API sits between administrators, automation clients, optional UI clients, and the ODS/API administrative data stores. It writes to `EdFi_Admin` and `EdFi_Security`, and the ODS/API reads those same stores to enforce API access.
+
+External systems and dependencies:
+
+- Ed-Fi ODS/API: The downstream API whose vendors, applications, credentials, claim sets, profiles, and authorization rules are administered. Supports both Ed-Fi ODS/API v6 and Ed-Fi ODS/API v7.
+- `EdFi_Admin` database: Stores administrative entities such as vendors, applications, API clients, ODS instances, profile data, and OpenIddict token server tables. All database objects under the schema `dbo` are owned by the Ed-Fi ODS/API.
+- `EdFi_Security` database: Stores claim sets, resource claims, resource claim actions, and authorization strategies used by ODS/API authorization. All database objects under the schema `dbo` are owned by the Ed-Fi ODS/API.
+
+```plaintext
++----------------------+        Bearer JWT                +-------------+
+|  Client application  | -------------------------------> |  Ed-Fi ODS  |
+|  (e.g. Admin App)    |   GET | POST | PUT | DELETE      |  Admin API  |
++----------------------+                                  +-------------+
+                                                               | r/w
+                                              -------------------------
+                                              |                       |
+                                              v                       v
+                                        +--------------+     +-----------------+
+                                        |  EdFi_Admin  |     |  EdFi_Security  |
+                                        |  (database)  |     |  (database)     |
+                                        +--------------+     +-----------------+
+```
+
+> [!WARNING]
+> The ODS Admin API does _not_ support Ed-Fi API v8 (aka DMS). Ed-Fi API v8 has its own implementation of the Management API, called Configuration Management Service.
+
+## 3. Functional Requirements
+
+### 3.1 API mode, versioning, and endpoint registration
+
+- **FR-VERSION-1** The application SHALL support an `AdminApiMode` configuration value that selects v1 (supporting ODS/API v6) or v2 (supporting ODS/API v7) behavior at startup
+- **FR-VERSION-2** The application SHALL reject requests whose version prefix conflicts with the configured API mode.
+- **FR-VERSION-3** The application SHALL expose v2 functionality under `/v2/*` routes when running in v2 mode.
+- **FR-VERSION-4** The application SHALL expose an anonymous `GET /` endpoint that returns version and build metadata for the active API mode ("Discovery endpoint").
+- **FR-VERSION-5** The application SHALL generate Swagger/OpenAPI descriptions for all configured API versions when Swagger is enabled.
+
+### 3.2 Authentication, registration, and tokens
+
+- **FR-AUTH-1** The application SHALL support OAuth 2.0 client credentials token issuance through `POST /connect/token`.
+- **FR-AUTH-2** The application SHALL support self-contained client registration through `POST /connect/register` when registration is enabled.
+- **FR-AUTH-3** The registration endpoint SHALL reject duplicate client IDs.
+- **FR-AUTH-4** The registration endpoint SHALL require client ID, client secret, and display name.
+- **FR-AUTH-5** The registration endpoint SHALL require client secrets to contain lowercase, uppercase, numeric, and special characters and be 32 to 128 characters long.
+- **FR-AUTH-6** Access tokens SHALL use the configured issuer URL and require the `edfi_admin_api/full_access` scope.
+- **FR-AUTH-7** Protected endpoints SHALL require authenticated bearer tokens with the implemented full-access scope unless explicitly marked anonymous.
+- **FR-AUTH-8** Production deployments SHALL provide a signing key when not running in development mode.
+- **FR-AUTH-9** The application SHALL support built-in authentication without requiring an external identity provider.
+- **FR-AUTH-10** The product MAY allow use of an external OIDC provider, but the authorization model still has one scope.
+
+### 3.3 Vendor Management
+
+- **FR-VENDOR-1** The API SHALL allow authorized clients to list, retrieve, create, update, and delete vendors.
+- **FR-VENDOR-2** Vendor records SHALL include company name, namespace prefixes, contact name, and contact email address.
+- **FR-VENDOR-3** Vendor namespace prefixes SHALL support multiple comma-separated values.
+- **FR-VENDOR-4** Vendor namespace prefix handling SHALL trim whitespace and ignore empty prefixes.
+- **FR-VENDOR-5** Deleting a vendor SHALL remove associated user/contact records and applications through the existing command behavior.
+- **FR-VENDOR-6** Vendor endpoints SHALL support pagination, filtering, ordering, and direction parameters where documented in OpenAPI.
+
+### 3.4 Application Management
+
+- **FR-APP-1** The API SHALL allow authorized clients to list, retrieve, create, update, delete, and reset credentials for applications.
+- **FR-APP-2** Creating an application SHALL require application name, vendor ID, claim set name, education organization IDs, and ODS instance IDs.
+- **FR-APP-3** Creating an application SHALL validate that the vendor ID exists.
+- **FR-APP-4** Creating or updating an application SHALL validate profile IDs and ODS instance IDs when provided.
+- **FR-APP-5** Creating an application SHALL create a related API client and return generated key and secret material in the creation result.
+- **FR-APP-6** Application names SHALL be constrained by the maximum length enforced by validation constants.
+- **FR-APP-7** When duplicate prevention is enabled, the API SHALL reject duplicate applications based on the configured composite comparison of name, vendor, claim set, profiles, and ODS instances.
+- **FR-APP-8** Updating an application SHALL support changes to name, claim set, vendor, profile IDs, education organization IDs, ODS instance IDs, and enabled state.
+- **FR-APP-9** Deleting an application SHALL remove related API clients, ODS instance associations, education organization associations, and client access tokens while preserving profile records.
+- **FR-APP-10** Application credential reset behavior SHALL preserve the key and generate a new secret according to the implemented command behavior.
+
+### 3.5 API client Management
+
+- **FR-CLIENT-1** The API SHALL allow authorized clients to list, retrieve, create, update, delete, and reset credentials for API clients.
+- **FR-CLIENT-2** Creating an API client SHALL require name, approval state, application ID, and at least one ODS instance ID.
+- **FR-CLIENT-3** Creating an API client SHALL validate that the application ID exists.
+- **FR-CLIENT-4** Creating or updating an API client SHALL validate ODS instance IDs when provided.
+- **FR-CLIENT-5** API client names SHALL be limited to the maximum length enforced by validation constants.
+- **FR-CLIENT-6** API client reset SHALL keep the existing key and generate a new secret.
+- **FR-CLIENT-7** API client reset SHALL return a not-found error when the API client does not exist.
+- **FR-CLIENT-8** Deleting an API client SHALL delete related API client ODS instance associations.
+- **FR-CLIENT-9** API client models SHALL default to approved, active credentials unless request or persistence state says otherwise.
+
+### 3.6 ODS Instance, Context, and Derivative Management
+
+- **FR-ODS-1** The API SHALL allow authorized clients to list, retrieve, create, update, and delete ODS instance records.
+- **FR-ODS-2** ODS instances SHALL include name, optional instance type, and connection string.
+- **FR-ODS-3** ODS instance create and update behavior SHALL reject invalid connection strings when validation identifies them.
+- **FR-ODS-4** The API SHALL allow authorized clients to manage ODS instance contexts.
+- **FR-ODS-5** ODS instance contexts SHALL require ODS instance ID, context key, and context value.
+- **FR-ODS-6** ODS instance context uniqueness SHALL be enforced by ODS instance ID and context key.
+- **FR-ODS-7** The API SHALL allow authorized clients to manage ODS instance derivatives.
+- **FR-ODS-8** ODS instance derivatives SHALL require ODS instance ID and derivative type.
+- **FR-ODS-9** ODS instance derivative type SHALL be restricted to the allowed derivative types documented in validation constants.
+- **FR-ODS-10** ODS instance derivative uniqueness SHALL be enforced by ODS instance ID and derivative type.
+
+### 3.7 Profiles
+
+- **FR-PROFILE-1** The API SHALL allow authorized clients to list, retrieve, create, update, and delete profiles.
+- **FR-PROFILE-2** Profile records SHALL include a name and profile definition.
+- **FR-PROFILE-3** Profile creation and update SHALL prevent duplicate names where enforced by current validators and commands.
+- **FR-PROFILE-4** Profile definitions SHALL support the XML content-filter format used by ODS/API profiles.
+- **FR-PROFILE-5** Deleting an application SHALL NOT delete referenced profile records.
+
+### 3.8 Claim Sets and Authorization Rules
+
+- **FR-CLAIM-1** The API SHALL allow authorized clients to list, retrieve, create, update, delete, copy, export, and import claim sets.
+- **FR-CLAIM-2** Claim set creation SHALL store claim set name and default flags for application-only and Ed-Fi preset usage.
+- **FR-CLAIM-3** Claim set names SHALL be unique where enforced by current validation and command behavior.
+- **FR-CLAIM-4** The API SHALL allow authorized clients to add, update, and delete resource claim action associations on claim sets.
+- **FR-CLAIM-5** The API SHALL allow authorized clients to override and reset authorization strategies for resource claim actions.
+- **FR-CLAIM-6** The API SHALL expose read-only endpoints for resource claims, resource claim actions, and authorization strategies.
+- **FR-CLAIM-7** A resource claim action association SHALL include at least one action when required by validation.
+- **FR-CLAIM-8** Claim set import and export SHALL preserve enough claim set structure to move authorization configuration between environments.
+
+### 3.9 Tenants and Multi-Tenancy
+
+- **FR-TENANT-1** The API SHALL support operating in either a single-tenant or multi-tenant mode.
+- **FR-TENANT-2** The application SHALL treat single-tenant mode as the default mode.
+- **FR-TENANT-3** In multi-tenant v2 mode, the API SHALL resolve tenant context from the `tenant` request header.
+- **FR-TENANT-4** Tenant IDs SHALL contain only alphanumeric characters and hyphens and SHALL be limited to the implemented maximum length.
+- **FR-TENANT-5** The API SHALL reject write requests that require a tenant when the tenant header is missing in multi-tenant mode.
+- **FR-TENANT-6** The tenant service SHALL return configured tenants when multi-tenancy is enabled.
+- **FR-TENANT-7** Tenant configuration SHALL include separate `EdFi_Admin` and `EdFi_Security` connection strings per tenant.
+- **FR-TENANT-8** Tenant connection strings SHALL NOT be exposed as plain API response details in tenant listing behavior.
+- **FR-TENANT-9** In multi-tenant mode, all client credentials SHALL be able to access all tenants.
+
+> [!TIP]
+> Multi-tenancy _in this context_ is an _administrative_ feature, not a _security_ feature.
+
+### 3.10 Sorting, filtering, and pagination
+
+- **FR-QUERY-1** Collection endpoints SHALL support `offset` and `limit` query parameters where documented.
+- **FR-QUERY-2** Default offset and limit SHALL be configurable.
+- **FR-QUERY-3** Collection endpoints SHALL support `orderBy` and `direction` parameters where documented.
+- **FR-QUERY-4** Direction values SHALL support ascending and descending semantics as documented in the OpenAPI markdown.
+- **FR-QUERY-5** Resource-specific filter parameters SHALL match documented model fields such as ID, name, company, namespace prefix, claim set name, ODS instance name, and other entity-specific fields.
+
+### 3.11 Error handling and responses
+
+- **FR-ERROR-1** Validation failures SHALL return HTTP 400 with structured validation details.
+- **FR-ERROR-2** Missing resources SHALL return HTTP 404 where the feature uses not-found exception behavior.
+- **FR-ERROR-3** Unauthorized requests SHALL return HTTP 401.
+- **FR-ERROR-4** Authenticated but unauthorized requests SHALL return HTTP 403.
+- **FR-ERROR-5** Business conflicts SHALL return HTTP 409 where endpoint metadata and command behavior support conflict responses.
+- **FR-ERROR-6** Unhandled server failures SHALL return HTTP 500 with a structured error response.
+- **FR-ERROR-7** Invalid token scopes SHALL return OAuth-compatible invalid-scope error details.
+- **FR-ERROR-8** Error responses and logs SHALL include enough trace information to correlate a request with server logs.
+
+### 3.12 Rate Limiting
+
+- **FR-RATE-1** The API SHALL enforce a rate limit on client requests and return HTTP 429 (Too Many Requests) when a client application exceeds the limit within the configured time frame.
+- **FR-RATE-2** Rate limit specifications — including request count and time frame — SHALL be configurable per deployment.
+
+## 4. Non-functional requirements
+
+### 4.1 Compatibility and upgradeability
+
+- **NFR-COMPAT-1** The 2.x line SHALL support ODS/API 7.0 and greater as the primary compatibility target.
+- **NFR-COMPAT-2** The repository SHALL retain v1 compatibility code for older ODS/API administration scenarios where still supported.
+- **NFR-COMPAT-3** Migration guidance SHALL support Docker and IIS installation patterns.
+- **NFR-COMPAT-4** Build automation SHALL accept an API version supplied by release automation.
+
+### 4.2 Security and Privacy
+
+- **NFR-SEC-1** Protected endpoints SHALL require JWT bearer authentication.
+- **NFR-SEC-2** Authorization SHALL require the implemented `edfi_admin_api/full_access` scope unless endpoint behavior explicitly allows anonymous access.
+- **NFR-SEC-3** Production deployments SHALL require configured signing material rather than relying on development-only ephemeral keys.
+- **NFR-SEC-4** Client secrets SHALL meet configured complexity and length requirements at registration.
+- **NFR-SEC-5** Credential reset SHALL generate new secret material instead of reusing previous secrets.
+- **NFR-SEC-6** Tenant connection strings and encryption keys SHALL be treated as sensitive configuration.
+- **NFR-SEC-7** Swagger SHALL be disabled in production unless intentionally enabled and protected by deployment controls.
+- **NFR-SEC-8** Registration SHALL be disabled after bootstrap in deployments that do not require open client self-registration.
+
+### 4.3 Reliability and operations
+
+- **NFR-REL-1** The application SHALL expose a `/health` endpoint.
+- **NFR-REL-2** The health endpoint SHALL return HTTP 200 when dependencies are healthy and HTTP 503 when any dependency is unhealthy.
+- **NFR-REL-3** Health output SHALL include grouped dependency status details.
+- **NFR-REL-4** Database provider selection SHALL fail fast when an unsupported database engine is configured.
+- **NFR-REL-5** Invalid API mode configuration SHALL fail explicitly rather than silently choosing behavior.
+- **NFR-REL-6** Multi-tenant database resolution SHALL fail explicitly when tenant configuration is missing or incomplete.
+- **NFR-REL-7** The application SHALL use a distinct schema for managing database objects that support the application. For example, the credentials for accessing ODS Admin API are stored in a table under ODS Admin API's unique schema.
+
+### 4.4 Observability
+
+- **NFR-OBS-1** The application SHALL use log4net for application logging. Although this is an architectural detail, it has been elevated to a product requirement in order to avoid breaking changes the log output formatting.
+- **NFR-OBS-2** Request must be logged even when they fail before reaching an endpoint.
+- **NFR-OBS-3** Logs SHALL include request path and trace identifier.
+- **NFR-OBS-4** Error logs SHALL include structured error context.
+- **NFR-OBS-5** The application SHALL support external log collection through deployment-specific log4net configuration.
+
+### 4.5 Performance and Scalability
+
+- **NFR-PERF-1** Collection endpoints SHALL support pagination to avoid unbounded result sets.
+- **NFR-PERF-2** Query behavior SHALL support sorting and filtering for common administrative lookup scenarios.
+- **NFR-PERF-3** Tenant configuration SHALL be cached where supported by tenant service behavior.
+
+### 4.6 Accessibility and Usability
+
+- **NFR-UX-1** The REST API SHALL provide Swagger/OpenAPI metadata when Swagger is enabled.
+- **NFR-UX-2** Swagger SHALL include OAuth client-credentials configuration for interactive testing.
+- **NFR-UX-3** Error responses SHALL be actionable for invalid requests, missing entities, malformed JSON, and authentication failures.
+- **NFR-UX-4** HTTP example files SHALL remain aligned with current endpoints and authentication behavior.
+
+### 4.7 Software Development Lifecycle
+
+- **NFR-SDLC-1**: The application SHALL maintain consistent code quality through formatting and linting.
+- **NFR-SDLC-2**: The application SHALL achieve 100% unit test coverage of business logic, exclusive of I/O operations at the API and query layers. This is the objective, not the current state: as of the 2.3 release, actual coverage is approximately 55-59% overall (with the v1 code path untested), tracked in `docs/design/tests-coverage/ADMINAPI-1448-coverage-gaps.md`.
+- **NFR-SDLC-3**: The application SHALL cover all happy paths and common failure scenarios in integration tests.
+- **NFR-SDLC-4**: The application SHALL have automated integration builds and push-button package management.
+- **NFR-SDLC-5**: The application SHALL be shipped in native packaging format and as production-ready images (OCI-compliant).
+
+## 5. System architecture
+
+Data ownership:
+
+- Admin API owns the administrative mutation workflow exposed through its REST endpoints.
+- `EdFi_Admin` and `EdFi_Security` remain the persistence stores shared with ODS/API.
+- ODS/API consumes the resulting administrative and security configuration.
+- Tenant configuration is currently static configuration, not a first-class mutable database-backed product entity in the observed source.
+
+Integration points:
+
+- OAuth token endpoint for automation clients.
+- Optionally configure to use Keycloak as an OAuth2 identity provider (IdP) instead of using the built in provider.
+- Database connections for `EdFi_Admin` and `EdFi_Security`.
+- Swagger/OpenAPI for client discovery and manual testing.
+- Docker and IIS deployment paths.
+
+## 6. Out of scope and known limitations
+
+- **OUT-1**: Admin API does not provision or mutate ODS/API business data; it manages administrative and security configuration.
+- **OUT-2**: Admin API does not currently expose implemented fine-grained scopes beyond `edfi_admin_api/full_access`.
+- **OUT-3**: Dynamic tenant provisioning through mutable API endpoints is not supported, consistent with the ODS/API; tenants are configured statically.
+- **OUT-4**: Token lifetime is hardcoded to 30 minutes in source and is not shown as a configurable product setting.
+- **OUT-5**: Key rotation and external key-management integration.
+- **OUT-6**: Admin API returns generated client credentials directly in the API response. Secure one-time distribution mechanisms (e.g., Admin App's optional Yopass-based link) are an Admin App concern, not implemented in Admin API.
+
+## 7. Glossary
+
+- **Admin API**: REST API for administering ODS/API configuration, client credentials, and authorization metadata.
+- **Admin App**: UI-oriented administrative application described in design documentation as using Admin API as a backend service.
+- **API client**: Credentialed client record used to access ODS/API through key and secret material.
+- **Application**: Administrative representation of an ODS/API client application, associated with vendor, claim set, education organizations, ODS instances, profiles, and API client credentials.
+- **Claim set**: Named collection of authorization rules used by ODS/API security.
+- **Ed-Org**: Education Organization. A school, district, or other educational entity whose data an application or API client is authorized to access. Admin API references Ed-Orgs by ID (education organization IDs); it does not create or manage Ed-Org records itself.
+- **`EdFi_Admin`**: Database containing administrative configuration such as vendors, applications, API clients, profiles, and ODS instance metadata.
+- **`EdFi_Security`**: Database containing ODS/API security metadata such as claim sets, resource claims, actions, and authorization strategies.
+- **ODS/API**: Ed-Fi Operational Data Store and API.
+- **ODS instance**: Administrative representation of an ODS/API database instance, including name, type, and connection string.
+- **ODS instance context**: Key/value metadata associated with an ODS instance.
+- **ODS instance derivative**: Related ODS instance connection such as a read replica or snapshot.
+- **OpenIddict**: .NET library used by Admin API for self-contained OAuth/OpenID Connect server functionality.
+- **Profile**: ODS/API profile definition that constrains API content through XML profile configuration.
+- **Resource** claim: ODS/API authorization resource protected by claim-set rules.
+- **Tenant**: Named deployment partition resolved by request header and mapped to tenant-specific `EdFi_Admin` and `EdFi_Security` connection strings.

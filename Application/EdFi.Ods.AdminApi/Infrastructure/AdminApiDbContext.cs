@@ -21,7 +21,7 @@ public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, ICon
 
     public DbSet<EducationOrganization> EducationOrganizations { get; set; }
 
-    public DbSet<DbInstance> DbInstances { get; set; }
+    public DbSet<OdsInstanceManage> OdsInstanceManages { get; set; }
 
     public DbSet<AuditLog> AuditLogs { get; set; }
 
@@ -36,7 +36,7 @@ public class AdminApiDbContext(DbContextOptions<AdminApiDbContext> options, ICon
         modelBuilder.Entity<ApiToken>().ToTable("Tokens").HasKey(t => t.Id);
         modelBuilder.Entity<EducationOrganization>().ToTable("EducationOrganizations").HasKey(t => t.Id);
         modelBuilder.Entity<JobStatus>().ToTable("JobStatuses").HasKey(t => t.Id);
-        modelBuilder.Entity<DbInstance>().ToTable("DbInstances").HasKey(t => t.Id);
+        modelBuilder.Entity<OdsInstanceManage>().ToTable("OdsInstanceManages").HasKey(t => t.Id);
         modelBuilder.Entity<AuditLog>().ToTable("AuditLogs").HasKey(t => t.Id);
         modelBuilder.Entity<AuditLog>().Property(t => t.EventType).HasConversion<string>();
 
