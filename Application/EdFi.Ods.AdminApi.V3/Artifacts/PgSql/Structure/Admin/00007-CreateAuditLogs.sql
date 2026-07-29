@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS adminapi.AuditLogs (
     Id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY,
     EventType VARCHAR(30) NOT NULL,
-    "Timestamp" TIMESTAMP NOT NULL,
+    Timestamp TIMESTAMP NOT NULL,
     ClientId VARCHAR(256),
     SourceIpAddress VARCHAR(45),
     HttpVerb VARCHAR(10),
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS adminapi.AuditLogs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_auditlogs_timestamp
-    ON adminapi.AuditLogs ("Timestamp");
+    ON adminapi.AuditLogs (Timestamp);
 
 CREATE INDEX IF NOT EXISTS idx_auditlogs_clientid
     ON adminapi.AuditLogs (ClientId);

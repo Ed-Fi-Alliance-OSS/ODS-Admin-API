@@ -12,6 +12,9 @@ public class AuditLogBackgroundService(AuditLogChannel channel, IAuditLogWriter 
 {
     private static readonly ILog _logger = LogManager.GetLogger(typeof(AuditLogBackgroundService));
     private static readonly TimeSpan[] _retryDelays = [TimeSpan.FromMilliseconds(200), TimeSpan.FromMilliseconds(500)];
+    private static readonly TimeSpan _fallbackLogInterval = TimeSpan.FromSeconds(30);
+    private static long _lastFallbackLogTicks;
+    private static int _suppressedFallbackCount;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -56,8 +59,22 @@ public class AuditLogBackgroundService(AuditLogChannel channel, IAuditLogWriter 
 
     private static void LogFallback(AuditEvent auditEvent, Exception ex)
     {
+        var nowTicks = DateTime.UtcNow.Ticks;
+        var lastTicks = Interlocked.Read(ref _lastFallbackLogTicks);
+        if (nowTicks - lastTicks < _fallbackLogInterval.Ticks
+            || Interlocked.CompareExchange(ref _lastFallbackLogTicks, nowTicks, lastTicks) != lastTicks)
+        {
+            Interlocked.Increment(ref _suppressedFallbackCount);
+            return;
+        }
+
+        var suppressed = Interlocked.Exchange(ref _suppressedFallbackCount, 0);
+        var suppressedNote = suppressed > 0
+            ? $" ({suppressed} additional audit log write failures suppressed in the last {_fallbackLogInterval.TotalSeconds}s.)"
+            : string.Empty;
+
         _logger.Error(
-            $"Audit log write failed after {_retryDelays.Length + 1} attempts; falling back to text log. " +
+            $"Audit log write failed after {_retryDelays.Length + 1} attempts; falling back to text log.{suppressedNote} " +
             $"EventType={auditEvent.EventType}, ClientId={auditEvent.ClientId}, " +
             $"SourceIpAddress={auditEvent.SourceIpAddress}, HttpVerb={auditEvent.HttpVerb}, " +
             $"HttpUrl={auditEvent.HttpUrl}, StatusCode={auditEvent.StatusCode}, Timestamp={auditEvent.Timestamp:O}",

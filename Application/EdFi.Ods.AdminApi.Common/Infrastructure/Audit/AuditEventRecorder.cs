@@ -6,6 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using log4net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +18,11 @@ public class AuditEventRecorder(
     IContextProvider<TenantConfiguration> tenantContextProvider,
     IConfiguration configuration) : IAuditEventRecorder
 {
+    private static readonly ILog _logger = LogManager.GetLogger(typeof(AuditEventRecorder));
+    private static readonly TimeSpan _dropLogInterval = TimeSpan.FromSeconds(30);
+    private static long _lastDropLogTicks;
+    private static int _suppressedDropCount;
+
     public void Record(
         AuditEventType eventType,
         string? clientId,
@@ -49,14 +55,39 @@ public class AuditEventRecorder(
                 StatusCode = statusCode
             };
 
-            channel.Writer.TryWrite(auditEvent);
+            if (!channel.Writer.TryWrite(auditEvent))
+            {
+                LogDropped(auditEvent);
+            }
         }
         catch
         {
             // Audit logging must never block or fail the original request (fail-open).
             // Any failure resolving the connection string or constructing the event is
-            // swallowed here; fallback logging of dropped events is handled by the
-            // background writer (Task 3), not this recorder.
+            // swallowed here.
         }
+    }
+
+    private static void LogDropped(AuditEvent auditEvent)
+    {
+        var nowTicks = DateTime.UtcNow.Ticks;
+        var lastTicks = Interlocked.Read(ref _lastDropLogTicks);
+        if (nowTicks - lastTicks < _dropLogInterval.Ticks
+            || Interlocked.CompareExchange(ref _lastDropLogTicks, nowTicks, lastTicks) != lastTicks)
+        {
+            Interlocked.Increment(ref _suppressedDropCount);
+            return;
+        }
+
+        var suppressed = Interlocked.Exchange(ref _suppressedDropCount, 0);
+        var suppressedNote = suppressed > 0
+            ? $" ({suppressed} additional audit events dropped in the last {_dropLogInterval.TotalSeconds}s.)"
+            : string.Empty;
+
+        _logger.Error(
+            $"Audit event dropped: the audit log channel is full (sustained DB outage or overload).{suppressedNote} " +
+            $"EventType={auditEvent.EventType}, ClientId={auditEvent.ClientId}, " +
+            $"SourceIpAddress={auditEvent.SourceIpAddress}, HttpVerb={auditEvent.HttpVerb}, " +
+            $"HttpUrl={auditEvent.HttpUrl}, StatusCode={auditEvent.StatusCode}, Timestamp={auditEvent.Timestamp:O}");
     }
 }
