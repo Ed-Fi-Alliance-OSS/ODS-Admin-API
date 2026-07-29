@@ -255,7 +255,7 @@ list of captured events, the table schema, and the fail-open write pipeline.
 
 Feature-specific prerequisites and configuration:
 
-* `AppSettings:adminApiMode` must be `v2` so startup scheduling registers the recurring dispatcher.
+* `AppSettings:adminApiMode` must be `v2` or `v3` so startup scheduling registers the recurring dispatcher.
 * Admin API DB migrations must be applied because the flow relies on `adminapi.DbInstances` and `adminapi.JobStatuses`.
 * `AppSettings:EncryptionKey` must be a valid base64-encoded key.
 * `ConnectionStrings:EdFi_Ods` supplies the connection-string shape used to generate encrypted `OdsInstance.ConnectionString` values.
