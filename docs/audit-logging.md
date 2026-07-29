@@ -62,7 +62,7 @@ entity in `Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/AuditLog.cs
 | `Id` | `BIGINT IDENTITY(1,1)` | No | Primary key. |
 | `EventType` | `NVARCHAR(30)` | No | One of `AuthenticationSuccess`, `AuthenticationFailure`, `Action`. |
 | `Timestamp` | `DATETIME2` | No | UTC time the event was recorded (`DateTime.UtcNow` at the moment `AuditEventRecorder.Record` is called). |
-| `ClientId` | `NVARCHAR(100)` | Yes | The OAuth client id. Populated for `/connect/token` events (from the token request) and for `Action` events (from the authenticated principal's `client_id` claim). Always `null` for the `OnChallenge` 401 path, since the caller could not be authenticated. |
+| `ClientId` | `NVARCHAR(256)` | Yes | The OAuth client id. Populated for `/connect/token` events (from the token request) and for `Action` events (from the authenticated principal's `client_id` claim). Always `null` for the `OnChallenge` 401 path, since the caller could not be authenticated. Matches the width of `Applications.ClientId`. |
 | `SourceIpAddress` | `NVARCHAR(45)` | Yes | Populated for all three event types from `HttpContext.Connection.RemoteIpAddress`. |
 | `HttpVerb` | `NVARCHAR(10)` | Yes | Populated only for `Action` events (e.g. `POST`, `PUT`, `PATCH`, `DELETE`). Always `null` for both authentication event paths (`/connect/token` and the `OnChallenge` 401 path). |
 | `HttpUrl` | `NVARCHAR(2048)` | Yes | Populated only for `Action` events (the request path). Always `null` for authentication events. |
@@ -70,6 +70,25 @@ entity in `Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/AuditLog.cs
 
 Indexes exist on `Timestamp` and `ClientId` to support the most common
 lookups (recent events, and events for a given client).
+
+## Double-logging on `/connect/token`
+
+A single `POST /connect/token` request produces **two** audit rows, not one:
+
+1. An `Action` row from `AuditActionLoggingMiddleware`, since `/connect/token`
+   is a `POST` request like any other mutating request (`HttpVerb` = `POST`,
+   `HttpUrl` = `/connect/token`).
+2. An `AuthenticationSuccess` or `AuthenticationFailure` row from
+   `SecurityExtensions.DefaultTokenResponseHandler`, recorded specifically
+   for token issuance.
+
+This is expected behavior, not a bug: the two rows capture different things
+(the general request record vs. the authentication-specific outcome), and
+`AuditActionLoggingMiddleware` runs for token requests exactly the same as it
+does for every other mutating request. An operator correlating "what
+happened on this request" should match the two rows by `Timestamp`
+proximity and `SourceIpAddress`/`ClientId`, rather than assuming one audit
+row per physical request.
 
 ## Write pipeline and fail-open guarantee
 
@@ -130,3 +149,9 @@ addressed in a future iteration:
 * Any admin UI, reporting dashboard, export tooling, or query API for
   browsing audit data.
 * Logging of read-only (`GET`) requests as action events.
+* Authorization-denied (403) mutation attempts. `AuditActionLoggingMiddleware`
+  is registered after `app.UseAuthorization()`, so requests that ASP.NET
+  Core's authorization middleware short-circuits with a 403 never reach it
+  and are not audited. Only 401 (authentication) rejections and mutation
+  attempts that complete the pipeline (2xx, 4xx other than 401/403, 5xx) are
+  currently captured. Capturing 403s is deferred to a future iteration.

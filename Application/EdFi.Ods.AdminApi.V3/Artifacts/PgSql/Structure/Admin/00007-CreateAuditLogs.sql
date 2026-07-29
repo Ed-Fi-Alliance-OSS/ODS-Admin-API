@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS adminapi.AuditLogs (
     Id BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY,
     EventType VARCHAR(30) NOT NULL,
     "Timestamp" TIMESTAMP NOT NULL,
-    ClientId VARCHAR(100),
+    ClientId VARCHAR(256),
     SourceIpAddress VARCHAR(45),
     HttpVerb VARCHAR(10),
     HttpUrl VARCHAR(2048),

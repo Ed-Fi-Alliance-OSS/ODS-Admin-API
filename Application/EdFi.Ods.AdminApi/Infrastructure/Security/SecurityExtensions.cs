@@ -188,14 +188,7 @@ public static class SecurityExtensions
                 },
                 OnChallenge = context =>
                 {
-                    var recorder = context.HttpContext.RequestServices.GetRequiredService<IAuditEventRecorder>();
-                    recorder.Record(
-                        AuditEventType.AuthenticationFailure,
-                        clientId: null,
-                        context.HttpContext.Connection.RemoteIpAddress?.ToString(),
-                        httpVerb: null,
-                        httpUrl: null,
-                        (int)HttpStatusCode.Unauthorized);
+                    RecordChallengeAuditEvent(context.HttpContext);
                     return Task.CompletedTask;
                 }
             };
@@ -259,6 +252,21 @@ public static class SecurityExtensions
         services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<IRegisterService, RegisterService>();
     }
+    // Extracted so the audit-recording behavior of the OnChallenge handler
+    // (always AuthenticationFailure, null clientId, 401) can be unit tested
+    // independently of constructing a full JwtBearerChallengeContext pipeline.
+    internal static void RecordChallengeAuditEvent(HttpContext httpContext)
+    {
+        var recorder = httpContext.RequestServices.GetRequiredService<IAuditEventRecorder>();
+        recorder.Record(
+            AuditEventType.AuthenticationFailure,
+            clientId: null,
+            httpContext.Connection.RemoteIpAddress?.ToString(),
+            httpVerb: null,
+            httpUrl: null,
+            (int)HttpStatusCode.Unauthorized);
+    }
+
     public class DefaultTokenResponseHandler(IAuditEventRecorder auditEventRecorder) : IOpenIddictServerHandler<ApplyTokenResponseContext>
     {
         private const string DENIED_AUTHENTICATION_MESSAGE =

@@ -9,7 +9,7 @@ CREATE TABLE [adminapi].[AuditLogs] (
     [Id] BIGINT IDENTITY(1,1) NOT NULL,
     [EventType] NVARCHAR(30) NOT NULL,
     [Timestamp] DATETIME2 NOT NULL,
-    [ClientId] NVARCHAR(100) NULL,
+    [ClientId] NVARCHAR(256) NULL,
     [SourceIpAddress] NVARCHAR(45) NULL,
     [HttpVerb] NVARCHAR(10) NULL,
     [HttpUrl] NVARCHAR(2048) NULL,
