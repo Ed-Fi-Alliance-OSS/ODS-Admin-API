@@ -281,7 +281,7 @@ internal class TenantServiceTests
         var odsInstanceManage = new OdsInstanceManage
         {
             Id = 10,
-            Name = "DbInstance2",
+            Name = "OdsInstanceManage2",
             OdsInstanceId = 2,
             Status = OdsInstanceManageStatus.CreateInProgress.ToString(),
             DatabaseTemplate = "Minimal",
