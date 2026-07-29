@@ -195,7 +195,7 @@ public static class SecurityExtensions
                         context.HttpContext.Connection.RemoteIpAddress?.ToString(),
                         httpVerb: null,
                         httpUrl: null,
-                        context.Response.StatusCode == 0 ? (int)HttpStatusCode.Unauthorized : context.Response.StatusCode);
+                        (int)HttpStatusCode.Unauthorized);
                     return Task.CompletedTask;
                 }
             };

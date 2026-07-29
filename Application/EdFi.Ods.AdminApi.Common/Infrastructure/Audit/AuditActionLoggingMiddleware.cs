@@ -31,13 +31,18 @@ public class AuditActionLoggingMiddleware(RequestDelegate next, IAuditEventRecor
         {
             await next(context);
         }
-        finally
+        catch
         {
-            var statusCode = context.Response.StatusCode is > 0 and < 600
-                ? context.Response.StatusCode
-                : StatusCodes.Status500InternalServerError;
-
-            recorder.Record(AuditEventType.Action, clientId, sourceIpAddress, httpVerb, httpUrl, statusCode);
+            recorder.Record(
+                AuditEventType.Action,
+                clientId,
+                sourceIpAddress,
+                httpVerb,
+                httpUrl,
+                StatusCodes.Status500InternalServerError);
+            throw;
         }
+
+        recorder.Record(AuditEventType.Action, clientId, sourceIpAddress, httpVerb, httpUrl, context.Response.StatusCode);
     }
 }

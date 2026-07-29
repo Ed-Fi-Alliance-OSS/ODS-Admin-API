@@ -82,7 +82,7 @@ public class AuditActionLoggingMiddlewareTests
         Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context));
 
         A.CallTo(() => recorder.Record(
-            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", A<int?>._))
+            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", StatusCodes.Status500InternalServerError))
             .MustHaveHappenedOnceExactly();
     }
 }
