@@ -6,12 +6,9 @@
 
 # See the LICENSE and NOTICES files in the project root for more information
 
-# Tag nginx:alpine3.20
-
-FROM nginx@sha256:2140dad235c130ac861018a4e13a6bc8aea3a35f3a40e20c1b060d51a7efd250
+# Tag nginx:alpine3.23
+FROM nginx:alpine3.23@sha256:f46cb72c7df02710e693e863a983ac42f6a9579058a59a35f1ae36c9958e4ce0
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
-
-RUN apk add --no-cache openssl=3.3.7-r0
 
 COPY ./default_idp.conf.template /etc/nginx/templates/default.conf.template
 
