@@ -60,13 +60,13 @@ Authorization: bearer {{token}}
 
 
 ### Get all apiclients by application
-GET {{adminapi_url}}/v3/apiclients?applicationid=1510
+GET {{adminapi_url}}/v3/apiClients?applicationid=1510
 Content-Type: application/json
 Authorization: bearer {{token}}
 
 
 ### Create ApiClient
-POST {{adminapi_url}}/v3/apiclients
+POST {{adminapi_url}}/v3/apiClients
 Content-Type: application/json
 Authorization: bearer {{token}}
 
@@ -80,7 +80,7 @@ Authorization: bearer {{token}}
 }
 
 ### Update ApiClient
-PUT {{adminapi_url}}/v3/apiclients/2
+PUT {{adminapi_url}}/v3/apiClients/2
 Content-Type: application/json
 Authorization: bearer {{token}}
 
@@ -94,13 +94,13 @@ Authorization: bearer {{token}}
 }
 
 ### get apiclient
-GET {{adminapi_url}}/v3/apiclients/2
+GET {{adminapi_url}}/v3/apiClients/2
 Content-Type: application/json
 Authorization: bearer {{token}}
 
 
 ### Reset apiclient secret
-PUT {{adminapi_url}}/v3/apiclients/2/reset-credential
+PUT {{adminapi_url}}/v3/apiClients/2/reset-credential
 Content-Type: application/json
 Authorization: bearer {{token}}
 
@@ -112,6 +112,6 @@ Authorization: bearer {{token}}
 
 
 ### delete apiclient
-DELETE {{adminapi_url}}/v3/apiclients/2
+DELETE {{adminapi_url}}/v3/apiClients/2
 Content-Type: application/json
 Authorization: bearer {{token}}
