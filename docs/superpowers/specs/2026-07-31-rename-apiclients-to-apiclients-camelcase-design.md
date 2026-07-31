@@ -44,9 +44,11 @@ Both V2 (`Application/EdFi.Ods.AdminApi/Features/ApiClients/`) and V3 (`Applicat
 ## Testing
 
 - Unit tests: `./build.ps1 -Command UnitTest`
-- E2E tests (both versions, since the route change is identical in each):
-  - `./eng/run-e2e-bruno.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`
-  - `./eng/run-e2e-bruno.ps1 -ApiVersion 3 -TenantMode multitenant -TearDown`
+- E2E tests: the `ApiClient` Bruno collection is shared across tenant modes (single-tenant vs. multi-tenant only changes which Docker Compose/environment config the run uses, not the request files), so both modes exercise the same renamed routes. Run for both versions and both tenant modes:
+  - `./eng/run-bruno-e2e.ps1 -ApiVersion 2 -TenantMode singletenant -TearDown`
+  - `./eng/run-bruno-e2e.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`
+  - `./eng/run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode singletenant -TearDown`
+  - `./eng/run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode multitenant -TearDown`
 
 ## Risks
 
