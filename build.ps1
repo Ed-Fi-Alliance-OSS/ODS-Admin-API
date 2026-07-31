@@ -69,7 +69,7 @@
             SecurityDB       = "host=db-admin;port=5432;username=username;password=password;database=EdFi_Security;Application Name=EdFi.Ods.AdminApi;"
         }
 
-        ./build.ps1 -APIVersion ${{ inputs.version }} -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPIAndMD
+        ./build.ps1 -APIVersion ${{ inputs.version }} -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPI
 
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'False positive')]
