@@ -20,7 +20,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DataStores;
 public class ReadEducationOrganizationsTests
 {
     private IGetEducationOrganizationsQuery _getEdOrgsQuery = null!;
-    private IGetDbDataStoresQuery _getDbDataStoresQuery = null!;
+    private IGetDataStoreManagesQuery _getDataStoreManagesQuery = null!;
     private IGetDataStoreQuery _getDataStoreQuery = null!;
     private CommonQueryParams _queryParams;
 
@@ -28,13 +28,13 @@ public class ReadEducationOrganizationsTests
     public void SetUp()
     {
         _getEdOrgsQuery = A.Fake<IGetEducationOrganizationsQuery>();
-        _getDbDataStoresQuery = A.Fake<IGetDbDataStoresQuery>();
+        _getDataStoreManagesQuery = A.Fake<IGetDataStoreManagesQuery>();
         _getDataStoreQuery = A.Fake<IGetDataStoreQuery>();
         _queryParams = new CommonQueryParams(0, 10);
     }
 
     [Test]
-    public async Task GetEducationOrganizationsByDataStore_DoesNotAppendUnlinkedDbDataStores()
+    public async Task GetEducationOrganizationsByDataStore_DoesNotAppendUnlinkedDataStoreManages()
     {
         var dataStoreId = 3;
         A.CallTo(() => _getDataStoreQuery.Execute(dataStoreId)).Returns(new EdFi.Admin.DataAccess.Models.OdsInstance { OdsInstanceId = dataStoreId });
@@ -43,14 +43,14 @@ public class ReadEducationOrganizationsTests
             {
                 new() { Id = dataStoreId, Name = "DataStore3" }
             });
-        A.CallTo(() => _getDbDataStoresQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
+        A.CallTo(() => _getDataStoreManagesQuery.Execute(A<CommonQueryParams>._, null, null))
+            .Returns(new List<OdsInstanceManage>
             {
-                new DbInstance { Id = 1, Name = "Unlinked", OdsInstanceId = null, Status = "PendingCreate" }
+                new OdsInstanceManage { Id = 1, Name = "Unlinked", OdsInstanceId = null, Status = "PendingCreate" }
             });
 
         var result = await ReadEducationOrganizations.GetEducationOrganizationsByDataStore(
-            _getEdOrgsQuery, _getDataStoreQuery, _getDbDataStoresQuery, _queryParams, dataStoreId);
+            _getEdOrgsQuery, _getDataStoreQuery, _getDataStoreManagesQuery, _queryParams, dataStoreId);
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<DataStoreWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
@@ -59,7 +59,7 @@ public class ReadEducationOrganizationsTests
     }
 
     [Test]
-    public async Task GetEducationOrganizationsByDataStore_EnrichesLinkedDbDataStoreFields()
+    public async Task GetEducationOrganizationsByDataStore_EnrichesLinkedDataStoreManageFields()
     {
         var dataStoreId = 7;
         A.CallTo(() => _getDataStoreQuery.Execute(dataStoreId)).Returns(new EdFi.Admin.DataAccess.Models.OdsInstance { OdsInstanceId = dataStoreId });
@@ -68,18 +68,19 @@ public class ReadEducationOrganizationsTests
             {
                 new() { Id = dataStoreId, Name = "DataStore7" }
             });
-        A.CallTo(() => _getDbDataStoresQuery.Execute(A<CommonQueryParams>._, null, null))
-            .Returns(new List<DbInstance>
+        A.CallTo(() => _getDataStoreManagesQuery.Execute(A<CommonQueryParams>._, null, null))
+            .Returns(new List<OdsInstanceManage>
             {
-                new DbInstance { Id = 5, OdsInstanceId = dataStoreId, Status = "Healthy", DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_7" }
+                new OdsInstanceManage { Id = 5, OdsInstanceId = dataStoreId, Status = "Healthy", DatabaseTemplate = "Minimal", DatabaseName = "EdFi_Ods_7" }
             });
 
         var result = await ReadEducationOrganizations.GetEducationOrganizationsByDataStore(
-            _getEdOrgsQuery, _getDataStoreQuery, _getDbDataStoresQuery, _queryParams, dataStoreId);
+            _getEdOrgsQuery, _getDataStoreQuery, _getDataStoreManagesQuery, _queryParams, dataStoreId);
 
         var ok = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<DataStoreWithEducationOrganizationsModel>>;
         ok.ShouldNotBeNull();
-        ok.Value![0].Status.ShouldBe("Healthy");
+        ok.Value![0].DataStoreManageId.ShouldBe(5);
+        ok.Value[0].Status.ShouldBe("Healthy");
         ok.Value[0].DatabaseTemplate.ShouldBe("Minimal");
         ok.Value[0].DatabaseName.ShouldBe("EdFi_Ods_7");
     }
@@ -92,6 +93,6 @@ public class ReadEducationOrganizationsTests
 
         Should.Throw<NotFoundException<int>>(async () =>
             await ReadEducationOrganizations.GetEducationOrganizationsByDataStore(
-                _getEdOrgsQuery, _getDataStoreQuery, _getDbDataStoresQuery, _queryParams, 99));
+                _getEdOrgsQuery, _getDataStoreQuery, _getDataStoreManagesQuery, _queryParams, 99));
     }
 }

@@ -1,0 +1,37 @@
+meta {
+  name: DataStores Manage - Not Found
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/v3/dataStores/manage/0
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET DataStore Manage Not Found: Status code is Not Found", function () {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  const response = res.getBody();
+
+  test("GET DataStore Manage Not Found: Response matches error format", function () {
+    expect(response).to.have.property("title");
+  });
+
+  test("GET DataStore Manage Not Found: Response title is helpful and accurate", function () {
+    expect(response.title).to.contain("Not found");
+    expect(response.title.toLowerCase()).to.contain("datastoremanage");
+  });
+
+  test("GET DataStore Manage Not Found: type URN is correct", function () {
+      const response = res.getBody();
+      expect(response.type).to.equal("urn:ed-fi:management-api:not-found");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,51 @@
+meta {
+  name: DataStores Manage - Sample Template
+  type: http
+  seq: 4
+}
+
+script:pre-request {
+  const SampleDataStoreManageName = `Test DB Instance Sample ${Date.now()}`;
+  bru.setVar("SampleDataStoreManageName", SampleDataStoreManageName);
+  console.log(`Using unique Sample DataStore Manage name: ${SampleDataStoreManageName}`);
+}
+
+post {
+  url: {{API_URL}}/v3/dataStores/manage
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "{{SampleDataStoreManageName}}",
+    "databaseTemplate": "Sample"
+  }
+}
+
+script:post-response {
+  const expectedStatus = 202;
+  const responseStatus = res.getStatus();
+
+  if (responseStatus !== expectedStatus) {
+    console.log("❌ POST DataStores Manage Sample request failed");
+    console.log("Status:", responseStatus);
+    console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
+  }
+
+  test("POST DataStores Manage Sample: Status code is Accepted", function () {
+    expect(responseStatus).to.equal(expectedStatus);
+  });
+
+  test("POST DataStores Manage Sample: Response includes location in header", function () {
+    expect(res.getHeaders()).to.have.property("location");
+    const id = res.getHeader("location").split("/").pop();
+    if (id) {
+      bru.setVar("CreatedDataStoreManageIdSample", id);
+    }
+  });
+}
+
+settings {
+  encodeUrl: true
+}

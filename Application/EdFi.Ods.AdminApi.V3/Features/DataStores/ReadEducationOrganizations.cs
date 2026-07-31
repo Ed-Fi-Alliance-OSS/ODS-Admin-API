@@ -28,7 +28,7 @@ public class ReadEducationOrganizations : IFeature
     public static async Task<IResult> GetEducationOrganizationsByDataStore(
         [FromServices] IGetEducationOrganizationsQuery getEducationOrganizationsQuery,
         [FromServices] IGetDataStoreQuery getDataStoreQuery,
-        [FromServices] IGetDbDataStoresQuery getDbDataStoresQuery,
+        [FromServices] IGetDataStoreManagesQuery getDataStoreManagesQuery,
         [AsParameters] CommonQueryParams commonQueryParams,
         int dataStoreId)
     {
@@ -38,32 +38,33 @@ public class ReadEducationOrganizations : IFeature
             commonQueryParams,
             dataStoreId: dataStoreId);
 
-        MergeDbDataStoreData(educationOrganizations, getDbDataStoresQuery);
+        MergeDataStoreManageData(educationOrganizations, getDataStoreManagesQuery);
         return Results.Ok(educationOrganizations);
     }
 
-    private static void MergeDbDataStoreData(
+    private static void MergeDataStoreManageData(
         List<DataStoreWithEducationOrganizationsModel> instances,
-        IGetDbDataStoresQuery getDbDataStoresQuery)
+        IGetDataStoreManagesQuery getDataStoreManagesQuery)
     {
-        var allDbDataStores = getDbDataStoresQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+        var allDataStoreManages = getDataStoreManagesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
-        var linkedById = allDbDataStores
+        var linkedById = allDataStoreManages
             .Where(d => d.OdsInstanceId is not null)
             .GroupBy(d => d.OdsInstanceId!.Value)
             .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
         foreach (var instance in instances)
         {
-            if (instance.Id is int dataStoreId && linkedById.TryGetValue(dataStoreId, out var dbDataStore))
+            if (instance.Id is int dataStoreId && linkedById.TryGetValue(dataStoreId, out var dataStoreManage))
             {
-                instance.Status = dbDataStore.Status;
-                instance.DatabaseTemplate = dbDataStore.DatabaseTemplate;
-                instance.DatabaseName = dbDataStore.DatabaseName;
+                instance.DataStoreManageId = dataStoreManage.Id;
+                instance.Status = dataStoreManage.Status;
+                instance.DatabaseTemplate = dataStoreManage.DatabaseTemplate;
+                instance.DatabaseName = dataStoreManage.DatabaseName;
             }
             else
             {
-                instance.Status = DbInstanceStatus.Created.ToString();
+                instance.Status = OdsInstanceManageStatus.Created.ToString();
             }
         }
     }

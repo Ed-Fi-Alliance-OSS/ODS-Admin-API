@@ -77,13 +77,13 @@ public class DeleteInstanceJobTests
         return new NonDisposingSqlServerUsersContext(options);
     }
 
-    private static IJobExecutionContext CreateJobExecutionContext(int dbInstanceId, string tenantName = null)
+    private static IJobExecutionContext CreateJobExecutionContext(int odsInstanceManageId, string tenantName = null)
     {
         var jobExecutionContext = A.Fake<IJobExecutionContext>();
         var jobDetail = A.Fake<IJobDetail>();
         var jobDataMap = new JobDataMap
         {
-            { JobConstants.DbInstanceIdKey, dbInstanceId }
+            { JobConstants.OdsInstanceManageIdKey, odsInstanceManageId }
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))
@@ -149,18 +149,18 @@ public class DeleteInstanceJobTests
         usersContext.OdsInstances.Add(odsInstance);
         usersContext.SaveChanges();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingDelete.ToString(),
+            Status = OdsInstanceManageStatus.PendingDelete.ToString(),
             DatabaseName = "EdFi_Ods_Sandbox_Minimal",
             OdsInstanceId = odsInstance.OdsInstanceId,
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new DeleteInstanceJob(
@@ -174,9 +174,9 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions());
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.Deleted.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
         A.CallTo(() => sandboxProvisioner.DeleteSandboxesAsync("EdFi_Ods_Sandbox_Minimal"))
             .MustHaveHappenedOnceExactly();
@@ -190,17 +190,17 @@ public class DeleteInstanceJobTests
         var jobStatusService = A.Fake<IJobStatusService>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingDelete.ToString(),
+            Status = OdsInstanceManageStatus.PendingDelete.ToString(),
             DatabaseName = null,
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new DeleteInstanceJob(
@@ -214,9 +214,9 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions());
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.Deleted.ToString());
         A.CallTo(() => sandboxProvisioner.DeleteSandboxesAsync(A<string[]>._)).MustNotHaveHappened();
     }
 
@@ -228,18 +228,18 @@ public class DeleteInstanceJobTests
         var jobStatusService = A.Fake<IJobStatusService>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingDelete.ToString(),
+            Status = OdsInstanceManageStatus.PendingDelete.ToString(),
             DatabaseName = "EdFi_Ods_Sandbox_Minimal",
             OdsInstanceId = null,
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new DeleteInstanceJob(
@@ -253,31 +253,31 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions());
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.Deleted.ToString());
         usersContext.OdsInstances.ShouldBeEmpty();
     }
 
     [Test]
-    public async Task Execute_DoesNothing_WhenDbInstanceIsNotPendingDelete()
+    public async Task Execute_DoesNothing_WhenOdsInstanceManageIsNotPendingDelete()
     {
         using var adminApiContext = CreateAdminApiContext($"Admin_{Guid.NewGuid()}");
         using var usersContext = CreateUsersContext($"Users_{Guid.NewGuid()}");
         var jobStatusService = A.Fake<IJobStatusService>();
         var sandboxProvisioner = A.Fake<ISandboxProvisioner>();
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.Created.ToString(),
+            Status = OdsInstanceManageStatus.Created.ToString(),
             DatabaseName = "EdFi_Ods_Sandbox_Minimal",
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new DeleteInstanceJob(
@@ -291,9 +291,9 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions());
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Created.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
         A.CallTo(() => sandboxProvisioner.DeleteSandboxesAsync(A<string[]>._)).MustNotHaveHappened();
     }
 
@@ -308,17 +308,17 @@ public class DeleteInstanceJobTests
         A.CallTo(() => sandboxProvisioner.DeleteSandboxesAsync(A<string[]>._))
             .Throws(new InvalidOperationException("Drop failed."));
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingDelete.ToString(),
+            Status = OdsInstanceManageStatus.PendingDelete.ToString(),
             DatabaseName = "EdFi_Ods_Sandbox_Minimal",
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        adminApiContext.DbInstances.Add(dbInstance);
+        adminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         adminApiContext.SaveChanges();
 
         var job = new DeleteInstanceJob(
@@ -332,9 +332,9 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions());
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id));
 
-        adminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.DeleteFailed.ToString());
+        adminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.DeleteFailed.ToString());
     }
 
     [Test]
@@ -354,17 +354,17 @@ public class DeleteInstanceJobTests
         A.CallTo(() => tenantSpecificDbContextProvider.GetUsersContext("tenant1"))
             .Returns(tenantUsersContext);
 
-        var dbInstance = new Common.Infrastructure.Models.DbInstance
+        var odsInstanceManage = new Common.Infrastructure.Models.OdsInstanceManage
         {
             Name = "Sandbox",
             DatabaseTemplate = "Minimal",
-            Status = DbInstanceStatus.PendingDelete.ToString(),
+            Status = OdsInstanceManageStatus.PendingDelete.ToString(),
             DatabaseName = "EdFi_Ods_Sandbox_Minimal",
             LastRefreshed = DateTime.UtcNow,
             LastModifiedDate = DateTime.UtcNow
         };
 
-        tenantAdminApiContext.DbInstances.Add(dbInstance);
+        tenantAdminApiContext.OdsInstanceManages.Add(odsInstanceManage);
         tenantAdminApiContext.SaveChanges();
 
         var job = new DeleteInstanceJob(
@@ -378,9 +378,9 @@ public class DeleteInstanceJobTests
             sandboxProvisioner,
             CreateOptions(multiTenancy: true));
 
-        await job.Execute(CreateJobExecutionContext(dbInstance.Id, "tenant1"));
+        await job.Execute(CreateJobExecutionContext(odsInstanceManage.Id, "tenant1"));
 
-        tenantAdminApiContext.DbInstances.Single().Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
-        defaultAdminApiContext.DbInstances.ShouldBeEmpty();
+        tenantAdminApiContext.OdsInstanceManages.Single().Status.ShouldBe(OdsInstanceManageStatus.Deleted.ToString());
+        defaultAdminApiContext.OdsInstanceManages.ShouldBeEmpty();
     }
 }

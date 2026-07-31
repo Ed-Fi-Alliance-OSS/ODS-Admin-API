@@ -26,7 +26,7 @@ public interface ITenantsService
     Task InitializeTenantsAsync();
     Task<List<TenantModel>> GetTenantsAsync(bool fromCache = false);
     Task<TenantModel?> GetTenantByTenantIdAsync(string tenantName);
-    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetDbInstancesQuery getDbInstancesQuery, string tenantName);
+    Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(IGetOdsInstancesQuery getOdsInstancesQuery, IGetEducationOrganizationQuery getEducationOrganizationQuery, IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery, string tenantName);
 }
 
 public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
@@ -113,7 +113,7 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
     public async Task<TenantDetailModel?> GetTenantEdOrgsByInstancesAsync(
         IGetOdsInstancesQuery getOdsInstancesQuery,
         IGetEducationOrganizationQuery getEducationOrganizationQuery,
-        IGetDbInstancesQuery getDbInstancesQuery,
+        IGetOdsInstanceManagesQuery getOdsInstanceManagesQuery,
         string tenantName)
     {
         var tenant = await GetTenantByTenantIdAsync(tenantName);
@@ -142,25 +142,25 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 }
             }
 
-            var allDbInstances = getDbInstancesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
+            var allOdsInstanceManages = getOdsInstanceManagesQuery.Execute(new CommonQueryParams(0, int.MaxValue), null, null);
 
-            var linkedDbInstancesByOdsId = allDbInstances
+            var linkedOdsInstanceManagesByOdsId = allOdsInstanceManages
                 .Where(d => d.OdsInstanceId is not null)
                 .GroupBy(d => d.OdsInstanceId!.Value)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First());
 
             foreach (var odsInstance in tenantDetails.OdsInstances)
             {
-                if (odsInstance.OdsInstanceId is int odsInstanceId && linkedDbInstancesByOdsId.TryGetValue(odsInstanceId, out var dbInstance))
+                if (odsInstance.OdsInstanceId is int odsInstanceId && linkedOdsInstanceManagesByOdsId.TryGetValue(odsInstanceId, out var odsInstanceManage))
                 {
-                    odsInstance.DbInstanceId = dbInstance.Id;
-                    odsInstance.Status = dbInstance.Status;
-                    odsInstance.DatabaseTemplate = dbInstance.DatabaseTemplate;
-                    odsInstance.DatabaseName = dbInstance.DatabaseName;
+                    odsInstance.OdsInstanceManageId = odsInstanceManage.Id;
+                    odsInstance.Status = odsInstanceManage.Status;
+                    odsInstance.DatabaseTemplate = odsInstanceManage.DatabaseTemplate;
+                    odsInstance.DatabaseName = odsInstanceManage.DatabaseName;
                 }
                 else
                 {
-                    odsInstance.Status = DbInstanceStatus.Created.ToString();
+                    odsInstance.Status = OdsInstanceManageStatus.Created.ToString();
                 }
             }
 
@@ -169,16 +169,16 @@ public class TenantService(IOptionsSnapshot<AppSettingsFile> options,
                 .Select(i => i.OdsInstanceId!.Value)
                 .ToHashSet();
 
-            var unlinkedDbInstances = allDbInstances
+            var unlinkedOdsInstanceManages = allOdsInstanceManages
                 .Where(d => d.OdsInstanceId is null)
-                .Concat(allDbInstances
+                .Concat(allOdsInstanceManages
                     .Where(d => d.OdsInstanceId is not null && !existingOdsInstanceIds.Contains(d.OdsInstanceId.Value))
                     .GroupBy(d => d.OdsInstanceId!.Value)
                     .Select(g => g.OrderByDescending(d => d.LastModifiedDate ?? d.LastRefreshed).First()))
                 .ToList();
-            foreach (var dbInstance in unlinkedDbInstances)
+            foreach (var odsInstanceManage in unlinkedOdsInstanceManages)
             {
-                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedDbInstanceModel(dbInstance));
+                tenantDetails.OdsInstances.Add(TenantMapper.ToUnlinkedOdsInstanceManageModel(odsInstanceManage));
             }
 
             return tenantDetails;

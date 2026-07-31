@@ -1,0 +1,42 @@
+meta {
+  name: DataStores Manage
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v3/dataStores/manage
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Test DB Instance",
+    "databaseTemplate": "Minimal"
+  }
+}
+
+script:post-response {
+  test("POST DataStores Manage: Status code is Accepted", function () {
+    expect(res.getStatus()).to.equal(202);
+  });
+
+  test("POST DataStores Manage: Response includes location in header", function () {
+    expect(res.getHeaders()).to.have.property("location");
+    const location = res.getHeader("location");
+      const id = location.split("/").pop();
+    if (id) {
+      bru.setVar("CreatedDataStoreManageId", id);
+    }
+  });
+
+  test("POST DataStores Manage: Location header is absolute url", function () {
+    const location = res.getHeaders().location;
+    expect(location).to.match(/^https?:\/\/.+/);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

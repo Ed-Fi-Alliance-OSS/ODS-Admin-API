@@ -31,7 +31,7 @@ namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.Services.Tenants;
 internal class TenantServiceTests
 {
     private static IEnumerable<string> AllStatuses =>
-        Enum.GetValues<DbInstanceStatus>()
+        Enum.GetValues<OdsInstanceManageStatus>()
             .Select(status => status.ToString());
 
     private IOptionsSnapshot<AppSettingsFile> _options = null!;
@@ -39,7 +39,7 @@ internal class TenantServiceTests
     private AppSettingsFile _appSettings = null!;
     private IGetOdsInstancesQuery _getOdsInstancesQuery = null!;
     private IGetEducationOrganizationQuery _getEducationOrganizationQuery = null!;
-    private IGetDbInstancesQuery _getDbInstancesQuery = null!;
+    private IGetOdsInstanceManagesQuery _getOdsInstanceManagesQuery = null!;
 
     [SetUp]
     public void SetUp()
@@ -48,8 +48,8 @@ internal class TenantServiceTests
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
         _getOdsInstancesQuery = A.Fake<IGetOdsInstancesQuery>();
         _getEducationOrganizationQuery = A.Fake<IGetEducationOrganizationQuery>();
-        _getDbInstancesQuery = A.Fake<IGetDbInstancesQuery>();
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+        _getOdsInstanceManagesQuery = A.Fake<IGetOdsInstanceManagesQuery>();
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
             .Returns([]);
         _appSettings = new AppSettingsFile
         {
@@ -223,7 +223,7 @@ internal class TenantServiceTests
         A.CallTo(() => _getEducationOrganizationQuery.Execute(A<int[]>.That.Matches(ids => ids.Length == 1 && ids[0] == 101)))
             .Returns([educationOrganization]);
 
-        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, tenantName);
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, tenantName);
 
         tenant.ShouldNotBeNull();
         tenant!.TenantName.ShouldBe(tenantName);
@@ -244,13 +244,13 @@ internal class TenantServiceTests
     {
         var service = new TenantService(_options, _memoryCache);
 
-        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, "notfound");
+        var tenant = await service.GetTenantEdOrgsByInstancesAsync(_getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, "notfound");
 
         tenant.ShouldBeNull();
     }
 
     [Test]
-    public async Task GetTenantEdOrgsByInstancesAsync_SetsStatusCreated_WhenOdsInstanceHasNoLinkedDbInstance()
+    public async Task GetTenantEdOrgsByInstancesAsync_SetsStatusCreated_WhenOdsInstanceHasNoLinkedOdsInstanceManage()
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
@@ -259,18 +259,18 @@ internal class TenantServiceTests
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
 
         var result = await service.GetTenantEdOrgsByInstancesAsync(
-            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, Constants.DefaultTenantName);
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
-        result.OdsInstances[0].Status.ShouldBe(DbInstanceStatus.Created.ToString());
-        result.OdsInstances[0].DbInstanceId.ShouldBeNull();
+        result.OdsInstances[0].Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
+        result.OdsInstances[0].OdsInstanceManageId.ShouldBeNull();
         result.OdsInstances[0].DatabaseTemplate.ShouldBeNull();
         result.OdsInstances[0].DatabaseName.ShouldBeNull();
     }
 
     [Test]
-    public async Task GetTenantEdOrgsByInstancesAsync_EnrichesOdsInstance_WithLinkedDbInstanceFields()
+    public async Task GetTenantEdOrgsByInstancesAsync_EnrichesOdsInstance_WithLinkedOdsInstanceManageFields()
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
@@ -278,61 +278,61 @@ internal class TenantServiceTests
         var odsInstance = new OdsInstance { OdsInstanceId = 2, Name = "Instance2" };
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
 
-        var dbInstance = new DbInstance
+        var odsInstanceManage = new OdsInstanceManage
         {
             Id = 10,
-            Name = "DbInstance2",
+            Name = "OdsInstanceManage2",
             OdsInstanceId = 2,
-            Status = DbInstanceStatus.CreateInProgress.ToString(),
+            Status = OdsInstanceManageStatus.CreateInProgress.ToString(),
             DatabaseTemplate = "Minimal",
             DatabaseName = "EdFi_ODS_2",
             LastRefreshed = System.DateTime.UtcNow
         };
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
-            .Returns([dbInstance]);
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+            .Returns([odsInstanceManage]);
 
         var result = await service.GetTenantEdOrgsByInstancesAsync(
-            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, Constants.DefaultTenantName);
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
         var instance = result.OdsInstances[0];
-        instance.DbInstanceId.ShouldBe(10);
-        instance.Status.ShouldBe(DbInstanceStatus.CreateInProgress.ToString());
+        instance.OdsInstanceManageId.ShouldBe(10);
+        instance.Status.ShouldBe(OdsInstanceManageStatus.CreateInProgress.ToString());
         instance.DatabaseTemplate.ShouldBe("Minimal");
         instance.DatabaseName.ShouldBe("EdFi_ODS_2");
     }
 
     [Test]
-    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedDbInstances_WithNullIds()
+    public async Task GetTenantEdOrgsByInstancesAsync_AddsUnlinkedOdsInstanceManages_WithNullIds()
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
 
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([]);
 
-        var unlinked1 = new DbInstance
+        var unlinked1 = new OdsInstanceManage
         {
             Id = 20, Name = "Unlinked-A", OdsInstanceId = null,
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Sample", LastRefreshed = System.DateTime.UtcNow
         };
-        var unlinked2 = new DbInstance
+        var unlinked2 = new OdsInstanceManage
         {
             Id = 21, Name = "Unlinked-B", OdsInstanceId = null,
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Minimal", LastRefreshed = System.DateTime.UtcNow
         };
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
             .Returns([unlinked1, unlinked2]);
 
         var result = await service.GetTenantEdOrgsByInstancesAsync(
-            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, Constants.DefaultTenantName);
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(2);
-        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == null && i.Name == "Unlinked-A" && i.DbInstanceId == 20);
-        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == null && i.Name == "Unlinked-B" && i.DbInstanceId == 21);
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == null && i.Name == "Unlinked-A" && i.OdsInstanceManageId == 20);
+        result.OdsInstances.ShouldContain(i => i.OdsInstanceId == null && i.Name == "Unlinked-B" && i.OdsInstanceManageId == 21);
     }
 
     [Test]
@@ -344,51 +344,51 @@ internal class TenantServiceTests
         var odsInstance = new OdsInstance { OdsInstanceId = 5, Name = "Instance5" };
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([odsInstance]);
 
-        var linked = new DbInstance
+        var linked = new OdsInstanceManage
         {
             Id = 30, Name = "Linked-5", OdsInstanceId = 5,
-            Status = DbInstanceStatus.Created.ToString(),
+            Status = OdsInstanceManageStatus.Created.ToString(),
             DatabaseTemplate = "Minimal", DatabaseName = "EdFi_ODS_5",
             LastRefreshed = System.DateTime.UtcNow
         };
-        var unlinked = new DbInstance
+        var unlinked = new OdsInstanceManage
         {
             Id = 31, Name = "Unlinked-C", OdsInstanceId = null,
-            Status = DbInstanceStatus.PendingCreate.ToString(),
+            Status = OdsInstanceManageStatus.PendingCreate.ToString(),
             DatabaseTemplate = "Sample", LastRefreshed = System.DateTime.UtcNow
         };
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
             .Returns([linked, unlinked]);
 
         var result = await service.GetTenantEdOrgsByInstancesAsync(
-            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, Constants.DefaultTenantName);
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(2);
 
         var linkedInstance = result.OdsInstances.Single(i => i.OdsInstanceId == 5);
-        linkedInstance.DbInstanceId.ShouldBe(30);
-        linkedInstance.Status.ShouldBe(DbInstanceStatus.Created.ToString());
+        linkedInstance.OdsInstanceManageId.ShouldBe(30);
+        linkedInstance.Status.ShouldBe(OdsInstanceManageStatus.Created.ToString());
         linkedInstance.DatabaseTemplate.ShouldBe("Minimal");
         linkedInstance.DatabaseName.ShouldBe("EdFi_ODS_5");
 
         var unlinkedInstance = result.OdsInstances.Single(i => i.Name == "Unlinked-C");
-        unlinkedInstance.DbInstanceId.ShouldBe(31);
+        unlinkedInstance.OdsInstanceManageId.ShouldBe(31);
         unlinkedInstance.Name.ShouldBe("Unlinked-C");
-        unlinkedInstance.Status.ShouldBe(DbInstanceStatus.PendingCreate.ToString());
+        unlinkedInstance.Status.ShouldBe(OdsInstanceManageStatus.PendingCreate.ToString());
         unlinkedInstance.OdsInstanceId.ShouldBeNull();
     }
 
     [Test]
     [TestCaseSource(nameof(AllStatuses))]
-    public async Task GetTenantEdOrgsByInstancesAsync_AddsDbInstance_WhenLinkedToMissingOdsInstance_ForAllStatuses(string status)
+    public async Task GetTenantEdOrgsByInstancesAsync_AddsOdsInstanceManage_WhenLinkedToMissingOdsInstance_ForAllStatuses(string status)
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
 
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([]);
 
-        var orphan = new DbInstance
+        var orphan = new OdsInstanceManage
         {
             Id = 42,
             Name = $"Orphan-{status}",
@@ -398,59 +398,59 @@ internal class TenantServiceTests
             DatabaseName = "EdFi_ODS_9002",
             LastRefreshed = System.DateTime.UtcNow
         };
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
             .Returns([orphan]);
 
         var result = await service.GetTenantEdOrgsByInstancesAsync(
-            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, Constants.DefaultTenantName);
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
         result.OdsInstances[0].OdsInstanceId.ShouldBeNull();
-        result.OdsInstances[0].DbInstanceId.ShouldBe(42);
+        result.OdsInstances[0].OdsInstanceManageId.ShouldBe(42);
         result.OdsInstances[0].Status.ShouldBe(status);
     }
 
     [Test]
-    public async Task GetTenantEdOrgsByInstancesAsync_AppendsLatestDbInstancePerMissingOdsInstanceId()
+    public async Task GetTenantEdOrgsByInstancesAsync_AppendsLatestOdsInstanceManagePerMissingOdsInstanceId()
     {
         _appSettings.AppSettings.MultiTenancy = false;
         var service = new TenantService(_options, _memoryCache);
 
         A.CallTo(() => _getOdsInstancesQuery.Execute()).Returns([]);
 
-        var older = new DbInstance
+        var older = new OdsInstanceManage
         {
             Id = 50,
             Name = "Orphan-Older",
             OdsInstanceId = 9003,
-            Status = DbInstanceStatus.CreateFailed.ToString(),
+            Status = OdsInstanceManageStatus.CreateFailed.ToString(),
             DatabaseTemplate = "Minimal",
             DatabaseName = "EdFi_ODS_9003_old",
             LastRefreshed = System.DateTime.UtcNow.AddMinutes(-10)
         };
 
-        var newer = new DbInstance
+        var newer = new OdsInstanceManage
         {
             Id = 51,
             Name = "Orphan-Newer",
             OdsInstanceId = 9003,
-            Status = DbInstanceStatus.Deleted.ToString(),
+            Status = OdsInstanceManageStatus.Deleted.ToString(),
             DatabaseTemplate = "Minimal",
             DatabaseName = "EdFi_ODS_9003_new",
             LastModifiedDate = System.DateTime.UtcNow
         };
 
-        A.CallTo(() => _getDbInstancesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
+        A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
             .Returns([older, newer]);
 
         var result = await service.GetTenantEdOrgsByInstancesAsync(
-            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getDbInstancesQuery, Constants.DefaultTenantName);
+            _getOdsInstancesQuery, _getEducationOrganizationQuery, _getOdsInstanceManagesQuery, Constants.DefaultTenantName);
 
         result.ShouldNotBeNull();
         result!.OdsInstances.Count.ShouldBe(1);
-        result.OdsInstances[0].DbInstanceId.ShouldBe(51);
-        result.OdsInstances[0].Status.ShouldBe(DbInstanceStatus.Deleted.ToString());
+        result.OdsInstances[0].OdsInstanceManageId.ShouldBe(51);
+        result.OdsInstances[0].Status.ShouldBe(OdsInstanceManageStatus.Deleted.ToString());
         result.OdsInstances[0].Name.ShouldBe("Orphan-Newer");
     }
 }

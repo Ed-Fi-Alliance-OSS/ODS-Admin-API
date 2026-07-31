@@ -29,6 +29,7 @@ Concise coding conventions, nullability rules, and testing basics.
 * Nullability: declare variables non-nullable where possible; validate at entry points; use `is null` / `is not null`.
 * Testing: NUnit + Shouldly for assertions; use FakeItEasy for mocks; mirror existing test naming/style.
 * Run tests locally: `./build.ps1 -Command UnitTest` (see `docs/developer.md` for integration/E2E instructions).
+* Bruno E2E: extract IDs from a `Location` header with `.split("/").pop()`, never a hardcoded index (`split("/")[2]`) — a route gaining/losing a path segment silently breaks index-based parsing, and failures then surface as confusing downstream assertion errors rather than at the source.
 
 ### Run & Architecture
 
@@ -36,7 +37,7 @@ Short run/build/architecture notes — see `docs/developer.md` for full procedur
 
 * Build helper: `./build.ps1` (common commands: `build`, `UnitTest`, `IntegrationTest`, `run`).
 * Local run options: `build.ps1 run`, Docker compose, or Visual Studio launch profiles.
-* DB migrations: scripts and artifacts under `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`.
+* DB migrations: scripts and artifacts under `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`. Only this (v2) copy is actually applied by the Docker migration-runner scripts — the `EdFi.Ods.AdminApi.V3/Artifacts/` copy is a docs-only duplicate kept in sync by convention; add new migrations to both, but know that only the v2 copy has any functional effect.
 * Run bruno e2e tests for a particular specification (v1, v2, v3) locally, e.g: `./eng/run-e2e-bruno.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`.
 * Architecture: feature-based layout; `IUsersContext` handles `EdFi_Admin`, `ISecurityContext` handles `EdFi_Security` (EF Core); AutoMapper mappings in `AdminApiMappingProfile.cs`.
 
