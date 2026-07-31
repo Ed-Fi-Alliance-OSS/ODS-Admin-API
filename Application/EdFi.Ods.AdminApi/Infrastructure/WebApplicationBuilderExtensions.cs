@@ -10,6 +10,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Common.Extensions;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
@@ -21,6 +22,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
+using EdFi.Ods.AdminApi.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
@@ -64,6 +66,9 @@ public static class WebApplicationBuilderExtensions
         ConfigureRateLimiting(webApplicationBuilder);
         ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
+        webApplicationBuilder.Services.Configure<AuditLoggingSettings>(config.GetSection("AuditLogging"));
+        webApplicationBuilder.Services.AddSingleton<AuditLogChannel>();
+        webApplicationBuilder.Services.AddSingleton<IAuditEventRecorder, AuditEventRecorder>();
         EnableMultiTenancySupport(webApplicationBuilder);
 
         var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);
@@ -94,6 +99,20 @@ public static class WebApplicationBuilderExtensions
             var adminApiV1Types = typeof(V1.Infrastructure.IMarkerForEdFiOdsAdminApiManagement).Assembly.GetTypes();
             RegisterAdminApiServices(webApplicationBuilder, adminApiV1Types);
         }
+
+        if (adminApiMode == AdminApiMode.V3)
+        {
+            webApplicationBuilder.Services.AddSingleton<
+                IAuditLogWriter,
+                EdFi.Ods.AdminApi.V3.Infrastructure.Audit.AdminApiAuditLogWriter
+            >();
+        }
+        else
+        {
+            webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, Audit.AdminApiAuditLogWriter>();
+        }
+
+        webApplicationBuilder.Services.AddHostedService<AuditLogBackgroundService>();
 
         // Add services to the container.
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

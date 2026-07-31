@@ -30,7 +30,7 @@ public class GetResourceClaimsAsFlatListQueryTests : SecurityDataTestBase
                 childrenResourceNames,
                 grandChildResourceNames);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsAsFlatListQuery(securityContext);
         results = query.Execute().ToArray();
@@ -61,7 +61,7 @@ public class GetResourceClaimsAsFlatListQueryTests : SecurityDataTestBase
         var childResourceNames = testResourceClaims.Where(x => x.ResourceClaim?.ParentResourceClaim != null)
             .OrderBy(x => x.ResourceClaim?.ResourceName).Select(x => x.ResourceClaim?.ResourceName).ToList();
 
-        List<Infrastructure.ClaimSetEditor.ResourceClaim> results = null;
+        List<EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim> results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsAsFlatListQuery(securityContext);
         results = query.Execute().ToList();

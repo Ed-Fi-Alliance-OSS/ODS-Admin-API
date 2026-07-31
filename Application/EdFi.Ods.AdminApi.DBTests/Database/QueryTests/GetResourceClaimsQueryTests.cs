@@ -21,7 +21,7 @@ public class GetResourceClaimsQueryTests : SecurityDataTestBase
     {
         var testResourceClaims = SetupResourceClaims();
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsQuery(securityContext, Testing.GetAppSettings());
         results = query.Execute().ToArray();
@@ -41,7 +41,7 @@ public class GetResourceClaimsQueryTests : SecurityDataTestBase
         var testResourceClaims = SetupResourceClaims();
         var testResourceClaimsResult = testResourceClaims.Skip(skip);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsQuery(securityContext, Testing.GetAppSettings());
         results = query.Execute(new CommonQueryParams(skip, Testing.DefaultPageSizeLimit), null, null).ToArray();
@@ -61,7 +61,7 @@ public class GetResourceClaimsQueryTests : SecurityDataTestBase
         var testResourceClaims = SetupResourceClaims();
         var testResourceClaimsResult = testResourceClaims.Take(limit);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsQuery(securityContext, Testing.GetAppSettings());
         results = query.Execute(new CommonQueryParams(Testing.DefaultPageSizeOffset, limit), null, null).ToArray();
@@ -82,7 +82,7 @@ public class GetResourceClaimsQueryTests : SecurityDataTestBase
         var testResourceClaims = SetupResourceClaims();
         var testResourceClaimsResult = testResourceClaims.Skip(offset).Take(limit);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsQuery(securityContext, Testing.GetAppSettings());
         results = query.Execute(new CommonQueryParams(offset, limit), null, null).ToArray();
@@ -102,7 +102,7 @@ public class GetResourceClaimsQueryTests : SecurityDataTestBase
         var testResourceClaims = SetupResourceClaims();
         var testResourceClaimsResult = testResourceClaims.First(c => c.ResourceName == name);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsQuery(securityContext, Testing.GetAppSettings());
         results = query.Execute(new CommonQueryParams(), testResourceClaimsResult.ResourceClaimId, null).ToArray();
@@ -117,7 +117,7 @@ public class GetResourceClaimsQueryTests : SecurityDataTestBase
         var testResourceClaims = SetupResourceClaims();
         var testResourceClaimsResult = testResourceClaims.Where(c => c.ResourceName == name);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsQuery(securityContext, Testing.GetAppSettings());
         results = query.Execute(new CommonQueryParams(), null, name).ToArray();
