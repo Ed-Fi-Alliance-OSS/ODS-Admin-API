@@ -3,63 +3,63 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-name: Create PR to update doc and openapi definition
+name: Generate OpenAPI definitions
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version Name. Example -> 2.2.2 will result "admin-api-2.2.2.yaml" "admin-api-2.2.2-summary.md"'
-        required: true
+        description: 'Version (e.g. "2.4.0", checks out tag v2.4.0), a branch name (checked out as-is), or blank for latest (checks out main).'
+        required: false
         type: string
+  schedule:
+    - cron: '0 6 * * 0' # Sunday 06:00 UTC
+
 permissions: read-all
 
-env:
-    CI_COMMIT_AUTHOR: github-actions[bot]
-    CI_COMMIT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-    GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
 jobs:
-  create-doc-and-openapiyaml:
-    name: Generate documentation
+  generate-openapi:
+    name: Generate OpenAPI v2/v3 specs
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     defaults:
       run:
         shell: pwsh
     steps:
-      - name: Checkout the Repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-
-      - name: Validate version
-        id: validate-version
+      - name: Resolve ref and version
+        id: resolve-version
         env:
           INPUT_VERSION: ${{ inputs.version }}
         run: |
           $version = $env:INPUT_VERSION
 
-          if ($version -notmatch '^\d+\.\d+\.\d+$')
+          if ([string]::IsNullOrWhiteSpace($version))
           {
-              throw "Invalid version format: $version"
+              $ref = "main"
+              $versionLabel = "latest"
+          }
+          elseif ($version -match '^\d+\.\d+\.\d+$')
+          {
+              $ref = "v$version"
+              $versionLabel = $version
+          }
+          else
+          {
+              $ref = $version
+              $versionLabel = ($version -replace '[\\/]', '-')
           }
 
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "branch-name=openapi-$version" >> $env:GITHUB_OUTPUT
-          "commit-message=Add YAML and markdown file api-specification version $version" >> $env:GITHUB_OUTPUT
+          "ref=$ref" >> $env:GITHUB_OUTPUT
+          "version=$versionLabel" >> $env:GITHUB_OUTPUT
 
-      - name: Git create branch
-        run: |
-          git checkout -b "${{ steps.validate-version.outputs.branch-name }}"
-          git push --set-upstream origin "${{ steps.validate-version.outputs.branch-name }}"
+      - name: Checkout the Repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ steps.resolve-version.outputs.ref }}
 
       - name: Install Swashbuckle CLI
-        run: dotnet tool install Swashbuckle.AspNetCore.Cli --version 6.6.2 --create-manifest-if-needed
+        run: dotnet tool install Swashbuckle.AspNetCore.Cli --version 10.2.3 --create-manifest-if-needed
 
-      - name: Install widdershins CLI
-        run: npm install -g widdershins
-
-      - name: Build and generate YAML and MD files
+      - name: Build and generate YAML files
         run: |
           $p = @{
               Authority        = "http://api"
@@ -70,23 +70,13 @@ jobs:
               AdminDB          = "host=db-admin;port=5432;username=username;password=password;database=EdFi_Admin;Application Name=EdFi.Ods.AdminApi;"
               SecurityDB       = "host=db-admin;port=5432;username=username;password=password;database=EdFi_Security;Application Name=EdFi.Ods.AdminApi;"
           }
-          ./build.ps1 -APIVersion "${{ steps.validate-version.outputs.version }}" -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPIAndMD
+          ./build.ps1 -APIVersion "${{ steps.resolve-version.outputs.version }}" -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPI
 
-      - name: Git add files
-        run: |
-          git add docs/api-specifications/openapi-yaml/*
-          git add docs/api-specifications/markdown/*
-          git restore Application/EdFi.Ods.AdminApi/appsettings.json
-          git status --porcelain
-
-      - name: Commit file
-        id: commit
-        uses: planetscale/ghcommit-action@25309d8005ac7c3bcd61d3fe19b69e0fe47dbdde # v0.2.20
+      - name: Upload OpenAPI artifacts
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.2
         with:
-          commit_message: "${{ steps.validate-version.outputs.commit-message }}"
-          repo: ${{ github.repository }}
-          branch: ${{ steps.validate-version.outputs.branch-name }}
-          file_pattern: '*.yaml *.md'
-
-      - name: Create PR
-        run: gh pr create -B main -H "${{ steps.validate-version.outputs.branch-name }}" --title "[Github Action] Open API documentation version ${{ steps.validate-version.outputs.version }}" --body 'Created by Github action'
+          name: admin-api-openapi-${{ steps.resolve-version.outputs.version }}
+          path: |
+            docs/api-specifications/openapi-yaml/admin-api-v2-${{ steps.resolve-version.outputs.version }}.yaml
+            docs/api-specifications/openapi-yaml/admin-api-v3-${{ steps.resolve-version.outputs.version }}.yaml
+          if-no-files-found: error
