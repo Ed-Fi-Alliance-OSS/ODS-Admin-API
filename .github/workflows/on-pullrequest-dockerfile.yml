@@ -81,7 +81,7 @@ jobs:
           lower_path=$(echo "${{ matrix.dockerfile.path }}" | tr '[:upper:]' '[:lower:]')
           if [[ "${{ matrix.dockerfile.type }}" == "published" && "$lower_path" == *db-admin/pgsql* ]]
           then
-            docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=../.. --build-context shared=../../../../ --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
+            docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context shared=../../../../ --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
           elif [[ "$lower_path" == *v2* || "$lower_path" == *v1* ]]
           then
             docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=../.. --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .

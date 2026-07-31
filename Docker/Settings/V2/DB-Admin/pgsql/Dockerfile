@@ -6,7 +6,7 @@
 ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16
 FROM edfialliance/ods-api-db-admin:7.3.1 AS legacy_assets
 
-FROM alpine:3.20 AS assets
+FROM alpine:3.20 AS prep
 
 ARG ADMIN_API_VERSION
 ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
@@ -47,12 +47,12 @@ ENV POSTGRES_USER=${POSTGRES_USER}
 ENV POSTGRES_DB=postgres
 
 USER root
-COPY --from=assets /tmp/entrypoint.sh /usr/local/bin/adminapi-db-entrypoint.sh
-COPY --from=assets /tmp/1-init-database.sh /docker-entrypoint-initdb.d/1-init-database.sh
-COPY --from=assets /tmp/3-run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
-COPY --from=assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
-COPY --from=assets /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
-COPY --from=assets /tmp/AdminApiScripts /tmp/AdminApiScripts
+COPY --from=prep /tmp/entrypoint.sh /usr/local/bin/adminapi-db-entrypoint.sh
+COPY --from=prep /tmp/1-init-database.sh /docker-entrypoint-initdb.d/1-init-database.sh
+COPY --from=prep /tmp/3-run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
+COPY --from=prep /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
+COPY --from=prep /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
+COPY --from=prep /tmp/AdminApiScripts /tmp/AdminApiScripts
 
 USER ${POSTGRES_USER}
 

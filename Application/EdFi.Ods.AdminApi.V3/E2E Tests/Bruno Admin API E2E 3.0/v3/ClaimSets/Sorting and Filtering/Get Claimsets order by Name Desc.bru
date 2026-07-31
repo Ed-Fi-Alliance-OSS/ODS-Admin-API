@@ -18,6 +18,8 @@ params:query {
 }
 
 script:post-response {
+  var _ = require('lodash');
+
   test("GET Claimsets: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
   });
@@ -29,29 +31,8 @@ script:post-response {
   
   test("GET Claimsets: Response result is ordered by Name desc", function () {
       const results = res.getBody();
-      
-      function sortByProperty(objArray, prop, direction){ 
-          if (arguments.length<2) throw new Error("ARRAY, AND OBJECT PROPERTY MINIMUM ARGUMENTS, OPTIONAL DIRECTION"); 
-          if (!Array.isArray(objArray)) throw new Error("FIRST ARGUMENT NOT AN ARRAY"); 
-          const clone = objArray.slice(0); 
-          const direct = arguments.length>2 ? arguments[2] : 1; 
-          const propPath = (prop.constructor===Array) ? prop : prop.split("."); 
-          clone.sort(function(a,b){ 
-              for (let p in propPath){ 
-                  if (a[propPath[p]] && b[propPath[p]]){ 
-                      a = a[propPath[p]]; 
-                      b = b[propPath[p]]; 
-                  } 
-              } 
-              a = a.match(/^\d+$/) ? +a : a; 
-              b = b.match(/^\d+$/) ? +b : b; 
-              return ( (a < b) ? -1*direct : ((a > b) ? 1*direct : 0) ); 
-          }); 
-          return clone; 
-      }
-      
-      let expectedSortedOrder = sortByProperty(results, 'claimSetName', -1);
-      
+      const normalize = value => (value || "").toLowerCase();
+      var expectedSortedOrder = _.orderBy(results, [claimset => normalize(claimset.claimSetName)], ['desc']);
       expect(results).to.eql(expectedSortedOrder);
   });
   

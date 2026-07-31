@@ -30,7 +30,8 @@ script:post-response {
   
   test("GET Claimsets: Response result is ordered by Name asc", function () {
       const results = res.getBody();
-      var expectedSortedOrder = _.orderBy(results, [claimset => claimset.name],['desc']);
+      const normalize = value => (value || "").toLowerCase();
+      var expectedSortedOrder = _.orderBy(results, [claimset => normalize(claimset.name)], ['desc']);
       expect(results).to.eql(expectedSortedOrder);
   });
   
