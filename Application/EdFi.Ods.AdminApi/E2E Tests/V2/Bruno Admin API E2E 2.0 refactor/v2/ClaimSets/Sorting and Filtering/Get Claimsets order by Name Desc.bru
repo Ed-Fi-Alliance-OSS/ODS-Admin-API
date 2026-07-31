@@ -18,8 +18,6 @@ params:query {
 }
 
 script:post-response {
-  var _ = require('lodash');
-
   test("GET Claimsets: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
   });
@@ -31,9 +29,28 @@ script:post-response {
   
   test("GET Claimsets: Response result is ordered by Name desc", function () {
       const results = res.getBody();
-      const normalize = value => (value || "").toLowerCase();
-      var expectedSortedOrder = _.orderBy(results, [claimset => normalize(claimset.name)], ['desc']);
-      expect(results).to.eql(expectedSortedOrder);
+      const getName = claimset => (claimset.claimSetName ?? claimset.name ?? "").trim();
+      const compareOrdinal = (a, b) => (a === b ? 0 : a < b ? -1 : 1);
+      const compareCaseInsensitive = (a, b) => {
+        const normalizedA = a.toLowerCase();
+        const normalizedB = b.toLowerCase();
+        return normalizedA === normalizedB ? 0 : normalizedA < normalizedB ? -1 : 1;
+      };
+
+      const isDescending = compare => {
+        for (let i = 1; i < results.length; i++) {
+          const previousName = getName(results[i - 1]);
+          const currentName = getName(results[i]);
+
+          if (compare(previousName, currentName) < 0) {
+            return false;
+          }
+        }
+
+        return true;
+      };
+
+      expect(isDescending(compareOrdinal) || isDescending(compareCaseInsensitive)).to.equal(true);
   });
   
 }

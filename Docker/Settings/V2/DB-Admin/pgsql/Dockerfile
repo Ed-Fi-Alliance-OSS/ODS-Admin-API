@@ -17,7 +17,7 @@ COPY --from=legacy_assets /docker-entrypoint-initdb.d/1-init-database.sh /tmp/1-
 COPY --from=legacy_assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
 COPY --from=legacy_assets /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
 
-RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 wget=1.24.5-r0 && \
+RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r14 wget=1.24.5-r0 && \
     wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApi/versions/${VERSION}/content" && \
     # Admin
     mkdir -p /tmp/AdminApiScripts/Admin/ && \
