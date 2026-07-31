@@ -19,7 +19,7 @@ public class EditApiClient : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapPut(endpoints, "/apiclients/{id}", Handle)
+        AdminApiEndpointBuilder.MapPut(endpoints, "/apiClients/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(200))
             .BuildForVersions(AdminApiVersions.V2);
