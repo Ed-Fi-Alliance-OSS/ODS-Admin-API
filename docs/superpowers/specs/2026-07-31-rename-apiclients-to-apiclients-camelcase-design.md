@@ -10,9 +10,7 @@ The `ApiClients` feature's HTTP routes are registered using the all-lowercase li
 
 A straight literal-string rename of the route path segment from `apiclients` to `apiClients` everywhere it is used to define or reconstruct a route. No routing abstraction, configuration flag, versioned-alias layer, or redirect middleware is introduced — the route literal is the source of truth and this is a direct rename of that literal.
 
-This is a **clean breaking change**: the old lowercase path stops resolving (`404 Not Found`) once this ships. No backward-compatible alias/redirect is added. This was chosen over introducing a temporary alias because:
-- The Jira acceptance criteria describe the endpoints as simply "changed," not deprecated-and-aliased.
-- Downstream consumer work is already tracked in separate linked tickets (AC-569, AC-578) for the Admin App to adopt the new casing — the ecosystem is expected to move, not be bridged.
+**Important routing caveat discovered during implementation:** ASP.NET Core's default routing matches route templates case-insensitively. This means the old lowercase `/apiclients` path continues to resolve identically to `/apiClients` after this change — verified directly against a running container (`GET /v2/apiclients/1` and `GET /v2/apiClients/1` both hit the same endpoint and return the same `401 Unauthorized`, while a genuinely wrong path like `/v2/apiclientsxyz` correctly 404s). No backward-compatible alias/redirect was ever added, and none was needed — case-insensitive matching already keeps both casings working. What this rename *does* change is the **canonical** casing: the literal shown in Swagger/OpenAPI docs and echoed back in `Location` headers on `POST` (and `PUT`/`Results.Created` responses) now correctly reads `apiClients`. No backward-compatible alias/redirect is introduced, and none is required.
 
 ## Scope
 
@@ -52,4 +50,4 @@ Both V2 (`Application/EdFi.Ods.AdminApi/Features/ApiClients/`) and V3 (`Applicat
 
 ## Risks
 
-- **Breaking change for any existing API consumer** hitting the lowercase path — accepted per the Jira AC and the existence of separate downstream tracking tickets for consumers to adapt.
+- **None for existing API consumers** — since routing is case-insensitive, callers using the old lowercase path are unaffected. The only externally visible change is the casing shown in Swagger/OpenAPI docs and in `Location` header values.
