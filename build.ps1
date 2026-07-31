@@ -76,7 +76,7 @@
 param(
     # Command to execute, defaults to "Build".
     [string]
-    [ValidateSet("Clean", "Build", "GenerateOpenAPIAndMD", "BuildAndPublish", "UnitTest", "IntegrationTest", "PackageApi"
+    [ValidateSet("Clean", "Build", "GenerateOpenAPI", "BuildAndPublish", "UnitTest", "IntegrationTest", "PackageApi"
         , "Push", "BuildAndTest", "BuildAndDeployToAdminApiDockerContainer"
         , "BuildAndRunAdminApiDevDocker", "RunAdminApiDevDockerContainer", "RunAdminApiDevDockerCompose", "Run", "CopyToDockerContext", "RemoveDockerContextFiles")]
     $Command = "Build",
@@ -213,25 +213,22 @@ function Compile {
 }
 
 function GenerateOpenAPI {
+    param(
+        [string]
+        $DocVersion
+    )
+
     Invoke-Execute {
         Push-Location $solutionRoot/EdFi.Ods.AdminApi/
-        $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$APIVersion.yaml"
         $dllPath = "./bin/Release/net10.0/EdFi.Ods.AdminApi.dll"
+        $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$DocVersion-$APIVersion.yaml"
 
         try {
-            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath v2
+            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath $DocVersion
         }
         finally {
             Pop-Location
         }
-    }
-}
-
-function GenerateDocumentation {
-    Invoke-Execute {
-        $outputOpenAPI = "docs/api-specifications/openapi-yaml/admin-api-$APIVersion.yaml"
-        $outputMD = "docs/api-specifications/markdown/admin-api-$APIVersion-summary.md"
-        widdershins --search false --omitHeader true --code true --summary $outputOpenAPI -o $outputMD
     }
 }
 
@@ -408,13 +405,15 @@ function Invoke-Build {
     Invoke-Step { Compile }
 }
 
-function Invoke-GenerateOpenAPIAndMD {
-    Invoke-Step { UpdateAppSettingsForAdminApi }
+function Invoke-GenerateOpenAPI {
     Invoke-Step { DotNetClean }
     Invoke-Step { Restore }
-    Invoke-Step { Compile }
-    Invoke-Step { GenerateOpenAPI }
-    Invoke-Step { GenerateDocumentation }
+
+    foreach ($docVersion in @("v2", "v3")) {
+        Invoke-Step { UpdateAppSettingsForAdminApi -AdminApiMode $docVersion }
+        Invoke-Step { Compile }
+        Invoke-Step { GenerateOpenAPI -DocVersion $docVersion }
+    }
 }
 
 function Invoke-SetAssemblyInfo {
@@ -539,10 +538,19 @@ function UpdateAppSettingsForAdminApiDocker {
 }
 
 function UpdateAppSettingsForAdminApi {
+    param(
+        [string]
+        $AdminApiMode
+    )
+
     $filePath = "$solutionRoot/EdFi.Ods.AdminApi/appsettings.json"
     $json = (Get-Content -Path $filePath) | ConvertFrom-Json
     $json.AppSettings.DatabaseEngine = $DockerEnvValues["DatabaseEngine"]
     $json.AppSettings.PathBase = $DockerEnvValues["PathBase"]
+
+    if ($AdminApiMode) {
+        $json.AppSettings.AdminApiMode = $AdminApiMode
+    }
 
     $json.Authentication.IssuerUrl = $DockerEnvValues["IssuerUrl"]
     $json.Authentication.SigningKey = $DockerEnvValues["SigningKey"]
@@ -641,7 +649,7 @@ Invoke-Main {
     switch ($Command) {
         Clean { Invoke-Clean }
         Build { Invoke-Build }
-        GenerateOpenAPIAndMD { Invoke-GenerateOpenAPIAndMD }
+        GenerateOpenAPI { Invoke-GenerateOpenAPI }
         BuildAndPublish {
             Invoke-SetAssemblyInfo
             Invoke-Build
