@@ -29,7 +29,8 @@ public class AuditEventRecorder(
         string? sourceIpAddress,
         string? httpVerb,
         string? httpUrl,
-        int? statusCode)
+        int? statusCode,
+        TenantConfiguration? tenant = null)
     {
         if (!settings.Value.Enabled)
         {
@@ -38,7 +39,11 @@ public class AuditEventRecorder(
 
         try
         {
-            var tenant = tenantContextProvider.Get();
+            // The AsyncLocal-backed tenantContextProvider reverts for a caller once the
+            // middleware that called Set() (TenantResolverMiddleware) has returned, so a
+            // caller positioned outside it (AuditActionLoggingMiddleware, recording after
+            // next() completes) must resolve the tenant itself and pass it in explicitly.
+            tenant ??= tenantContextProvider.Get();
             var adminConnectionString = !string.IsNullOrEmpty(tenant?.AdminConnectionString)
                 ? tenant.AdminConnectionString
                 : configuration.GetConnectionStringByName("EdFi_Admin");
