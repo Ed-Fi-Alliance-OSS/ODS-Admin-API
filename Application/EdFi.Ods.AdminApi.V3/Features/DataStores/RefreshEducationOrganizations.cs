@@ -26,7 +26,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all data stores",
                 "Triggers a refresh of education organization data from all data stores"
             )
-            .WithRouteOptions(b => b.WithResponseCode(201))
+            .WithRouteOptions(b => b.WithResponseCode(201, locationDescription: "URI of the queued job's status endpoint."))
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
@@ -36,7 +36,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified data store"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(201)
+                .WithResponseCode(201, locationDescription: "URI of the queued job's status endpoint.")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V3);
     }
