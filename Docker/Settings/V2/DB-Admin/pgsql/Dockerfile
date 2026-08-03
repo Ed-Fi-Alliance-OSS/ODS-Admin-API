@@ -3,10 +3,11 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16
-FROM edfialliance/ods-api-db-admin:7.3.1 AS legacy_assets
+# hadolint ignore=DL3006
+ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20
+FROM edfialliance/ods-api-db-admin:7.3.1@sha256:acc254de6cf385c23c9e6149c0cdc730ca414c7d04435df4cd78fc5540d4b176 AS legacy_assets
 
-FROM alpine:3.20 AS prep
+FROM alpine:3.20@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20 AS prep
 
 ARG ADMIN_API_VERSION
 ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
@@ -17,7 +18,7 @@ COPY --from=legacy_assets /docker-entrypoint-initdb.d/1-init-database.sh /tmp/1-
 COPY --from=legacy_assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
 COPY --from=legacy_assets /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
 
-RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r14 wget=1.24.5-r0 && \
+RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 wget=1.24.5-r0 && \
     wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApi/versions/${VERSION}/content" && \
     # Admin
     mkdir -p /tmp/AdminApiScripts/Admin/ && \
@@ -39,6 +40,7 @@ RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r14 wget=1.24.5-r0 && \
     dos2unix /tmp/3-run-adminapi-migrations.sh && \
     rm -f /tmp/EdFi_AdminApi_Scripts.zip
 
+# hadolint ignore=DL3006
 FROM ${POSTGRES_BASE_IMAGE} AS setup
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 

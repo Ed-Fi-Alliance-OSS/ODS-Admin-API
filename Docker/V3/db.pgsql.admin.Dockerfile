@@ -3,18 +3,23 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16
-FROM edfialliance/ods-api-db-admin:7.3.1 AS legacy_assets
+ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20
+FROM edfialliance/ods-api-db-admin:7.3.1@sha256:acc254de6cf385c23c9e6149c0cdc730ca414c7d04435df4cd78fc5540d4b176 AS legacy_assets
 
-FROM alpine:3.20 AS prep
+FROM alpine:3.20@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20 AS prep
 
 COPY --from=legacy_assets /docker-entrypoint-initdb.d/1-init-database.sh /tmp/1-init-database.sh
 COPY --from=legacy_assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
 COPY --from=legacy_assets /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
+# hadolint ignore=DL3022
 COPY --from=assets Docker/Settings/shared/DB-Admin/pgsql/entrypoint.sh /tmp/entrypoint.sh
+# hadolint ignore=DL3022
 COPY --from=assets Docker/Settings/shared/DB-Admin/pgsql/run-adminapi-migrations.sh /tmp/3-run-adminapi-migrations.sh
+# hadolint ignore=DL3022
 COPY --from=assets Application/EdFi.Ods.AdminApi.V3/Artifacts/PgSql/Structure/Admin/ /tmp/AdminApiScripts/Admin/PgSql
+# hadolint ignore=DL3022
 COPY --from=assets Application/EdFi.Ods.AdminApi.V3/Artifacts/PgSql/Structure/Security/ /tmp/AdminApiScripts/Security/PgSql
+# hadolint ignore=DL3022
 COPY --from=assets Docker/Settings/dev/adminapi-test-seeddata.sql /tmp/AdminApiScripts/Admin/PgSql/adminapi-test-seeddata.sql
 
 RUN sed -i 's/\r$//' /tmp/entrypoint.sh && \
