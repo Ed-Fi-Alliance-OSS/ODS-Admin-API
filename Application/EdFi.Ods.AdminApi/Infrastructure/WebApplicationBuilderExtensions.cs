@@ -157,6 +157,8 @@ public static class WebApplicationBuilderExtensions
             opt.OperationFilter<TokenEndpointBodyDescriptionFilter>();
             opt.OperationFilter<TagByResourceUrlFilter>();
             opt.OperationFilter<LocationHeaderOperationFilter>();
+            opt.OperationFilter<AnonymousOperationSecurityFilter>();
+            opt.OperationFilter<ProblemDetailsResponseOperationFilter>();
             opt.AddSecurityDefinition(
                 "oauth",
                 new OpenApiSecurityScheme
