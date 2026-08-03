@@ -26,12 +26,14 @@ RUN sed -i 's/\r$//' /tmp/entrypoint.sh && \
     sed -i 's/\r$//' /tmp/AdminApiScripts/Security/PgSql/* && \
     chmod -R 777 /tmp/AdminApiScripts/Security/PgSql/*
 
+# hadolint ignore=DL3006
 FROM ${POSTGRES_BASE_IMAGE} AS base
 USER root
 
 FROM base AS setup
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
+# hadolint ignore=DL3002
 USER root
 
 COPY --from=prep /tmp/entrypoint.sh /usr/local/bin/adminapi-db-entrypoint.sh
