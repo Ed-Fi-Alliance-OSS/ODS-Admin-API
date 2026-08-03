@@ -42,7 +42,7 @@ Three event types are recorded, corresponding to the `AuditEventType` enum
 |---|---|
 | `AuthenticationSuccess` | A client successfully obtains a token at `/connect/token` (OpenIddict's `ApplyTokenResponseContext`, handled by `SecurityExtensions.DefaultTokenResponseHandler` — recorded when the token response has no `Error`). |
 | `AuthenticationFailure` | (a) A token request at `/connect/token` fails (invalid client, invalid grant, invalid scope, etc. — same handler as above, recorded when the token response has an `Error`); or (b) any other request anywhere in the API is rejected with a 401 because the bearer token is missing, malformed, or expired (`JwtBearerEvents.OnChallenge` in `SecurityExtensions.cs`). |
-| `Action` | Every request whose HTTP method is `POST`, `PUT`, `PATCH`, or `DELETE`, regardless of outcome. `GET` requests are never logged as action events. Captured by `AuditActionLoggingMiddleware` (`Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/AuditActionLoggingMiddleware.cs`), registered in the request pipeline in `Program.cs` (`app.UseMiddleware<AuditActionLoggingMiddleware>();`). |
+| `Action` | Every request whose HTTP method is `POST`, `PUT`, `PATCH`, or `DELETE`, regardless of outcome (2xx, 4xx — including 401/403 rejections — or 5xx). `GET` requests are never logged as action events. Captured by `AuditActionLoggingMiddleware` (`Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/AuditActionLoggingMiddleware.cs`), registered as the **outermost** middleware in the request pipeline in `Program.cs` (`app.UseMiddleware<AuditActionLoggingMiddleware>();`, before `RequestLoggingMiddleware`/`V3RequestErrorMiddleware`, `UseAuthentication`, and `UseAuthorization`). |
 
 Note: `JwtBearerEvents.OnAuthenticationFailed` and `OnTokenValidated` also
 exist in `SecurityExtensions.cs` for logging/diagnostics, but only
@@ -66,7 +66,7 @@ entity in `Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/AuditLog.cs
 | `SourceIpAddress` | `NVARCHAR(45)` | Yes | Populated for all three event types from `HttpContext.Connection.RemoteIpAddress`. |
 | `HttpVerb` | `NVARCHAR(10)` | Yes | Populated only for `Action` events (e.g. `POST`, `PUT`, `PATCH`, `DELETE`). Always `null` for both authentication event paths (`/connect/token` and the `OnChallenge` 401 path). |
 | `HttpUrl` | `NVARCHAR(2048)` | Yes | Populated only for `Action` events (the request path). Always `null` for authentication events. |
-| `StatusCode` | `INT` | Yes | Populated for `Action` events (the actual response status code, or `500` if the request pipeline threw an exception before a status code was set) and for the `OnChallenge` 401 path (always `401`). Always `null` for the `/connect/token` `ApplyTokenResponseContext` handler, since that handler runs before the final HTTP status is finalized. |
+| `StatusCode` | `INT` | Yes | Populated for `Action` events (the actual response status code — including 401/403/404/etc. produced by downstream error-handling middleware, or `500` as a last-resort fallback if an exception escapes the entire pipeline unhandled) and for the `OnChallenge` 401 path (always `401`). Always `null` for the `/connect/token` `ApplyTokenResponseContext` handler, since that handler runs before the final HTTP status is finalized. |
 
 Indexes exist on `Timestamp` and `ClientId` to support the most common
 lookups (recent events, and events for a given client).
@@ -130,6 +130,12 @@ the same per-tenant DbUp migration process used for the rest of the schema.
 current tenant context before enqueueing an event, so events are always
 written to the requesting tenant's own database.
 
+For `Action` events specifically, the tenant is *not* read from the
+`AsyncLocal`-backed tenant context provider that everything else in the app
+uses — see "Why `Action` events resolve tenant from `HttpContext.Items`,
+not the ambient tenant context" below for why, and how it's actually
+resolved.
+
 ## No HTTP exposure
 
 There is no controller, minimal API route, or other HTTP endpoint that
@@ -149,9 +155,75 @@ addressed in a future iteration:
 * Any admin UI, reporting dashboard, export tooling, or query API for
   browsing audit data.
 * Logging of read-only (`GET`) requests as action events.
-* Authorization-denied (403) mutation attempts. `AuditActionLoggingMiddleware`
-  is registered after `app.UseAuthorization()`, so requests that ASP.NET
-  Core's authorization middleware short-circuits with a 403 never reach it
-  and are not audited. Only 401 (authentication) rejections and mutation
-  attempts that complete the pipeline (2xx, 4xx other than 401/403, 5xx) are
-  currently captured. Capturing 403s is deferred to a future iteration.
+
+## Middleware ordering: why `AuditActionLoggingMiddleware` runs first
+
+`AuditActionLoggingMiddleware` is registered before `RequestLoggingMiddleware`
+(V2) / `V3RequestErrorMiddleware` (V3), and before `UseAuthentication` /
+`UseAuthorization`, so that it wraps the entire rest of the pipeline. This
+matters for two reasons:
+
+1. **Exception-driven status codes.** `RequestLoggingMiddleware` and
+   `V3RequestErrorMiddleware` catch exceptions (`ValidationException` → 400,
+   `INotFoundException` → 404, etc.) and translate them into the real HTTP
+   status without rethrowing. If the audit middleware sat *inside* that
+   translation layer (as it originally did, registered after
+   `UseAuthorization`), its own exception handler would run first and
+   hardcode `StatusCode = 500` for every exception — before the real status
+   was ever known — producing an audit row that didn't match what the client
+   actually received. Running outermost means `next()` only returns to the
+   audit middleware after the real status has been finalized, so the
+   recorded `StatusCode` always matches the response the client saw.
+2. **Authorization-denied (401/403) requests.** ASP.NET Core's authorization
+   middleware short-circuits a denied request (sets 401/403 and returns
+   without calling further into the pipeline) rather than throwing. With the
+   audit middleware outermost, that short-circuit still unwinds back through
+   it normally, so these denials are now captured as `Action` rows too —
+   previously they never reached the audit middleware at all.
+
+One consequence: `AuditActionLoggingMiddleware` reads the `client_id` claim
+from `context.User` *after* `next()` returns/throws, not before — since
+authentication now runs downstream of it (inside `next()`), `context.User`
+isn't populated yet at the point the middleware is entered.
+
+## Why `Action` events resolve tenant from `HttpContext.Items`, not the ambient tenant context
+
+The rest of the app resolves the current tenant via
+`IContextProvider<TenantConfiguration>`
+(`Application/EdFi.Ods.AdminApi.Common/Infrastructure/Context/ContextProvider.cs`),
+backed by `AsyncLocalContextStorage`
+(`Application/EdFi.Ods.AdminApi.Common/Infrastructure/Context/ContextStorage.cs`).
+`TenantResolverMiddleware` calls `Set()` on it, and every scoped service
+resolved further down the pipeline (as a descendant call) sees that value
+correctly — this is how `IUsersContext`/`ISecurityContext` pick the right
+per-tenant connection string today.
+
+`AuditActionLoggingMiddleware` cannot use the same mechanism for `Action`
+events, because of how it's positioned (see the "Middleware ordering"
+section above): it reads state only *after* `next()` has fully returned —
+i.e. after `TenantResolverMiddleware.InvokeAsync` itself has already
+returned. `AsyncLocal` values only flow *forward* into methods called from
+where they're set; once the setting method's own call frame returns, the
+value reverts for its caller. So by the time `AuditActionLoggingMiddleware`
+calls `recorder.Record(...)`, `tenantContextProvider.Get()` is back to
+whatever it was *before* `TenantResolverMiddleware` ran — `null` for a normal
+request — and `AuditEventRecorder` would silently fall back to the
+non-tenant-specific `EdFi_Admin` connection string. In multitenant mode that
+fallback isn't a valid connection string for the active tenant's DB engine,
+so every `Action` event write failed, retried twice, and fell back to the
+rate-limited text log — meaning **no `Action` rows were ever persisted**,
+while `AuthenticationSuccess`/`AuthenticationFailure` rows (recorded from
+inside the OpenIddict/JWT pipeline, still nested within
+`TenantResolverMiddleware`'s call frame) were unaffected.
+
+The fix: `TenantResolverMiddleware` also stores the resolved tenant in
+`context.Items[TenantResolverMiddleware.TenantConfigurationItemsKey]`.
+Unlike the `AsyncLocal` context, `HttpContext.Items` lives on the
+`HttpContext` instance itself — the same instance passed explicitly to every
+middleware in the chain — so it survives regardless of which call frames
+have returned. `AuditActionLoggingMiddleware` reads it from there and passes
+it explicitly into `IAuditEventRecorder.Record(..., tenant)`, which prefers
+the explicit value over the `AsyncLocal` lookup when one is supplied. The
+authentication-event call sites in `SecurityExtensions.cs` are unaffected —
+they still resolve tenant via the `AsyncLocal` provider, correctly, since
+they run as descendants of `TenantResolverMiddleware`, not after it returns.

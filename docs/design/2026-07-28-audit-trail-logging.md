@@ -64,11 +64,41 @@ each project, following the existing 5-digit-sequence naming convention.
 ## Capture Points
 
 **Action events** (POST/PUT/PATCH/DELETE only — GETs excluded per scope):
-new lightweight middleware, registered alongside the existing
-`RequestLoggingMiddleware` (V2) / `V3RequestErrorMiddleware` (V3). It
-captures client_id (from the authenticated principal), timestamp, verb, URL,
-and source IP up front, then after `next()` completes, adds the response
-status code and enqueues the event.
+new lightweight middleware, registered as the **outermost** middleware in the
+pipeline — before `RequestLoggingMiddleware` (V2) / `V3RequestErrorMiddleware`
+(V3), and before `UseAuthentication`/`UseAuthorization`. It captures timestamp,
+verb, URL, and source IP up front; `client_id` and the response status code
+are both read only after `next()` returns or throws, since authentication and
+status-code finalization both happen downstream of this middleware.
+
+This ordering is deliberate, not incidental: `RequestLoggingMiddleware`/
+`V3RequestErrorMiddleware` catch exceptions and translate them into the real
+HTTP status (e.g. `ValidationException` → 400, `INotFoundException` → 404)
+without rethrowing. If the audit middleware sat inside that translation layer,
+its own exception handler would fire first and have to guess a status code
+before the real one was known. Sitting outermost means it always observes the
+final, already-translated status — including 401/403 authorization denials,
+which ASP.NET Core's authorization middleware short-circuits (sets the status
+and returns without calling further into the pipeline, rather than throwing).
+
+**Tenant resolution caveat from the same ordering change:** the rest of the
+app resolves the current tenant via an `AsyncLocal`-backed
+`IContextProvider<TenantConfiguration>`, set by `TenantResolverMiddleware`.
+`AsyncLocal` values only flow forward into methods called from where they're
+set — once `TenantResolverMiddleware.InvokeAsync` itself returns, the value
+reverts for its caller. Because the audit middleware now reads state only
+*after* `next()` has fully returned (i.e. after `TenantResolverMiddleware`
+has already returned), it cannot use that same lookup — doing so silently
+resolved to the non-tenant-specific default connection string in multitenant
+mode, which isn't a valid connection string for the active tenant's DB
+engine, and every `Action` write failed. Fix: `TenantResolverMiddleware` also
+stores the resolved tenant in `context.Items[...TenantConfigurationItemsKey]`
+— `HttpContext.Items` lives on the `HttpContext` instance itself, unaffected
+by which call frames have returned — and the audit middleware reads it from
+there instead, passing it explicitly into `IAuditEventRecorder.Record(...,
+tenant)`. The authentication-event hooks in `SecurityExtensions.cs` are
+unaffected, since they run as descendants of `TenantResolverMiddleware`
+(before it returns) and keep using the `AsyncLocal` lookup unchanged.
 
 **Authentication events**, hooked in the shared
 `Application/EdFi.Ods.AdminApi/Infrastructure/Security/SecurityExtensions.cs`:

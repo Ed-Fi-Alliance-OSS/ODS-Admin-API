@@ -52,7 +52,12 @@ if (!string.IsNullOrEmpty(pathBase))
 
 AdminApiVersions.Initialize(app);
 
-//The ordering here is meaningful: Logging -> Routing -> Auth -> Endpoints
+//The ordering here is meaningful: Audit -> Logging -> Routing -> Auth -> Endpoints
+//AuditActionLoggingMiddleware must be outermost so it observes the final response status
+//code after RequestLoggingMiddleware/V3RequestErrorMiddleware has translated any exception
+//into its real HTTP status (they catch and never rethrow), rather than guessing 500 itself.
+app.UseMiddleware<AuditActionLoggingMiddleware>();
+
 if (adminApiMode == AdminApiMode.V3)
 {
     app.UseMiddleware<V3ErrorHandling.V3RequestErrorMiddleware>();
@@ -71,7 +76,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
-app.UseMiddleware<AuditActionLoggingMiddleware>();
 app.MapFeatureEndpoints();
 
 app.MapControllers();
