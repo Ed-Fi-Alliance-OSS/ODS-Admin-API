@@ -48,7 +48,7 @@ namespace EdFi.Ods.AdminApi.Infrastructure;
 
 public static class WebApplicationBuilderExtensions
 {
-    private static readonly string[] _value = ["api"];
+    private static readonly string[] _value = [SecurityConstants.Scopes.AdminApiFullAccess.Scope];
 
     public static void AddServices(this WebApplicationBuilder webApplicationBuilder)
     {
