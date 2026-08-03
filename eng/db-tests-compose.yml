@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+# Bare database engine containers (no Admin API app) for running the
+# EdFi.Ods.AdminApi[.V3].DBTests suites and for manually verifying DbUp
+# migrations, against both supported database engines. Credentials match
+# Application/EdFi.Ods.AdminApi.DBTests/testsappsettings.json.
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: adminapi-dbtests-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "P@55w0rd"
+    ports:
+      - "1433:1433"
+
+  pgsql:
+    image: postgres:16.2
+    container_name: adminapi-dbtests-pgsql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "P@55w0rd"
+    ports:
+      # Bound to 5433 (not the default 5432) to avoid clashing with any other
+      # locally running PostgreSQL instance/container.
+      - "5433:5432"

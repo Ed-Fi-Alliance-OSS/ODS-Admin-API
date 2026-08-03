@@ -33,9 +33,9 @@ public class ResourceUrlHelperTests
         httpContext.Request.Scheme = "https";
         httpContext.Request.Host = new HostString("api.ed-fi.org");
 
-        var result = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V2, "apiclients/101");
+        var result = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V2, "apiClients/101");
 
-        result.ShouldBe("https://api.ed-fi.org/v2/apiclients/101");
+        result.ShouldBe("https://api.ed-fi.org/v2/apiClients/101");
     }
 
     [Test]

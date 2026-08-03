@@ -15,12 +15,12 @@ public class ReadApiClient : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapGet(endpoints, "/apiclients", GetApiClients)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/apiClients", GetApiClients)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApiClientModel[]>(200))
             .BuildForVersions(AdminApiVersions.V2);
 
-        AdminApiEndpointBuilder.MapGet(endpoints, "/apiclients/{id}", GetApiClient)
+        AdminApiEndpointBuilder.MapGet(endpoints, "/apiClients/{id}", GetApiClient)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApiClientModel>(200))
             .BuildForVersions(AdminApiVersions.V2);

@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{API_URL}}/v2/apiclients
+  url: {{API_URL}}/v2/apiClients
   body: json
   auth: inherit
 }
@@ -165,7 +165,7 @@ script:post-response {
   }
 
   try {
-    const response = await axios.get(`${API_URL}/v2/apiclients/${bru.getVar("CreatedApiClientIdIsApprovedFalse")}`, axiosConfig);
+    const response = await axios.get(`${API_URL}/v2/apiClients/${bru.getVar("CreatedApiClientIdIsApprovedFalse")}`, axiosConfig);
 
     test("POST ApiClients IsApproved False: GET verification returns OK", function () {
       expect(response.status).to.equal(200);

@@ -22,7 +22,7 @@ public class AddApiClient : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapPost(endpoints, "/apiclients", Handle)
+        AdminApiEndpointBuilder.MapPost(endpoints, "/apiClients", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApiClientResult>(201))
             .BuildForVersions(AdminApiVersions.V3);
@@ -34,7 +34,7 @@ public class AddApiClient : IFeature
         GuardAgainstInvalidEntityReferences(request, db);
         var addedApiClientResult = addApiClientCommand.Execute(request, options);
         var model = ApiClientMapper.ToResult(addedApiClientResult);
-        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/apiclients/{model.Id}");
+        var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/apiClients/{model.Id}");
         return Results.Created(absoluteLocation, model);
     }
 

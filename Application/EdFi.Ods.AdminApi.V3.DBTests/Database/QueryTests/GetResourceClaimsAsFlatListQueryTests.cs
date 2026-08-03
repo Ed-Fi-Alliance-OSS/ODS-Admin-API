@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Security.DataAccess.Models;
-using Infrastructure = EdFi.Ods.AdminApi.V3.Infrastructure;
+using V3Infra = EdFi.Ods.AdminApi.V3.Infrastructure;
 using NUnit.Framework;
 using Shouldly;
 
@@ -31,7 +31,7 @@ public class GetResourceClaimsAsFlatListQueryTests : SecurityDataTestBase
                 childrenResourceNames,
                 grandChildResourceNames);
 
-        Infrastructure.ClaimSetEditor.ResourceClaim[] results = null;
+        V3Infra.ClaimSetEditor.ResourceClaim[] results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsAsFlatListQuery(securityContext);
         results = query.Execute().ToArray();
@@ -62,7 +62,7 @@ public class GetResourceClaimsAsFlatListQueryTests : SecurityDataTestBase
         var childResourceNames = testResourceClaims.Where(x => x.ResourceClaim?.ParentResourceClaim != null)
             .OrderBy(x => x.ResourceClaim?.ResourceName).Select(x => x.ResourceClaim?.ResourceName).ToList();
 
-        List<Infrastructure.ClaimSetEditor.ResourceClaim> results = null;
+        List<V3Infra.ClaimSetEditor.ResourceClaim> results = null;
         using var securityContext = TestContext;
         var query = new GetResourceClaimsAsFlatListQuery(securityContext);
         results = query.Execute().ToList();

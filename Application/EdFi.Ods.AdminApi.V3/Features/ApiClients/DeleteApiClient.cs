@@ -13,7 +13,7 @@ public class DeleteApiClient : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapDelete(endpoints, "/apiclients/{id}", Handle)
+        AdminApiEndpointBuilder.MapDelete(endpoints, "/apiClients/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);

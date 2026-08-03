@@ -16,6 +16,8 @@
     * [Database Layer](#database-layer)
     * [Validation](#validation)
     * [OdsInstanceManage Provisioning Jobs](#odsinstancemanage-provisioning-jobs)
+    * [Audit Trail Logging](#audit-trail-logging)
+  * [Feature-specific prerequisites and configuration](#feature-specific-prerequisites-and-configuration)
 
 ## Development Pre-Requisites
 
@@ -244,9 +246,17 @@ The `POST /v2/odsInstances/manage` flow is asynchronous. The endpoint persists a
 
 Use [design/INSTANCE-MANAGEMENT-Quartz.md](design/INSTANCE-MANAGEMENT-Quartz.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
 
-Feature-specific prerequisites and configuration:
+### Audit Trail Logging
 
-* `AppSettings:adminApiMode` must be `v2` so startup scheduling registers the recurring dispatcher.
+Admin API can record authentication and administrative-action events to a
+database-backed audit trail (`adminapi.AuditLogs`), controlled by a single
+`AuditLogging:Enabled` flag in `appsettings.json`. See
+[audit-logging.md](audit-logging.md) for the configuration flag, the exact
+list of captured events, the table schema, and the fail-open write pipeline.
+
+## Feature-specific prerequisites and configuration
+
+* `AppSettings:adminApiMode` must be `v2` or `v3` so startup scheduling registers the recurring dispatcher.
 * Admin API DB migrations must be applied because the flow relies on `adminapi.OdsInstanceManages` and `adminapi.JobStatuses`.
 * `AppSettings:EncryptionKey` must be a valid base64-encoded key.
 * `ConnectionStrings:EdFi_Ods` supplies the connection-string shape used to generate encrypted `OdsInstance.ConnectionString` values.
