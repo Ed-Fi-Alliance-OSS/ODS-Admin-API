@@ -57,7 +57,7 @@ jobs:
           ref: ${{ steps.resolve-version.outputs.ref }}
 
       - name: Install Swashbuckle CLI
-        run: dotnet tool install Swashbuckle.AspNetCore.Cli --version 10.2.3 --create-manifest-if-needed
+        run: dotnet tool install Swashbuckle.AspNetCore.Cli --version 7.1.0 --create-manifest-if-needed
 
       - name: Build and generate YAML files
         run: |
