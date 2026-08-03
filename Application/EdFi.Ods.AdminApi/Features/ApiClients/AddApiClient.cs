@@ -20,7 +20,7 @@ public class AddApiClient : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapPost(endpoints, "/apiclients", Handle)
+        AdminApiEndpointBuilder.MapPost(endpoints, "/apiClients", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApiClientResult>(201))
             .BuildForVersions(AdminApiVersions.V2);
@@ -32,7 +32,7 @@ public class AddApiClient : IFeature
         GuardAgainstInvalidEntityReferences(request, db);
         var addedApiClientResult = addApiClientCommand.Execute(request, options);
         var model = ApiClientMapper.ToResult(addedApiClientResult);
-        return Results.Created($"/apiclients/{model.Id}", model);
+        return Results.Created($"/apiClients/{model.Id}", model);
     }
 
     private static void GuardAgainstInvalidEntityReferences(AddApiClientRequest request, IUsersContext db)

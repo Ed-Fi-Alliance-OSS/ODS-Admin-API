@@ -13,7 +13,7 @@ public class ResetApiClientCredentials : IFeature
 {
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        AdminApiEndpointBuilder.MapPut(endpoints, "/apiclients/{id}/reset-credential", HandleResetCredentials)
+        AdminApiEndpointBuilder.MapPut(endpoints, "/apiClients/{id}/reset-credential", HandleResetCredentials)
             .WithSummary("Reset apiclient credentials. Returns new key and secret.")
             .WithRouteOptions(b => b.WithResponse<ApiClientResult>(200))
             .BuildForVersions(AdminApiVersions.V2);
