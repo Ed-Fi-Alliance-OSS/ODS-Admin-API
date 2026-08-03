@@ -115,8 +115,8 @@ removal, \
 **so that** I don't have to run manual database-provisioning scripts or track
 progress out of band.
 
-**How ODS Admin API Helps:** Version 2.4 introduces a `/v2/dbinstances` /
-`/v3/dbDataStores` (v3) resource that lets an administrator request creation of a
+**How ODS Admin API Helps:** Version 2.4 introduces a `/v2/odsInstances/manage` /
+`/v3/dataStores/manage` (v3) resource that lets an administrator request creation of a
 new database instance from a named template. Admin API validates the
 instance name and template, then asynchronously provisions (or de-provisions)
 the instance via a background job. Progress is visible through granular
@@ -186,8 +186,8 @@ previously returned database connection strings have been removed.
 ### 3.4 Database Instances (JTBD 10)
 
 - **FR-DBINST-1**: The API SHALL allow an administrator to create a database
-  instance from a named, approved database template via `POST /v2/dbinstances` /
-  `POST /v3/dbDataStores`, validating the instance name and template before
+  instance from a named, approved database template via `POST /v2/odsInstances/manage` /
+  `POST /v3/dataStores/manage`, validating the instance name and template before
   accepting the request.
 - **FR-DBINST-2**: The API SHALL allow an administrator to list and retrieve
   database instances, including filtering the list by name or ID.
@@ -245,9 +245,6 @@ previously returned database connection strings have been removed.
   Details format, including a `type` URN identifying the specific error category
   and a `detail` property describing the error. The `type` URN SHALL include
   `management-api` in the path.
-- **FR-V3-5**: The v3 API SHALL name the ODS instance resource family
-  `dataStores` and the database instance resource `dbDataStores`, including
-  corresponding field names (for example `dataStoreId`, `dataStoreType`).
 
 ### 3.8 Claim Sets / Security
 
