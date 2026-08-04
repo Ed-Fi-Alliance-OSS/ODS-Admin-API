@@ -26,6 +26,7 @@ public class ReadTenants : IFeature
     {
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}/dataStores/edOrgs", GetTenantEdOrgsByDataStoresAsync)
+            .WithRouteOptions(b => b.WithResponse<TenantDetailsResponse>(200))
             .BuildForVersions(AdminApiVersions.V3);
     }
 

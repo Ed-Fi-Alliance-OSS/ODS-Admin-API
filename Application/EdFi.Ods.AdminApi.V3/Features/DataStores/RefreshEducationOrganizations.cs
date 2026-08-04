@@ -18,6 +18,12 @@ namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
 public class RefreshEducationOrganizations : IFeature
 {
+    public class JobQueuedResult
+    {
+        public string JobId { get; set; } = null!;
+        public string Message { get; set; } = null!;
+    }
+
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
@@ -26,7 +32,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all data stores",
                 "Triggers a refresh of education organization data from all data stores"
             )
-            .WithRouteOptions(b => b.WithResponseCode(201))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(201, locationDescription: "URI of the queued job's status endpoint."))
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
@@ -36,7 +42,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified data store"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(201)
+                .WithResponse<JobQueuedResult>(201, locationDescription: "URI of the queued job's status endpoint.")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V3);
     }
@@ -64,10 +70,10 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var response = new
+        var response = new JobQueuedResult
         {
-            jobId,
-            message = "Education organizations refresh has been queued for all instances"
+            JobId = jobId,
+            Message = "Education organizations refresh has been queued for all instances"
         };
         var locationUri = $"/v3/jobs/{jobId}";
 
@@ -106,10 +112,10 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var response = new
+        var response = new JobQueuedResult
         {
-            jobId,
-            message = "Education organizations refresh has been queued for the specified instance"
+            JobId = jobId,
+            Message = "Education organizations refresh has been queued for the specified instance"
         };
         var locationUri = $"/v3/jobs/{jobId}";
 
