@@ -6,7 +6,7 @@
 ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:6a16c62599f5f6d560685d56a733496b0c8451c8afb9255e31fefdd32c7d6d52
 FROM edfialliance/ods-api-db-admin:7.3.1@sha256:acc254de6cf385c23c9e6149c0cdc730ca414c7d04435df4cd78fc5540d4b176 AS legacy_assets
 
-FROM alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc AS prep
+FROM alpine:3.22@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce AS prep
 
 COPY --from=legacy_assets /docker-entrypoint-initdb.d/1-init-database.sh /tmp/1-init-database.sh
 COPY --from=legacy_assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
@@ -42,8 +42,8 @@ LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 USER root
 
 COPY --from=prep /tmp/entrypoint.sh /usr/local/bin/adminapi-db-entrypoint.sh
-COPY --from=prep /tmp/1-init-database.sh /docker-entrypoint-initdb.d/1-init-database.sh
-COPY --from=prep /tmp/3-run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
+COPY --from=prep /tmp/1-init-database.sh /usr/local/share/adminapi-init/1-init-database.sh
+COPY --from=prep /tmp/3-run-adminapi-migrations.sh /usr/local/share/adminapi-init/3-run-adminapi-migrations.sh
 COPY --from=prep /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
 COPY --from=prep /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
 COPY --from=prep /tmp/AdminApiScripts /tmp/AdminApiScripts

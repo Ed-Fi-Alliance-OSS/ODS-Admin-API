@@ -7,8 +7,8 @@
 set -e
 
 ORIGINAL_ENTRYPOINT="/usr/local/bin/docker-entrypoint.sh"
-MIGRATIONS_SCRIPT="/docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh"
-BASE_BOOTSTRAP_SCRIPT="/docker-entrypoint-initdb.d/1-init-database.sh"
+MIGRATIONS_SCRIPT="/usr/local/share/adminapi-init/3-run-adminapi-migrations.sh"
+BASE_BOOTSTRAP_SCRIPT="/usr/local/share/adminapi-init/1-init-database.sh"
 POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 PGDATA_DIR="${PGDATA:-/var/lib/postgresql/data}"
