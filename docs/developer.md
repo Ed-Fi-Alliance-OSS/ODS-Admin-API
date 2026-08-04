@@ -80,7 +80,7 @@ There are several launch profiles available either with `build.ps1` or when
 running from Visual Studio. Review
 [launchSettings](../Application/EdFi.Ods.AdminApi/Properties/launchSettings.json)
 for more information. Note that you should use the "Prod" launch setting when
-running the Postman-based E2E tests.
+running the Bruno-based E2E tests.
 
 ### Configuring Admin API to Run with the ODS/API
 
@@ -89,7 +89,7 @@ reason, you may need to launch an instance of the ODS/API. The
 `compose-build-dev.yml` file handles this for you.
 
 With the other two options, you will need to startup the [ODS/API on your
-own](https://techdocs.ed-fi.org/display/ETKB/Ed-Fi+Operational+Data+Store+and+API),
+own](https://docs.ed-fi.org/reference/ed-fi-api/),
 using Visual Studio or the command line. Do not start the ODS/API in a separate
 Docker network from Admin API, because at present both need to access the same
 `EdFi_Admin` and `EdFi_Security` databases. If starting up manually, make sure
@@ -196,9 +196,38 @@ The source code includes two main types of test projects:
 
 * **Integration tests** (`*.DBTests`):  
   These tests exercise the repository layer and require a database connection.
+  * Connection strings are read from each `*.DBTests` project's `appsettings.json`
+    (e.g. `Application/EdFi.Ods.AdminApi.DBTests/appsettings.json`), which by
+    default points to `localhost` using the `EdFi_Admin_Test` / `EdFi_Security_Test`
+    databases with SQL auth (`sa` / `P@55w0rd`). Provision those databases first —
+    see [Resetting the Database State](#resetting-the-database-state) above.
   * Run with: `build.ps1 -Command IntegrationTest`
+  * To use different credentials instead of editing `appsettings.json`, pass
+    `-UseIntegratedSecurity`, `-DbUsername`, and `-DbPassword` to the same command.
   * To collect code coverage, use: `build.ps1 -Command IntegrationTest -RunCoverageAnalysis`  
     This will also generate an HTML report in the `coveragereport` directory.
+
+* **Running a subset of tests**:  
+  Both `UnitTest` and `IntegrationTest` accept a `-TestFilter` parameter, passed
+  through to `dotnet test --filter`. Use it to run only the tests you've modified
+  instead of a full suite, for example:
+
+  ```powershell
+  build.ps1 -Command UnitTest -TestFilter "FullyQualifiedName~SomeTestClassName"
+  build.ps1 -Command IntegrationTest -TestFilter "FullyQualifiedName~SomeTestClassName"
+  ```
+
+  Note that `IntegrationTest` still resets the test databases for every supported
+  ODS version and runs all `*.DBTests` projects — `-TestFilter` only narrows which
+  tests execute within each project, and projects with no matching tests report
+  zero tests run rather than being skipped.
+
+  * Add `-NoBuild` to skip the implicit build step (passes `--no-build` to
+    `dotnet test`), useful when you've already built and are just re-running tests:
+
+  ```powershell
+  build.ps1 -Command UnitTest -TestFilter "FullyQualifiedName~SomeTestClassName" -NoBuild
+  ```
 
 Alternatively, you can run both unit and integration tests together with:  
 `build.ps1 -Command BuildAndTest [-RunCoverageAnalysis]`
@@ -207,8 +236,10 @@ Alternatively, you can run both unit and integration tests together with:
 > Code coverage analysis requires the `reportgenerator` tool.  
 > Install it with: `dotnet tool install -g dotnet-reportgenerator-globaltool`
 
-Additionally, there is a set of end-to-end (E2E) tests in Postman.  
-See [E2E Tests/README.md](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for more information.
+Additionally, there is a set of end-to-end (E2E) tests written for Bruno (open source alternative to Postman), in  
+[E2E Tests](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for more information.
+
+Run bruno e2e tests for a particular specification (v1, v2, v3) locally, e.g: `./eng/run-e2e-bruno.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`.
 
 All three test suites should pass successfully before merging new code into the `main` branch.
 
