@@ -64,7 +64,7 @@ script:pre-request {
 
     if (odsResponse.status === 201) {
       console.log("✅ OdsInstance created successfully");
-      const id = odsResponse.headers.get("location").split("/")[2];
+      const id = odsResponse.headers.get("location").split("/").pop();
       bru.setVar("OtherExistingOdsInstanceId", id);
     } else {
       console.log("❌ Failed to create odsInstances");
