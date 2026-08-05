@@ -23,6 +23,7 @@ public class AppSettings
     public bool MultiTenancy { get; set; }
     public bool PreventDuplicateApplications { get; set; }
     public bool EnableApplicationResetEndpoint { get; set; }
+    public bool EnableDataStoreManagement { get; set; } = true;
     public int EdOrgsRefreshIntervalInMins { get; set; }
     public int CreateOdsInstanceManagesSweepIntervalInMins { get; set; } = 5;
     public int CreateOdsInstanceManagesMaxRetryAttempts { get; set; } = 3;
