@@ -3,7 +3,6 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-# hadolint ignore=DL3006
 ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:6a16c62599f5f6d560685d56a733496b0c8451c8afb9255e31fefdd32c7d6d52
 FROM edfialliance/ods-api-db-admin:7.3.1@sha256:acc254de6cf385c23c9e6149c0cdc730ca414c7d04435df4cd78fc5540d4b176 AS legacy_assets
 
