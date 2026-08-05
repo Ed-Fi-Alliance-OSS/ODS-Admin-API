@@ -36,7 +36,7 @@ script:post-response {
       test("POST OdsInstances: Response includes location in header", function () {
 
           expect(res.getHeaders()).to.have.property("location".toLowerCase());
-          const id = res.getHeader("location").split("/")[2];
+          const id = res.getHeader("location").split("/").pop();
           if(id)
           {
               bru.setEnvVar("CreatedOdsInstanceId", id);
