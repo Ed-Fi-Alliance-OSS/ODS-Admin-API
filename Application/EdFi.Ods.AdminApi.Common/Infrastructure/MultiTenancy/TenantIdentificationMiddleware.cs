@@ -20,6 +20,14 @@ public partial class TenantResolverMiddleware(
     IOptions<AppSettings> options,
     IOptions<SwaggerSettings> swaggerOptions) : IMiddleware
 {
+    // AsyncLocal-backed context (tenantConfigurationContextProvider) reverts for a caller
+    // once this middleware's own InvokeAsync frame returns, so callers positioned outside
+    // it (e.g. AuditActionLoggingMiddleware, which must run outermost to see the final
+    // response status) cannot read it after calling next(). HttpContext.Items instead
+    // lives on the HttpContext instance itself, unaffected by that unwind, so it's mirrored
+    // here for any such caller.
+    public const string TenantConfigurationItemsKey = "TenantConfiguration";
+
     private readonly ITenantConfigurationProvider _tenantConfigurationProvider = tenantConfigurationProvider;
     private readonly IContextProvider<TenantConfiguration> _tenantConfigurationContextProvider = tenantConfigurationContextProvider;
     private readonly IOptions<AppSettings> _options = options;
@@ -47,6 +55,7 @@ public partial class TenantResolverMiddleware(
                     if (_tenantConfigurationProvider.Get().TryGetValue(tenantIdentifier!, out var tenantConfiguration))
                     {
                         _tenantConfigurationContextProvider.Set(tenantConfiguration);
+                        context.Items[TenantConfigurationItemsKey] = tenantConfiguration;
                     }
                     else
                     {
@@ -67,6 +76,7 @@ public partial class TenantResolverMiddleware(
                         _tenantConfigurationProvider.Get().TryGetValue(defaultTenant, out var tenantConfiguration))
                     {
                         _tenantConfigurationContextProvider.Set(tenantConfiguration);
+                        context.Items[TenantConfigurationItemsKey] = tenantConfiguration;
                     }
                     else
                     {

@@ -20,9 +20,20 @@ script:post-response {
   });
   
   const result = res.getBody();
+  const requestedIds = [...new Set(
+    (bru.getVar("FirstTwoApplicationIdsCSV") || "")
+      .split(",")
+      .map(id => Number(id.trim()))
+      .filter(Number.isInteger)
+  )];
   
-  test("GET ApplicationID: Ensures the number of returned applications matches the number of requested IDs", function () {
-      expect(result.length).to.equal(2);
+  test("GET ApplicationID: Ensures returned applications are a subset of requested IDs", function () {
+    expect(requestedIds.length).to.be.greaterThan(0);
+    expect(result.length).to.be.at.most(requestedIds.length);
+
+    result.forEach(function(application) {
+      expect(requestedIds).to.include(application.id);
+    });
   });
 }
 

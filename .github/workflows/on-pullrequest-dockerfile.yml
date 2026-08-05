@@ -14,7 +14,7 @@ on:
       - main
     paths:
       - ".github/workflows/on-pullrequest-dockerfile.yml"
-      - "Docker/*"
+      - "Docker/**"
   workflow_dispatch:
 
 env:
@@ -35,10 +35,12 @@ jobs:
         dockerfile:
           [
             { name: "v2-api-database", path: "Docker/Settings/V2/DB-Admin/pgsql/Dockerfile", type: "published" },
+            { name: "v3-api-database", path: "Docker/Settings/V3/DB-Admin/pgsql/Dockerfile", type: "published" },
             { name: "v1-api-database", path: "Docker/Settings/V1/DB-Admin/pgsql/Dockerfile", type: "published" },
             { name: "postgres", path: "Docker/api.pgsql.Dockerfile", type: "published" },
             { name: "v2-gateway", path: "Docker/Settings/V2/gateway/Dockerfile", type: "local" },
             { name: "v1-gateway", path: "Docker/Settings/V1/gateway/Dockerfile", type: "local" },
+            { name: "v3-database", path: "Docker/V3/db.pgsql.admin.Dockerfile", type: "local" },
             { name: "v2-database", path: "Docker/V2/db.pgsql.admin.Dockerfile", type: "local" },
             { name: "v1-database", path: "Docker/V1/db.pgsql.admin.Dockerfile", type: "local" },
             { name: "development", path: "Docker/dev.pgsql.Dockerfile", type: "local" },
@@ -79,7 +81,10 @@ jobs:
           dockerfile=$(echo "${{ matrix.dockerfile.path }}" | awk -F"/" '{print $NF}')
 
           lower_path=$(echo "${{ matrix.dockerfile.path }}" | tr '[:upper:]' '[:lower:]')
-          if [[ "$lower_path" == *v2* || "$lower_path" == *v1* ]]
+          if [[ "${{ matrix.dockerfile.type }}" == "published" && "$lower_path" == *db-admin/pgsql* ]]
+          then
+            docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context shared=../../../../ --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
+          elif [[ "$lower_path" == *v3* || "$lower_path" == *v2* || "$lower_path" == *v1* ]]
           then
             docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=../.. --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
           else

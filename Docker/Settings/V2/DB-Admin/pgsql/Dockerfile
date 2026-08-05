@@ -3,33 +3,27 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-#edfialliance/ods-api-db-admin:7.3.1
-FROM edfialliance/ods-api-db-admin:7.3.1@sha256:9d6c6ad298f5eb2ea58d7b2c1c7ea5f6bdfcd12d90028b98fbfea4237a5610f2 AS base
-LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
+ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:6a16c62599f5f6d560685d56a733496b0c8451c8afb9255e31fefdd32c7d6d52
+FROM edfialliance/ods-api-db-admin:7.3.1@sha256:acc254de6cf385c23c9e6149c0cdc730ca414c7d04435df4cd78fc5540d4b176 AS legacy_assets
 
-ARG POSTGRES_USER=postgres
-ENV POSTGRES_USER=${POSTGRES_USER}
-ENV POSTGRES_DB=postgres
+FROM alpine:3.22@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce AS prep
 
-ARG VERSION
 ARG ADMIN_API_VERSION
 ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
 
-USER root
-COPY run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
-RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 && rm -rf /var/cache/apk/*
-USER ${POSTGRES_USER}
+COPY --from=shared Settings/shared/DB-Admin/pgsql/run-adminapi-migrations.sh /tmp/3-run-adminapi-migrations.sh
+COPY --from=shared Settings/shared/DB-Admin/pgsql/entrypoint.sh /tmp/entrypoint.sh
+COPY --from=legacy_assets /docker-entrypoint-initdb.d/1-init-database.sh /tmp/1-init-database.sh
+COPY --from=legacy_assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
+COPY --from=legacy_assets /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
 
-FROM base AS setup
-
-USER root
-RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApi/versions/${VERSION}/content" && \
+RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 wget=1.25.0-r1 && \
+    wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApi/versions/${VERSION}/content" && \
     # Admin
     mkdir -p /tmp/AdminApiScripts/Admin/ && \
     unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Admin/* -d /tmp/AdminApiScripts/Admin/ && \
     cp -r /tmp/AdminApiScripts/Admin/AdminApi/Artifacts/PgSql/Structure/Admin/. /tmp/AdminApiScripts/Admin/PgSql/ && \
     rm -r /tmp/AdminApiScripts/Admin/AdminApi && \
-    dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
     dos2unix /tmp/AdminApiScripts/Admin/PgSql/* && \
     chmod -R 777 /tmp/AdminApiScripts/Admin/PgSql && \
     # Security
@@ -37,15 +31,32 @@ RUN wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi
     unzip /tmp/EdFi_AdminApi_Scripts.zip AdminApi/Artifacts/PgSql/Structure/Security/* -d /tmp/AdminApiScripts/Security/ && \
     cp -r /tmp/AdminApiScripts/Security/AdminApi/Artifacts/PgSql/Structure/Security/. /tmp/AdminApiScripts/Security/PgSql/ && \
     rm -r /tmp/AdminApiScripts/Security/AdminApi && \
-    dos2unix /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh && \
     dos2unix /tmp/AdminApiScripts/Security/PgSql/* && \
     chmod -R 777 /tmp/AdminApiScripts/Security/PgSql && \
-    # Clean up
-    rm -f /tmp/EdFi_AdminApi_Scripts.zip && \
-    apk del dos2unix unzip
+    dos2unix /tmp/1-init-database.sh && \
+    dos2unix /tmp/entrypoint.sh && \
+    chmod 755 /tmp/entrypoint.sh && \
+    dos2unix /tmp/3-run-adminapi-migrations.sh && \
+    rm -f /tmp/EdFi_AdminApi_Scripts.zip
+
+# hadolint ignore=DL3006
+FROM ${POSTGRES_BASE_IMAGE} AS setup
+LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
+
+ARG POSTGRES_USER=postgres
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_DB=postgres
+
+USER root
+COPY --from=prep /tmp/entrypoint.sh /usr/local/bin/adminapi-db-entrypoint.sh
+COPY --from=prep /tmp/1-init-database.sh /usr/local/share/adminapi-init/1-init-database.sh
+COPY --from=prep /tmp/3-run-adminapi-migrations.sh /usr/local/share/adminapi-init/3-run-adminapi-migrations.sh
+COPY --from=prep /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
+COPY --from=prep /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
+COPY --from=prep /tmp/AdminApiScripts /tmp/AdminApiScripts
 
 USER ${POSTGRES_USER}
 
 EXPOSE 5432
 
-CMD ["docker-entrypoint.sh", "postgres"]
+ENTRYPOINT ["/usr/local/bin/adminapi-db-entrypoint.sh"]

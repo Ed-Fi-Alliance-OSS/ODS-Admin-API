@@ -11,17 +11,25 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure;
 
 public static class EndpointRouteBuilderExtensions
 {
-    public static RouteHandlerBuilder WithResponseCode(this RouteHandlerBuilder builder, int code, string? description = null)
+    public static RouteHandlerBuilder WithResponseCode(this RouteHandlerBuilder builder, int code, string? description = null, string? locationDescription = null)
     {
         builder.Produces(code);
         builder.WithMetadata(new SwaggerResponseAttribute(code, description));
+        AddLocationHeaderDescription(builder, code, locationDescription);
         return builder;
     }
 
-    public static RouteHandlerBuilder WithResponse<T>(this RouteHandlerBuilder builder, int code, string? description = null)
+    public static RouteHandlerBuilder WithResponse<T>(this RouteHandlerBuilder builder, int code, string? description = null, string? locationDescription = null)
     {
         builder.Produces(code, responseType: typeof(T));
         builder.WithMetadata(new SwaggerResponseAttribute(code, description, typeof(T)));
+        AddLocationHeaderDescription(builder, code, locationDescription);
         return builder;
+    }
+
+    private static void AddLocationHeaderDescription(RouteHandlerBuilder builder, int code, string? locationDescription)
+    {
+        if (code == 201 && locationDescription is not null)
+            builder.WithMetadata(new LocationHeaderDescriptionMetadata(locationDescription));
     }
 }

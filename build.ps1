@@ -44,6 +44,18 @@
         Output: test results displayed in the console and saved to XML files.
 
     .EXAMPLE
+        .\build.ps1 unittest -TestFilter "FullyQualifiedName~SomeTestClassName"
+
+        Runs only the tests matching the given dotnet test filter expression.
+        Works with both UnitTest and IntegrationTest commands.
+
+    .EXAMPLE
+        .\build.ps1 unittest -NoBuild
+
+        Skips the implicit build step in `dotnet test` by passing "--no-build".
+        Works with both UnitTest and IntegrationTest commands.
+
+    .EXAMPLE
         .\build.ps1 push -NuGetApiKey $env:nuget_key
 
     .EXAMPLE
@@ -69,14 +81,14 @@
             SecurityDB       = "host=db-admin;port=5432;username=username;password=password;database=EdFi_Security;Application Name=EdFi.Ods.AdminApi;"
         }
 
-        ./build.ps1 -APIVersion ${{ inputs.version }} -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPIAndMD
+        ./build.ps1 -APIVersion ${{ inputs.version }} -Configuration Release -DockerEnvValues $p -Command GenerateOpenAPI
 
 #>
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '', Justification = 'False positive')]
 param(
     # Command to execute, defaults to "Build".
     [string]
-    [ValidateSet("Clean", "Build", "GenerateOpenAPIAndMD", "BuildAndPublish", "UnitTest", "IntegrationTest", "PackageApi"
+    [ValidateSet("Clean", "Build", "GenerateOpenAPI", "BuildAndPublish", "UnitTest", "IntegrationTest", "PackageApi"
         , "Push", "BuildAndTest", "BuildAndDeployToAdminApiDockerContainer"
         , "BuildAndRunAdminApiDevDocker", "RunAdminApiDevDockerContainer", "RunAdminApiDevDockerCompose", "Run", "CopyToDockerContext", "RemoveDockerContextFiles")]
     $Command = "Build",
@@ -135,7 +147,16 @@ param(
 
     # Option to run integration tests with no integrated security
     [string]
-    $DbPassword
+    $DbPassword,
+
+    # Optional dotnet test filter expression (e.g. "FullyQualifiedName~SomeClassName")
+    # to run a subset of tests within the UnitTest or IntegrationTest commands.
+    [string]
+    $TestFilter,
+
+    # Skip building before running tests; passes "--no-build" to dotnet test.
+    [switch]
+    $NoBuild
 )
 
 $Env:MSBUILDDISABLENODEREUSE = "1"
@@ -171,6 +192,8 @@ $script:coverageOutputFile = "coverage.cobertura.xml"
 $script:targetDir = "coveragereport"
 
 $script:RunCoverageAnalysis = $RunCoverageAnalysis
+$script:TestFilter = $TestFilter
+$script:NoBuild = $NoBuild
 
 Import-Module -Name "$PSScriptRoot/eng/build-helpers.psm1" -Force
 Import-Module -Name "$PSScriptRoot/eng/package-manager.psm1" -Force
@@ -213,25 +236,22 @@ function Compile {
 }
 
 function GenerateOpenAPI {
+    param(
+        [string]
+        $DocVersion
+    )
+
     Invoke-Execute {
         Push-Location $solutionRoot/EdFi.Ods.AdminApi/
-        $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$APIVersion.yaml"
         $dllPath = "./bin/Release/net10.0/EdFi.Ods.AdminApi.dll"
+        $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$DocVersion-$APIVersion.yaml"
 
         try {
-            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath v2
+            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath $DocVersion
         }
         finally {
             Pop-Location
         }
-    }
-}
-
-function GenerateDocumentation {
-    Invoke-Execute {
-        $outputOpenAPI = "docs/api-specifications/openapi-yaml/admin-api-$APIVersion.yaml"
-        $outputMD = "docs/api-specifications/markdown/admin-api-$APIVersion-summary.md"
-        widdershins --search false --omitHeader true --code true --summary $outputOpenAPI -o $outputMD
     }
 }
 
@@ -260,13 +280,19 @@ function RunTests {
     $testAssemblies | ForEach-Object {
         Write-Output "Executing: dotnet test $($_)"
         Invoke-Execute {
+            $filterArgs = @()
+            if ($script:TestFilter) { $filterArgs = @('--filter', $script:TestFilter) }
+
+            $noBuildArgs = @()
+            if ($script:NoBuild) { $noBuildArgs = @('--no-build') }
+
             if ($script:RunCoverageAnalysis)
             {
-                & dotnet test $_ --collect 'XPlat Code Coverage' --settings "$solutionRoot/coverlet.runsettings" --logger "trx;LogFileName=$($_).trx" --nologo
+                & dotnet test $_ --collect 'XPlat Code Coverage' --settings "$solutionRoot/coverlet.runsettings" --logger "trx;LogFileName=$($_).trx" --nologo @filterArgs @noBuildArgs
             }
             else
             {
-                & dotnet test $_ --logger "trx;LogFileName=$($_).trx" --nologo
+                & dotnet test $_ --logger "trx;LogFileName=$($_).trx" --nologo @filterArgs @noBuildArgs
             }
         }
     }
@@ -408,13 +434,15 @@ function Invoke-Build {
     Invoke-Step { Compile }
 }
 
-function Invoke-GenerateOpenAPIAndMD {
-    Invoke-Step { UpdateAppSettingsForAdminApi }
+function Invoke-GenerateOpenAPI {
     Invoke-Step { DotNetClean }
     Invoke-Step { Restore }
-    Invoke-Step { Compile }
-    Invoke-Step { GenerateOpenAPI }
-    Invoke-Step { GenerateDocumentation }
+
+    foreach ($docVersion in @("v2", "v3")) {
+        Invoke-Step { UpdateAppSettingsForAdminApi -AdminApiMode $docVersion }
+        Invoke-Step { Compile }
+        Invoke-Step { GenerateOpenAPI -DocVersion $docVersion }
+    }
 }
 
 function Invoke-SetAssemblyInfo {
@@ -539,10 +567,19 @@ function UpdateAppSettingsForAdminApiDocker {
 }
 
 function UpdateAppSettingsForAdminApi {
+    param(
+        [string]
+        $AdminApiMode
+    )
+
     $filePath = "$solutionRoot/EdFi.Ods.AdminApi/appsettings.json"
     $json = (Get-Content -Path $filePath) | ConvertFrom-Json
     $json.AppSettings.DatabaseEngine = $DockerEnvValues["DatabaseEngine"]
     $json.AppSettings.PathBase = $DockerEnvValues["PathBase"]
+
+    if ($AdminApiMode) {
+        $json.AppSettings.AdminApiMode = $AdminApiMode
+    }
 
     $json.Authentication.IssuerUrl = $DockerEnvValues["IssuerUrl"]
     $json.Authentication.SigningKey = $DockerEnvValues["SigningKey"]
@@ -641,7 +678,7 @@ Invoke-Main {
     switch ($Command) {
         Clean { Invoke-Clean }
         Build { Invoke-Build }
-        GenerateOpenAPIAndMD { Invoke-GenerateOpenAPIAndMD }
+        GenerateOpenAPI { Invoke-GenerateOpenAPI }
         BuildAndPublish {
             Invoke-SetAssemblyInfo
             Invoke-Build

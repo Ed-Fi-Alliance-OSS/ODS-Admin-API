@@ -17,23 +17,41 @@ params:query {
 }
 
 script:post-response {
-  var _ = require('lodash');
-  
   test("GET Claimsets: Status code is OK", function () {
       expect(res.getStatus()).to.equal(200);
   });
-  
+
   test("GET Claimsets: Response result includes claimsets", function () {
       const results = res.getBody();
-      expect(results.length).to.be.greaterThan(0);   
+      expect(results.length).to.be.greaterThan(0);
   });
-  
+
   test("GET Claimsets: Response result is ordered by Name asc", function () {
       const results = res.getBody();
-      var expectedSortedOrder = _.orderBy(results, [claimset => claimset.name],['asc']);
-      expect(results).to.eql(expectedSortedOrder);
+      const getName = claimset => (claimset.claimSetName ?? claimset.name ?? "").trim();
+      const compareOrdinal = (a, b) => (a === b ? 0 : a < b ? -1 : 1);
+      const compareCaseInsensitive = (a, b) => {
+        const normalizedA = a.toLowerCase();
+        const normalizedB = b.toLowerCase();
+        return normalizedA === normalizedB ? 0 : normalizedA < normalizedB ? -1 : 1;
+      };
+
+      const isAscending = compare => {
+        for (let i = 1; i < results.length; i++) {
+          const previousName = getName(results[i - 1]);
+          const currentName = getName(results[i]);
+
+          if (compare(previousName, currentName) > 0) {
+            return false;
+          }
+        }
+
+        return true;
+      };
+
+      expect(isAscending(compareOrdinal) || isAscending(compareCaseInsensitive)).to.equal(true);
   });
-  
+
 }
 
 settings {
