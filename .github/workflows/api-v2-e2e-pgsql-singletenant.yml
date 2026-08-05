@@ -15,6 +15,8 @@ on:
     branches: [main]
 
 env:
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   JIRA_ACCESS_TOKEN: ${{ secrets.JIRA_ACCESS_TOKEN }}
   ADMIN_API_VERSION: "2.2.0"
   PROJECT_ID: "13401"
@@ -48,6 +50,12 @@ jobs:
 
       - name: Update certificates
         run: cp -r ../../eng/test-certs/ssl ../../Docker/Settings
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_HUB_TOKEN }}
 
       - name: Run Admin API
         run: |
