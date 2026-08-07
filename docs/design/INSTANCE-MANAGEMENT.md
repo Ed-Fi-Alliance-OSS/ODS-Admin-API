@@ -206,3 +206,140 @@ background job.
 This value becomes `OdsInstanceManage.DatabaseName`, generated lazily by
 `CreateInstanceJob` the first time it processes the row (not at POST time —
 POST only validates that the *would-be* name fits within 63 characters).
+
+## Background Jobs (Quartz.NET)
+
+Both create and delete are asynchronous: the API endpoint only validates the
+request and schedules a Quartz job; the actual database work happens in a
+background worker.
+
+### Jobs, per version
+
+| Role | v2 class | v3 class |
+| --- | --- | --- |
+| Create worker | `CreateInstanceJob` (`EdFi.Ods.AdminApi...Jobs`) | `CreateInstanceJob` (`EdFi.Ods.AdminApi.V3...Jobs`) |
+| Delete worker | `DeleteInstanceJob` | `DeleteInstanceJob` |
+| Create dispatcher | `CreatePendingOdsInstanceManagesDispatcherJob` | `CreatePendingDataStoreManagesDispatcherJob` |
+| Delete dispatcher | `DeletePendingOdsInstanceManagesDispatcherJob` | `DeletePendingDataStoreManagesDispatcherJob` |
+
+The worker and dispatcher class *names* differ between v2 and v3, but the
+Quartz **job-key strings** they schedule under come from the shared
+`JobConstants` class
+(`Application/EdFi.Ods.AdminApi.Common/Infrastructure/Jobs/JobConstants.cs`)
+and are **identical** for both versions — e.g. both v2's and v3's create
+dispatcher schedule under the literal string
+`"CreatePendingOdsInstanceManagesDispatcherJob"`. There is no
+`*DataStoreManages*`-named constant. This is safe only because a single
+process runs exclusively the v2 job set *or* the v3 job set, gated by
+`AdminApiMode` in `Program.cs` — never both in the same Quartz scheduler. If
+that ever changed, the shared key strings would collide; treat this as a
+latent fragility worth keeping in mind.
+
+All four job classes inherit from `AdminApiQuartzJobBase`, which records
+`InProgress`, `Completed`, or `Error` runs into `adminapi.JobStatuses` keyed
+by job id and Quartz fire-instance id. This execution history is what the
+dispatcher's retry counting (below) reads from.
+
+### Create pipeline
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant API as Add*Manage endpoint
+    participant Db as adminapi.OdsInstanceManages
+    participant Quartz as Quartz scheduler
+    participant Worker as CreateInstanceJob
+    participant Provisioner as ISandboxProvisioner
+    participant Users as IUsersContext.OdsInstances
+
+    Client->>API: POST .../manage
+    API->>Db: Reject if name already exists (manage table or OdsInstance table)
+    API->>Db: Insert row with status PendingCreate
+    API->>Quartz: Schedule CreateInstanceJob (StartNow)
+    API-->>Client: 202 Accepted, Location header
+    Quartz->>Worker: Execute with OdsInstanceManageId (+ TenantName)
+    Worker->>Db: Load row, require PendingCreate, set CreateInProgress
+    Worker->>Worker: ValidatePendingState (reject if OdsInstanceId/Name already set)
+    Worker->>Db: Generate and persist DatabaseName if missing
+    Worker->>Provisioner: AddSandboxAsync(DatabaseName, SandboxType)
+    Worker->>Users: Insert or reuse name-matched OdsInstance
+    Worker->>Db: Set OdsInstanceId, OdsInstanceName, status Created
+    Note over Worker: On exception at any step: status set to CreateFailed
+```
+
+`ValidatePendingState` guards against processing a row that's already
+partially linked: it throws if `OdsInstanceId` or `OdsInstanceName` is
+already set, or if `DatabaseTemplate` is missing — either would mean the row
+isn't the fresh `PendingCreate` row it claims to be.
+
+### Delete pipeline
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client
+    participant API as Delete*Manage endpoint
+    participant Db as adminapi.OdsInstanceManages
+    participant Quartz as Quartz scheduler
+    participant Worker as DeleteInstanceJob
+    participant Provisioner as ISandboxProvisioner
+    participant Users as IUsersContext.OdsInstances
+
+    Client->>API: DELETE .../manage/{id}
+    API->>Db: Load row
+    alt status is not Created
+        API-->>Client: 400 (status-specific message)
+    else status is Deleted or row missing
+        API-->>Client: 404
+    else status is Created
+        API->>Db: Set status PendingDelete
+        API->>Quartz: Schedule DeleteInstanceJob (StartNow)
+        API-->>Client: 204 No Content
+        Quartz->>Worker: Execute with OdsInstanceManageId (+ TenantName)
+        Worker->>Db: Load row, require PendingDelete, set DeleteInProgress
+        Worker->>Provisioner: DeleteSandboxesAsync(DatabaseName) if set
+        Worker->>Users: Remove OdsInstance row if OdsInstanceId set
+        Worker->>Db: Set Deleted
+        Note over Worker: On exception at any step: status set to DeleteFailed
+    end
+```
+
+### Dispatcher sweep and retries
+
+A recurring dispatcher job (scheduled at startup in `Program.cs`) scans for
+records that need attention:
+
+* **Create dispatcher** queries rows in `PendingCreate` or `CreateFailed` only.
+* **Delete dispatcher** queries rows in `PendingDelete` or `DeleteFailed` only.
+
+Neither dispatcher ever queries `CreateInProgress` or `DeleteInProgress` — see
+[Known Limitations](#known-limitations).
+
+For a `*Failed` row, the dispatcher counts prior `Error`-status
+`adminapi.JobStatuses` rows matching that worker job's key prefix for this
+record. If the count is below the configured max, the row is promoted back
+to `Pending*` and re-queued; otherwise it's set to the terminal `*Error`
+status.
+
+| Configuration key | Default | Controls |
+| --- | --- | --- |
+| `AppSettings:CreateOdsInstanceManagesSweepIntervalInMins` | 120 (5 in local Development config) | How often the create dispatcher runs |
+| `AppSettings:DeleteOdsInstanceManagesSweepIntervalInMins` | 120 (5 in local Development config) | How often the delete dispatcher runs |
+| `AppSettings:CreateOdsInstanceManagesMaxRetryAttempts` | 3 | Max retries for `CreateFailed` before `CreateError` |
+| `AppSettings:DeleteOdsInstanceManagesMaxRetryAttempts` | 3 | Max retries for `DeleteFailed` before `DeleteError` |
+
+Retry counts are derived from `adminapi.JobStatuses` execution history rather
+than a dedicated counter column — this keeps retry accounting inside the
+existing Quartz execution trail without additional schema changes.
+
+### Tenant context propagation
+
+Quartz jobs run outside the HTTP pipeline, so the `TenantResolverMiddleware`
+that normally sets the active tenant for HTTP requests never runs for them.
+`CreateInstanceJob` and `DeleteInstanceJob` instead set the tenant context
+explicitly at the start of execution (and clear it in a `finally` block) so
+that `ConfigConnectionStringsProvider` and the sandbox provisioners resolve
+the correct per-tenant connection strings. This context is carried through
+`AsyncLocal`-based storage, which isolates each HTTP request's and each
+Quartz job's context to its own logical execution chain.
