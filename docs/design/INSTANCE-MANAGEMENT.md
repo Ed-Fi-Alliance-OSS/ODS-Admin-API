@@ -118,3 +118,91 @@ variants are terminal:
 | `Deleted` | Delete | Deletion succeeded |
 | `DeleteFailed` | Delete | Last attempt failed — retryable by dispatcher |
 | `DeleteError` | Delete | Max retries exhausted — terminal, manual fix required |
+
+## REST API
+
+| Operation | v2 route | v3 route |
+| --- | --- | --- |
+| Create | `POST /v2/odsInstances/manage` | `POST /v3/dataStores/manage` |
+| Read all | `GET /v2/odsInstances/manage` | `GET /v3/dataStores/manage` |
+| Read by id | `GET /v2/odsInstances/manage/{id}` | `GET /v3/dataStores/manage/{id}` |
+| Delete | `DELETE /v2/odsInstances/manage/{id}` | `DELETE /v3/dataStores/manage/{id}` |
+
+v2 lives in `Application/EdFi.Ods.AdminApi/Features/OdsInstances/Manage/`; v3
+in `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/Manage/`. Behavior is
+byte-for-byte identical between the two — only the route path and the
+"OdsInstanceManage"/"DataStoreManage" wording in error messages differ. The
+rest of this section describes both together.
+
+### Create
+
+```http
+POST /v2/odsInstances/manage
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "name": "My New Instance",
+  "databaseTemplate": "Minimal"
+}
+```
+
+* `databaseTemplate` must be exactly `"Minimal"` or `"Sample"` (case-sensitive
+  — these are the `SandboxType` enum member names, not free text).
+* `name` must match `^[A-Za-z0-9 _]+$` and be 1–100 characters.
+* The request is rejected if `name` (trimmed) already matches a non-`Deleted`
+  `OdsInstanceManage.Name`, or an existing `OdsInstance.Name`.
+* The request is rejected if the database name that would be generated from
+  `name` + `databaseTemplate` (see below) would exceed 63 characters.
+* On success, a new `OdsInstanceManage` row is inserted with status
+  `PendingCreate`, `CreateInstanceJob` is scheduled to run immediately, and
+  the endpoint returns **202 Accepted** with a `Location` header pointing at
+  the new record. Provisioning happens later, in the background job — the
+  response does not mean the database exists yet.
+
+### Delete
+
+```http
+DELETE /v2/odsInstances/manage/{id}
+Authorization: Bearer <token>
+```
+
+**Only `Created` records are deletable.** Every other status is blocked:
+
+| Current status | Response | Reason |
+| --- | --- | --- |
+| `PendingCreate` | 400 | Create is queued; deleting now would race with the create job. |
+| `CreateInProgress` | 400 | Create is actively executing; same race risk. |
+| `CreateFailed` | 400 | Create may have partially provisioned the database; requires human inspection before deletion. |
+| `CreateError` | 400 | Same partial-provisioning risk as `CreateFailed`. |
+| `PendingDelete` | 400 | Already queued for deletion. |
+| `DeleteInProgress` | 400 | Deletion is actively executing. |
+| `DeleteFailed` | 400 | Previous attempt failed; the dispatcher retries automatically. |
+| `DeleteError` | 400 | Max retries exhausted; requires manual DB-level intervention. |
+| `Deleted` | 404 | Treated as not found. |
+| *(id doesn't exist)* | 404 | Not found. |
+
+On success, the endpoint sets status to `PendingDelete`, schedules
+`DeleteInstanceJob` to run immediately, and returns **204 No Content**. The
+physical database drop and `OdsInstance` row removal happen later, in the
+background job.
+
+> Both endpoints raise `ValidationException` (→ 400) or an
+> `INotFoundException<int>` (→ 404) — there is no 422 anywhere in this path,
+> in either API version.
+
+### Database name generation
+
+`OdsInstanceManageDatabaseNameFormatter` (v2) /
+`DataStoreManageDatabaseNameFormatter` (v3) implement identical logic:
+
+1. Normalize `name` and `databaseTemplate`: replace spaces with `_`, trim
+   leading/trailing `_`.
+2. Strip a leading `EdFi_Ods` prefix run from the normalized name
+   (case-insensitive, matches one or more repeats with any underscore run).
+3. Compose `EdFi_Ods_{name}_{databaseTemplate}`, or
+   `EdFi_Ods_{databaseTemplate}` if step 2 left the name segment empty.
+
+This value becomes `OdsInstanceManage.DatabaseName`, generated lazily by
+`CreateInstanceJob` the first time it processes the row (not at POST time —
+POST only validates that the *would-be* name fits within 63 characters).
