@@ -275,7 +275,7 @@ Validation of API requests is configured via
 
 The `POST /v2/odsInstances/manage` flow is asynchronous. The endpoint persists a `Pending` `OdsInstanceManage`, schedules `CreateInstanceJob`, and returns `202 Accepted` immediately. A separate recurring `CreatePendingOdsInstanceManagesDispatcherJob` handles sweep-based recovery and capped retries for records that remain in `Pending` or move to `Error`.
 
-Use [design/INSTANCE-MANAGEMENT-Quartz.md](design/INSTANCE-MANAGEMENT-Quartz.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
+Use [design/INSTANCE-MANAGEMENT.md](design/INSTANCE-MANAGEMENT.md) as the durable design reference for the API, job identities, retry strategy, and Mermaid diagrams of the API and background-job flows.
 
 ### Disabling DataStore Management
 
