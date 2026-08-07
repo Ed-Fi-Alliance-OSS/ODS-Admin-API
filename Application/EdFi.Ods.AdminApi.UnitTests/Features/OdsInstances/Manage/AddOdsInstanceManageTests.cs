@@ -435,6 +435,17 @@ public class AddOdsInstanceManageTests
             error.PropertyName == nameof(AddOdsInstanceManage.AddOdsInstanceManageRequest.Name)
             && error.ErrorMessage == "An OdsInstance named 'Existing Instance' already exists.");
     }
+
+    [Test]
+    public async Task Handle_WhenDataStoreManagementDisabled_ThrowsValidationException()
+    {
+        var disabledOptions = Options.Create(new AppSettings { EnableDataStoreManagement = false });
+
+        var exception = await Should.ThrowAsync<ValidationException>(async () =>
+            await AddOdsInstanceManage.Handle(null!, null!, null!, null!, disabledOptions, null!));
+
+        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
+    }
 }
 
 #nullable restore

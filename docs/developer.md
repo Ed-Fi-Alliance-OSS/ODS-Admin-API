@@ -277,6 +277,19 @@ The `POST /v2/odsInstances/manage` flow is asynchronous. The endpoint persists a
 
 Use [design/INSTANCE-MANAGEMENT-Quartz.md](design/INSTANCE-MANAGEMENT-Quartz.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
 
+### Disabling DataStore Management
+
+Set `AppSettings:EnableDataStoreManagement` to `false` (default `true`) to fully disable instance-management: the 8 Manage endpoints (V2 `/odsInstances/manage*`, V3 `/dataStores/manage*`) return `400` with a "disabled on application settings" message, and the 4 create/delete dispatcher jobs (2× V2, 2× V3) are skipped at startup. `RefreshEducationOrganizationsJob` is unaffected and continues to run regardless of this flag.
+
+To exercise the disabled-flag path via Bruno E2E locally, set the compose env var before running the suite, e.g.:
+
+```powershell
+$env:ENABLE_DATA_STORE_MANAGEMENT = "false"
+./eng/run-bruno-e2e.ps1 -ApiVersion 3 -BrunoFilter "v3/DataStores/Manage"
+```
+
+Then temporarily rename the `*.bru.disabled` "Feature Disabled" specs in the `Manage/` folders to `*.bru` to include them in that run. Note that the filter still runs the whole `Manage/` folder, so the other, pre-existing specs in that folder are expected to fail while the flag is off (they assert 2xx/404 responses that become `400`); only the renamed "Feature Disabled" spec's pass/fail is meaningful for that particular run.
+
 ### Audit Trail Logging
 
 Admin API can record authentication and administrative-action events to a

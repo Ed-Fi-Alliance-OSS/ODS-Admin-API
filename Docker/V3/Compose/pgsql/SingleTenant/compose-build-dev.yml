@@ -41,6 +41,7 @@ services:
       AppSettings__DefaultPageSizeLimit: ${PAGING_LIMIT:-25}
       AppSettings__DefaultPageSizeOffset: ${PAGING_OFFSET:-0}
       AppSettings__EnableApplicationResetEndpoint: ${ENABLE_APPLICATION_RESET_ENDPOINT:-true}
+      AppSettings__EnableDataStoreManagement: ${ENABLE_DATA_STORE_MANAGEMENT:-true}
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-false}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
@@ -63,6 +64,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       POSTGRES_USER: "${POSTGRES_USER}"
+      SwaggerSettings__EnableSwagger: ${SWAGGER_ENABLED:-true}
     entrypoint: ["/bin/sh"]
     command: ["-c","/app/run.sh"]
     depends_on:
