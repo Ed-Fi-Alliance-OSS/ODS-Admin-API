@@ -354,15 +354,15 @@ v2 and v3:
 ```csharp
 public interface ISandboxProvisioner
 {
-    void AddSandbox(string databaseName, string templateName);
+    void AddSandbox(string sandboxKey, SandboxType sandboxType);
     void DeleteSandboxes(params string[] databaseNames);
     void RenameSandbox(string oldName, string newName);
     SandboxStatus GetSandboxStatus(string databaseName);
-    Task AddSandboxAsync(string databaseName, string templateName);
+    Task AddSandboxAsync(string sandboxKey, SandboxType sandboxType);
     Task DeleteSandboxesAsync(params string[] databaseNames);
     Task RenameSandboxAsync(string oldName, string newName);
     Task<SandboxStatus> GetSandboxStatusAsync(string databaseName);
-    Task CopySandboxAsync(string sourceName, string targetName);
+    Task CopySandboxAsync(string originalDatabaseName, string newDatabaseName);
 }
 ```
 
