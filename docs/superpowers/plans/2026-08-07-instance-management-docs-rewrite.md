@@ -1,3 +1,37 @@
+# Instance/DataStore Management Docs Rewrite Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace three stale design docs (`INSTANCE-MANAGEMENT.md`, `INSTANCE-MANAGEMENT-Quartz.md`, `INSTANCE-MANAGEMENT-Service.md`) with a single accurate, consolidated `docs/design/INSTANCE-MANAGEMENT.md`, and fix the two stale cross-references that point at the old file set.
+
+**Architecture:** This is a documentation-only change — no application code is touched. The consolidated doc is built up section-by-section across tasks 1–6 (Overview → Data Model → REST API → Background Jobs → Sandbox Provisioning → Tenant Integration/Known Limitations), then task 7 deletes the two now-redundant files and repairs the two stale cross-references, followed by a final whole-document accuracy sweep.
+
+**Tech Stack:** Markdown, Mermaid (C4Container / sequenceDiagram diagrams), git.
+
+## Global Constraints
+
+* No `DbInstance`/`DbDataStore` naming may remain anywhere in the new doc — see spec §"Verified facts driving corrections".
+* v2 and v3 are described together in one narrative; differences are called out inline only where they actually diverge (spec: single-narrative decision).
+* The tenant-context-propagation historical bug writeup is compressed to one short paragraph — no race-condition narrative or rejected-alternatives discussion (spec decision).
+* The unmerged `EnableDataStoreManagement` feature flag (`ADMINAPI-1489`) and any uncommitted local `appsettings.json`/`appsettings.Development.json` changes are out of scope and must not be documented as current behavior.
+* Every fact in the new doc must trace to the "Verified facts driving corrections" section of `docs/superpowers/specs/2026-08-07-instance-management-docs-rewrite-design.md` — do not introduce unverified claims (e.g. don't invent config key names or defaults not confirmed there).
+* Follow `.editorconfig` / repo Markdown conventions already used in `docs/design/*.md` (ATX headers, fenced code blocks with language tags, GitHub-flavored Mermaid fences).
+
+---
+
+## Task 1: Scaffold the doc — Overview, Architecture, Configuration
+
+**Files:**
+- Create: `docs/design/INSTANCE-MANAGEMENT.md`
+
+**Interfaces:**
+- Produces: the file itself, ending in a `## Configuration` section whose last line is `` `Tenants:{tenant}:ConnectionStrings:EdFi_Master` entries.`` — Task 2 anchors its insertion there.
+
+- [ ] **Step 1: Write the file**
+
+Create `docs/design/INSTANCE-MANAGEMENT.md` with exactly this content:
+
+```markdown
 # Ed-Fi Admin API — ODS Instance / Data Store Management
 
 This document describes the design and implementation of ODS database
@@ -13,11 +47,7 @@ model and job infrastructure:
 * **Admin API v3** — `DataStoreManage`, routed under `/v3/dataStores/manage`
 
 A running process serves exactly one of v2 or v3, set via
-`AppSettings:AdminApiMode` — never both in the same process. The C# code
-defaults to `v2` when the setting is unset (`Program.cs`:
-`GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2)`), but the
-checked-in `Application/EdFi.Ods.AdminApi/appsettings.json` sets `v3`, so an
-unmodified deployment runs v3.
+`AppSettings:AdminApiMode` (default `v2`) — never both in the same process.
 
 ## System Architecture
 
@@ -53,65 +83,57 @@ C4Container
     UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
 ```
 
-## Configuration and Prerequisites
-
-### Database credentials
+## Configuration
 
 Two sets of database credentials are required:
 
 * **Regular DDL credentials** (`ConnectionStrings:EdFi_Ods`) — used for
-  standard data definition language operations on managed databases. This also
-  supplies the connection-string *shape* that `CreateInstanceJob` rewrites (new
-  database name substituted) into the persisted
-  `OdsInstance.ConnectionString`.
+  standard data definition language operations on managed databases.
 * **Admin/maintenance credentials** (`ConnectionStrings:EdFi_Master`) — used
   for connecting to the maintenance database (`postgres` on PostgreSQL,
-  `master` on SQL Server). Required for database create/drop operations. On
-  PostgreSQL this must point at `postgres`, not at an ODS database.
+  `master` on SQL Server). Required for database create/drop operations.
 
-### Other prerequisites
+When multi-tenancy is enabled (`AppSettings:MultiTenancy`), each tenant must
+have its own `Tenants:{tenant}:ConnectionStrings:EdFi_Ods` and
+`Tenants:{tenant}:ConnectionStrings:EdFi_Master` entries.
+```
 
-The feature only works end to end when all of the following hold:
+- [ ] **Step 2: Verify no stale naming and the anchor line is present**
 
-* **`AppSettings:EncryptionKey` is set to a valid base64-encoded key.**
-  `CreateInstanceJob` uses it to encrypt the `OdsInstance.ConnectionString` it
-  persists (`BuildEncryptedConnectionString` does
-  `_options.Value.EncryptionKey ?? throw new InvalidOperationException(...)`
-  and then `Convert.FromBase64String`). A missing or non-base64 key throws on
-  every create job, so every create lands in `CreateFailed` and eventually
-  `CreateError` — with the database possibly already provisioned, since the
-  encryption step runs *after* `AddSandboxAsync`.
-* **`AppSettings:AdminApiMode` is `v2` or `v3`** — whichever mode is active,
-  `Program.cs` only registers that mode's recurring dispatcher jobs at startup.
-* **Quartz services are registered and the Quartz hosted service is enabled**,
-  otherwise neither the immediately-scheduled worker jobs nor the recurring
-  dispatchers ever run.
-* **Admin API database migrations are applied**, so `adminapi.OdsInstanceManages`
-  and `adminapi.JobStatuses` exist.
-* **`AppSettings:DatabaseEngine` matches the actual platform**, since it selects
-  the `ISandboxProvisioner` implementation once at startup (see
-  [Provisioner selection](#provisioner-selection)).
+Run:
+```bash
+grep -c "DbInstance\|DbDataStore" docs/design/INSTANCE-MANAGEMENT.md
+tail -3 docs/design/INSTANCE-MANAGEMENT.md
+```
+Expected: first command prints `0`; `tail` shows the `Tenants:{tenant}:ConnectionStrings:EdFi_Master` line as the last line of the file.
 
-### Multi-tenancy
+- [ ] **Step 3: Commit**
 
-When multi-tenancy is enabled (`AppSettings:MultiTenancy`), every configured
-tenant must have its own `Tenants:{tenant}:ConnectionStrings:` entries for
-**`EdFi_Admin`, `EdFi_Security`, `EdFi_Ods`, and `EdFi_Master`**. `EdFi_Ods`
-and `EdFi_Master` are needed before a worker job runs for that tenant, since
-`CreateInstanceJob` reads the tenant ODS shape directly from
-`Tenants:{tenant}:ConnectionStrings:EdFi_Ods` and throws if it is absent (and
-likewise needs the maintenance connection for create/drop). `EdFi_Security`
-is not read by the worker path — `TenantSpecificDbContextProvider` only uses
-`AdminConnectionString` (`EdFi_Admin`) to build tenant-specific
-`AdminApiDbContext` / `IUsersContext` instances. Instead, `EdFi_Security` is
-required because `TenantService.GetTenantsAsync`
-(`Application/EdFi.Ods.AdminApi/Infrastructure/Services/Tenants/TenantService.cs:76`)
-does `tenantConfig.Value.ConnectionStrings.First(p => p.Key == "EdFi_Security")`
-for every tenant, which throws if any tenant is missing it — and this method
-runs during startup dispatcher scheduling (`Program.cs`, the
-`GetTenantsAsync(fromCache: true)` calls that feed the create/delete
-dispatcher registration loops), so a tenant missing `EdFi_Security` breaks
-dispatcher scheduling for *all* tenants at startup, not just itself.
+```bash
+git add docs/design/INSTANCE-MANAGEMENT.md
+git commit -m "docs(ADMINAPI-1485): scaffold consolidated instance management doc"
+```
+
+---
+
+## Task 2: Data Model section
+
+**Files:**
+- Modify: `docs/design/INSTANCE-MANAGEMENT.md` (append after Task 1's content)
+
+**Interfaces:**
+- Consumes: the file ending in the `Tenants:{tenant}:ConnectionStrings:EdFi_Master` line (Task 1's anchor).
+- Produces: file now ends with the Status values table; last row is `| \`DeleteError\` | Delete | Max retries exhausted — terminal, manual fix required |`.
+
+- [ ] **Step 1: Append the Data Model section**
+
+Use Edit with `old_string` set to the last line of Task 1's file:
+```
+`Tenants:{tenant}:ConnectionStrings:EdFi_Master` entries.
+```
+and `new_string`:
+```
+`Tenants:{tenant}:ConnectionStrings:EdFi_Master` entries.
 
 ## Data Model
 
@@ -138,20 +160,6 @@ CREATE TABLE [adminapi].[OdsInstanceManages] (
     CONSTRAINT [PK_OdsInstanceManages] PRIMARY KEY ([Id])
 )
 ```
-
-The block above is the SQL Server shape (a PostgreSQL equivalent exists under
-`Artifacts/PgSql/`) and shows columns only — the table also carries two
-non-unique indexes: on `Name` and on `OdsInstanceId` (`IX_OdsInstanceManages_Name`
-/ `IX_OdsInstanceManages_OdsInstanceId` on SQL Server;
-`idx_odsinstancemanages_name` / `idx_odsinstancemanages_odsinstanceid` on
-PostgreSQL).
-
-> **Grepping the migrations?** There is no `CREATE TABLE ... OdsInstanceManages`
-> statement anywhere in `Application/EdFi.Ods.AdminApi/Artifacts/`. The table was
-> originally created as `adminapi.DbInstances` by
-> `00005-CreateDbInstances.sql` and renamed (along with its primary key and both
-> indexes) by `00007-RenameDbInstancesToOdsInstanceManages.sql`. Both files exist
-> in `Artifacts/MsSql/Structure/Admin/` and `Artifacts/PgSql/Structure/Admin/`.
 
 > **Note:** `DatabaseName` is 255 characters wide at the schema level, but the
 > create-request validator additionally rejects any request whose *generated*
@@ -182,6 +190,45 @@ variants are terminal:
 | `Deleted` | Delete | Deletion succeeded |
 | `DeleteFailed` | Delete | Last attempt failed — retryable by dispatcher |
 | `DeleteError` | Delete | Max retries exhausted — terminal, manual fix required |
+```
+
+- [ ] **Step 2: Verify**
+
+Run:
+```bash
+grep -c "DbInstance\|DbDataStore" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "NOT NULL\], not the schema" docs/design/INSTANCE-MANAGEMENT.md || true
+tail -3 docs/design/INSTANCE-MANAGEMENT.md
+```
+Expected: first command prints `0`; `tail` ends with the `DeleteError` row of the Status values table.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/design/INSTANCE-MANAGEMENT.md
+git commit -m "docs(ADMINAPI-1485): add data model section"
+```
+
+---
+
+## Task 3: REST API section
+
+**Files:**
+- Modify: `docs/design/INSTANCE-MANAGEMENT.md` (append after Task 2's content)
+
+**Interfaces:**
+- Consumes: file ending in the Status values table's `DeleteError` row (Task 2's anchor).
+- Produces: file now ends with the Database name generation subsection.
+
+- [ ] **Step 1: Append the REST API section**
+
+Use Edit with `old_string`:
+```
+| `DeleteError` | Delete | Max retries exhausted — terminal, manual fix required |
+```
+and `new_string`:
+```
+| `DeleteError` | Delete | Max retries exhausted — terminal, manual fix required |
 
 ## REST API
 
@@ -194,28 +241,9 @@ variants are terminal:
 
 v2 lives in `Application/EdFi.Ods.AdminApi/Features/OdsInstances/Manage/`; v3
 in `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/Manage/`. Behavior is
-equivalent apart from four things:
-
-1. the route path;
-2. the `OdsInstanceManage` / `DataStoreManage` wording in **create-validator**
-   error messages (`AddOdsInstanceManage.Validator` vs
-   `AddDataStoreManage.Validator`) — the delete endpoint's status-blocked
-   messages use identical `OdsInstanceManage` wording in both versions (see
-   [Delete](#delete));
-3. the POST `Location` header — v2 returns a **relative** path
-   (`Results.Accepted($"/odsinstances/manage/{added.Id}", null)` in
-   `AddOdsInstanceManage.Handle`), while v3 returns an **absolute** URL built by
-   `ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dataStores/manage/{added.Id}")`
-   in `AddDataStoreManage.Handle`, which is why v3's handler takes an extra
-   `HttpContext` parameter that v2's does not;
-4. the read response DTO field names — v2's `OdsInstanceManageModel` exposes
-   `OdsInstanceId` / `OdsInstanceName`, while v3's `DataStoreManageModel`
-   exposes `DataStoreId` / `DataStoreName`
-   (`DataStoreManageMapper.ToModel` maps them straight from the same
-   underlying `OdsInstanceManage.OdsInstanceId` / `OdsInstanceName` fields) —
-   same underlying data, different field names on the wire.
-
-Everything else in this section describes both versions together.
+byte-for-byte identical between the two — only the route path and the
+"OdsInstanceManage"/"DataStoreManage" wording in error messages differ. The
+rest of this section describes both together.
 
 ### Create
 
@@ -289,6 +317,48 @@ background job.
 This value becomes `OdsInstanceManage.DatabaseName`, generated lazily by
 `CreateInstanceJob` the first time it processes the row (not at POST time —
 POST only validates that the *would-be* name fits within 63 characters).
+```
+
+- [ ] **Step 2: Verify**
+
+Run:
+```bash
+grep -n "202\|204" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "422" docs/design/INSTANCE-MANAGEMENT.md
+```
+Expected: the `202` hit is only in the Create section (POST), the `204` hit is only in the Delete section (DELETE); the `422` count is `0`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/design/INSTANCE-MANAGEMENT.md
+git commit -m "docs(ADMINAPI-1485): add REST API section"
+```
+
+---
+
+## Task 4: Background Jobs section
+
+**Files:**
+- Modify: `docs/design/INSTANCE-MANAGEMENT.md` (append after Task 3's content)
+
+**Interfaces:**
+- Consumes: file ending in the Database name generation subsection (Task 3's anchor: the paragraph ending "...fits within 63 characters.").
+- Produces: file now ends with the Tenant context propagation subsection.
+
+- [ ] **Step 1: Append the Background Jobs section**
+
+Use Edit with `old_string`:
+```
+This value becomes `OdsInstanceManage.DatabaseName`, generated lazily by
+`CreateInstanceJob` the first time it processes the row (not at POST time —
+POST only validates that the *would-be* name fits within 63 characters).
+```
+and `new_string`:
+```
+This value becomes `OdsInstanceManage.DatabaseName`, generated lazily by
+`CreateInstanceJob` the first time it processes the row (not at POST time —
+POST only validates that the *would-be* name fits within 63 characters).
 
 ## Background Jobs (Quartz.NET)
 
@@ -342,11 +412,10 @@ sequenceDiagram
     API->>Quartz: Schedule CreateInstanceJob (StartNow)
     API-->>Client: 202 Accepted, Location header
     Quartz->>Worker: Execute with OdsInstanceManageId (+ TenantName)
-    Worker->>Db: Load row, require PendingCreate
+    Worker->>Db: Load row, require PendingCreate, set CreateInProgress
     Worker->>Worker: ValidatePendingState (reject if OdsInstanceId/Name already set)
-    Worker->>Db: Set CreateInProgress and persist generated DatabaseName if missing
+    Worker->>Db: Generate and persist DatabaseName if missing
     Worker->>Provisioner: AddSandboxAsync(DatabaseName, SandboxType)
-    Worker->>Worker: Build and encrypt OdsInstance.ConnectionString
     Worker->>Users: Insert or reuse name-matched OdsInstance
     Worker->>Db: Set OdsInstanceId, OdsInstanceName, status Created
     Note over Worker: On exception at any step: status set to CreateFailed
@@ -356,15 +425,6 @@ sequenceDiagram
 partially linked: it throws if `OdsInstanceId` or `OdsInstanceName` is
 already set, or if `DatabaseTemplate` is missing — either would mean the row
 isn't the fresh `PendingCreate` row it claims to be.
-
-Note the step ordering: `AddSandboxAsync` provisions the physical database
-*before* the connection string is built and encrypted. The
-connection string is derived from the configured `EdFi_Ods` shape with the
-generated `DatabaseName` substituted, then encrypted with
-`AppSettings:EncryptionKey` (see
-[Configuration and Prerequisites](#configuration-and-prerequisites)). A missing
-or invalid encryption key therefore fails the job only after the database
-already exists.
 
 ### Delete pipeline
 
@@ -398,42 +458,6 @@ sequenceDiagram
     end
 ```
 
-### Job identity and payload
-
-Worker jobs use a per-record Quartz key so retries and status tracking can
-target one row (`CreateInstanceJob.BuildJobIdentity` /
-`DeleteInstanceJob.BuildJobIdentity`; the name segment comes from
-`JobConstants.CreateInstanceJobName` / `JobConstants.DeleteInstanceJobName`):
-
-| Job | Single-tenant key | Multi-tenant key |
-| --- | --- | --- |
-| `CreateInstanceJob` | `CreateInstanceJob-{id}` | `CreateInstanceJob-{tenantName}-{id}` |
-| `DeleteInstanceJob` | `DeleteInstanceJob-{id}` | `DeleteInstanceJob-{tenantName}-{id}` |
-
-Dispatcher jobs use one fixed key per process (recurring, not per-record),
-assembled in `Program.cs` at startup. Note the separator: workers use `-`,
-dispatchers use `_` before the tenant name.
-
-| Job | Single-tenant key | Multi-tenant key |
-| --- | --- | --- |
-| Create dispatcher (v2/v3 shared string) | `CreatePendingOdsInstanceManagesDispatcherJob` | `CreatePendingOdsInstanceManagesDispatcherJob_{tenantName}` |
-| Delete dispatcher (v2/v3 shared string) | `DeletePendingOdsInstanceManagesDispatcherJob` | `DeletePendingOdsInstanceManagesDispatcherJob_{tenantName}` |
-
-In multi-tenant mode one dispatcher pair is scheduled *per tenant*, each
-carrying that tenant's name in its job data.
-
-The job data map carries `JobConstants.OdsInstanceManageIdKey`
-(`"OdsInstanceManageId"` — the record id) and, when multi-tenancy is enabled,
-`JobConstants.TenantNameKey` (`"TenantName"`). Both worker jobs throw if
-`OdsInstanceManageId` is absent, or if `TenantName` is absent while
-multi-tenancy is on.
-
-The dispatcher's retry count (see below) is derived by counting persisted
-`adminapi.JobStatuses` rows whose `JobId` starts with `{workerJobKey}_` for that
-record — `AdminApiQuartzJobBase` writes each run under
-`{jobKey}_{fireInstanceId}`, so the worker's key is a prefix of every run it has
-ever recorded for that row.
-
 ### Dispatcher sweep and retries
 
 A recurring dispatcher job (scheduled at startup in `Program.cs`) scans for
@@ -451,34 +475,16 @@ record. If the count is below the configured max, the row is promoted back
 to `Pending*` and re-queued; otherwise it's set to the terminal `*Error`
 status.
 
-| Configuration key | Value in `appsettings.json` | Controls |
+| Configuration key | Default | Controls |
 | --- | --- | --- |
 | `AppSettings:CreateOdsInstanceManagesSweepIntervalInMins` | 120 (5 in local Development config) | How often the create dispatcher runs |
 | `AppSettings:DeleteOdsInstanceManagesSweepIntervalInMins` | 120 (5 in local Development config) | How often the delete dispatcher runs |
 | `AppSettings:CreateOdsInstanceManagesMaxRetryAttempts` | 3 | Max retries for `CreateFailed` before `CreateError` |
 | `AppSettings:DeleteOdsInstanceManagesMaxRetryAttempts` | 3 | Max retries for `DeleteFailed` before `DeleteError` |
 
-The column above reports what the shipped `appsettings.json` files contain, not
-the C# fallbacks. The `AppSettings` class defaults are different — 5 minutes for
-each sweep interval and 3 for each max-retry count
-(`Application/EdFi.Ods.AdminApi.Common/Settings/AppSettings.cs`).
-
-**Operationally important:** the sweep-interval settings are read from raw
-configuration in `Program.cs` and gated by `double.TryParse`. If a
-sweep-interval value is absent or unparseable, that dispatcher is **not
-scheduled at all** — startup logs an error
-(`"Invalid value for ...SweepIntervalInMins"`) and continues, so the process
-comes up healthy but no sweep-based recovery or retry ever happens. The
-`AppSettings` C# default of 5 does not rescue this, because the scheduling
-decision never consults the bound `AppSettings` object. In v3 mode the gate is
-stricter still (`TryParse(...) && value > 0`), so a `0` also disables
-scheduling.
-
 Retry counts are derived from `adminapi.JobStatuses` execution history rather
 than a dedicated counter column — this keeps retry accounting inside the
-existing Quartz execution trail without additional schema changes. The
-dispatcher falls back to a hardcoded `DefaultMaxRetryAttempts` of 3 if the
-configured max-retry value is not greater than zero.
+existing Quartz execution trail without additional schema changes.
 
 ### Tenant context propagation
 
@@ -488,6 +494,47 @@ that normally sets the active tenant for HTTP requests never runs for them.
 explicitly at the start of execution (and clear it in a `finally` block) so
 that `ConfigConnectionStringsProvider` and the sandbox provisioners resolve
 the correct per-tenant connection strings. This context is carried through
+`AsyncLocal`-based storage, which isolates each HTTP request's and each
+Quartz job's context to its own logical execution chain.
+```
+
+- [ ] **Step 2: Verify**
+
+Run:
+```bash
+grep -c "DbInstance\|DbDataStore" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "HashtableContextStorage" docs/design/INSTANCE-MANAGEMENT.md
+tail -8 docs/design/INSTANCE-MANAGEMENT.md
+```
+Expected: first count is `0`; second count is `0` (confirms the historical bug narrative was compressed out, not carried over); `tail` ends with the tenant-context-propagation paragraph.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/design/INSTANCE-MANAGEMENT.md
+git commit -m "docs(ADMINAPI-1485): add background jobs section"
+```
+
+---
+
+## Task 5: Sandbox Provisioning Layer section
+
+**Files:**
+- Modify: `docs/design/INSTANCE-MANAGEMENT.md` (append after Task 4's content)
+
+**Interfaces:**
+- Consumes: file ending in the tenant-context-propagation paragraph (Task 4's anchor).
+- Produces: file now ends with the Provisioner selection subsection.
+
+- [ ] **Step 1: Append the Sandbox Provisioning Layer section**
+
+Use Edit with `old_string`:
+```
+`AsyncLocal`-based storage, which isolates each HTTP request's and each
+Quartz job's context to its own logical execution chain.
+```
+and `new_string`:
+```
 `AsyncLocal`-based storage, which isolates each HTTP request's and each
 Quartz job's context to its own logical execution chain.
 
@@ -501,15 +548,15 @@ v2 and v3:
 ```csharp
 public interface ISandboxProvisioner
 {
-    void AddSandbox(string sandboxKey, SandboxType sandboxType);
+    void AddSandbox(string databaseName, string templateName);
     void DeleteSandboxes(params string[] databaseNames);
     void RenameSandbox(string oldName, string newName);
     SandboxStatus GetSandboxStatus(string databaseName);
-    Task AddSandboxAsync(string sandboxKey, SandboxType sandboxType);
+    Task AddSandboxAsync(string databaseName, string templateName);
     Task DeleteSandboxesAsync(params string[] databaseNames);
     Task RenameSandboxAsync(string oldName, string newName);
     Task<SandboxStatus> GetSandboxStatusAsync(string databaseName);
-    Task CopySandboxAsync(string originalDatabaseName, string newDatabaseName);
+    Task CopySandboxAsync(string sourceName, string targetName);
 }
 ```
 
@@ -573,6 +620,46 @@ else if (parsedDatabaseEngine == DatabaseEngineEnum.SqlServer)
 
 There is no per-request or per-tenant provisioner switching — the database
 engine is a process-wide, boot-time configuration choice.
+```
+
+- [ ] **Step 2: Verify**
+
+Run:
+```bash
+grep -c "BACKUP DATABASE\|DBCC" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "InstanceProvisionerBase\|IInstanceProvisioner\|PostgresInstanceProvisioner" docs/design/INSTANCE-MANAGEMENT.md
+```
+Expected: both counts are `0` (confirms the old fabricated BACKUP/DBCC claims and the invented `IInstanceProvisioner`-family names are gone).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/design/INSTANCE-MANAGEMENT.md
+git commit -m "docs(ADMINAPI-1485): add sandbox provisioning layer section"
+```
+
+---
+
+## Task 6: Tenant Integration and Known Limitations sections
+
+**Files:**
+- Modify: `docs/design/INSTANCE-MANAGEMENT.md` (append after Task 5's content — this is the final content addition)
+
+**Interfaces:**
+- Consumes: file ending in the Provisioner selection subsection (Task 5's anchor).
+- Produces: complete document, ending with the Known Limitations section.
+
+- [ ] **Step 1: Append the Tenant Integration and Known Limitations sections**
+
+Use Edit with `old_string`:
+```
+There is no per-request or per-tenant provisioner switching — the database
+engine is a process-wide, boot-time configuration choice.
+```
+and `new_string`:
+```
+There is no per-request or per-tenant provisioner switching — the database
+engine is a process-wide, boot-time configuration choice.
 
 ## Tenant Integration
 
@@ -623,3 +710,107 @@ separate `DataStoreManage`-specific status enum.
   databases before the E2E suite runs, so the pre-request provisioning step
   the test depends on fails before the delete request is even issued.
   Re-enabling requires seeding those template databases in CI first.
+```
+
+- [ ] **Step 2: Verify**
+
+Run:
+```bash
+grep -c "DbInstance\|DbDataStore" docs/design/INSTANCE-MANAGEMENT.md
+grep -n "^## " docs/design/INSTANCE-MANAGEMENT.md
+```
+Expected: first count is `0`; the `##` heading list shows exactly: System Architecture (as `##`? — actually nested under no parent, check below), Configuration, Data Model, REST API, Background Jobs (Quartz.NET), Sandbox Provisioning Layer, Tenant Integration, Known Limitations — seven top-level sections after the title, in that order, with no leftover headings from the old three-file structure (e.g. no "Why both endpoints return 202").
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/design/INSTANCE-MANAGEMENT.md
+git commit -m "docs(ADMINAPI-1485): add tenant integration and known limitations sections"
+```
+
+---
+
+## Task 7: Delete old docs, fix cross-references, final verification
+
+**Files:**
+- Delete: `docs/design/INSTANCE-MANAGEMENT-Quartz.md`
+- Delete: `docs/design/INSTANCE-MANAGEMENT-Service.md`
+- Modify: `docs/developer.md:278`
+- Modify: `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/OdsInstances/Manage/DELETE - OdsInstance Manage - Success.bru.disabled`
+- Modify: `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3/DataStores/Manage/DELETE - DataStore Manage - Success.bru.disabled`
+
+**Interfaces:**
+- Consumes: the completed `docs/design/INSTANCE-MANAGEMENT.md` from Task 6.
+- Produces: final state — no dangling references to the deleted files anywhere in the repo.
+
+- [ ] **Step 1: Delete the two superseded docs**
+
+```bash
+git rm "docs/design/INSTANCE-MANAGEMENT-Quartz.md" "docs/design/INSTANCE-MANAGEMENT-Service.md"
+```
+
+- [ ] **Step 2: Fix the `docs/developer.md` cross-reference**
+
+Read `docs/developer.md` around line 278 first to get exact current wording,
+then use Edit with `old_string`:
+```
+Use [design/INSTANCE-MANAGEMENT-Quartz.md](design/INSTANCE-MANAGEMENT-Quartz.md) as the durable design reference for job identities, retry strategy, reconciliation behavior, and Mermaid diagrams of the API and background-job flows.
+```
+and `new_string`:
+```
+Use [design/INSTANCE-MANAGEMENT.md](design/INSTANCE-MANAGEMENT.md) as the durable design reference for the API, job identities, retry strategy, and Mermaid diagrams of the API and background-job flows.
+```
+
+- [ ] **Step 3: Fix the v2 disabled-test comment**
+
+Read `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/OdsInstances/Manage/DELETE - OdsInstance Manage - Success.bru.disabled` first to get the exact current comment text, then use Edit to replace the reference:
+
+`old_string`:
+```
+// See docs/design/DBINSTANCE-PROVISIONING-JOBS.md § Pending work.
+```
+`new_string`:
+```
+// See docs/design/INSTANCE-MANAGEMENT.md § Known Limitations.
+```
+
+- [ ] **Step 4: Fix the v3 disabled-test comment**
+
+Read `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3/DataStores/Manage/DELETE - DataStore Manage - Success.bru.disabled` first, then apply the same Edit (`old_string`/`new_string` as Step 3) if that file has the identical comment; if its wording differs, mirror the correction using the actual text found.
+
+- [ ] **Step 5: Repo-wide verification — no dangling references**
+
+Run:
+```bash
+grep -rn "INSTANCE-MANAGEMENT-Quartz\|INSTANCE-MANAGEMENT-Service\|DBINSTANCE-PROVISIONING-JOBS" --include="*.md" --include="*.bru.disabled" .
+```
+Expected: no output (empty result) — confirms every reference to the deleted filenames and the pre-existing dangling `DBINSTANCE-PROVISIONING-JOBS.md` path has been fixed.
+
+- [ ] **Step 6: Full-document accuracy sweep**
+
+Run:
+```bash
+grep -c "DbInstance\|DbDataStore" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "InstanceProvisionerBase\|IInstanceProvisioner\|InstanceStatus\b\|PostgresInstanceProvisioner" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "422" docs/design/INSTANCE-MANAGEMENT.md
+grep -c "BACKUP DATABASE\|DBCC" docs/design/INSTANCE-MANAGEMENT.md
+ls docs/design/
+```
+Expected: all four `grep -c` commands print `0`; `ls docs/design/` no longer lists `INSTANCE-MANAGEMENT-Quartz.md` or `INSTANCE-MANAGEMENT-Service.md`, only `INSTANCE-MANAGEMENT.md` (plus any unrelated design docs already in that directory).
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add -A
+git commit -m "docs(ADMINAPI-1485): remove superseded design docs, fix stale cross-references"
+```
+
+---
+
+## Post-plan note (not an automatable step)
+
+The ticket's acceptance criteria call for **a second, human reviewer** to
+spot-check a sample of claims in the finished doc against the code (the two
+route paths, one job class, one config key) before this is merged. That
+review is outside what this plan can execute — flag it to the user as a
+manual follow-up once Task 7 is complete.
