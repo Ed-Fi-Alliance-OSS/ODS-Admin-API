@@ -343,3 +343,86 @@ that `ConfigConnectionStringsProvider` and the sandbox provisioners resolve
 the correct per-tenant connection strings. This context is carried through
 `AsyncLocal`-based storage, which isolates each HTTP request's and each
 Quartz job's context to its own logical execution chain.
+
+## Sandbox Provisioning Layer
+
+Both `CreateInstanceJob` and `DeleteInstanceJob` delegate the actual database
+work to `ISandboxProvisioner`
+(`Application/EdFi.Ods.AdminApi.InstanceManagement/Provisioners/`), shared by
+v2 and v3:
+
+```csharp
+public interface ISandboxProvisioner
+{
+    void AddSandbox(string databaseName, string templateName);
+    void DeleteSandboxes(params string[] databaseNames);
+    void RenameSandbox(string oldName, string newName);
+    SandboxStatus GetSandboxStatus(string databaseName);
+    Task AddSandboxAsync(string databaseName, string templateName);
+    Task DeleteSandboxesAsync(params string[] databaseNames);
+    Task RenameSandboxAsync(string oldName, string newName);
+    Task<SandboxStatus> GetSandboxStatusAsync(string databaseName);
+    Task CopySandboxAsync(string sourceName, string targetName);
+}
+```
+
+`SandboxStatus` carries exactly three fields — `Name`, `Code`, `Description`
+— plus a static `ErrorStatus()` factory. There is no size, storage-usage, or
+last-modified metadata anywhere on this type, and no `InstanceInfo`-style
+operation exists on the interface — see [Known Limitations](#known-limitations).
+
+### `SandboxProvisionerBase`
+
+Abstract base class providing the common `AddSandboxAsync` template method:
+it always calls `DeleteSandboxesAsync` on the target name first (clearing any
+stale leftover), then `CopySandboxAsync` from the configured `Minimal` or
+`Sample` template database. Concrete providers only need to implement
+`DeleteSandboxesAsync`, `GetSandboxStatusAsync`, `RenameSandboxAsync`,
+`CopySandboxAsync`, and `CreateConnection`.
+
+### `PostgresSandboxProvisioner`
+
+Uses Npgsql. `CopySandboxAsync` terminates existing connections to the source
+database (`pg_terminate_backend`) and then runs:
+
+```sql
+CREATE DATABASE new_database_name TEMPLATE existing_database_name;
+```
+
+`GetSandboxStatusAsync` queries `pg_database`.
+
+### `SqlServerSandboxProvisioner`
+
+Uses `Microsoft.Data.SqlClient`. Unlike the Postgres provider, SQL Server has
+no in-database template-copy mechanism, so `CopySandboxAsync` restores from a
+**static, pre-configured `.bak` file** instead:
+
+1. `RESTORE FILELISTONLY FROM DISK = '{bakFile}'` — discovers the logical
+   data/log file names inside the backup.
+2. `RESTORE DATABASE {new} FROM DISK = '{bakFile}' WITH REPLACE, MOVE ..., MOVE ...`
+   — restores under the new database name, relocating the physical files.
+3. Two `ALTER DATABASE ... MODIFY FILE` statements rename the physical
+   data/log files to match the new database name.
+
+The `.bak` file path comes from `AppSettings:SqlServerMinimalBakFile` /
+`AppSettings:SqlServerSampleBakFile` — these are static files that must be
+prepared and deployed out of band; there is **no** `BACKUP DATABASE` or
+`DBCC` call anywhere in this provisioner. `GetSandboxStatusAsync` queries
+`sys.databases`.
+
+### Provisioner selection
+
+Exactly one provisioner implementation is registered for the life of the
+process, chosen once at startup in
+`WebApplicationBuilderExtensions.RegisterSandboxProvisioningServices` based
+on `AppSettings:DatabaseEngine`:
+
+```csharp
+if (parsedDatabaseEngine == DatabaseEngineEnum.PostgreSql)
+    services.AddTransient<ISandboxProvisioner, PostgresSandboxProvisioner>();
+else if (parsedDatabaseEngine == DatabaseEngineEnum.SqlServer)
+    services.AddTransient<ISandboxProvisioner, SqlServerSandboxProvisioner>();
+```
+
+There is no per-request or per-tenant provisioner switching — the database
+engine is a process-wide, boot-time configuration choice.
