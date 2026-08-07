@@ -426,3 +426,53 @@ else if (parsedDatabaseEngine == DatabaseEngineEnum.SqlServer)
 
 There is no per-request or per-tenant provisioner switching — the database
 engine is a process-wide, boot-time configuration choice.
+
+## Tenant Integration
+
+`TenantService.GetTenantEdOrgsByInstancesAsync` (v2:
+`Application/EdFi.Ods.AdminApi/Infrastructure/Services/Tenants/TenantService.cs`;
+v3: `Application/EdFi.Ods.AdminApi.V3/Infrastructure/Services/Tenants/TenantService.cs`,
+structurally identical) merges `OdsInstanceManage` data into the tenant
+EdOrgs response:
+
+1. Load real `OdsInstance` rows and their linked education organizations.
+2. Load all `OdsInstanceManage` rows and group them by `OdsInstanceId`,
+   keeping only the most-recently-modified row per group (by
+   `LastModifiedDate ?? LastRefreshed`).
+3. For each real `OdsInstance`, if a linked manage-row exists, overlay its
+   `OdsInstanceManageId`, `Status`, `DatabaseTemplate`, and `DatabaseName`
+   onto the response entry. If no manage-row is linked (e.g. a legacy or
+   manually-created instance), the response defaults that instance's
+   `Status` to `"Created"`.
+4. Any manage-row that has no `OdsInstanceId` (still pending) or whose
+   `OdsInstanceId` doesn't match a currently-existing instance (e.g. the
+   instance was deleted directly, bypassing this feature) is appended
+   separately as an "unlinked" entry, so in-flight or orphaned management
+   records are still visible in the tenant view even though they have no
+   backing ODS instance yet.
+
+v3's version of this method operates on the same underlying
+`OdsInstanceManage`/`OdsInstanceManageStatus` model — it does not have a
+separate `DataStoreManage`-specific status enum.
+
+## Known Limitations
+
+* **No crash recovery for in-progress rows.** Neither dispatcher job queries
+  `CreateInProgress` or `DeleteInProgress` — only `Pending*` and `*Failed`.
+  If the API process crashes while `CreateInstanceJob` or `DeleteInstanceJob`
+  is actively running, the affected row is stuck in an `*InProgress` status
+  forever; no automatic sweep will ever pick it up. Recovery requires a
+  human to inspect the actual state of the database and manually reset the
+  row's `Status` (and `DatabaseName`/`OdsInstanceId` as appropriate) directly
+  in `adminapi.OdsInstanceManages`.
+* **No instance size/info query.** `ISandboxProvisioner` has no operation for
+  reporting database size or other storage metadata. This was never
+  implemented for either database engine.
+* **Delete-success E2E test is disabled.** Both
+  `DELETE - OdsInstance Manage - Success.bru.disabled` (v2) and
+  `DELETE - DataStore Manage - Success.bru.disabled` (v3) are disabled
+  (`.bru.disabled` extension plus `skip: true` in the `meta` block) because
+  the CI Docker environment doesn't seed the `Minimal`/`Sample` template
+  databases before the E2E suite runs, so the pre-request provisioning step
+  the test depends on fails before the delete request is even issued.
+  Re-enabling requires seeding those template databases in CI first.
