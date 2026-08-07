@@ -1,30 +1,20 @@
-# Ed-Fi-ODS-AdminAPI
+# ODS-Admin-API
 
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Ed-Fi-Alliance-OSS/AdminAPI-2.x/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Ed-Fi-Alliance-OSS/AdminAPI-2.x)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Ed-Fi-Alliance-OSS/AdminAPI-2.x/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Ed-Fi-Alliance-OSS/ODS-Admin-API)
 
-The Ed-Fi ODS/API Admin API is a programmatic interface to administrate ODS/API
-platform instances. Admin API 2.0 will support ODS/API version 7.0 and greater.
-For support of ODS/API 3.4 through 6.1, please use the
-[latest 1.x release](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-AdminAPI/releases).
-
-> **Note**
-> This is a fork of the [Ed-Fi-AdminAPI](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-AdminAPI)
-> repository, to enable continued development of Admin API 1.x. This fork may be
-> merged back into the original repository at a later date.
+The Ed-Fi ODS/API Admin API is a programmatic interface for administration of Ed-Fi ODS/API
+platform deployments. Admin API 2.x supports ODS/API versions 6.x and 7.x. For the Ed-Fi API 
+Platform ("DMS"), please instead use the
+[Configuration Management Service](https://github.com/Ed-Fi-Alliance-OSS/Data-Management-Service/tree/main/src/config).
 
 For more information, see:
 
-* For a detailed description see [Ed-Fi Admin
-  API](https://techdocs.ed-fi.org/display/ADMINAPI) in Tech Docs.
-* [Submit an
-  Issue](https://support.ed-fi.org)
-* Review on-going development work at
-  [Tracker](https://tracker.ed-fi.org/projects/ADMINAPI/issues)
+* For a detailed description see [Ed-Fi Admin API](https://docs.ed-fi.org/reference/admin-api)
+* [Submit an Issue](https://community.ed-fi.org)
+* Review the [Product Backlog](https://github.com/orgs/Ed-Fi-Alliance-OSS/projects/2/views/4)
 
-## Documentation
+## Developer Documentation
 
-* See [Tech Docs: Admin App](https://techdocs.ed-fi.org/display/ADMINAPI) for
-  general information on installation of the Ed-Fi Admin API.
 * [Docker testing notes](docs/docker.md)
 * [Developer notes](docs/developer.md)
 
@@ -32,13 +22,8 @@ For more information, see:
 
 The Ed-Fi Alliance welcomes code contributions from the community. Please read
 the [Ed-Fi Contribution
-Guidelines](https://techdocs.ed-fi.org/display/ETKB/Code+Contribution+Guidelines)
+Guidelines]([https://techdocs.ed-fi.org/display/ETKB/Code+Contribution+Guidelines](https://docs.ed-fi.org/community/sdlc/code-contribution-guidelines/))
 for detailed information on how to contribute source code.
-
-Looking for an easy way to get started? Search for tickets with label
-"up-for-grabs" in [Tracker](https://tracker.ed-fi.org/issues/?filter=14106);
-these are nice-to-have but low priority tickets that should not require in-depth
-knowledge of the code base and architecture.
 
 ## Legal Information
 
