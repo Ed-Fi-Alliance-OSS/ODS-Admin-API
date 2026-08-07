@@ -94,14 +94,24 @@ The feature only works end to end when all of the following hold:
 
 ### Multi-tenancy
 
-When multi-tenancy is enabled (`AppSettings:MultiTenancy`), the active tenant
-must have its own `Tenants:{tenant}:ConnectionStrings:` entries for
-**`EdFi_Admin`, `EdFi_Security`, `EdFi_Ods`, and `EdFi_Master`** — all four are
-needed before a worker job runs, because the job resolves tenant-specific
-`AdminApiDbContext` / `IUsersContext` instances in addition to the ODS and
-maintenance connections. `CreateInstanceJob` reads the tenant ODS shape
-directly from `Tenants:{tenant}:ConnectionStrings:EdFi_Ods` and throws if it is
-absent.
+When multi-tenancy is enabled (`AppSettings:MultiTenancy`), every configured
+tenant must have its own `Tenants:{tenant}:ConnectionStrings:` entries for
+**`EdFi_Admin`, `EdFi_Security`, `EdFi_Ods`, and `EdFi_Master`**. `EdFi_Ods`
+and `EdFi_Master` are needed before a worker job runs for that tenant, since
+`CreateInstanceJob` reads the tenant ODS shape directly from
+`Tenants:{tenant}:ConnectionStrings:EdFi_Ods` and throws if it is absent (and
+likewise needs the maintenance connection for create/drop). `EdFi_Security`
+is not read by the worker path — `TenantSpecificDbContextProvider` only uses
+`AdminConnectionString` (`EdFi_Admin`) to build tenant-specific
+`AdminApiDbContext` / `IUsersContext` instances. Instead, `EdFi_Security` is
+required because `TenantService.GetTenantsAsync`
+(`Application/EdFi.Ods.AdminApi/Infrastructure/Services/Tenants/TenantService.cs:76`)
+does `tenantConfig.Value.ConnectionStrings.First(p => p.Key == "EdFi_Security")`
+for every tenant, which throws if any tenant is missing it — and this method
+runs during startup dispatcher scheduling (`Program.cs`, the
+`GetTenantsAsync(fromCache: true)` calls that feed the create/delete
+dispatcher registration loops), so a tenant missing `EdFi_Security` breaks
+dispatcher scheduling for *all* tenants at startup, not just itself.
 
 ## Data Model
 
@@ -184,17 +194,26 @@ variants are terminal:
 
 v2 lives in `Application/EdFi.Ods.AdminApi/Features/OdsInstances/Manage/`; v3
 in `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/Manage/`. Behavior is
-equivalent apart from three things:
+equivalent apart from four things:
 
 1. the route path;
-2. the `OdsInstanceManage` / `DataStoreManage` wording in validation error
-   messages;
+2. the `OdsInstanceManage` / `DataStoreManage` wording in **create-validator**
+   error messages (`AddOdsInstanceManage.Validator` vs
+   `AddDataStoreManage.Validator`) — the delete endpoint's status-blocked
+   messages use identical `OdsInstanceManage` wording in both versions (see
+   [Delete](#delete));
 3. the POST `Location` header — v2 returns a **relative** path
    (`Results.Accepted($"/odsinstances/manage/{added.Id}", null)` in
    `AddOdsInstanceManage.Handle`), while v3 returns an **absolute** URL built by
    `ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dataStores/manage/{added.Id}")`
    in `AddDataStoreManage.Handle`, which is why v3's handler takes an extra
-   `HttpContext` parameter that v2's does not.
+   `HttpContext` parameter that v2's does not;
+4. the read response DTO field names — v2's `OdsInstanceManageModel` exposes
+   `OdsInstanceId` / `OdsInstanceName`, while v3's `DataStoreManageModel`
+   exposes `DataStoreId` / `DataStoreName`
+   (`DataStoreManageMapper.ToModel` maps them straight from the same
+   underlying `OdsInstanceManage.OdsInstanceId` / `OdsInstanceName` fields) —
+   same underlying data, different field names on the wire.
 
 Everything else in this section describes both versions together.
 
