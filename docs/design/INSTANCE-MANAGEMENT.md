@@ -13,7 +13,11 @@ model and job infrastructure:
 * **Admin API v3** — `DataStoreManage`, routed under `/v3/dataStores/manage`
 
 A running process serves exactly one of v2 or v3, set via
-`AppSettings:AdminApiMode` (default `v2`) — never both in the same process.
+`AppSettings:AdminApiMode` — never both in the same process. The C# code
+defaults to `v2` when the setting is unset (`Program.cs`:
+`GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2)`), but the
+checked-in `Application/EdFi.Ods.AdminApi/appsettings.json` sets `v3`, so an
+unmodified deployment runs v3.
 
 ## System Architecture
 
@@ -49,19 +53,55 @@ C4Container
     UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
 ```
 
-## Configuration
+## Configuration and Prerequisites
+
+### Database credentials
 
 Two sets of database credentials are required:
 
 * **Regular DDL credentials** (`ConnectionStrings:EdFi_Ods`) — used for
-  standard data definition language operations on managed databases.
+  standard data definition language operations on managed databases. This also
+  supplies the connection-string *shape* that `CreateInstanceJob` rewrites (new
+  database name substituted) into the persisted
+  `OdsInstance.ConnectionString`.
 * **Admin/maintenance credentials** (`ConnectionStrings:EdFi_Master`) — used
   for connecting to the maintenance database (`postgres` on PostgreSQL,
-  `master` on SQL Server). Required for database create/drop operations.
+  `master` on SQL Server). Required for database create/drop operations. On
+  PostgreSQL this must point at `postgres`, not at an ODS database.
 
-When multi-tenancy is enabled (`AppSettings:MultiTenancy`), each tenant must
-have its own `Tenants:{tenant}:ConnectionStrings:EdFi_Ods` and
-`Tenants:{tenant}:ConnectionStrings:EdFi_Master` entries.
+### Other prerequisites
+
+The feature only works end to end when all of the following hold:
+
+* **`AppSettings:EncryptionKey` is set to a valid base64-encoded key.**
+  `CreateInstanceJob` uses it to encrypt the `OdsInstance.ConnectionString` it
+  persists (`BuildEncryptedConnectionString` does
+  `_options.Value.EncryptionKey ?? throw new InvalidOperationException(...)`
+  and then `Convert.FromBase64String`). A missing or non-base64 key throws on
+  every create job, so every create lands in `CreateFailed` and eventually
+  `CreateError` — with the database possibly already provisioned, since the
+  encryption step runs *after* `AddSandboxAsync`.
+* **`AppSettings:AdminApiMode` is `v2` or `v3`** — whichever mode is active,
+  `Program.cs` only registers that mode's recurring dispatcher jobs at startup.
+* **Quartz services are registered and the Quartz hosted service is enabled**,
+  otherwise neither the immediately-scheduled worker jobs nor the recurring
+  dispatchers ever run.
+* **Admin API database migrations are applied**, so `adminapi.OdsInstanceManages`
+  and `adminapi.JobStatuses` exist.
+* **`AppSettings:DatabaseEngine` matches the actual platform**, since it selects
+  the `ISandboxProvisioner` implementation once at startup (see
+  [Provisioner selection](#provisioner-selection)).
+
+### Multi-tenancy
+
+When multi-tenancy is enabled (`AppSettings:MultiTenancy`), the active tenant
+must have its own `Tenants:{tenant}:ConnectionStrings:` entries for
+**`EdFi_Admin`, `EdFi_Security`, `EdFi_Ods`, and `EdFi_Master`** — all four are
+needed before a worker job runs, because the job resolves tenant-specific
+`AdminApiDbContext` / `IUsersContext` instances in addition to the ODS and
+maintenance connections. `CreateInstanceJob` reads the tenant ODS shape
+directly from `Tenants:{tenant}:ConnectionStrings:EdFi_Ods` and throws if it is
+absent.
 
 ## Data Model
 
@@ -88,6 +128,20 @@ CREATE TABLE [adminapi].[OdsInstanceManages] (
     CONSTRAINT [PK_OdsInstanceManages] PRIMARY KEY ([Id])
 )
 ```
+
+The block above is the SQL Server shape (a PostgreSQL equivalent exists under
+`Artifacts/PgSql/`) and shows columns only — the table also carries two
+non-unique indexes: on `Name` and on `OdsInstanceId` (`IX_OdsInstanceManages_Name`
+/ `IX_OdsInstanceManages_OdsInstanceId` on SQL Server;
+`idx_odsinstancemanages_name` / `idx_odsinstancemanages_odsinstanceid` on
+PostgreSQL).
+
+> **Grepping the migrations?** There is no `CREATE TABLE ... OdsInstanceManages`
+> statement anywhere in `Application/EdFi.Ods.AdminApi/Artifacts/`. The table was
+> originally created as `adminapi.DbInstances` by
+> `00005-CreateDbInstances.sql` and renamed (along with its primary key and both
+> indexes) by `00007-RenameDbInstancesToOdsInstanceManages.sql`. Both files exist
+> in `Artifacts/MsSql/Structure/Admin/` and `Artifacts/PgSql/Structure/Admin/`.
 
 > **Note:** `DatabaseName` is 255 characters wide at the schema level, but the
 > create-request validator additionally rejects any request whose *generated*
@@ -130,9 +184,19 @@ variants are terminal:
 
 v2 lives in `Application/EdFi.Ods.AdminApi/Features/OdsInstances/Manage/`; v3
 in `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/Manage/`. Behavior is
-byte-for-byte identical between the two — only the route path and the
-"OdsInstanceManage"/"DataStoreManage" wording in error messages differ. The
-rest of this section describes both together.
+equivalent apart from three things:
+
+1. the route path;
+2. the `OdsInstanceManage` / `DataStoreManage` wording in validation error
+   messages;
+3. the POST `Location` header — v2 returns a **relative** path
+   (`Results.Accepted($"/odsinstances/manage/{added.Id}", null)` in
+   `AddOdsInstanceManage.Handle`), while v3 returns an **absolute** URL built by
+   `ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dataStores/manage/{added.Id}")`
+   in `AddDataStoreManage.Handle`, which is why v3's handler takes an extra
+   `HttpContext` parameter that v2's does not.
+
+Everything else in this section describes both versions together.
 
 ### Create
 
@@ -259,10 +323,11 @@ sequenceDiagram
     API->>Quartz: Schedule CreateInstanceJob (StartNow)
     API-->>Client: 202 Accepted, Location header
     Quartz->>Worker: Execute with OdsInstanceManageId (+ TenantName)
-    Worker->>Db: Load row, require PendingCreate, set CreateInProgress
+    Worker->>Db: Load row, require PendingCreate
     Worker->>Worker: ValidatePendingState (reject if OdsInstanceId/Name already set)
-    Worker->>Db: Generate and persist DatabaseName if missing
+    Worker->>Db: Set CreateInProgress and persist generated DatabaseName if missing
     Worker->>Provisioner: AddSandboxAsync(DatabaseName, SandboxType)
+    Worker->>Worker: Build and encrypt OdsInstance.ConnectionString
     Worker->>Users: Insert or reuse name-matched OdsInstance
     Worker->>Db: Set OdsInstanceId, OdsInstanceName, status Created
     Note over Worker: On exception at any step: status set to CreateFailed
@@ -272,6 +337,15 @@ sequenceDiagram
 partially linked: it throws if `OdsInstanceId` or `OdsInstanceName` is
 already set, or if `DatabaseTemplate` is missing — either would mean the row
 isn't the fresh `PendingCreate` row it claims to be.
+
+Note the step ordering: `AddSandboxAsync` provisions the physical database
+*before* the connection string is built and encrypted. The
+connection string is derived from the configured `EdFi_Ods` shape with the
+generated `DatabaseName` substituted, then encrypted with
+`AppSettings:EncryptionKey` (see
+[Configuration and Prerequisites](#configuration-and-prerequisites)). A missing
+or invalid encryption key therefore fails the job only after the database
+already exists.
 
 ### Delete pipeline
 
@@ -305,6 +379,42 @@ sequenceDiagram
     end
 ```
 
+### Job identity and payload
+
+Worker jobs use a per-record Quartz key so retries and status tracking can
+target one row (`CreateInstanceJob.BuildJobIdentity` /
+`DeleteInstanceJob.BuildJobIdentity`; the name segment comes from
+`JobConstants.CreateInstanceJobName` / `JobConstants.DeleteInstanceJobName`):
+
+| Job | Single-tenant key | Multi-tenant key |
+| --- | --- | --- |
+| `CreateInstanceJob` | `CreateInstanceJob-{id}` | `CreateInstanceJob-{tenantName}-{id}` |
+| `DeleteInstanceJob` | `DeleteInstanceJob-{id}` | `DeleteInstanceJob-{tenantName}-{id}` |
+
+Dispatcher jobs use one fixed key per process (recurring, not per-record),
+assembled in `Program.cs` at startup. Note the separator: workers use `-`,
+dispatchers use `_` before the tenant name.
+
+| Job | Single-tenant key | Multi-tenant key |
+| --- | --- | --- |
+| Create dispatcher (v2/v3 shared string) | `CreatePendingOdsInstanceManagesDispatcherJob` | `CreatePendingOdsInstanceManagesDispatcherJob_{tenantName}` |
+| Delete dispatcher (v2/v3 shared string) | `DeletePendingOdsInstanceManagesDispatcherJob` | `DeletePendingOdsInstanceManagesDispatcherJob_{tenantName}` |
+
+In multi-tenant mode one dispatcher pair is scheduled *per tenant*, each
+carrying that tenant's name in its job data.
+
+The job data map carries `JobConstants.OdsInstanceManageIdKey`
+(`"OdsInstanceManageId"` — the record id) and, when multi-tenancy is enabled,
+`JobConstants.TenantNameKey` (`"TenantName"`). Both worker jobs throw if
+`OdsInstanceManageId` is absent, or if `TenantName` is absent while
+multi-tenancy is on.
+
+The dispatcher's retry count (see below) is derived by counting persisted
+`adminapi.JobStatuses` rows whose `JobId` starts with `{workerJobKey}_` for that
+record — `AdminApiQuartzJobBase` writes each run under
+`{jobKey}_{fireInstanceId}`, so the worker's key is a prefix of every run it has
+ever recorded for that row.
+
 ### Dispatcher sweep and retries
 
 A recurring dispatcher job (scheduled at startup in `Program.cs`) scans for
@@ -322,16 +432,34 @@ record. If the count is below the configured max, the row is promoted back
 to `Pending*` and re-queued; otherwise it's set to the terminal `*Error`
 status.
 
-| Configuration key | Default | Controls |
+| Configuration key | Value in `appsettings.json` | Controls |
 | --- | --- | --- |
 | `AppSettings:CreateOdsInstanceManagesSweepIntervalInMins` | 120 (5 in local Development config) | How often the create dispatcher runs |
 | `AppSettings:DeleteOdsInstanceManagesSweepIntervalInMins` | 120 (5 in local Development config) | How often the delete dispatcher runs |
 | `AppSettings:CreateOdsInstanceManagesMaxRetryAttempts` | 3 | Max retries for `CreateFailed` before `CreateError` |
 | `AppSettings:DeleteOdsInstanceManagesMaxRetryAttempts` | 3 | Max retries for `DeleteFailed` before `DeleteError` |
 
+The column above reports what the shipped `appsettings.json` files contain, not
+the C# fallbacks. The `AppSettings` class defaults are different — 5 minutes for
+each sweep interval and 3 for each max-retry count
+(`Application/EdFi.Ods.AdminApi.Common/Settings/AppSettings.cs`).
+
+**Operationally important:** the sweep-interval settings are read from raw
+configuration in `Program.cs` and gated by `double.TryParse`. If a
+sweep-interval value is absent or unparseable, that dispatcher is **not
+scheduled at all** — startup logs an error
+(`"Invalid value for ...SweepIntervalInMins"`) and continues, so the process
+comes up healthy but no sweep-based recovery or retry ever happens. The
+`AppSettings` C# default of 5 does not rescue this, because the scheduling
+decision never consults the bound `AppSettings` object. In v3 mode the gate is
+stricter still (`TryParse(...) && value > 0`), so a `0` also disables
+scheduling.
+
 Retry counts are derived from `adminapi.JobStatuses` execution history rather
 than a dedicated counter column — this keeps retry accounting inside the
-existing Quartz execution trail without additional schema changes.
+existing Quartz execution trail without additional schema changes. The
+dispatcher falls back to a hardcoded `DefaultMaxRetryAttempts` of 3 if the
+configured max-retry value is not greater than zero.
 
 ### Tenant context propagation
 
