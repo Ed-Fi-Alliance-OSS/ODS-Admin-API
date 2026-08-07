@@ -854,7 +854,7 @@
           "FluentValidation.AspNetCore": "[11.3.1, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )",
           "Microsoft.EntityFrameworkCore": "[10.0.8, )",
-          "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.8, )",
+          "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.10, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.8, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.8, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
@@ -880,7 +880,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.8, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )",
           "Microsoft.EntityFrameworkCore": "[10.0.8, )",
-          "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.8, )",
+          "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.10, )",
           "Microsoft.EntityFrameworkCore.Proxies": "[10.0.8, )",
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.8, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.8, )",
@@ -1019,9 +1019,9 @@
       },
       "Microsoft.EntityFrameworkCore.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "jbKDXWPZQhuPHygMnwzNOqxBADVcpRVytcKYZsA++QqhPkpF93Ta8o5mbJQGrARSjlkr9WtOaADV97EDMOZ7DA=="
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "bOzrFCl6uZCjaSh2bG1ToRQRdx+iXvxosCg9hFyG9OWeAzOFI4xev9OqKeWfKf/kAHyox2JnbcvLVf2ceA7sqA=="
       },
       "Microsoft.EntityFrameworkCore.Proxies": {
         "type": "CentralTransitive",
