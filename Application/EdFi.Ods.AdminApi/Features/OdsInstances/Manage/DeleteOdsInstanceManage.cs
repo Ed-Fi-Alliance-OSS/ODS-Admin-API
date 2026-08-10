@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -42,6 +43,9 @@ public class DeleteOdsInstanceManage : IFeature
         int id
     )
     {
+        if (!options.Value.EnableDataStoreManagement)
+            throw new ValidationException([new ValidationFailure(nameof(OdsInstance), "This endpoint has been disabled on application settings.")]);
+
         var odsInstanceManage = getOdsInstanceManageByIdQuery.Execute(id);
         if (odsInstanceManage is null)
             throw new NotFoundException<int>("odsInstanceManage", id);

@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
@@ -21,6 +22,7 @@ using V3Features = EdFi.Ods.AdminApi.V3.Features;
 using log4net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 [assembly: InternalsVisibleTo("EdFi.Ods.AdminApi.UnitTests")]
@@ -120,6 +122,7 @@ var deleteOdsInstanceManagesSweepIntervalInMins = app.Configuration.GetValue<str
 var isMultiTenancyEnabled = app.Configuration.GetValue<bool>(
     "AppSettings:MultiTenancy"
 );
+var appSettings = app.Services.GetRequiredService<IOptions<AppSettings>>().Value;
 
 if (adminApiMode == AdminApiMode.V2)
 {
@@ -178,21 +181,34 @@ if (adminApiMode == AdminApiMode.V2)
 
     if (shouldScheduleDispatcher)
     {
-        if (isMultiTenancyEnabled)
+        if (DataStoreManagementJobScheduler.ShouldScheduleDataStoreManagementJobs(appSettings))
         {
-            using var scope = app.Services.CreateScope();
-            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
-            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+            if (isMultiTenancyEnabled)
+            {
+                using var scope = app.Services.CreateScope();
+                var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+                var tenants = await tenantService.GetTenantsAsync(fromCache: true);
 
-            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                {
+                    await QuartzJobScheduler.ScheduleJob<CreatePendingOdsInstanceManagesDispatcherJob>(
+                        scheduler,
+                        jobKey: new JobKey($"{JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
+                        jobData: new Dictionary<string, object>
+                        {
+                            [JobConstants.TenantNameKey] = tenantName
+                        },
+                        startImmediately: false,
+                        interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
+                    );
+                }
+            }
+            else
             {
                 await QuartzJobScheduler.ScheduleJob<CreatePendingOdsInstanceManagesDispatcherJob>(
                     scheduler,
-                    jobKey: new JobKey($"{JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
-                    jobData: new Dictionary<string, object>
-                    {
-                        [JobConstants.TenantNameKey] = tenantName
-                    },
+                    jobKey: new JobKey(JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName),
+                    jobData: new Dictionary<string, object>(),
                     startImmediately: false,
                     interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
                 );
@@ -200,13 +216,7 @@ if (adminApiMode == AdminApiMode.V2)
         }
         else
         {
-            await QuartzJobScheduler.ScheduleJob<CreatePendingOdsInstanceManagesDispatcherJob>(
-                scheduler,
-                jobKey: new JobKey(JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName),
-                jobData: new Dictionary<string, object>(),
-                startImmediately: false,
-                interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
-            );
+            _logger.Info("EnableDataStoreManagement is false; skipping CreatePendingOdsInstanceManagesDispatcherJob scheduling.");
         }
     }
     else
@@ -216,21 +226,34 @@ if (adminApiMode == AdminApiMode.V2)
 
     if (shouldScheduleDeleteDispatcher)
     {
-        if (isMultiTenancyEnabled)
+        if (DataStoreManagementJobScheduler.ShouldScheduleDataStoreManagementJobs(appSettings))
         {
-            using var scope = app.Services.CreateScope();
-            var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
-            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+            if (isMultiTenancyEnabled)
+            {
+                using var scope = app.Services.CreateScope();
+                var tenantService = scope.ServiceProvider.GetRequiredService<ITenantsService>();
+                var tenants = await tenantService.GetTenantsAsync(fromCache: true);
 
-            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                {
+                    await QuartzJobScheduler.ScheduleJob<DeletePendingOdsInstanceManagesDispatcherJob>(
+                        scheduler,
+                        jobKey: new JobKey($"{JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
+                        jobData: new Dictionary<string, object>
+                        {
+                            [JobConstants.TenantNameKey] = tenantName
+                        },
+                        startImmediately: false,
+                        interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
+                    );
+                }
+            }
+            else
             {
                 await QuartzJobScheduler.ScheduleJob<DeletePendingOdsInstanceManagesDispatcherJob>(
                     scheduler,
-                    jobKey: new JobKey($"{JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
-                    jobData: new Dictionary<string, object>
-                    {
-                        [JobConstants.TenantNameKey] = tenantName
-                    },
+                    jobKey: new JobKey(JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName),
+                    jobData: new Dictionary<string, object>(),
                     startImmediately: false,
                     interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
                 );
@@ -238,13 +261,7 @@ if (adminApiMode == AdminApiMode.V2)
         }
         else
         {
-            await QuartzJobScheduler.ScheduleJob<DeletePendingOdsInstanceManagesDispatcherJob>(
-                scheduler,
-                jobKey: new JobKey(JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName),
-                jobData: new Dictionary<string, object>(),
-                startImmediately: false,
-                interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
-            );
+            _logger.Info("EnableDataStoreManagement is false; skipping DeletePendingOdsInstanceManagesDispatcherJob scheduling.");
         }
     }
     else
@@ -308,21 +325,34 @@ else if (adminApiMode == AdminApiMode.V3)
 
     if (shouldScheduleDispatcher)
     {
-        if (isMultiTenancyEnabled)
+        if (DataStoreManagementJobScheduler.ShouldScheduleDataStoreManagementJobs(appSettings))
         {
-            using var scope = app.Services.CreateScope();
-            var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
-            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+            if (isMultiTenancyEnabled)
+            {
+                using var scope = app.Services.CreateScope();
+                var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
+                var tenants = await tenantService.GetTenantsAsync(fromCache: true);
 
-            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                {
+                    await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDataStoreManagesDispatcherJob>(
+                        scheduler,
+                        jobKey: new JobKey($"{JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
+                        jobData: new Dictionary<string, object>
+                        {
+                            [JobConstants.TenantNameKey] = tenantName
+                        },
+                        startImmediately: false,
+                        interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
+                    );
+                }
+            }
+            else
             {
                 await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDataStoreManagesDispatcherJob>(
                     scheduler,
-                    jobKey: new JobKey($"{JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
-                    jobData: new Dictionary<string, object>
-                    {
-                        [JobConstants.TenantNameKey] = tenantName
-                    },
+                    jobKey: new JobKey(JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName),
+                    jobData: new Dictionary<string, object>(),
                     startImmediately: false,
                     interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
                 );
@@ -330,13 +360,7 @@ else if (adminApiMode == AdminApiMode.V3)
         }
         else
         {
-            await QuartzJobScheduler.ScheduleJob<V3Jobs.CreatePendingDataStoreManagesDispatcherJob>(
-                scheduler,
-                jobKey: new JobKey(JobConstants.CreatePendingOdsInstanceManagesDispatcherJobName),
-                jobData: new Dictionary<string, object>(),
-                startImmediately: false,
-                interval: TimeSpan.FromMinutes(createOdsInstanceManagesSweepInterval)
-            );
+            _logger.Info("EnableDataStoreManagement is false; skipping CreatePendingDataStoreManagesDispatcherJob scheduling.");
         }
     }
     else
@@ -346,21 +370,34 @@ else if (adminApiMode == AdminApiMode.V3)
 
     if (shouldScheduleDeleteDispatcher)
     {
-        if (isMultiTenancyEnabled)
+        if (DataStoreManagementJobScheduler.ShouldScheduleDataStoreManagementJobs(appSettings))
         {
-            using var scope = app.Services.CreateScope();
-            var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
-            var tenants = await tenantService.GetTenantsAsync(fromCache: true);
+            if (isMultiTenancyEnabled)
+            {
+                using var scope = app.Services.CreateScope();
+                var tenantService = scope.ServiceProvider.GetRequiredService<V3Tenants.ITenantsService>();
+                var tenants = await tenantService.GetTenantsAsync(fromCache: true);
 
-            foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                foreach (var tenantName in tenants.Select(tenant => tenant.TenantName))
+                {
+                    await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDataStoreManagesDispatcherJob>(
+                        scheduler,
+                        jobKey: new JobKey($"{JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
+                        jobData: new Dictionary<string, object>
+                        {
+                            [JobConstants.TenantNameKey] = tenantName
+                        },
+                        startImmediately: false,
+                        interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
+                    );
+                }
+            }
+            else
             {
                 await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDataStoreManagesDispatcherJob>(
                     scheduler,
-                    jobKey: new JobKey($"{JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName}_{tenantName}"),
-                    jobData: new Dictionary<string, object>
-                    {
-                        [JobConstants.TenantNameKey] = tenantName
-                    },
+                    jobKey: new JobKey(JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName),
+                    jobData: new Dictionary<string, object>(),
                     startImmediately: false,
                     interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
                 );
@@ -368,13 +405,7 @@ else if (adminApiMode == AdminApiMode.V3)
         }
         else
         {
-            await QuartzJobScheduler.ScheduleJob<V3Jobs.DeletePendingDataStoreManagesDispatcherJob>(
-                scheduler,
-                jobKey: new JobKey(JobConstants.DeletePendingOdsInstanceManagesDispatcherJobName),
-                jobData: new Dictionary<string, object>(),
-                startImmediately: false,
-                interval: TimeSpan.FromMinutes(deleteOdsInstanceManagesSweepInterval)
-            );
+            _logger.Info("EnableDataStoreManagement is false; skipping DeletePendingDataStoreManagesDispatcherJob scheduling.");
         }
     }
     else

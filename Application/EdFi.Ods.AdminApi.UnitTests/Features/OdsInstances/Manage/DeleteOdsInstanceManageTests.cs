@@ -4,8 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -251,6 +253,17 @@ public class DeleteOdsInstanceManageTests
         await Should.ThrowAsync<NotFoundException<int>>(() => Handle(10));
 
         A.CallTo(() => _deleteOdsInstanceManageCommand.Execute(A<int>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task Handle_WhenDataStoreManagementDisabled_ThrowsValidationException()
+    {
+        var disabledOptions = Options.Create(new AppSettings { EnableDataStoreManagement = false });
+
+        var exception = await Should.ThrowAsync<ValidationException>(() =>
+            DeleteOdsInstanceManage.Handle(null!, null!, null!, null!, disabledOptions, 1));
+
+        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
     }
 }
 

@@ -4,13 +4,18 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using FakeItEasy;
+using FluentValidation;
+using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
 
@@ -19,6 +24,8 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.OdsInstances.Manage;
 [TestFixture]
 public class ReadOdsInstanceManageTests
 {
+    private static readonly IOptions<AppSettings> EnabledOptions = Options.Create(new AppSettings());
+
     [Test]
     public async Task GetOdsInstanceManages_ReturnsOkWithMappedList()
     {
@@ -31,7 +38,7 @@ public class ReadOdsInstanceManageTests
 
         A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, null, null)).Returns(queryResult);
 
-        var result = await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, null, null);
+        var result = await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, null, null, EnabledOptions);
 
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceManageModel>>>();
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceManageModel>>;
@@ -51,7 +58,7 @@ public class ReadOdsInstanceManageTests
 
         A.CallTo(() => fakeQuery.Execute(5)).Returns(queryResult);
 
-        var result = await ReadOdsInstanceManage.GetOdsInstanceManage(fakeQuery, 5);
+        var result = await ReadOdsInstanceManage.GetOdsInstanceManage(fakeQuery, 5, EnabledOptions);
 
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<OdsInstanceManageModel>>();
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<OdsInstanceManageModel>;
@@ -70,7 +77,7 @@ public class ReadOdsInstanceManageTests
         A.CallTo(() => fakeQuery.Execute(99)).Returns(null);
 
         Should.Throw<NotFoundException<int>>(
-            () => ReadOdsInstanceManage.GetOdsInstanceManage(fakeQuery, 99).GetAwaiter().GetResult());
+            () => ReadOdsInstanceManage.GetOdsInstanceManage(fakeQuery, 99, EnabledOptions).GetAwaiter().GetResult());
     }
 
     [Test]
@@ -82,7 +89,7 @@ public class ReadOdsInstanceManageTests
             .Throws(new System.Exception("Query failed"));
 
         Should.Throw<System.Exception>(async () =>
-            await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, new CommonQueryParams(0, 10), null, null));
+            await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, new CommonQueryParams(0, 10), null, null, EnabledOptions));
     }
 
     [Test]
@@ -93,7 +100,7 @@ public class ReadOdsInstanceManageTests
 
         A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, null, null)).Returns(new List<OdsInstanceManage>());
 
-        var result = await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, null, null);
+        var result = await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, null, null, EnabledOptions);
 
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceManageModel>>>();
         var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<List<OdsInstanceManageModel>>;
@@ -109,7 +116,7 @@ public class ReadOdsInstanceManageTests
 
         A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, 42, null)).Returns(queryResult);
 
-        await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, 42, null);
+        await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, 42, null, EnabledOptions);
 
         A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, 42, null)).MustHaveHappenedOnceExactly();
     }
@@ -123,8 +130,32 @@ public class ReadOdsInstanceManageTests
 
         A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, null, "Instance A")).Returns(queryResult);
 
-        await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, null, "Instance A");
+        await ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, queryParams, null, "Instance A", EnabledOptions);
 
         A.CallTo(() => fakeQuery.Execute(A<CommonQueryParams>._, null, "Instance A")).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public void GetOdsInstanceManages_WhenDataStoreManagementDisabled_ThrowsValidationException()
+    {
+        var fakeQuery = A.Fake<IGetOdsInstanceManagesQuery>();
+        var disabledOptions = Options.Create(new AppSettings { EnableDataStoreManagement = false });
+
+        var exception = Should.Throw<ValidationException>(() =>
+            ReadOdsInstanceManage.GetOdsInstanceManages(fakeQuery, new CommonQueryParams(0, 10), null, null, disabledOptions).GetAwaiter().GetResult());
+
+        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
+    }
+
+    [Test]
+    public void GetOdsInstanceManage_WhenDataStoreManagementDisabled_ThrowsValidationException()
+    {
+        var fakeQuery = A.Fake<IGetOdsInstanceManageByIdQuery>();
+        var disabledOptions = Options.Create(new AppSettings { EnableDataStoreManagement = false });
+
+        var exception = Should.Throw<ValidationException>(() =>
+            ReadOdsInstanceManage.GetOdsInstanceManage(fakeQuery, 1, disabledOptions).GetAwaiter().GetResult());
+
+        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
     }
 }

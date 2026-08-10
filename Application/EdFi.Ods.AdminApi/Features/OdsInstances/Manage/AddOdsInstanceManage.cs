@@ -6,6 +6,7 @@
 using System.Text.RegularExpressions;
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
@@ -18,6 +19,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -51,6 +53,9 @@ public class AddOdsInstanceManage : IFeature
         [FromServices] IOptions<AppSettings> options,
         AddOdsInstanceManageRequest request)
     {
+        if (!options.Value.EnableDataStoreManagement)
+            throw new ValidationException([new ValidationFailure(nameof(OdsInstance), "This endpoint has been disabled on application settings.")]);
+
         await validator.GuardAsync(request);
 
         var added = addOdsInstanceManageCommand.Execute(request);

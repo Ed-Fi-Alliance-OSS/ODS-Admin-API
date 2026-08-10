@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -42,6 +43,9 @@ public class DeleteDataStoreManage : IFeature
         int id
     )
     {
+        if (!options.Value.EnableDataStoreManagement)
+            throw new ValidationException([new ValidationFailure("dataStore", "This endpoint has been disabled on application settings.")]);
+
         var dataStoreManage = getDataStoreManageByIdQuery.Execute(id);
         if (dataStoreManage is null)
             throw new NotFoundException<int>("dataStoreManage", id);

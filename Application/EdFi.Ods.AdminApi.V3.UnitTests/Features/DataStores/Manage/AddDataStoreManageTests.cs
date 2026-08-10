@@ -458,6 +458,17 @@ public class AddDataStoreManageTests
             error.PropertyName == nameof(AddDataStoreManage.AddDataStoreManageRequest.Name)
             && error.ErrorMessage == "A DataStore named 'Existing Instance' already exists.");
     }
+
+    [Test]
+    public async Task Handle_WhenDataStoreManagementDisabled_ThrowsValidationException()
+    {
+        var disabledOptions = Options.Create(new AppSettings { EnableDataStoreManagement = false });
+
+        var exception = await Should.ThrowAsync<ValidationException>(async () =>
+            await AddDataStoreManage.Handle(null!, null!, null!, null!, disabledOptions, null!, null!));
+
+        exception.Errors.Single().PropertyName.ShouldBe("dataStore");
+    }
 }
 
 #nullable restore
