@@ -467,7 +467,7 @@ public class AddDataStoreManageTests
         var exception = await Should.ThrowAsync<ValidationException>(async () =>
             await AddDataStoreManage.Handle(null!, null!, null!, null!, disabledOptions, null!, null!));
 
-        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
+        exception.Errors.Single().PropertyName.ShouldBe("dataStore");
     }
 }
 

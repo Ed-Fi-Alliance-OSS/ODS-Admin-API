@@ -44,7 +44,7 @@ public class DeleteDataStoreManage : IFeature
     )
     {
         if (!options.Value.EnableDataStoreManagement)
-            throw new ValidationException([new ValidationFailure(nameof(OdsInstance), "This endpoint has been disabled on application settings.")]);
+            throw new ValidationException([new ValidationFailure("dataStore", "This endpoint has been disabled on application settings.")]);
 
         var dataStoreManage = getDataStoreManageByIdQuery.Execute(id);
         if (dataStoreManage is null)

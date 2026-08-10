@@ -36,7 +36,7 @@ public class ReadDataStoreManage : IFeature
         [FromServices] IOptions<AppSettings> options)
     {
         if (!options.Value.EnableDataStoreManagement)
-            throw new ValidationException([new ValidationFailure(nameof(OdsInstance), "This endpoint has been disabled on application settings.")]);
+            throw new ValidationException([new ValidationFailure("dataStore", "This endpoint has been disabled on application settings.")]);
 
         var list = DataStoreManageMapper.ToModelList(query.Execute(commonQueryParams, id, name));
         return Task.FromResult(Results.Ok(list));
@@ -46,7 +46,7 @@ public class ReadDataStoreManage : IFeature
         [FromServices] IOptions<AppSettings> options)
     {
         if (!options.Value.EnableDataStoreManagement)
-            throw new ValidationException([new ValidationFailure(nameof(OdsInstance), "This endpoint has been disabled on application settings.")]);
+            throw new ValidationException([new ValidationFailure("dataStore", "This endpoint has been disabled on application settings.")]);
 
         var dataStoreManage = query.Execute(id);
         if (dataStoreManage == null)

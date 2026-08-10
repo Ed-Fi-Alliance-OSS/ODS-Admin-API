@@ -55,7 +55,7 @@ public class AddDataStoreManage : IFeature
         HttpContext httpContext)
     {
         if (!options.Value.EnableDataStoreManagement)
-            throw new ValidationException([new ValidationFailure(nameof(OdsInstance), "This endpoint has been disabled on application settings.")]);
+            throw new ValidationException([new ValidationFailure("dataStore", "This endpoint has been disabled on application settings.")]);
 
         await validator.GuardAsync(request);
 

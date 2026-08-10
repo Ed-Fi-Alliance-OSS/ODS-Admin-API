@@ -144,7 +144,7 @@ public class ReadDataStoreManageTests
         var exception = Should.Throw<ValidationException>(() =>
             ReadDataStoreManage.GetDataStoreManages(fakeQuery, new CommonQueryParams(0, 10), null, null, disabledOptions).GetAwaiter().GetResult());
 
-        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
+        exception.Errors.Single().PropertyName.ShouldBe("dataStore");
     }
 
     [Test]
@@ -156,6 +156,6 @@ public class ReadDataStoreManageTests
         var exception = Should.Throw<ValidationException>(() =>
             ReadDataStoreManage.GetDataStoreManage(fakeQuery, 1, disabledOptions).GetAwaiter().GetResult());
 
-        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
+        exception.Errors.Single().PropertyName.ShouldBe("dataStore");
     }
 }

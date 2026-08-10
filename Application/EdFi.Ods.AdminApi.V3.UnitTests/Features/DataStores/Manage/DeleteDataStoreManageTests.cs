@@ -263,7 +263,7 @@ public class DeleteDataStoreManageTests
         var exception = await Should.ThrowAsync<ValidationException>(() =>
             DeleteDataStoreManage.Handle(null!, null!, null!, null!, disabledOptions, 1));
 
-        exception.Errors.Single().PropertyName.ShouldBe(nameof(OdsInstance));
+        exception.Errors.Single().PropertyName.ShouldBe("dataStore");
     }
 }
 
