@@ -39,7 +39,10 @@ public class AddDataStoreDerivativeHandlerTests
         A.CallTo(() => fakeGetDerivatives.Execute()).Returns(new List<OdsInstanceDerivative>());
         var fakeAddCommand = A.Fake<IAddDataStoreDerivativeCommand>();
         var derivative = new OdsInstanceDerivative { OdsInstanceDerivativeId = 5, DerivativeType = "ReadReplica", OdsInstance = new OdsInstance { OdsInstanceId = 1 } };
-        A.CallTo(() => fakeAddCommand.Execute(A<IAddDataStoreDerivativeModel>._)).Returns(derivative);
+        string? capturedConnectionStringAtCallTime = null;
+        A.CallTo(() => fakeAddCommand.Execute(A<IAddDataStoreDerivativeModel>._))
+            .Invokes((IAddDataStoreDerivativeModel m) => capturedConnectionStringAtCallTime = m.ConnectionString)
+            .Returns(derivative);
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
         A.CallTo(() => fakeEncryption.Encrypt(A<string>._, A<byte[]>._)).Returns("encrypted");
 
@@ -58,7 +61,7 @@ public class AddDataStoreDerivativeHandlerTests
         var result = await AddDataStoreDerivative.Handle(validator, fakeAddCommand, fakeEncryption, Options(), request, fakeHttpContext);
 
         request.ConnectionString.ShouldBe("encrypted");
-        A.CallTo(() => fakeAddCommand.Execute(A<IAddDataStoreDerivativeModel>.That.Matches(m => m.ConnectionString == "encrypted"))).MustHaveHappenedOnceExactly();
+        capturedConnectionStringAtCallTime.ShouldBe("encrypted");
         result.ShouldNotBeNull();
     }
 

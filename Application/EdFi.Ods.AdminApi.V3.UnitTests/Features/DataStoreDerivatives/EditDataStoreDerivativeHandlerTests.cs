@@ -37,6 +37,9 @@ public class EditDataStoreDerivativeHandlerTests
         var fakeGetDerivatives = A.Fake<IGetDataStoreDerivativesQuery>();
         A.CallTo(() => fakeGetDerivatives.Execute()).Returns(new List<OdsInstanceDerivative>());
         var fakeEditCommand = A.Fake<IEditDataStoreDerivativeCommand>();
+        string? capturedConnectionStringAtCallTime = null;
+        A.CallTo(() => fakeEditCommand.Execute(A<IEditDataStoreDerivativeModel>._))
+            .Invokes((IEditDataStoreDerivativeModel m) => capturedConnectionStringAtCallTime = m.ConnectionString);
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
         A.CallTo(() => fakeEncryption.Encrypt(A<string>._, A<byte[]>._)).Returns("encrypted");
 
@@ -49,7 +52,7 @@ public class EditDataStoreDerivativeHandlerTests
         var result = await EditDataStoreDerivative.Handle(validator, fakeEditCommand, fakeEncryption, Options(), request, 1);
 
         request.ConnectionString.ShouldBe("encrypted");
-        A.CallTo(() => fakeEditCommand.Execute(A<IEditDataStoreDerivativeModel>.That.Matches(m => m.ConnectionString == "encrypted"))).MustHaveHappenedOnceExactly();
+        capturedConnectionStringAtCallTime.ShouldBe("encrypted");
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NoContent>();
     }
 

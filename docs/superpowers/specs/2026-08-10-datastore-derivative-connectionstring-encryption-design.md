@@ -1,7 +1,7 @@
 # DataStoreDerivative Connection String Encryption — Design
 
 **Ticket:** [ADMINAPI-1482](https://edfi.atlassian.net/browse/ADMINAPI-1482)
-**Scope:** V3 only (`Application/EdFi.Ods.AdminApi.V3`). There is no `DataStoreDerivative` concept in V2.
+**Scope:** V3 only (`Application/EdFi.Ods.AdminApi.V3`). V2's equivalent `odsInstanceDerivatives` endpoints (`Application/EdFi.Ods.AdminApi/Features/OdsInstanceDerivative/`) write the same `OdsInstanceDerivative.ConnectionString` column unencrypted, with no lazy backfill — unlike V2's primary `OdsInstance`, which already encrypts and backfills. This is a real gap, deferred here because `AdminApiMode` serves only one of V1/V2/V3 per deployment, so a V3 deployment never exercises the V2 write path. Track V2 derivative-encryption parity as a follow-up ticket.
 
 ## Problem
 
@@ -58,7 +58,7 @@ This design replicates that exact pattern for `DataStoreDerivative`, reusing the
 
 ## Decisions made during brainstorming
 
-- **Scope: V3 only.** V2 has no `DataStoreDerivative` concept.
+- **Scope: V3 only.** V2's `odsInstanceDerivatives` endpoints have the identical plaintext-at-rest problem (confirmed via `AddOdsInstanceDerivative.cs`/its Edit sibling, which call the command directly with no encryption), but fixing it is out of scope here — a V3 deployment never serves the V2 write path (`AdminApiMode` selects exactly one of V1/V2/V3 per deployment), so this is deferred as a follow-up ticket rather than bundled into this fix.
 - **Migration strategy for AC3: lazy backfill on read**, reusing the existing `DataStoreEncryptionHelper` pattern rather than adding a one-time DB migration script. Chosen because DbUp migration scripts are plain SQL with no access to the encryption key/provider, and the codebase already has working precedent for this exact problem on the primary `DataStore`.
 - **Response model: remove the property, not null it out.** `DataStoreDerivativeModel` drops `ConnectionString` entirely rather than keeping it and always mapping to `null`, to match the primary `DataStoreModel`'s shape exactly and avoid leaving a residual field in the OpenAPI schema.
 
@@ -78,6 +78,8 @@ This design replicates that exact pattern for `DataStoreDerivative`, reusing the
 - `DataStoreDerivatives/GET - DataStoreDerivatives by ID.bru`
 - `DataStores/GET - DataStores by ID.bru`
 - `Multitenant Isolation - DataStores/GET - DataStores by ID - Tenant1.bru`
+
+> Note: at implementation time, `DataStores/GET - DataStores by ID.bru` and `Multitenant Isolation - DataStores/GET - DataStores by ID - Tenant1.bru` were found to already use a generic schema assertion with no `connectionString` field, so only the other 5 files above actually required edits.
 
 ## Out of scope
 
