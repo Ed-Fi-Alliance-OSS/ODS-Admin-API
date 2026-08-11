@@ -7,6 +7,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -27,9 +28,17 @@ public class AddDataStoreDerivative : IFeature
            .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddDataStoreDerivativeCommand addDataStoreDerivativeCommand, AddDataStoreDerivativeRequest request, HttpContext httpContext)
+    public static async Task<IResult> Handle(
+        Validator validator,
+        IAddDataStoreDerivativeCommand addDataStoreDerivativeCommand,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        IOptions<AppSettings> options,
+        AddDataStoreDerivativeRequest request,
+        HttpContext httpContext)
     {
         await validator.GuardAsync(request);
+        string encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
+        request.ConnectionString = encryptionProvider.Encrypt(request.ConnectionString, Convert.FromBase64String(encryptionKey));
         var added = addDataStoreDerivativeCommand.Execute(request);
         var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dataStoreDerivatives/{added.OdsInstanceDerivativeId}");
         return Results.Created(absoluteLocation, null);
