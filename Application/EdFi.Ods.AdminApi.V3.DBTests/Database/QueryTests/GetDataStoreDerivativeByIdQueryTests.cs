@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using NUnit.Framework;
 using Shouldly;
@@ -42,7 +43,7 @@ public class GetDataStoreDerivativeByIdQueryTests : PlatformUsersContextTestBase
         OdsInstanceDerivative result = null;
         Transaction(usersContext =>
         {
-            var query = new GetDataStoreDerivativeByIdQuery(usersContext);
+            var query = new GetDataStoreDerivativeByIdQuery(usersContext, new Aes256SymmetricStringEncryptionProvider(), Testing.GetAppSettings());
             result = query.Execute(odsInstanceDerivative1.OdsInstanceDerivativeId);
             result.ShouldNotBeNull();
             result.OdsInstanceDerivativeId.ShouldBe(odsInstanceDerivative1.OdsInstanceDerivativeId);
