@@ -37,8 +37,12 @@ public class GetDataStoreQuery(
             ?? throw new NotFoundException<int>("DataStore", id);
 
         if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
+        {
             DataStoreEncryptionHelper.EncryptConnectionStringsIfNeededAsync(
                 new List<OdsInstance> { dataStore }, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
+            DataStoreEncryptionHelper.EncryptDerivativeConnectionStringsIfNeededAsync(
+                dataStore.OdsInstanceDerivatives.ToList(), _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
+        }
 
         return dataStore;
     }

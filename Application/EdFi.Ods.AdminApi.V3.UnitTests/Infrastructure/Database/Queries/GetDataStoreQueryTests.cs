@@ -6,6 +6,7 @@
 #nullable enable
 
 using System;
+using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
@@ -107,5 +108,24 @@ public class GetDataStoreQueryTests
         var result = query.Execute(odsInstance.OdsInstanceId);
 
         result.ConnectionString.ShouldBe(string.Empty);
+    }
+
+    [Test]
+    public void Execute_WithUnencryptedDerivativeConnectionString_EncryptsOnRead()
+    {
+        using var usersContext = CreateContext();
+        var odsInstance = new OdsInstance { Name = "Test", InstanceType = "type", ConnectionString = PlainConnectionString };
+        usersContext.OdsInstances.Add(odsInstance);
+        usersContext.SaveChanges();
+        var derivative = new OdsInstanceDerivative { OdsInstance = odsInstance, DerivativeType = "ReadReplica", ConnectionString = PlainConnectionString };
+        usersContext.OdsInstanceDerivatives.Add(derivative);
+        usersContext.SaveChanges();
+
+        var query = new GetDataStoreQuery(usersContext, _provider, OptionsWithKey(TestEncryptionKey));
+        var result = query.Execute(odsInstance.OdsInstanceId);
+
+        var resultDerivative = result.OdsInstanceDerivatives.Single();
+        resultDerivative.ConnectionString.ShouldNotBe(PlainConnectionString);
+        _provider.IsEncrypted(resultDerivative.ConnectionString).ShouldBeTrue();
     }
 }
