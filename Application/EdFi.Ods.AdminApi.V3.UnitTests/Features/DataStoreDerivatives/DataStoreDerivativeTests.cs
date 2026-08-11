@@ -57,7 +57,7 @@ public class DataStoreDerivativeTests
     }
 
     [Test]
-    public void ToModel_MapsDerivativeFieldsAndParentDataStoreId()
+    public void ToModel_MapsDerivativeFieldsAndParentDataStoreId_WithoutConnectionString()
     {
         var source = new DbOdsInstanceDerivative
         {
@@ -72,7 +72,7 @@ public class DataStoreDerivativeTests
         model.DataStoreDerivativeId.ShouldBe(22);
         model.DataStoreId.ShouldBe(99);
         model.DerivativeType.ShouldBe("ReadReplica");
-        model.ConnectionString.ShouldBe("encrypted");
+        model.GetType().GetProperty("ConnectionString").ShouldBeNull();
     }
 
     [Test]

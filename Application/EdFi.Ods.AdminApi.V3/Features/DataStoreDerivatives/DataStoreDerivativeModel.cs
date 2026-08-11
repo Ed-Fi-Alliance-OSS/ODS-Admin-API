@@ -15,5 +15,4 @@ public class DataStoreDerivativeModel
     public int DataStoreDerivativeId { get; set; }
     public int DataStoreId { get; set; }
     public string? DerivativeType { get; set; }
-    public string? ConnectionString { get; set; }
 }

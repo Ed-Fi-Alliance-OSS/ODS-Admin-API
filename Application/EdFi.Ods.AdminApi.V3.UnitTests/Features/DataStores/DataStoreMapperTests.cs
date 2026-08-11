@@ -71,7 +71,6 @@ public class DataStoreMapperTests
         model.DataStoreContexts!.Single().ContextKey.ShouldBe("SchoolYear");
         model.DataStoreDerivatives!.Single().DataStoreId.ShouldBe(21);
         model.DataStoreDerivatives!.Single().DerivativeType.ShouldBe("ReadReplica");
-        model.DataStoreDerivatives!.Single().ConnectionString.ShouldBe("encrypted");
     }
 
     [Test]
