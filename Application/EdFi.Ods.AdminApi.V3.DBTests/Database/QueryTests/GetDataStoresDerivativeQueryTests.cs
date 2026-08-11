@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using NUnit.Framework;
@@ -39,7 +40,7 @@ public class GetDataStoresDerivativeQueryTests : PlatformUsersContextTestBase
         List<OdsInstanceDerivative> results = null;
         Transaction(usersContext =>
         {
-            var query = new GetDataStoreDerivativesQuery(usersContext, Testing.GetAppSettings());
+            var query = new GetDataStoreDerivativesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             results = query.Execute();
         });
 
@@ -78,7 +79,7 @@ public class GetDataStoresDerivativeQueryTests : PlatformUsersContextTestBase
         List<OdsInstanceDerivative> results = null;
         Transaction(usersContext =>
         {
-            var query = new GetDataStoreDerivativesQuery(usersContext, Testing.GetAppSettings());
+            var query = new GetDataStoreDerivativesQuery(usersContext, Testing.GetAppSettings(), new Aes256SymmetricStringEncryptionProvider());
             results = query.Execute(new CommonQueryParams(1, 1));
             results.Count.ShouldBe(1);
         });
