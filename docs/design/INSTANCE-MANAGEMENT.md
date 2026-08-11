@@ -92,6 +92,31 @@ The feature only works end to end when all of the following hold:
   the `ISandboxProvisioner` implementation once at startup (see
   [Provisioner selection](#provisioner-selection)).
 
+### EnableDataStoreManagement feature flag
+
+`AppSettings:EnableDataStoreManagement` (bool, default `true`; env var
+`ENABLE_DATA_STORE_MANAGEMENT`, added [ADMINAPI-1489](https://edfi.atlassian.net/browse/ADMINAPI-1489))
+can disable this entire feature at runtime, without a code deploy:
+
+* **When `false`, all 8 Manage routes return `400`.** Create, delete,
+  read-all, and read-by-id, across both v2 and v3, each check the flag as the
+  first statement in their handler and throw a `ValidationException` with the
+  message `"This endpoint has been disabled on application settings."`
+  instead of executing — the same convention already used by
+  `EnableApplicationResetEndpoint`/`ResetApplicationCredentials`.
+* **When `false`, the 4 recurring dispatcher jobs are skipped at startup.**
+  `DataStoreManagementJobScheduler.ShouldScheduleDataStoreManagementJobs`
+  (`Application/EdFi.Ods.AdminApi/Infrastructure/Services/Jobs/DataStoreManagementJobScheduler.cs`)
+  gates all 4 dispatcher-scheduling call sites in `Program.cs` (create/delete
+  × v2/v3, single- and multi-tenant); a skipped job logs an Info message
+  instead of registering. `RefreshEducationOrganizationsJob` is unrelated and
+  keeps running regardless of this flag.
+* **Defaults to `true`** — the feature is fully enabled unless explicitly
+  turned off.
+
+See `docs/design/2026-08-05-enable-datastore-management-flag.md` for the full
+design rationale and implementation notes.
+
 ### Multi-tenancy
 
 When multi-tenancy is enabled (`AppSettings:MultiTenancy`), every configured
@@ -191,6 +216,12 @@ variants are terminal:
 | Read all | `GET /v2/odsInstances/manage` | `GET /v3/dataStores/manage` |
 | Read by id | `GET /v2/odsInstances/manage/{id}` | `GET /v3/dataStores/manage/{id}` |
 | Delete | `DELETE /v2/odsInstances/manage/{id}` | `DELETE /v3/dataStores/manage/{id}` |
+
+> **Feature flag:** all four operations above additionally return `400` with
+> `"This endpoint has been disabled on application settings."` when
+> `AppSettings:EnableDataStoreManagement` is `false`, in both v2 and v3 — see
+> [EnableDataStoreManagement feature flag](#enabledatastoremanagement-feature-flag)
+> under Configuration and Prerequisites.
 
 v2 lives in `Application/EdFi.Ods.AdminApi/Features/OdsInstances/Manage/`; v3
 in `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/Manage/`. Behavior is
