@@ -41,4 +41,34 @@ public static class DataStoreEncryptionHelper
         if (anyUpdated)
             await usersContext.SaveChangesAsync(cancellationToken);
     }
+
+    public static async Task EncryptDerivativeConnectionStringsIfNeededAsync(
+        List<OdsInstanceDerivative> derivatives,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        string encryptionKey,
+        string databaseEngine,
+        CancellationToken cancellationToken = default)
+    {
+        byte[] key = Convert.FromBase64String(encryptionKey);
+        bool anyUpdated = false;
+
+        foreach (var derivative in derivatives)
+        {
+            if (string.IsNullOrEmpty(derivative.ConnectionString))
+                continue;
+
+            if (encryptionProvider.IsEncrypted(derivative.ConnectionString))
+                continue;
+
+            if (!ConnectionStringHelper.ValidateConnectionString(databaseEngine, derivative.ConnectionString))
+                continue;
+
+            derivative.ConnectionString = encryptionProvider.Encrypt(derivative.ConnectionString, key);
+            anyUpdated = true;
+        }
+
+        if (anyUpdated)
+            await usersContext.SaveChangesAsync(cancellationToken);
+    }
 }
