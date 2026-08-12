@@ -51,10 +51,12 @@ git rm "Application/EdFi.Ods.AdminApi.UnitTests/Features/OdsInstances/ReadEducat
 git rm "Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Database/Queries/GetEducationOrganizationsQueryTests.cs"
 ```
 
-- [ ] **Step 3: Build to confirm no compile errors**
+- [ ] **Step 3: Build the affected project to confirm no compile errors**
 
-Run: `./build.ps1 -Command Build`
-Expected: build succeeds with no errors referencing `ReadEducationOrganizations`, `GetEducationOrganizationsQuery`, or `OdsInstanceWithEducationOrganizationsModel`.
+Run: `dotnet build "Application/EdFi.Ods.AdminApi.UnitTests/EdFi.Ods.AdminApi.UnitTests.csproj" --nologo`
+Expected: build succeeds with no errors referencing `ReadEducationOrganizations`, `GetEducationOrganizationsQuery`, or `OdsInstanceWithEducationOrganizationsModel`. This builds `EdFi.Ods.AdminApi.UnitTests` and its project reference `EdFi.Ods.AdminApi` — the two projects this task touches.
+
+Do NOT run a whole-solution build (`./build.ps1 -Command Build`) in this task. It will fail because `Application/EdFi.Ods.AdminApi.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs` still references the class deleted in this task — that file is deleted in Task 2. A whole-solution build only becomes green again once Task 2 completes, and is exercised in full in Task 8.
 
 - [ ] **Step 4: Run V2 unit tests to confirm the suite is still green**
 
@@ -163,10 +165,12 @@ git rm "Application/EdFi.Ods.AdminApi.V3/Infrastructure/Database/Queries/GetEduc
 git rm "Application/EdFi.Ods.AdminApi.V3.UnitTests/Features/DataStores/ReadEducationOrganizationsTests.cs"
 ```
 
-- [ ] **Step 3: Build to confirm no compile errors**
+- [ ] **Step 3: Build the affected project to confirm no compile errors**
 
-Run: `./build.ps1 -Command Build`
-Expected: build succeeds.
+Run: `dotnet build "Application/EdFi.Ods.AdminApi.V3.UnitTests/EdFi.Ods.AdminApi.V3.UnitTests.csproj" --nologo`
+Expected: build succeeds. This builds `EdFi.Ods.AdminApi.V3.UnitTests` and its project reference `EdFi.Ods.AdminApi.V3` — the two projects this task touches.
+
+Do NOT run a whole-solution build (`./build.ps1 -Command Build`) in this task. It will fail because `Application/EdFi.Ods.AdminApi.V3.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs` still references the class deleted in this task — that file is deleted in Task 5. A whole-solution build only becomes green again once Task 5 completes, and is exercised in full in Task 8.
 
 - [ ] **Step 4: Run V3 unit tests to confirm the suite is still green**
 
