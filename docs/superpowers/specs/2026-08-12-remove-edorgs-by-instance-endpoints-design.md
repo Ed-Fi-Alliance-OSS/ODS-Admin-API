@@ -49,23 +49,30 @@ Feature endpoints, their now-exclusive query, and all their tests:
 6. `Application/EdFi.Ods.AdminApi.V3/Infrastructure/Database/Queries/GetEducationOrganizationsQuery.cs` (V3 query — orphaned by this removal)
 7. `Application/EdFi.Ods.AdminApi.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs`
 8. `Application/EdFi.Ods.AdminApi.V3.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs`
-9. `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/OdsInstances/GET - OdsInstances - EdOrgs By InstanceId.bru`
-10. `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3/DataStores/GET - DataStores - EdOrgs By InstanceId.bru`
+9. `Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Database/Queries/GetEducationOrganizationsQueryTests.cs` (V2-only in-memory-EF unit test of the query itself; no V3 equivalent exists)
+10. `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/OdsInstances/GET - OdsInstances - EdOrgs By InstanceId.bru`
+11. `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3/DataStores/GET - DataStores - EdOrgs By InstanceId.bru`
 
 No central feature-registration list needs editing: `IFeature`
 implementations are discovered via reflection
 (`FeaturesHelper`/`executingAssembly.GetTypes()...`), not an explicit
 registry, so deleting the `.cs` files is sufficient to drop the routes.
+Confirmed by a repo-wide search for `GetEducationOrganizationsQuery`: no
+explicit DI registration (e.g. `AddTransient<IGetEducationOrganizationsQuery, ...>`)
+exists outside the files already listed for deletion.
 
 ### Update (documentation)
 
-Remove only the by-instance/by-data-store route mentions; leave unrelated
-content (including the stale list-all route mentions noted below) untouched:
+Remove the by-instance/by-data-store route mentions and dangling references
+to the deleted class names (`ReadEducationOrganizations`,
+`IGetEducationOrganizationsQuery`, `GetEducationOrganizationsQuery`); leave
+unrelated content (including the stale list-all route mentions noted below)
+untouched:
 
-11. `docs/design/Education-organization-Endpoints.md`
-12. `docs/http/education-organizations.http`
-13. `docs/PRD-ODS-Admin-API-2.4.md` (FR-EDORG-2)
-14. `docs/TEST_COVERAGE_IMPROVEMENT_PLAN.md` (drop the two now-deleted-file line items, lines 527 and 538 as of this writing)
+12. `docs/design/Education-organization-Endpoints.md`
+13. `docs/http/education-organizations.http`
+14. `docs/PRD-ODS-Admin-API-2.4.md` (FR-EDORG-2)
+15. `docs/TEST_COVERAGE_IMPROVEMENT_PLAN.md` (drop the two now-deleted-file line items, lines 527 and 538 as of this writing)
 
 ### Explicitly out of scope
 
