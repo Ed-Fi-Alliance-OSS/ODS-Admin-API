@@ -47,11 +47,15 @@ Feature endpoints, their now-exclusive query, and all their tests:
 4. `Application/EdFi.Ods.AdminApi.V3.UnitTests/Features/DataStores/ReadEducationOrganizationsTests.cs`
 5. `Application/EdFi.Ods.AdminApi/Infrastructure/Database/Queries/GetEducationOrganizationsQuery.cs` (V2 query — orphaned by this removal)
 6. `Application/EdFi.Ods.AdminApi.V3/Infrastructure/Database/Queries/GetEducationOrganizationsQuery.cs` (V3 query — orphaned by this removal)
-7. `Application/EdFi.Ods.AdminApi.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs`
-8. `Application/EdFi.Ods.AdminApi.V3.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs`
-9. `Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Database/Queries/GetEducationOrganizationsQueryTests.cs` (V2-only in-memory-EF unit test of the query itself; no V3 equivalent exists)
-10. `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/OdsInstances/GET - OdsInstances - EdOrgs By InstanceId.bru`
-11. `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3/DataStores/GET - DataStores - EdOrgs By InstanceId.bru`
+7. `Application/EdFi.Ods.AdminApi/Features/OdsInstances/OdsInstanceWithEducationOrganizationsModel.cs` (V2 response wrapper model — used only by the query/endpoint above)
+8. `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/DataStoreWithEducationOrganizationsModel.cs` (V3 response wrapper model — used only by the query/endpoint above)
+9. `Application/EdFi.Ods.AdminApi.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs`
+10. `Application/EdFi.Ods.AdminApi.V3.DBTests/Database/QueryTests/GetEducationOrganizationsQueryTests.cs`
+11. `Application/EdFi.Ods.AdminApi.UnitTests/Infrastructure/Database/Queries/GetEducationOrganizationsQueryTests.cs` (V2-only in-memory-EF unit test of the query itself; no V3 equivalent exists)
+12. `Application/EdFi.Ods.AdminApi/E2E Tests/V2/Bruno Admin API E2E 2.0 refactor/v2/OdsInstances/GET - OdsInstances - EdOrgs By InstanceId.bru`
+13. `Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/v3/DataStores/GET - DataStores - EdOrgs By InstanceId.bru`
+
+**Explicitly NOT orphaned — verified shared, do not touch:** `EducationOrganizationMapper.cs` and `EducationOrganizationModels.cs` (`EducationOrganizationModel` class), both V2 and V3 — also consumed by `TenantService`/`TenantDetailModel` for the tenant-scoped edOrgs feature.
 
 No central feature-registration list needs editing: `IFeature`
 implementations are discovered via reflection
