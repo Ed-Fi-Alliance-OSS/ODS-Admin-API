@@ -84,9 +84,6 @@ configuration.
 
 ### Service Layer
 
-The service files can be maintained in a common project and shared between the
-V1 and V2 projects to avoid code duplication.
-
 The `RefreshEducationOrganizationCommand` service layer implements a
 comprehensive C# solution to aggregate education organization data across
 multiple ODS instances and persist it into the
