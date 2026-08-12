@@ -11,12 +11,9 @@ nested under a single ODS instance / data store:
 - V2: `GET /odsInstances/{instanceId}/edOrgs`
 - V3: `GET /dataStores/{dataStoreId}/edOrgs`
 
-Both endpoints now return 404 — asserted by a dedicated Bruno E2E spec per
-API version (`GET - OdsInstances - EdOrgs By InstanceId Route Removed.bru`,
-`GET - DataStores - EdOrgs By InstanceId Route Removed.bru`), so an
-accidental route reintroduction would be caught by CI. The tenant-scoped
-edOrgs endpoint (`ReadTenants`) and the `RefreshEducationOrganizations`
-refresh feature (both API versions) are unaffected.
+Both endpoints now return 404. The tenant-scoped edOrgs endpoint
+(`ReadTenants`) and the `RefreshEducationOrganizations` refresh feature
+(both API versions) are unaffected.
 
 ## Why the query classes were also removed
 
@@ -38,9 +35,7 @@ with the endpoints, rather than preserved.
 - `ReadEducationOrganizations.cs` (V2 and V3 feature endpoints)
 - `OdsInstanceWithEducationOrganizationsModel.cs` / `DataStoreWithEducationOrganizationsModel.cs` (response wrapper models)
 - `GetEducationOrganizationsQuery.cs` (V2 and V3, interface + implementation)
-- Their unit tests, DB integration tests, and Bruno E2E specs (the specs
-  that exercised the 200-response behavior were deleted; replaced with a
-  404-regression spec per API version, see above)
+- Their unit tests, DB integration tests, and Bruno E2E specs
 
 ## Explicitly preserved (verified untouched)
 
