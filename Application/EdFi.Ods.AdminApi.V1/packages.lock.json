@@ -150,12 +150,12 @@
       },
       "Microsoft.EntityFrameworkCore.SqlServer": {
         "type": "Direct",
-        "requested": "[10.0.8, )",
-        "resolved": "10.0.8",
-        "contentHash": "A+FLIsTH9l5DG2iD6QW6Mfwlvr+BjWme/jJ2hvwmmENTr7lR1UWmgCtKCjDYcHxqdAD15bb4PgQnSzw12DV/pw==",
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "xwAOvQ1WCfWyA4sRkoYVHyTm8UJ7NDYpRo++2oWuXGQ9g60Z1yepaQBmoPDT2nX24q4ISWnktAW9zARFTiSVvg==",
         "dependencies": {
           "Microsoft.Data.SqlClient": "6.1.1",
-          "Microsoft.EntityFrameworkCore.Relational": "10.0.8"
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.10"
         }
       },
       "Microsoft.Extensions.Logging.Log4Net.AspNetCore": {
@@ -632,7 +632,7 @@
           "Microsoft.Data.SqlClient": "[6.1.1, )",
           "Microsoft.EntityFrameworkCore": "[10.0.8, )",
           "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.8, )",
-          "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.8, )",
+          "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.10, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[10.0.2, )",
