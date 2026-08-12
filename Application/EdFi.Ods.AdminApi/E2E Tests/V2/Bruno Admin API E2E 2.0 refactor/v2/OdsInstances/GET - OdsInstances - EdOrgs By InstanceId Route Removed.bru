@@ -1,0 +1,21 @@
+meta {
+  name: OdsInstances - EdOrgs By InstanceId Route Removed
+  type: http
+  seq: 26
+}
+
+get {
+  url: {{API_URL}}/v2/odsInstances/1/edOrgs
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET OdsInstances EdOrgs By InstanceId: Route no longer exists, returns Not Found", function () {
+      expect(res.getStatus()).to.equal(404);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
