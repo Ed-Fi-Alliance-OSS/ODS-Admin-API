@@ -28,6 +28,13 @@ public class GetDataStoreQuery(
     private readonly ISymmetricStringEncryptionProvider _encryptionProvider = encryptionProvider;
     private readonly IOptions<AppSettings> _options = options;
 
+    // Note: this is called both by the GET /v3/dataStores/{id} endpoint and by several
+    // existence-check validators elsewhere (EditDataStore, AddDataStoreContext,
+    // EditDataStoreContext, DeleteDataStore, AddDataStoreDerivative, EditDataStoreDerivative).
+    // As a side effect, it backfill-encrypts this data store's own connection string and its
+    // (small, bounded) set of derivatives if either is still stored in plaintext. This is
+    // intentional and pre-existing for the primary connection string; not a bug if you see a
+    // SaveChangesAsync fire from a validator call site.
     public OdsInstance Execute(int id)
     {
         var dataStore = _usersContext.OdsInstances

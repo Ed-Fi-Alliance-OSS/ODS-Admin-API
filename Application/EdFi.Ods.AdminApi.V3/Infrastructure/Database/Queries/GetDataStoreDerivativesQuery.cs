@@ -45,14 +45,17 @@ public class GetDataStoreDerivativesQuery : IGetDataStoreDerivativesQuery
         };
     }
 
+    // Intentionally does not backfill-encrypt: this overload has no client-facing caller
+    // (the GET /v3/dataStoreDerivatives endpoint uses the CommonQueryParams overload below).
+    // It exists only for the AddDataStoreDerivative/EditDataStoreDerivative validators'
+    // combined-key uniqueness check, so running the backfill here would just add an
+    // unscoped full-table encrypt scan to every derivative create/edit for no benefit.
     public List<OdsInstanceDerivative> Execute()
     {
-        var derivatives = _usersContext.OdsInstanceDerivatives
+        return _usersContext.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
             .OrderBy(p => p.DerivativeType)
             .ToList();
-        EncryptIfNeeded(derivatives);
-        return derivatives;
     }
 
     public List<OdsInstanceDerivative> Execute(CommonQueryParams commonQueryParams)
