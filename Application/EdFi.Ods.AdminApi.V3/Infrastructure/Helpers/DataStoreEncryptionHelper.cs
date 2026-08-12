@@ -12,7 +12,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
 public static class DataStoreEncryptionHelper
 {
-    public static async Task EncryptConnectionStringsIfNeededAsync(
+    public static Task EncryptConnectionStringsIfNeededAsync(
         List<OdsInstance> instances,
         IUsersContext usersContext,
         ISymmetricStringEncryptionProvider encryptionProvider,
@@ -20,21 +20,71 @@ public static class DataStoreEncryptionHelper
         string databaseEngine,
         CancellationToken cancellationToken = default)
     {
+        return EncryptConnectionStringsIfNeededAsync(
+            instances,
+            static instance => instance.ConnectionString,
+            static (instance, value) => instance.ConnectionString = value,
+            usersContext,
+            encryptionProvider,
+            encryptionKey,
+            databaseEngine,
+            cancellationToken);
+    }
+
+    public static Task EncryptDerivativeConnectionStringsIfNeededAsync(
+        List<OdsInstanceDerivative> derivatives,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        string encryptionKey,
+        string databaseEngine,
+        CancellationToken cancellationToken = default)
+    {
+        return EncryptConnectionStringsIfNeededAsync(
+            derivatives,
+            static derivative => derivative.ConnectionString,
+            static (derivative, value) => derivative.ConnectionString = value,
+            usersContext,
+            encryptionProvider,
+            encryptionKey,
+            databaseEngine,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Shared skip/encrypt/persist logic for any entity that has a plaintext-or-encrypted
+    /// <c>ConnectionString</c> property. <typeparamref name="T"/> is accessed structurally via
+    /// <paramref name="getConnectionString"/>/<paramref name="setConnectionString"/> rather than a
+    /// shared interface, because the entity types (<see cref="OdsInstance"/>,
+    /// <see cref="OdsInstanceDerivative"/>) are defined in the external EdFi.Suite3.Admin.DataAccess
+    /// package and can't be retrofitted to implement one.
+    /// </summary>
+    private static async Task EncryptConnectionStringsIfNeededAsync<T>(
+        List<T> items,
+        Func<T, string?> getConnectionString,
+        Action<T, string> setConnectionString,
+        IUsersContext usersContext,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        string encryptionKey,
+        string databaseEngine,
+        CancellationToken cancellationToken)
+    {
         byte[] key = Convert.FromBase64String(encryptionKey);
         bool anyUpdated = false;
 
-        foreach (var instance in instances)
+        foreach (var item in items)
         {
-            if (string.IsNullOrEmpty(instance.ConnectionString))
+            string? connectionString = getConnectionString(item);
+
+            if (string.IsNullOrEmpty(connectionString))
                 continue;
 
-            if (encryptionProvider.IsEncrypted(instance.ConnectionString))
+            if (encryptionProvider.IsEncrypted(connectionString))
                 continue;
 
-            if (!ConnectionStringHelper.ValidateConnectionString(databaseEngine, instance.ConnectionString))
+            if (!ConnectionStringHelper.ValidateConnectionString(databaseEngine, connectionString))
                 continue;
 
-            instance.ConnectionString = encryptionProvider.Encrypt(instance.ConnectionString, key);
+            setConnectionString(item, encryptionProvider.Encrypt(connectionString, key));
             anyUpdated = true;
         }
 

@@ -6,6 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -27,11 +28,19 @@ public class EditDataStoreDerivative : IFeature
             .BuildForVersions(AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IEditDataStoreDerivativeCommand editDataStoreDerivativeCommand, EditDataStoreDerivativeRequest request, int id)
+    public static async Task<IResult> Handle(
+        Validator validator,
+        IEditDataStoreDerivativeCommand editDataStoreDerivativeCommand,
+        ISymmetricStringEncryptionProvider encryptionProvider,
+        IOptions<AppSettings> options,
+        EditDataStoreDerivativeRequest request,
+        int id)
     {
         ValidatorExtensions.GuardRouteIdMatchesBodyId(id, request.Id, nameof(request.Id));
         request.Id = id;
         await validator.GuardAsync(request);
+        string encryptionKey = options.Value.EncryptionKey ?? throw new InvalidOperationException("EncryptionKey can't be null.");
+        request.ConnectionString = encryptionProvider.Encrypt(request.ConnectionString, Convert.FromBase64String(encryptionKey));
         editDataStoreDerivativeCommand.Execute(request);
         return Results.NoContent();
     }

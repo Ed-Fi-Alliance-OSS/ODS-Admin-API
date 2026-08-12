@@ -1,0 +1,134 @@
+# This file is intended for use with Admin API 3 (AdminApiMode=V3), running
+# in single-tenant mode. It walks through creating a DataStore and a
+# DataStoreDerivative, then exercises every read surface that used to leak
+# the derivative's connectionString in plaintext (ADMINAPI-1482):
+#   - GET /v3/dataStoreDerivatives            (list)
+#   - GET /v3/dataStoreDerivatives/{id}        (by id)
+#   - GET /v3/dataStores/{id}                  (detail, embeds derivatives)
+# None of these should ever return a "connectionString" property for a
+# derivative, before or after the PUT/edit below.
+#
+# POST /v3/dataStores and /v3/dataStoreDerivatives return 201 Created with an
+# empty body and the new resource's URL in the Location header (no JSON id
+# to chain automatically) — after running each "Create" request below, copy
+# the numeric id from the end of that response's Location header into the
+# matching @dataStoreId / @derivativeId variable, then continue.
+
+# @adminapi_url=https://localhost:7214
+@adminapi_url=https://localhost/adminapi
+@adminapi_client=adminapi_client
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+
+### Register a new client
+POST {{adminapi_url}}/connect/register
+Content-Type: application/x-www-form-urlencoded
+
+ClientId={{adminapi_client}}&ClientSecret={{adminapi_secret}}&DisplayName=Admin+API+{{adminapi_client}}
+
+### Get a token
+# @name tokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@token={{tokenRequest.response.body.access_token}}
+
+
+### Create a DataStore (parent for the derivative below)
+# @name createDataStore
+POST {{adminapi_url}}/v3/dataStores
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "ADMINAPI-1482 Test DataStore",
+  "dataStoreType": "Ods",
+  "connectionString": "Host=localhost;Port=5432;Database=EdFi_Ods_Test;Username=postgres;Password=yourpassword"
+}
+
+### Get the created DataStore directly via the Location header from the response above
+GET {{createDataStore.response.headers.location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+###
+# Set this from the Location header of the createDataStore response above
+# (e.g. https://localhost:7214/v3/dataStores/5 -> 5)
+@dataStoreId=1
+
+
+### Create a DataStoreDerivative under that DataStore
+# @name createDerivative
+POST {{adminapi_url}}/v3/dataStoreDerivatives
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "dataStoreId": {{dataStoreId}},
+  "derivativeType": "ReadReplica",
+  "connectionString": "Host=localhost;Port=5432;Database=EdFi_Ods_Test_ReadReplica;Username=postgres;Password=yourpassword"
+}
+
+### Get the derivative directly via the Location header — response must NOT contain "connectionString"
+GET {{createDerivative.response.headers.location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get all derivatives — none of the list entries should contain "connectionString"
+GET {{adminapi_url}}/v3/dataStoreDerivatives
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get the DataStore detail again — the embedded dataStoreDerivatives entries must NOT contain "connectionString"
+GET {{adminapi_url}}/v3/dataStores/{{dataStoreId}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+###
+# Set this from the Location header of the createDerivative response above
+# (e.g. https://localhost:7214/v3/dataStoreDerivatives/9 -> 9)
+@derivativeId=1
+
+
+### Update the derivative's connection string (still accepted on write, encrypted before persisting)
+PUT {{adminapi_url}}/v3/dataStoreDerivatives/{{derivativeId}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{derivativeId}},
+  "dataStoreId": {{dataStoreId}},
+  "derivativeType": "ReadReplica",
+  "connectionString": "Host=localhost;Port=5432;Database=EdFi_Ods_Test_ReadReplica_v2;Username=postgres;Password=yourpassword"
+}
+
+### Get the derivative by id again after the update — still no "connectionString" in the response
+GET {{adminapi_url}}/v3/dataStoreDerivatives/{{derivativeId}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### Negative: create a derivative with an invalid connection string — should 400 with a ConnectionString validation error
+POST {{adminapi_url}}/v3/dataStoreDerivatives
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "dataStoreId": {{dataStoreId}},
+  "derivativeType": "Snapshot",
+  "connectionString": "not-a-valid-connection-string"
+}
+
+
+### Cleanup: delete the derivative
+DELETE {{adminapi_url}}/v3/dataStoreDerivatives/{{derivativeId}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Cleanup: delete the DataStore
+DELETE {{adminapi_url}}/v3/dataStores/{{dataStoreId}}
+Content-Type: application/json
+Authorization: bearer {{token}}

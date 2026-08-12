@@ -8,6 +8,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
@@ -26,11 +27,13 @@ public class GetDataStoreDerivativesQuery : IGetDataStoreDerivativesQuery
 {
     private readonly IUsersContext _usersContext;
     private readonly IOptions<AppSettings> _options;
+    private readonly ISymmetricStringEncryptionProvider _encryptionProvider;
     private readonly Dictionary<string, Expression<Func<OdsInstanceDerivative, object>>> _orderByColumnOds;
-    public GetDataStoreDerivativesQuery(IUsersContext usersContext, IOptions<AppSettings> options)
+    public GetDataStoreDerivativesQuery(IUsersContext usersContext, IOptions<AppSettings> options, ISymmetricStringEncryptionProvider encryptionProvider)
     {
         _usersContext = usersContext;
         _options = options;
+        _encryptionProvider = encryptionProvider;
         var DatabaseEngine = _options.Value.DatabaseEngine ??= DatabaseEngineEnum.SqlServer;
         var isSQLServerEngine = DatabaseEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase);
         _orderByColumnOds = new Dictionary<string, Expression<Func<OdsInstanceDerivative, object>>>
@@ -42,24 +45,36 @@ public class GetDataStoreDerivativesQuery : IGetDataStoreDerivativesQuery
         };
     }
 
+    // Intentionally does not backfill-encrypt: this overload has no client-facing caller
+    // (the GET /v3/dataStoreDerivatives endpoint uses the CommonQueryParams overload below).
+    // It exists only for the AddDataStoreDerivative/EditDataStoreDerivative validators'
+    // combined-key uniqueness check, so running the backfill here would just add an
+    // unscoped full-table encrypt scan to every derivative create/edit for no benefit.
     public List<OdsInstanceDerivative> Execute()
     {
-        return [.. _usersContext.OdsInstanceDerivatives
+        return _usersContext.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
-            .OrderBy(p => p.DerivativeType)];
+            .OrderBy(p => p.DerivativeType)
+            .ToList();
     }
 
     public List<OdsInstanceDerivative> Execute(CommonQueryParams commonQueryParams)
     {
         Expression<Func<OdsInstanceDerivative, object>> columnToOrderBy = _orderByColumnOds.GetColumnToOrderBy(commonQueryParams.OrderBy);
 
-        return [.. _usersContext.OdsInstanceDerivatives
+        var derivatives = _usersContext.OdsInstanceDerivatives
             .Include(oid => oid.OdsInstance)
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
-            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)];
+            .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
+            .ToList();
+        EncryptIfNeeded(derivatives);
+        return derivatives;
+    }
+
+    private void EncryptIfNeeded(List<OdsInstanceDerivative> derivatives)
+    {
+        if (!string.IsNullOrEmpty(_options.Value.EncryptionKey) && !string.IsNullOrEmpty(_options.Value.DatabaseEngine))
+            DataStoreEncryptionHelper.EncryptDerivativeConnectionStringsIfNeededAsync(
+                derivatives, _usersContext, _encryptionProvider, _options.Value.EncryptionKey, _options.Value.DatabaseEngine).GetAwaiter().GetResult();
     }
 }
-
-
-
-

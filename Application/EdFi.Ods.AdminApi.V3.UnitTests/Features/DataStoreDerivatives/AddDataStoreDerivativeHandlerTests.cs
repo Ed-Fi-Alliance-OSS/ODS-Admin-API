@@ -15,6 +15,7 @@ using EdFi.Ods.AdminApi.V3.Features.DataStoreDerivatives;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FakeItEasy;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -22,7 +23,7 @@ using Shouldly;
 namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DataStoreDerivatives;
 
 [TestFixture]
-public class EditDataStoreDerivativeHandlerTests
+public class AddDataStoreDerivativeHandlerTests
 {
     private static IOptions<AppSettings> Options() =>
         Microsoft.Extensions.Options.Options.Create(new AppSettings
@@ -32,30 +33,38 @@ public class EditDataStoreDerivativeHandlerTests
         });
 
     [Test]
-    public async Task Handle_WithValidRequest_EncryptsConnectionStringAndReturnsNoContent()
+    public async Task Handle_WithValidRequest_EncryptsConnectionStringBeforeExecute()
     {
         var fakeGetDataStore = A.Fake<IGetDataStoreQuery>();
         A.CallTo(() => fakeGetDataStore.Execute(1)).Returns(new OdsInstance { OdsInstanceId = 1, Name = "DS1", InstanceType = "t", ConnectionString = "cs" });
         var fakeGetDerivatives = A.Fake<IGetDataStoreDerivativesQuery>();
         A.CallTo(() => fakeGetDerivatives.Execute()).Returns(new List<OdsInstanceDerivative>());
-        var fakeEditCommand = A.Fake<IEditDataStoreDerivativeCommand>();
+        var fakeAddCommand = A.Fake<IAddDataStoreDerivativeCommand>();
+        var derivative = new OdsInstanceDerivative { OdsInstanceDerivativeId = 5, DerivativeType = "ReadReplica", OdsInstance = new OdsInstance { OdsInstanceId = 1 } };
         string? capturedConnectionStringAtCallTime = null;
-        A.CallTo(() => fakeEditCommand.Execute(A<IEditDataStoreDerivativeModel>._))
-            .Invokes((IEditDataStoreDerivativeModel m) => capturedConnectionStringAtCallTime = m.ConnectionString);
+        A.CallTo(() => fakeAddCommand.Execute(A<IAddDataStoreDerivativeModel>._))
+            .Invokes((IAddDataStoreDerivativeModel m) => capturedConnectionStringAtCallTime = m.ConnectionString)
+            .Returns(derivative);
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
         A.CallTo(() => fakeEncryption.Encrypt(A<string>._, A<byte[]>._)).Returns("encrypted");
 
-        var validator = new EditDataStoreDerivative.Validator(fakeGetDataStore, fakeGetDerivatives, Options());
-        var request = new EditDataStoreDerivative.EditDataStoreDerivativeRequest
+        var validator = new AddDataStoreDerivative.Validator(fakeGetDataStore, fakeGetDerivatives, Options());
+        var request = new AddDataStoreDerivative.AddDataStoreDerivativeRequest
         {
-            Id = 1, DataStoreId = 1, DerivativeType = "ReadReplica", ConnectionString = "Host=localhost;Port=5432;Database=EdFi"
+            DataStoreId = 1,
+            DerivativeType = "ReadReplica",
+            ConnectionString = "Host=localhost;Port=5432;Database=EdFi_ODS"
         };
 
-        var result = await EditDataStoreDerivative.Handle(validator, fakeEditCommand, fakeEncryption, Options(), request, 1);
+        var fakeHttpContext = new DefaultHttpContext();
+        fakeHttpContext.Request.Scheme = "https";
+        fakeHttpContext.Request.Host = new HostString("localhost");
+
+        var result = await AddDataStoreDerivative.Handle(validator, fakeAddCommand, fakeEncryption, Options(), request, fakeHttpContext);
 
         request.ConnectionString.ShouldBe("encrypted");
         capturedConnectionStringAtCallTime.ShouldBe("encrypted");
-        result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NoContent>();
+        result.ShouldNotBeNull();
     }
 
     [Test]
@@ -65,30 +74,20 @@ public class EditDataStoreDerivativeHandlerTests
         A.CallTo(() => fakeGetDataStore.Execute(1)).Returns(new OdsInstance { OdsInstanceId = 1, Name = "DS1", InstanceType = "t", ConnectionString = "cs" });
         var fakeGetDerivatives = A.Fake<IGetDataStoreDerivativesQuery>();
         A.CallTo(() => fakeGetDerivatives.Execute()).Returns(new List<OdsInstanceDerivative>());
-        var fakeEditCommand = A.Fake<IEditDataStoreDerivativeCommand>();
+        var fakeAddCommand = A.Fake<IAddDataStoreDerivativeCommand>();
         var fakeEncryption = A.Fake<ISymmetricStringEncryptionProvider>();
         var optionsWithoutKey = Microsoft.Extensions.Options.Options.Create(new AppSettings { DatabaseEngine = "PostgreSql", EncryptionKey = null });
 
-        var validator = new EditDataStoreDerivative.Validator(fakeGetDataStore, fakeGetDerivatives, optionsWithoutKey);
-        var request = new EditDataStoreDerivative.EditDataStoreDerivativeRequest
+        var validator = new AddDataStoreDerivative.Validator(fakeGetDataStore, fakeGetDerivatives, optionsWithoutKey);
+        var request = new AddDataStoreDerivative.AddDataStoreDerivativeRequest
         {
-            Id = 1, DataStoreId = 1, DerivativeType = "ReadReplica", ConnectionString = "Host=localhost;Port=5432;Database=EdFi"
+            DataStoreId = 1,
+            DerivativeType = "ReadReplica",
+            ConnectionString = "Host=localhost;Port=5432;Database=EdFi_ODS"
         };
+        var fakeHttpContext = new DefaultHttpContext();
 
         await Should.ThrowAsync<InvalidOperationException>(
-            () => EditDataStoreDerivative.Handle(validator, fakeEditCommand, fakeEncryption, optionsWithoutKey, request, 1));
-    }
-
-    [Test]
-    public async Task Validator_WhenDerivativeTypeEmpty_FailsValidation()
-    {
-        var fakeGetDataStore = A.Fake<IGetDataStoreQuery>();
-        A.CallTo(() => fakeGetDataStore.Execute(A<int>._)).Returns(new OdsInstance { OdsInstanceId = 1, Name = "DS1", InstanceType = "t", ConnectionString = "cs" });
-        var fakeGetDerivatives = A.Fake<IGetDataStoreDerivativesQuery>();
-        A.CallTo(() => fakeGetDerivatives.Execute()).Returns(new List<OdsInstanceDerivative>());
-
-        var validator = new EditDataStoreDerivative.Validator(fakeGetDataStore, fakeGetDerivatives, Options());
-        var result = await validator.ValidateAsync(new EditDataStoreDerivative.EditDataStoreDerivativeRequest { Id = 1, DataStoreId = 1, DerivativeType = "" });
-        result.IsValid.ShouldBeFalse();
+            () => AddDataStoreDerivative.Handle(validator, fakeAddCommand, fakeEncryption, optionsWithoutKey, request, fakeHttpContext));
     }
 }

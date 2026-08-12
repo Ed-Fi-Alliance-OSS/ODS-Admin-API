@@ -144,4 +144,59 @@ public class DataStoreEncryptionHelperTests
         instance.ConnectionString.ShouldBe(PlainConnectionString);
         A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
     }
+
+    [Test]
+    public async Task EncryptDerivativeConnectionStringsIfNeededAsync_WithMixedStrings_OnlyEncryptsPlaintextAndCallsSaveChangesAsync()
+    {
+        var encrypted = _provider.Encrypt(PlainConnectionString, new byte[32]);
+        var plaintextDerivative = new OdsInstanceDerivative { DerivativeType = "ReadReplica", ConnectionString = PlainConnectionString };
+        var encryptedDerivative = new OdsInstanceDerivative { DerivativeType = "Snapshot", ConnectionString = encrypted };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await DataStoreEncryptionHelper.EncryptDerivativeConnectionStringsIfNeededAsync(
+            new List<OdsInstanceDerivative> { plaintextDerivative, encryptedDerivative }, usersContext, _provider, TestEncryptionKey, "SqlServer");
+
+        _provider.IsEncrypted(plaintextDerivative.ConnectionString).ShouldBeTrue();
+        encryptedDerivative.ConnectionString.ShouldBe(encrypted);
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task EncryptDerivativeConnectionStringsIfNeededAsync_WithInvalidConnectionString_SkipsEncryptionAndDoesNotCallSaveChangesAsync()
+    {
+        // PlainConnectionString is SqlServer format; using PostgreSql engine makes it invalid
+        var derivative = new OdsInstanceDerivative { DerivativeType = "ReadReplica", ConnectionString = PlainConnectionString };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await DataStoreEncryptionHelper.EncryptDerivativeConnectionStringsIfNeededAsync(
+            new List<OdsInstanceDerivative> { derivative }, usersContext, _provider, TestEncryptionKey, "PostgreSql");
+
+        derivative.ConnectionString.ShouldBe(PlainConnectionString);
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task EncryptDerivativeConnectionStringsIfNeededAsync_WithEmptyList_DoesNotCallSaveChangesAsync()
+    {
+        var usersContext = A.Fake<IUsersContext>();
+
+        await DataStoreEncryptionHelper.EncryptDerivativeConnectionStringsIfNeededAsync(
+            new List<OdsInstanceDerivative>(), usersContext, _provider, TestEncryptionKey, "SqlServer");
+
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Test]
+    public async Task EncryptDerivativeConnectionStringsIfNeededAsync_WithAlreadyEncryptedString_DoesNotCallSaveChangesAsync()
+    {
+        var encrypted = _provider.Encrypt(PlainConnectionString, new byte[32]);
+        var derivative = new OdsInstanceDerivative { DerivativeType = "ReadReplica", ConnectionString = encrypted };
+        var usersContext = A.Fake<IUsersContext>();
+
+        await DataStoreEncryptionHelper.EncryptDerivativeConnectionStringsIfNeededAsync(
+            new List<OdsInstanceDerivative> { derivative }, usersContext, _provider, TestEncryptionKey, "SqlServer");
+
+        derivative.ConnectionString.ShouldBe(encrypted);
+        A.CallTo(() => usersContext.SaveChangesAsync(A<CancellationToken>._)).MustNotHaveHappened();
+    }
 }

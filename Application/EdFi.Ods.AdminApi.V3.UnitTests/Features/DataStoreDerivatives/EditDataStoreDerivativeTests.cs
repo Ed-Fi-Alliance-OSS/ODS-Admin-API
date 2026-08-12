@@ -26,7 +26,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.DataStoreDerivatives
                 ConnectionString = "Server=(local);Database=Test;Trusted_Connection=True;Encrypt=False"
             };
 
-            var exception = Should.Throw<ValidationException>(() => EditDataStoreDerivative.Handle(null!, null!, request, 1).GetAwaiter().GetResult());
+            var exception = Should.Throw<ValidationException>(() => EditDataStoreDerivative.Handle(null!, null!, null!, null!, request, 1).GetAwaiter().GetResult());
 
             exception.Errors.Single(x => x.PropertyName == nameof(request.Id)).ErrorMessage
                 .ShouldBe(ErrorMessagesConstants.RequestBodyIdMismatch);
