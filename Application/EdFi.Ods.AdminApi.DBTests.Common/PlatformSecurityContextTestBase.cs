@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Respawn;
 
-namespace EdFi.Ods.AdminApi.V3.DBTests;
+namespace EdFi.Ods.AdminApi.DBTestsShared;
 
 [TestFixture]
 public abstract class PlatformSecurityContextTestBase
@@ -36,6 +36,8 @@ public abstract class PlatformSecurityContextTestBase
     };
 
     protected virtual string ConnectionString => TestContext.Database.GetConnectionString();
+
+    protected abstract string AdminConnectionString { get; }
 
     protected virtual void AdditionalFixtureSetup()
     {
@@ -96,10 +98,11 @@ public abstract class PlatformSecurityContextTestBase
 
     protected void UsersTransaction(Action<IUsersContext> action)
     {
-        using var usersContext = new SqlServerUsersContext(Testing.GetDbContextOptions(Testing.AdminConnectionString));
+        var options = new DbContextOptionsBuilder().UseSqlServer(AdminConnectionString).Options;
+        using var usersContext = new SqlServerUsersContext(options);
         using var transaction = usersContext.Database.BeginTransaction();
         action(usersContext);
-        TestContext.SaveChanges();
+        usersContext.SaveChanges();
         transaction.Commit();
     }
 
@@ -134,6 +137,4 @@ public abstract class PlatformSecurityContextTestBase
 
         return result;
     }
-
 }
-
