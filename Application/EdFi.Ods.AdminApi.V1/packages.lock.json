@@ -628,6 +628,8 @@
         "dependencies": {
           "Asp.Versioning.Http": "[8.1.1, )",
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
+          "EFCore.NamingConventions": "[10.0.1, )",
+          "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
@@ -651,6 +653,20 @@
           "Azure.Core": "1.46.1",
           "Microsoft.Identity.Client": "4.73.1",
           "Microsoft.Identity.Client.Extensions.Msal": "4.73.1"
+        }
+      },
+      "EdFi.Suite3.Security.DataAccess": {
+        "type": "CentralTransitive",
+        "requested": "[7.4.102, )",
+        "resolved": "7.4.102",
+        "contentHash": "66L6pufiALz9fPmtJ8GQpwabOBCDBAKKDvJlphtAsOXwWnqpJAzm3Tfv4Lz6ko/JxlVC+f7MIP3woj0PCdlbtw==",
+        "dependencies": {
+          "Autofac.Extras.DynamicProxy": "7.1.0",
+          "EFCore.NamingConventions": "8.0.3",
+          "EdFi.Suite3.Common": "7.4.94",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.7",
+          "Npgsql": "8.0.3",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4"
         }
       },
       "Microsoft.Identity.Client": {

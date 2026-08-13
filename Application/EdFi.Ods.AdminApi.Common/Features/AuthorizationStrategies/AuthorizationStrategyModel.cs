@@ -5,7 +5,7 @@
 using Swashbuckle.AspNetCore.Annotations;
 using System.Text.Json.Serialization;
 
-namespace EdFi.Ods.AdminApi.Features.AuthorizationStrategies;
+namespace EdFi.Ods.AdminApi.Common.Features.AuthorizationStrategies;
 
 [SwaggerSchema(Title = "AuthorizationStrategy")]
 public class AuthorizationStrategyModel

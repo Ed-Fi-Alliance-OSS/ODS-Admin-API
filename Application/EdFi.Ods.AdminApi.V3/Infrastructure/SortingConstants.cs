@@ -3,9 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using EdFi.Ods.AdminApi.V3.Features.Actions;
+using EdFi.Ods.AdminApi.Common.Features.Actions;
+using EdFi.Ods.AdminApi.Common.Features.AuthorizationStrategies;
 using EdFi.Ods.AdminApi.V3.Features.Applications;
-using EdFi.Ods.AdminApi.V3.Features.AuthorizationStrategies;
 using EdFi.Ods.AdminApi.V3.Features.ClaimSets;
 using EdFi.Ods.AdminApi.V3.Features.DataStoreContexts;
 using EdFi.Ods.AdminApi.V3.Features.DataStoreDerivatives;

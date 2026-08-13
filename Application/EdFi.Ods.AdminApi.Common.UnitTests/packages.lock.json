@@ -73,6 +73,11 @@
           "Microsoft.Extensions.Primitives": "8.0.0"
         }
       },
+      "Autofac": {
+        "type": "Transitive",
+        "resolved": "6.5.0",
+        "contentHash": "sm6HWWBDEoTPGXeyOchMygJ/7L89VxmVH72BFxakG88J34AVjA8RMi5jbv3PdpUtXI/d9ZLKOaxCmOSIo2K4aA=="
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.47.1",
@@ -443,6 +448,8 @@
         "dependencies": {
           "Asp.Versioning.Http": "[8.1.1, )",
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
+          "EFCore.NamingConventions": "[10.0.1, )",
+          "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
@@ -477,6 +484,16 @@
           "Npgsql": "8.0.3"
         }
       },
+      "Autofac.Extras.DynamicProxy": {
+        "type": "CentralTransitive",
+        "requested": "[7.1.0, )",
+        "resolved": "7.1.0",
+        "contentHash": "Da6Szv7A1LK/cTdeoyqS45zb/BC5vep8+86f6C1oh2UhZaYtiijlNfLWamp3lxe0uUQ33kFe1dDCjsvfwJWzLg==",
+        "dependencies": {
+          "Autofac": "6.5.0",
+          "Castle.Core": "5.1.1"
+        }
+      },
       "Azure.Identity": {
         "type": "CentralTransitive",
         "requested": "[1.14.2, )",
@@ -486,6 +503,45 @@
           "Azure.Core": "1.46.1",
           "Microsoft.Identity.Client": "4.73.1",
           "Microsoft.Identity.Client.Extensions.Msal": "4.73.1"
+        }
+      },
+      "EdFi.Suite3.Common": {
+        "type": "CentralTransitive",
+        "requested": "[7.4.296, )",
+        "resolved": "7.4.94",
+        "contentHash": "GYJ+ef8n/A+sw95zIcAEYVW3gzXvHkiY9gPdL0usKR1z5jo7wlLXLuszzcgeys7qFjOWxp3cKxxK37q6va030A==",
+        "dependencies": {
+          "Autofac.Extras.DynamicProxy": "7.1.0",
+          "Microsoft.Data.SqlClient": "5.2.1",
+          "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+          "Microsoft.Identity.Client": "4.61.3",
+          "Npgsql": "8.0.3",
+          "log4net": "2.0.17"
+        }
+      },
+      "EdFi.Suite3.Security.DataAccess": {
+        "type": "CentralTransitive",
+        "requested": "[7.4.102, )",
+        "resolved": "7.4.102",
+        "contentHash": "66L6pufiALz9fPmtJ8GQpwabOBCDBAKKDvJlphtAsOXwWnqpJAzm3Tfv4Lz6ko/JxlVC+f7MIP3woj0PCdlbtw==",
+        "dependencies": {
+          "Autofac.Extras.DynamicProxy": "7.1.0",
+          "EFCore.NamingConventions": "8.0.3",
+          "EdFi.Suite3.Common": "7.4.94",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.7",
+          "Npgsql": "8.0.3",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4"
+        }
+      },
+      "EFCore.NamingConventions": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.1, )",
+        "resolved": "10.0.1",
+        "contentHash": "Xs5k8XfNKPkkQSkGmZkmDI1je0prLTdxse+s8PgTFZxyBrlrTLzTBUTVJtQKSsbvu4y+luAv8DdtO5SALJE++A==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "[10.0.1, 11.0.0)",
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.1, 11.0.0)",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.1"
         }
       },
       "FluentValidation": {
@@ -623,6 +679,18 @@
         "contentHash": "q5RfBI+wywJSFUNDE1L4ZbHEHCFTblo8Uf6A6oe4feOUFYiUQXyAf9GBh5qEZpvJaHiEbpBPkQumjEhXCJxdrg==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.1, )",
+        "resolved": "8.0.4",
+        "contentHash": "/hHd9MqTRVDgIpsToCcxMDxZqla0HAQACiITkq1+L9J2hmHKV6lBAPlauF+dlNSfHpus7rrljWx4nAanKD6qAw==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "8.0.4",
+          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.4",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.4",
+          "Npgsql": "8.0.3"
         }
       },
       "Quartz": {

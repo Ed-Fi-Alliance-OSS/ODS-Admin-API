@@ -5,7 +5,7 @@
 
 using SecurityAction = EdFi.Security.DataAccess.Models.Action;
 
-namespace EdFi.Ods.AdminApi.V3.Features.Actions;
+namespace EdFi.Ods.AdminApi.Common.Features.Actions;
 
 public static class ActionMapper
 {
@@ -24,4 +24,3 @@ public static class ActionMapper
         return source.Select(ToModel).ToList();
     }
 }
-

@@ -5,7 +5,7 @@
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.V3.Features.Actions;
+namespace EdFi.Ods.AdminApi.Common.Features.Actions;
 
 [SwaggerSchema(Title = "Action")]
 public class ActionModel
@@ -14,4 +14,3 @@ public class ActionModel
     public string? Name { get; set; }
     public string? Uri { get; set; }
 }
-

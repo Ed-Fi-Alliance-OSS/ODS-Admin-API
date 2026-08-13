@@ -5,7 +5,7 @@
 
 using EdFi.Security.DataAccess.Models;
 
-namespace EdFi.Ods.AdminApi.V3.Features.AuthorizationStrategies;
+namespace EdFi.Ods.AdminApi.Common.Features.AuthorizationStrategies;
 
 public static class AuthorizationStrategyMapper
 {
@@ -24,4 +24,3 @@ public static class AuthorizationStrategyMapper
         return source.Select(ToModel).ToList();
     }
 }
-
