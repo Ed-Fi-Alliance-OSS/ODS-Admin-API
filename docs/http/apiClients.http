@@ -65,21 +65,7 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 
 
-### Create ApiClient
-POST {{adminapi_url}}/v3/apiClients
-Content-Type: application/json
-Authorization: bearer {{token}}
-
-{
-  "name": "ApiClient1",
-  "isApproved": true,
-  "applicationId": 1510,
-  "dataStoreIds": [
-    2224
-  ]
-}
-
-### Create ApiClient - duplicate (ApplicationId, Name) (ADMINAPI-1483: expect 400, "already exists for this application")
+### Create ApiClient - send twice to test duplicate (ApplicationId, Name) rejection (ADMINAPI-1483: second call should return 400, "already exists for this application")
 POST {{adminapi_url}}/v3/apiClients
 Content-Type: application/json
 Authorization: bearer {{token}}

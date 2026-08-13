@@ -43,23 +43,8 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 
 
-### Create an Application
+### Create an Application - send twice to test duplicate (VendorId, ApplicationName) rejection (ADMINAPI-1483: second call should return 400, "already exists for this vendor")
 # @name createApplication
-POST {{adminapi_url}}/v3/applications
-Content-Type: application/json
-Authorization: bearer {{token}}
-
-{
-  "applicationName": "Application Duplicate Test",
-  "vendorId": 992,
-  "claimSetName": "Bootstrap Descriptors and EdOrgs",
-  "educationOrganizationIds": [1],
-  "dataStoreIds": [
-    2224
-  ]
-}
-
-### Create an Application - duplicate (VendorId, ApplicationName) (ADMINAPI-1483: expect 400, "already exists for this vendor")
 POST {{adminapi_url}}/v3/applications
 Content-Type: application/json
 Authorization: bearer {{token}}
