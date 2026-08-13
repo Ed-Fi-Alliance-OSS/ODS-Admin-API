@@ -524,7 +524,7 @@ Referenced infrastructure files:
 
 ### Phase 9: OdsInstances
 
-**Files to test:** AddOdsInstance.cs, EditOdsInstance.cs, DeleteOdsInstance.cs, ReadOdsInstance.cs, ReadEducationOrganizations.cs, RefreshEducationOrganizations.cs, OdsInstanceModel.cs, Commands/Queries
+**Files to test:** AddOdsInstance.cs, EditOdsInstance.cs, DeleteOdsInstance.cs, ReadOdsInstance.cs, RefreshEducationOrganizations.cs, OdsInstanceModel.cs, Commands/Queries
 
 **Test files to create:**
 
@@ -535,7 +535,6 @@ Referenced infrastructure files:
 * `EditOdsInstanceTests.cs`
 * `DeleteOdsInstanceTests.cs`
 * `ReadOdsInstanceTests.cs`
-* `ReadEducationOrganizationsTests.cs`
 * `RefreshEducationOrganizationsTests.cs`
 
 ---
