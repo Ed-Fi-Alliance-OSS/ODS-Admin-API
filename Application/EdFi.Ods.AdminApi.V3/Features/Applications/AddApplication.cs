@@ -89,8 +89,12 @@ public class AddApplication : IFeature
 
     public class Validator : AbstractValidator<AddApplicationRequest>
     {
-        public Validator()
+        private readonly IUsersContext _usersContext;
+
+        public Validator(IUsersContext usersContext)
         {
+            _usersContext = usersContext;
+
             RuleFor(m => m.ApplicationName)
              .NotEmpty();
 
@@ -116,6 +120,17 @@ public class AddApplication : IFeature
                 .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
             RuleFor(m => m.VendorId).Must(id => id > 0).WithMessage(FeatureConstants.VendorIdValidationMessage);
+
+            RuleFor(m => m)
+                .Must(BeUniqueCombinedKey)
+                .WithMessage(FeatureConstants.ApplicationCombinedKeyMustBeUnique);
+        }
+
+        private bool BeUniqueCombinedKey(AddApplicationRequest request)
+        {
+            return !_usersContext.Applications.Any(
+                a => a.Vendor.VendorId == request.VendorId
+                    && a.ApplicationName == request.ApplicationName);
         }
 
         private static bool BeWithinApplicationNameMaxLength<T>(IAddApplicationModel model, string? applicationName, ValidationContext<T> context)

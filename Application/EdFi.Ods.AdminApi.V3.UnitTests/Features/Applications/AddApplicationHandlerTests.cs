@@ -44,7 +44,7 @@ public class AddApplicationHandlerTests
         A.CallTo(() => fakeAddCommand.Execute(A<IAddApplicationModel>._, A<IOptions<AppSettings>>._))
             .Returns(new AddApplicationResult { ApplicationId = 1, Key = "k", Secret = "s" });
 
-        var validator = new AddApplication.Validator();
+        var validator = new AddApplication.Validator(ctx);
         var request = new AddApplication.AddApplicationRequest
         {
             ApplicationName = "App1",
@@ -66,7 +66,8 @@ public class AddApplicationHandlerTests
     [Test]
     public async Task Validator_WhenApplicationNameEmpty_FailsValidation()
     {
-        var validator = new AddApplication.Validator();
+        using var ctx = CreateContext();
+        var validator = new AddApplication.Validator(ctx);
         var result = await validator.ValidateAsync(new AddApplication.AddApplicationRequest
         {
             ApplicationName = "",

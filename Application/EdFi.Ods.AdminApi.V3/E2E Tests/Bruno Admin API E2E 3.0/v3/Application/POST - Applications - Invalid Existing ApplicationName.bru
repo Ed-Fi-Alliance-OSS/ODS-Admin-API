@@ -1,31 +1,29 @@
 meta {
-  name: Applications
+  name: Applications - Invalid Existing ApplicationName
   type: http
-  seq: 2
+  seq: 7
 }
 
 post {
-  url: {{API_URL}}/v3/applications
+  url: {{API_URL}}/v3/applications/
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "applicationName": "Test Application",
-    "vendorId": {{ApplicationVendorId}},
-    "claimSetName": "{{ApplicationClaimSetName}}",
+    "applicationName": "Existing Application Name",
+    "vendorId": {{ExistingApplicationVendorId}},
+    "claimSetName": "{{ExistingApplicationClaimSetName}}",
     "profileIds": [],
     "educationOrganizationIds": [ 255901 ],
-    "dataStoreIds": [ {{DataStoreId}} ],
-    "enabled": true
+    "dataStoreIds": [ {{DataStoreId}} ]
   }
-  
 }
 
 script:pre-request {
   console.log("🔧 Setting pre environment to ignore SSL certificates...");
-  
+
   // Safely set Node.js environment variable if available (CLI only)
   try {
     if (typeof process !== 'undefined' && process.env) {
@@ -34,10 +32,11 @@ script:pre-request {
   } catch (e) {
     // Ignore in UI environment
   }
-  
+
   const axios = require('axios');
   const API_URL = bru.getEnvVar("API_URL");
   const TOKEN = bru.getEnvVar("TOKEN");
+  const timestamp = Date.now();
 
   // Configure axios to handle SSL and network issues
   const axiosConfig = {
@@ -57,26 +56,17 @@ script:pre-request {
   }
 
   try {
-    const timestamp = Date.now();
     const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
-      "company": `Other Company ${timestamp}`,
+      "company": `Existing Application Vendor ${timestamp}`,
       "namespacePrefixes": "uri://ed-fi.org",
-      "contactName": "Other Application User",
-      "contactEmailAddress": "otherapplication@example.com"
+      "contactName": "Existing Application User",
+      "contactEmailAddress": "existingapplication@example.com"
     }, axiosConfig);
 
     if (vendorResponse.status === 201) {
       console.log("✅ Vendor created successfully");
-      let headers = vendorResponse.headers; 
-      expect(headers).to.have.property("location");
-      const locationHeader = headers.location;
-      if(locationHeader) {
-          const locationStr = Array.isArray(locationHeader) ? locationHeader[0] : locationHeader;
-          const id = locationStr.split("/").pop();
-          if(id) {
-              bru.setVar("ApplicationVendorId", id);
-          }
-      }
+      const vendorId = vendorResponse.headers.location.split("/").pop();
+      bru.setVar("ExistingApplicationVendorId", vendorId);
     } else {
       console.log("❌ Failed to create vendor");
       console.log("Status:", vendorResponse.status);
@@ -85,13 +75,13 @@ script:pre-request {
     }
 
     // Create a claimset without spaces
-    const claimSetName = `AppTestClaimSet-${Date.now()}`;
+    const claimSetName = `ExistingAppClaimSet-${timestamp}`;
     const claimSetResp = await axios.post(`${API_URL}/v3/claimSets`, {
       "name": claimSetName
     }, axiosConfig);
     if (claimSetResp.status === 201) {
       console.log("✅ ClaimSet created successfully:", claimSetName);
-      bru.setVar("ApplicationClaimSetName", claimSetName);
+      bru.setVar("ExistingApplicationClaimSetName", claimSetName);
     } else {
       throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
     }
@@ -108,71 +98,55 @@ script:pre-request {
       console.log("Status:", odsResponse.status);
       console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
       throw new Error(`Failed to get DataStores - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
-    }    
+    }
+
+    // Create the Application once so the main request collides with it
+    const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
+      "applicationName": "Existing Application Name",
+      "vendorId": bru.getVar("ExistingApplicationVendorId"),
+      "claimSetName": claimSetName,
+      "profileIds": [],
+      "educationOrganizationIds": [255901],
+      "dataStoreIds": [bru.getVar("DataStoreId")],
+      "enabled": true
+    }, axiosConfig);
+
+    if (applicationResponse.status === 201) {
+      console.log("✅ Application created successfully");
+    } else {
+      console.log("❌ Failed to create application");
+      console.log("Status:", applicationResponse.status);
+      console.log("Response data:", JSON.stringify(applicationResponse.data, null, 2));
+      throw new Error(`Failed to create application - Status: ${applicationResponse.status}, Data: ${JSON.stringify(applicationResponse.data)}`);
+    }
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);
   }
-
 }
 
 script:post-response {
-  test("POST Applications: Status code is Created", function () {
-      expect(res.getStatus()).to.equal(201);
+  test("POST Applications Invalid Existing ApplicationName: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
   });
-
-  const result = res.getBody();
-  
-  test("POST Applications: Response includes location in header", function () {
-      expect(res.getHeaders()).to.have.property("location");
-  });
-
-    test("POST Applications: Location header is absolute url", function () {
-      const location = res.getHeaders().location;
-      expect(location).to.match(/^https?:\/\/.+/);
-    });
-  
-  test("POST Applications: Response result includes application key and secret", function () {
-      expect(result).to.have.property("id");
-      expect(result).to.have.property("key");
-      expect(result).to.have.property("secret");
-  });
-  
-  if(result.id) {
-      bru.setVar("CreatedApplicationId", result.id);
-  }  
 
   const response = res.getBody();
-  const Ajv = require('ajv');
-  const ajv = new Ajv();
-  const PostApplicationSchema = {
-    "type": "object",
-    "properties": {
-      "id": {
-        "type": "integer"
-      },
-      "key": {
-        "type": "string"
-      },
-      "secret": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "key",
-      "secret"
-    ]
-  }
 
-  test("POST Applications: Validation Schema Response", () => {
-        const valid = ajv.validate(PostApplicationSchema, response);
-        expect(valid).to.be.true;
-
-        if (!valid) {
-            console.log("Schema validation errors:", ajv.errors);
-        }
+  test("POST Applications Invalid Existing ApplicationName: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
   });
 
+  test("POST Applications Invalid Existing ApplicationName: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+
+  test("POST Applications Invalid Existing ApplicationName: Response errors include combined-key message", function () {
+      expect(response.errors[""]).to.be.an("array").that.includes("The combined key VendorId and ApplicationName must be unique.");
+  });
+
+  test("POST Applications Invalid Existing ApplicationName: type URN is correct", function () {
+      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:validation");
+  });
 }
 
 settings {

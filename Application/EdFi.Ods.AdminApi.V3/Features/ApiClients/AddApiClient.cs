@@ -70,9 +70,12 @@ public class AddApiClient : IFeature
 
     public class Validator : AbstractValidator<AddApiClientRequest>
     {
-        //Since this is a PoC, we are not implementing the full validation logic.
-        public Validator()
+        private readonly IUsersContext _usersContext;
+
+        public Validator(IUsersContext usersContext)
         {
+            _usersContext = usersContext;
+
             RuleFor(m => m.Name)
              .NotEmpty();
 
@@ -88,6 +91,10 @@ public class AddApiClient : IFeature
                 .NotEmpty()
                 .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
+            RuleFor(m => m)
+                .Must(BeUniqueCombinedKey)
+                .WithMessage(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
+
             static bool BeWithinApiClientNameMaxLength<T>(IAddApiClientModel model, string? name, ValidationContext<T> context)
             {
                 var extraCharactersInName = name!.Length - ValidationConstants.MaximumApiClientNameLength;
@@ -99,6 +106,13 @@ public class AddApiClient : IFeature
                 context.MessageFormatter.AppendArgument("ExtraCharactersInName", extraCharactersInName);
                 return false;
             }
+        }
+
+        private bool BeUniqueCombinedKey(AddApiClientRequest request)
+        {
+            return !_usersContext.ApiClients.Any(
+                c => c.Application.ApplicationId == request.ApplicationId
+                    && c.Name == request.Name);
         }
     }
 }
