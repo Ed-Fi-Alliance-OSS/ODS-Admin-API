@@ -166,7 +166,7 @@ previously returned database connection strings have been removed.
   administrator-configurable interval (`EdOrgsRefreshIntervalInMins`).
 - **FR-EDORG-2**: The API SHALL allow an administrator to retrieve education
   organizations grouped by their owning ODS instance, for all instances, via
-  `GET /odsInstances/edOrgs` (v2) or the equivalent `dataStores` route (v3).
+  `GET /tenants/{tenant}/OdsInstances/edOrgs` (v2) or the equivalent `dataStores` route (v3).
 - **FR-EDORG-3**: The API SHALL allow an administrator to trigger an
   on-demand refresh of education organization data for all ODS instances or a
   specific instance via `POST /odsInstances/edOrgs/refresh` and
