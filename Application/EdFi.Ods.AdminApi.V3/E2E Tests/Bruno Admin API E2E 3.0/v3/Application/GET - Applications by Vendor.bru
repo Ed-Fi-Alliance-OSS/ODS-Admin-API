@@ -83,6 +83,20 @@ script:pre-request {
       throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
     }
 
+    let offsetVar = bru.getEnvVar("offset");
+    let limitVar = bru.getEnvVar("limit");
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=${offsetVar}&limit=${limitVar}`, axiosConfig);
+
+    if (odsResponse.status === 200) {
+      console.log("✅ DataStore List loaded");
+      bru.setVar("dataStoreId", odsResponse.data[0].id);
+    } else {
+      console.log("❌ Failed to get DataStores");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to get DataStores - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    }
+
     const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
         "applicationName": "Other Vendor Application",
         "vendorId": bru.getVar("OtherApplicationVendorId"),
