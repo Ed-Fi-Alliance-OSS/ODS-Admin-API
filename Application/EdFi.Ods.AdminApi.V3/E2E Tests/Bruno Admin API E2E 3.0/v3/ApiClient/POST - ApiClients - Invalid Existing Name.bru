@@ -162,7 +162,7 @@ script:post-response {
   });
 
   test("POST ApiClients Invalid Existing Name: Response errors include combined-key message", function () {
-      expect(response.errors[""]).to.be.an("array").that.includes("The combined key ApplicationId and Name must be unique.");
+      expect(response.errors[""]).to.be.an("array").that.includes("An ApiClient with this name already exists for this application. Please enter a unique name.");
   });
 
   test("POST ApiClients Invalid Existing Name: type URN is correct", function () {

@@ -141,7 +141,7 @@ script:post-response {
   });
 
   test("POST Applications Invalid Existing ApplicationName: Response errors include combined-key message", function () {
-      expect(response.errors[""]).to.be.an("array").that.includes("The combined key VendorId and ApplicationName must be unique.");
+      expect(response.errors[""]).to.be.an("array").that.includes("An Application with this name already exists for this vendor. Please enter a unique name.");
   });
 
   test("POST Applications Invalid Existing ApplicationName: type URN is correct", function () {

@@ -59,7 +59,7 @@ Authorization: bearer {{token}}
   ]
 }
 
-### Create an Application - duplicate (VendorId, ApplicationName) (ADMINAPI-1483: expect 400, "combined key ... must be unique")
+### Create an Application - duplicate (VendorId, ApplicationName) (ADMINAPI-1483: expect 400, "already exists for this vendor")
 POST {{adminapi_url}}/v3/applications
 Content-Type: application/json
 Authorization: bearer {{token}}

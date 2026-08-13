@@ -70,7 +70,7 @@ public static class FeatureConstants
     public const string ApiClientNameLengthValidationMessage = "The Api Client Name {Name} would be too long for Admin App to set up necessary ApiClient records." +
                         " Consider shortening the name by {ExtraCharactersInName} character(s).";
     public const string VendorAlreadyExistsMessage = "A Vendor with this name already exists in the database. Please enter a unique name.";
-    public const string ApplicationCombinedKeyMustBeUnique = "The combined key VendorId and ApplicationName must be unique.";
-    public const string ApiClientCombinedKeyMustBeUnique = "The combined key ApplicationId and Name must be unique.";
+    public const string ApplicationCombinedKeyMustBeUnique = "An Application with this name already exists for this vendor. Please enter a unique name.";
+    public const string ApiClientCombinedKeyMustBeUnique = "An ApiClient with this name already exists for this application. Please enter a unique name.";
 }
 

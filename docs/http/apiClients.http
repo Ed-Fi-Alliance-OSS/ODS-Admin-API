@@ -79,7 +79,7 @@ Authorization: bearer {{token}}
   ]
 }
 
-### Create ApiClient - duplicate (ApplicationId, Name) (ADMINAPI-1483: expect 400, "combined key ... must be unique")
+### Create ApiClient - duplicate (ApplicationId, Name) (ADMINAPI-1483: expect 400, "already exists for this application")
 POST {{adminapi_url}}/v3/apiClients
 Content-Type: application/json
 Authorization: bearer {{token}}
