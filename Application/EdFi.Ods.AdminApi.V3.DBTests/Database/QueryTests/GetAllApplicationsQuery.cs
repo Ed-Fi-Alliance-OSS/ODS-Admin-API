@@ -31,7 +31,6 @@ public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
     public virtual async Task FixtureSetup()
     {
         _options = Testing.GetAppSettings();
-        _options.Value.PreventDuplicateApplications = false;
         LoadApplications(3);
         await Task.Yield();
     }

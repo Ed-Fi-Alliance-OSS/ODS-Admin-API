@@ -27,10 +27,7 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
     [SetUp]
     public new virtual async Task SetUp()
     {
-        AppSettings appSettings = new()
-        {
-            PreventDuplicateApplications = false
-        };
+        AppSettings appSettings = new();
         _options = Options.Create(appSettings);
         await Task.Yield();
 

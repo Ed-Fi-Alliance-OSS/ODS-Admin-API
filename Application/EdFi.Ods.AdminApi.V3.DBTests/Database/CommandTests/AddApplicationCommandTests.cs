@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -30,7 +29,6 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
     public virtual async Task FixtureSetup()
     {
         AppSettings appSettings = new AppSettings();
-        appSettings.PreventDuplicateApplications = false;
         _options = Options.Create(appSettings);
         await Task.Yield();
     }
@@ -208,114 +206,8 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
     }
 
     [Test]
-    public void ShouldFailToAddDuplicatedApplication()
-    {
-        AppSettings appSettings = new AppSettings();
-        appSettings.PreventDuplicateApplications = true;
-        IOptions<AppSettings> options = Options.Create(appSettings);
-        const string OdsInstanceName = "Test Instance";
-        var vendor = new Vendor
-        {
-            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
-            VendorName = "Integration Tests"
-        };
-        var profile = new Profile
-        {
-            ProfileName = "Test Profile"
-        };
-
-        var odsInstance = new OdsInstance
-        {
-            Name = OdsInstanceName,
-            InstanceType = "Ods",
-            ConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False"
-        };
-
-        Save(vendor, profile, odsInstance);
-
-        AddApplicationResult result = null;
-        Transaction(usersContext =>
-        {
-            var command = new AddApplicationCommand(usersContext);
-            var newApplication = new TestApplication
-            {
-                ApplicationName = "Production-Test Application",
-                ClaimSetName = "FakeClaimSet",
-                ProfileIds = [],
-                VendorId = vendor.VendorId,
-                EducationOrganizationIds = new List<long> { 12345, 67890, 5000000005 },
-                DataStoreIds = new List<int> { odsInstance.OdsInstanceId }
-            };
-
-            result = command.Execute(newApplication, options);
-        });
-
-        Transaction(usersContext =>
-        {
-            var command = new AddApplicationCommand(usersContext);
-            var newApplication = new TestApplication
-            {
-                ApplicationName = "Production-Test Application",
-                ClaimSetName = "FakeClaimSet",
-                ProfileIds = [],
-                VendorId = vendor.VendorId,
-                EducationOrganizationIds = new List<long> { 12345, 67890, 5000000005 },
-                DataStoreIds = new List<int> { odsInstance.OdsInstanceId }
-            };
-
-            Assert.Throws<AdminApiException>(() => command.Execute(newApplication, options));
-        });
-    }
-
-    [Test]
-    public void ShouldFailToAddDuplicatedApplicationNullFields()
-    {
-        AppSettings appSettings = new AppSettings();
-        appSettings.PreventDuplicateApplications = true;
-        IOptions<AppSettings> options = Options.Create(appSettings);
-        var vendor = new Vendor
-        {
-            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
-            VendorName = "Integration Tests"
-        };
-
-        Save(vendor);
-        AddApplicationResult result = null;
-        Transaction(usersContext =>
-        {
-            var command = new AddApplicationCommand(usersContext);
-            var newApplication = new TestApplication
-            {
-                ApplicationName = "Production-Test Application",
-                ClaimSetName = "FakeClaimSet",
-                ProfileIds = null,
-                VendorId = vendor.VendorId
-            };
-
-            result = command.Execute(newApplication, options);
-        });
-
-        Transaction(usersContext =>
-        {
-            var command = new AddApplicationCommand(usersContext);
-            var newApplication = new TestApplication
-            {
-                ApplicationName = "Production-Test Application",
-                ClaimSetName = "FakeClaimSet",
-                ProfileIds = null,
-                VendorId = vendor.VendorId
-            };
-
-            Assert.Throws<AdminApiException>(() => command.Execute(newApplication, options));
-        });
-    }
-
-    [Test]
     public void ShouldExecuteWithDuplicatedNamesDifferentVendor()
     {
-        AppSettings appSettings = new AppSettings();
-        appSettings.PreventDuplicateApplications = true;
-        IOptions<AppSettings> options = Options.Create(appSettings);
         var vendor = new Vendor
         {
             VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
@@ -343,7 +235,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
                 VendorId = vendor.VendorId
             };
 
-            result = command.Execute(newApplication, options);
+            result = command.Execute(newApplication, _options);
         });
 
         Transaction(usersContext =>
@@ -356,7 +248,7 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
                 ProfileIds = null,
                 VendorId = secondVendor.VendorId
             };
-            secondResult = command.Execute(newSecondApplication, options);
+            secondResult = command.Execute(newSecondApplication, _options);
         });
 
         Transaction(usersContext =>
