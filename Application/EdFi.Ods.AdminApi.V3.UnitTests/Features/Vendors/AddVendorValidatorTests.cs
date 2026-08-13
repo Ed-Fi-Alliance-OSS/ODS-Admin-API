@@ -101,6 +101,23 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
         }
 
         [Test]
+        public void Should_Have_Error_When_Company_Already_Exists_With_Leading_Or_Trailing_Whitespace()
+        {
+            var request = ValidRequest();
+            A.CallTo(() => _getVendorsQuery.Execute()).Returns(new List<Vendor>
+            {
+                new() { VendorName = request.Company }
+            });
+            request.Company = $" {request.Company} ";
+
+            var result = _validator.Validate(request);
+
+            result.Errors.Any(x => x.PropertyName == nameof(request.Company)
+                && x.ErrorMessage == FeatureConstants.VendorAlreadyExistsMessage)
+                .ShouldBeTrue();
+        }
+
+        [Test]
         public void Should_Not_Have_Error_For_Valid_Request()
         {
             var request = ValidRequest();
