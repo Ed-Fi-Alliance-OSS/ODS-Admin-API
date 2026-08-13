@@ -11,8 +11,6 @@ basis.
 * **REST API Endpoints:**
   * `GET /{version}/odsInstances/edOrgs` - Returns all education
     organizations from all instances
-  * `GET /{version}/odsInstances/{instanceId}/edOrgs` - Returns education
-    organizations for a specific instance
   * `POST /{version}/odsInstances/edOrgs/refresh` - Refreshes the education
     organizations for all instances
   * `POST /{version}/odsInstances/{instanceId}/edOrgs/refresh` - Refreshes
@@ -62,13 +60,6 @@ GET /v2/odsInstances/edOrgs
 Authorization: Bearer <token>
 ```
 
-### Get Education Organizations for Specific Instance
-
-```http
-GET /v2/odsInstances/123/edOrgs
-Authorization: Bearer <token>
-```
-
 ## Configuration
 
 ### Quartz.NET Job Scheduling
@@ -92,14 +83,6 @@ configuration.
 ## Architecture
 
 ### Service Layer
-
-The service files can be maintained in a common project and shared between the
-V1 and V2 projects to avoid code duplication.
-
-* `IGetEducationOrganizationsQuery` - Main query handling interface
-
-* `GetEducationOrganizationsQuery` - Implementation of database context query logic
-  for reading the EducationOrganizations
 
 The `RefreshEducationOrganizationCommand` service layer implements a
 comprehensive C# solution to aggregate education organization data across
@@ -157,6 +140,6 @@ multiple ODS instances and persist it into the
 
 ### Controllers
 
-* `ReadEducationOrganizations` and `RefreshEducationOrganizations` features -
-  REST API endpoints for read and refresh operations
+* `RefreshEducationOrganizations` feature - REST API endpoint for refresh
+  operations
 * Includes proper authorization, error handling, and logging

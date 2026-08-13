@@ -32,9 +32,3 @@ GET {{adminapi_url}}/v2/odsInstances/edOrgs
 Content-Type: application/json
 Authorization: bearer {{token}}
 Tenant: tenant1
-
-### Get EducationOrganizations by OdsInstanceId
-GET {{adminapi_url}}/v2/odsInstances/2/edOrgs
-Content-Type: application/json
-Authorization: bearer {{token}}
-Tenant: tenant1
