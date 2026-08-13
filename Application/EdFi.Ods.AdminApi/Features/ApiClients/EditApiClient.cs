@@ -6,6 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
@@ -42,18 +43,8 @@ public class EditApiClient : IFeature
 
     private static void ValidateOdsInstanceIds(EditApiClientRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
-
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && allOdsInstanceIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", request.OdsInstanceIds)}") });
-        }
-
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && (!request.OdsInstanceIds.All(p => allOdsInstanceIds.Contains(p))))
-        {
-            var notExist = request.OdsInstanceIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.OdsInstanceIds, allOdsInstanceIds, nameof(request.OdsInstanceIds));
     }
 
     [SwaggerSchema(Title = "EditApiClientRequest")]

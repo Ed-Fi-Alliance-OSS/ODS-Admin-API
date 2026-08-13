@@ -48,18 +48,8 @@ public class AddApiClient : IFeature
 
     private static void ValidateDataStoreIds(AddApiClientRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
-        {
-            throw new ValidationException([new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}")]);
-        }
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
-        {
-            var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException([new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}")]);
-        }
+        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allOdsInstanceIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "AddApiClientRequest")]

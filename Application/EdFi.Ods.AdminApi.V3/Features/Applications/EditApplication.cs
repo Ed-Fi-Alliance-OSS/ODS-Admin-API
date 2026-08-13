@@ -6,6 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -48,32 +49,14 @@ public class EditApplication : IFeature
 
     private static void ValidateProfileIds(EditApplicationRequest request, IUsersContext db)
     {
-        var allProfileIds = db.Profiles.Select(p => p.ProfileId).ToList();
-        if ((request.ProfileIds != null && request.ProfileIds.Any()) && allProfileIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileIds), $"The following ProfileIds were not found in database: {string.Join(", ", request.ProfileIds)}") });
-        }
-        if ((request.ProfileIds != null && request.ProfileIds.Any()) && (!request.ProfileIds.All(p => allProfileIds.Contains(p))))
-        {
-            var notExist = request.ProfileIds.Where(p => !allProfileIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileIds), $"The following ProfileIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allProfileIds = new HashSet<int>(db.Profiles.Select(p => p.ProfileId));
+        EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
     }
 
     private static void ValidateDataStoreIds(EditApplicationRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
-        }
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
-        {
-            var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allOdsInstanceIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "EditApplicationRequest")]

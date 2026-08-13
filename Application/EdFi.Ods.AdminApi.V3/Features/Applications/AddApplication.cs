@@ -50,34 +50,14 @@ public class AddApplication : IFeature
 
     private static void ValidateProfileIds(AddApplicationRequest request, IUsersContext db)
     {
-        var allProfileIds = db.Profiles.Select(p => p.ProfileId).ToList();
-
-        if ((request.ProfileIds != null && request.ProfileIds.Any()) && allProfileIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileIds), $"The following ProfileIds were not found in database: {string.Join(", ", request.ProfileIds)}") });
-        }
-
-        if ((request.ProfileIds != null && request.ProfileIds.Any()) && (!request.ProfileIds.All(p => allProfileIds.Contains(p))))
-        {
-            var notExist = request.ProfileIds.Where(p => !allProfileIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileIds), $"The following ProfileIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allProfileIds = new HashSet<int>(db.Profiles.Select(p => p.ProfileId));
+        EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
     }
 
     private static void ValidateDataStoreIds(AddApplicationRequest request, IUsersContext db)
     {
-        var allDataStoreIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allDataStoreIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
-        }
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allDataStoreIds.Contains(p))))
-        {
-            var notExist = request.DataStoreIds.Where(p => !allDataStoreIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "AddApplicationRequest")]
