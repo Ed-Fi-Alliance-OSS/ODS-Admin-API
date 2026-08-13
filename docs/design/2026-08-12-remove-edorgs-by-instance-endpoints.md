@@ -49,9 +49,6 @@ with the endpoints, rather than preserved.
   `instanceId`) is described in several docs but isn't actually
   implemented in code. That's a separate, pre-existing documentation bug,
   not something this change introduced or fixed.
-- `docs/PRD-ODS-Admin-API-2.4.md` was left as-is at the requester's
-  direction, so it still describes the removed by-instance/data-store
-  routes as if they exist.
 
 ## References
 
