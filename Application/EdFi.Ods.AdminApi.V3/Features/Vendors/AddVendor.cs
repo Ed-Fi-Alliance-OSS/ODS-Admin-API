@@ -77,7 +77,7 @@ public class AddVendor : IFeature
 
         private bool BeAUniqueName(string? company)
         {
-            return _getVendorsQuery.Execute().TrueForAll(x => x.VendorName != company?.Trim());
+            return !_getVendorsQuery.ExistsByName(company?.Trim());
         }
 
         private bool HaveACorrectLength(string? vendorNamespacePrefixes)

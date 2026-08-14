@@ -35,7 +35,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
         private static AddVendor.Validator CreateValidator()
         {
             var getVendorsQuery = A.Fake<IGetVendorsQuery>();
-            A.CallTo(() => getVendorsQuery.Execute()).Returns(new List<Vendor>());
+            A.CallTo(() => getVendorsQuery.ExistsByName(A<string>._)).Returns(false);
             return new AddVendor.Validator(getVendorsQuery);
         }
 
