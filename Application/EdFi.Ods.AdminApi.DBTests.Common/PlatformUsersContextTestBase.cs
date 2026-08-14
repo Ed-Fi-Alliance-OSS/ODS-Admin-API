@@ -9,9 +9,8 @@ using EdFi.Admin.DataAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Respawn;
-using static EdFi.Ods.AdminApi.DBTests.Testing;
 
-namespace EdFi.Ods.AdminApi.DBTests;
+namespace EdFi.Ods.AdminApi.DBTestsShared;
 
 [TestFixture]
 public abstract class PlatformUsersContextTestBase
@@ -25,7 +24,9 @@ public abstract class PlatformUsersContextTestBase
         SchemasToExclude = []
     };
 
-    protected static string ConnectionString => AdminConnectionString;
+    protected abstract string AdminConnectionString { get; }
+
+    protected string ConnectionString => AdminConnectionString;
 
     [OneTimeTearDown]
     public async Task FixtureTearDown()
@@ -39,7 +40,7 @@ public abstract class PlatformUsersContextTestBase
         await _checkpoint.Reset(ConnectionString);
     }
 
-    protected static void Save(params object[] entities)
+    protected void Save(params object[] entities)
     {
         Transaction(usersContext =>
         {
@@ -50,7 +51,7 @@ public abstract class PlatformUsersContextTestBase
         });
     }
 
-    protected static void Transaction(Action<IUsersContext> action)
+    protected void Transaction(Action<IUsersContext> action)
     {
         using var usersContext = new SqlServerUsersContext(GetDbContextOptions());
         using var transaction = (usersContext).Database.BeginTransaction();
@@ -59,7 +60,7 @@ public abstract class PlatformUsersContextTestBase
         transaction.Commit();
     }
 
-    protected static TResult Transaction<TResult>(Func<IUsersContext, TResult> query)
+    protected TResult Transaction<TResult>(Func<IUsersContext, TResult> query)
     {
         var result = default(TResult);
 
@@ -71,7 +72,7 @@ public abstract class PlatformUsersContextTestBase
         return result;
     }
 
-    protected static DbContextOptions GetDbContextOptions()
+    protected DbContextOptions GetDbContextOptions()
     {
         var builder = new DbContextOptionsBuilder();
         builder.UseSqlServer(ConnectionString);

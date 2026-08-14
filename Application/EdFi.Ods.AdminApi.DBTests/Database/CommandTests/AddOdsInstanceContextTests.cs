@@ -5,11 +5,12 @@
 
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Shouldly;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
@@ -17,6 +18,8 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
 [TestFixture]
 public class AddOdsInstanceContextTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     [Test]
     public void ShouldAddOdsInstanceContext()
     {

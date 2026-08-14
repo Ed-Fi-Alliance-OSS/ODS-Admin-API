@@ -3,17 +3,18 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using VendorUser = EdFi.Admin.DataAccess.Models.User;
 
 
@@ -22,6 +23,8 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetAllApplicationsQueryTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     private IOptions<AppSettings> _options { get; set; }
 
     [SetUp]

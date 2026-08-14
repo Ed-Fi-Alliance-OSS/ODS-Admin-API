@@ -5,23 +5,26 @@
 
 #nullable enable
 
-using System;
-using System.Linq;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
+using System;
+using System.Linq;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
 public class GetDataStoresQueryTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     [Test]
     public void ShouldGetAllInstances()
     {
@@ -188,7 +191,7 @@ public class GetDataStoresQueryTests : PlatformUsersContextTestBase
         });
     }
 
-    private static OdsInstance[] CreateMultiple(int total = 5)
+    private OdsInstance[] CreateMultiple(int total = 5)
     {
         var odsInstances = new OdsInstance[total];
 

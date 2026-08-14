@@ -5,14 +5,15 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Services.EducationOrganizationService;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
-using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
+using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.DBTestsShared;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Services.EducationOrganizationService;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,17 +22,19 @@ using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using Shouldly;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
-using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Admin.DataAccess.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database;
 
 [TestFixture]
 public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     private Mock<ISymmetricStringEncryptionProvider> _encryptionProvider;
     private IOptions<AppSettings> _options;
     private AppSettings _appSettings;
@@ -199,7 +202,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
         private readonly AdminApiDbContext _tenantDbContext = tenantDbContext;
         private readonly string _tenantName = tenantName;
         private readonly IUsersContext _tenantUsersContext =
-            new SqlServerUsersContext(GetDbContextOptions());
+            new SqlServerUsersContext(new DbContextOptionsBuilder().UseSqlServer(Testing.AdminConnectionString).Options);
 
         public AdminApiDbContext GetAdminApiDbContext(string tenantIdentifier)
         {
