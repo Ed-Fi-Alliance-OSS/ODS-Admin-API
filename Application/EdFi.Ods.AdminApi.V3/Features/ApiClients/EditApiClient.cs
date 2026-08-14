@@ -44,8 +44,8 @@ public class EditApiClient : IFeature
 
     private static void ValidateDataStoreIds(EditApiClientRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
-        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allOdsInstanceIds, nameof(request.DataStoreIds));
+        var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "EditApiClientRequest")]

@@ -12,7 +12,13 @@ public static class EntityReferenceValidator
 {
     public static void ValidateIdsExist<T>(IEnumerable<T>? requestedIds, IEnumerable<T> existingIds, string propertyName)
     {
-        if (requestedIds is null || !requestedIds.Any())
+        if (requestedIds is null)
+        {
+            return;
+        }
+
+        var requestedIdList = requestedIds.ToList();
+        if (requestedIdList.Count == 0)
         {
             return;
         }
@@ -21,10 +27,10 @@ public static class EntityReferenceValidator
 
         if (existingIdSet.Count == 0)
         {
-            throw new ValidationException(new[] { new ValidationFailure(propertyName, $"The following {propertyName} were not found in database: {string.Join(", ", requestedIds)}") });
+            throw new ValidationException(new[] { new ValidationFailure(propertyName, $"The following {propertyName} were not found in database: {string.Join(", ", requestedIdList)}") });
         }
 
-        var notExist = requestedIds.Where(id => !existingIdSet.Contains(id)).ToList();
+        var notExist = requestedIdList.Where(id => !existingIdSet.Contains(id)).ToList();
         if (notExist.Count > 0)
         {
             throw new ValidationException(new[] { new ValidationFailure(propertyName, $"The following {propertyName} were not found in database: {string.Join(", ", notExist)}") });

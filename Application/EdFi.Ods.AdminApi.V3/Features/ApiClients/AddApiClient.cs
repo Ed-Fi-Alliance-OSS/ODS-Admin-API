@@ -48,8 +48,8 @@ public class AddApiClient : IFeature
 
     private static void ValidateDataStoreIds(AddApiClientRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
-        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allOdsInstanceIds, nameof(request.DataStoreIds));
+        var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "AddApiClientRequest")]
