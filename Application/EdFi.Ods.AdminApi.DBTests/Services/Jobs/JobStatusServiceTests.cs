@@ -6,7 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
-using AdminApiDbContext = EdFi.Ods.AdminApi.Infrastructure.AdminApiDbContext;
+using AdminApiDbContext = EdFi.Ods.AdminApi.Common.Infrastructure.AdminApiDbContext;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Settings;

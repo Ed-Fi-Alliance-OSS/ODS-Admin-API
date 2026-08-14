@@ -42,7 +42,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Quartz;
-using V3AdminApiDbContext = EdFi.Ods.AdminApi.V3.Infrastructure.AdminApiDbContext;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -472,7 +471,7 @@ public static class WebApplicationBuilderExtensions
             case AdminApiMode.V3:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
-                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseNpgsql(
@@ -502,7 +501,7 @@ public static class WebApplicationBuilderExtensions
                 }
                 else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
-                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseSqlServer(

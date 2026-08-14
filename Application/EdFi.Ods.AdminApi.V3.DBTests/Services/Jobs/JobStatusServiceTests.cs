@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
-using V3Infra = EdFi.Ods.AdminApi.V3.Infrastructure;
+using V3Infra = EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

@@ -5,6 +5,7 @@
 
 using System.Net;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
@@ -42,7 +43,7 @@ public static class SecurityExtensions
 
         var validateIssuerSigningKey = configuration.Get<bool>("Authentication:ValidateIssuerSigningKey");
 
-        if (adminApiMode == AdminApiMode.V2 || adminApiMode == AdminApiMode.V1)
+        if (adminApiMode == AdminApiMode.V2 || adminApiMode == AdminApiMode.V1 || adminApiMode == AdminApiMode.V3)
         {
             services
             .AddOpenIddict()
@@ -50,58 +51,6 @@ public static class SecurityExtensions
             {
                 opt.UseEntityFrameworkCore()
                     .UseDbContext<AdminApiDbContext>()
-                    .ReplaceDefaultEntities<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
-            })
-            .AddServer(opt =>
-            {
-                opt.AllowClientCredentialsFlow();
-                opt.SetAccessTokenLifetime(TimeSpan.FromMinutes(30));
-                opt.SetTokenEndpointUris(SecurityConstants.TokenEndpoint);
-
-                opt.AddEphemeralEncryptionKey();
-                opt.AddEphemeralSigningKey();
-                opt.DisableAccessTokenEncryption();
-                opt.SetIssuer(new Uri(issuer));
-
-                if (!webHostEnvironment.IsDevelopment()) //Keys below will override Ephemeral / Dev Keys
-                {
-                    if (signingKey == null)
-                    {
-                        throw new AdminApiException("Invalid Configuration: Authentication:SigningKey is required.");
-                    }
-                    opt.AddSigningKey(signingKey);
-                }
-                foreach (var scope in SecurityConstants.Scopes.AllScopes)
-                {
-                    opt.RegisterScopes(scope.Scope);
-                }
-                var aspNetCoreBuilder = opt.UseAspNetCore().EnableTokenEndpointPassthrough();
-                if (isDockerEnvironment)
-                {
-                    aspNetCoreBuilder.DisableTransportSecurityRequirement();
-                }
-
-                opt.AddEventHandler<ApplyTokenResponseContext>(builder =>
-                    builder
-                        .UseSingletonHandler<DefaultTokenResponseHandler>()
-                        .SetType(OpenIddictServerHandlerType.Custom)
-                );
-            })
-            .AddValidation(options =>
-            {
-                options.UseLocalServer();
-                options.UseAspNetCore();
-                options.Configure(options => options.TokenValidationParameters.IssuerSigningKey = signingKey);
-            });
-        }
-        else if (adminApiMode == AdminApiMode.V3)
-        {
-            services
-            .AddOpenIddict()
-            .AddCore(opt =>
-            {
-                opt.UseEntityFrameworkCore()
-                    .UseDbContext<V3.Infrastructure.AdminApiDbContext>()
                     .ReplaceDefaultEntities<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
             })
             .AddServer(opt =>
