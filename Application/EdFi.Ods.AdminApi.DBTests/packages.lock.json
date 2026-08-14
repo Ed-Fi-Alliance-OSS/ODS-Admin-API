@@ -866,8 +866,10 @@
         "dependencies": {
           "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
           "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
+          "FluentValidation.AspNetCore": "[11.3.1, )",
           "NUnit": "[4.1.0, )",
-          "Respawn": "[4.0.0, )"
+          "Respawn": "[4.0.0, )",
+          "Shouldly": "[4.2.1, )"
         }
       },
       "edfi.ods.adminapi.instancemanagement": {

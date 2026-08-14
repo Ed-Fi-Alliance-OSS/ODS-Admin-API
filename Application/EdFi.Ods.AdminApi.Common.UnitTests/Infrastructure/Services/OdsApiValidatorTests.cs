@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using NUnit.Framework;
 using Shouldly;
 
-namespace EdFi.Ods.AdminApi.V3.UnitTests.Api;
+namespace EdFi.Ods.AdminApi.Common.UnitTests.Infrastructure.Services;
 
 [TestFixture]
 public class OdsApiValidatorTests
@@ -19,9 +19,9 @@ public class OdsApiValidatorTests
     private class StubGetRequest : ISimpleGetRequest
     {
         private readonly string _expectedAddress;
-        private readonly string _jsonResponse;
+        private readonly string? _jsonResponse;
 
-        public StubGetRequest(string expectedAddress, string jsonResponse)
+        public StubGetRequest(string expectedAddress, string? jsonResponse)
         {
             _expectedAddress = expectedAddress;
             _jsonResponse = jsonResponse;
@@ -30,7 +30,7 @@ public class OdsApiValidatorTests
         public Task<string> DownloadString(string address)
         {
             address.ShouldBe(_expectedAddress);
-            return Task.FromResult(_jsonResponse);
+            return Task.FromResult(_jsonResponse!);
         }
     }
 
@@ -109,7 +109,7 @@ public class OdsApiValidatorTests
                     }";
     }
 
-    private static async Task<OdsApiValidatorResult> OdsApiValidationResult(string odsApiUrl, string rootDocument = null)
+    private static async Task<OdsApiValidatorResult> OdsApiValidationResult(string odsApiUrl, string? rootDocument = null)
     {
         var getRootDocument = new StubGetRequest(odsApiUrl, rootDocument);
 
@@ -126,7 +126,7 @@ public class OdsApiValidatorTests
         var result = await OdsApiValidationResult(ValidOdsApiUrl, rootDocument);
 
         result.IsValidOdsApi.ShouldBe(true);
-        result.Version.ToString().ShouldBe("3.2.0");
+        result.Version!.ToString().ShouldBe("3.2.0");
     }
 
     [Test]
@@ -137,7 +137,7 @@ public class OdsApiValidatorTests
         var result = await OdsApiValidationResult(ValidOdsApiUrl, rootDocument);
 
         result.IsValidOdsApi.ShouldBe(true);
-        result.Version.ToString().ShouldBe("6.0");
+        result.Version!.ToString().ShouldBe("6.0");
     }
 
     [Test]
@@ -182,6 +182,3 @@ public class OdsApiValidatorTests
         result.Version.ShouldBeNull();
     }
 }
-
-
-
