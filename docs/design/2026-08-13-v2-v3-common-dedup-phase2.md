@@ -31,20 +31,14 @@ behavioral difference. Two phases:
   classes, mappers, extension/helper classes with no version-specific
   dependency. Purely mechanical: move file to `Common`, delete both
   per-version copies, fix up `using`s.
-- **Phase 2 (this pass, part B):** `PlatformUsersContextTestBase.cs` — same
-  namespace-only duplication as the files already moved, but blocked by
-  being fully `static` and resolving its connection string via
-  `using static <Version>.DBTests.Testing`. Needs the same de-static +
-  abstract-hook treatment already applied to `PlatformSecurityContextTestBase`
-  in Phase 1 of this cleanup, and touches ~105 inheriting test-fixture files
-  (one added override line each), so it's isolated as its own phase.
+- **Phase 2 (this pass, part B):** de-static `PlatformUsersContextTestBase.cs`
+  and `AdminApiDbContextTestBase.cs`, plus unify the production `AdminApiDbContext`
+  they (and `AdminApiAuditLogWriter`) depend on. See "Phase 2" below — this
+  grew from the original plan once investigation showed `AdminApiDbContext`
+  wasn't actually version-specific, just blocked by `SecurityModels` (Phase 1).
 
 **Explicitly out of scope**, with reasons (not revisited unless something
 changes upstream):
-- `AdminApiDbContextTestBase.cs` — same static/`using static` shape, but it
-  also directly constructs `AdminApiDbContext`, which is a genuinely
-  different type per version. Unifying it means touching production
-  `AdminApiDbContext` design, not test infrastructure.
 - `VendorMapper`/`ResourceClaimMapper` — models are identical, but the
   extension methods they call (`VendorExtensions`, `AdminModelExtensions`,
   `IEnumerableExtensions`) diverge in real logic per version.
@@ -78,7 +72,6 @@ referenced the type via same-namespace implicit access, build, repeat.
 - `Tenants/TenantModel.cs` (includes `TenantModelConnectionStrings`)
 
 **Production Infrastructure → Common:**
-- `Infrastructure/Audit/AdminApiAuditLogWriter.cs`
 - `Infrastructure/Helpers/HealthCheckServiceExtensions.cs`
 - `Infrastructure/Helpers/FileSystemAppSettingsFileProvider.cs`
 - `Infrastructure/Helpers/ConstantsHelper.cs`
@@ -103,24 +96,57 @@ Verify after Phase 1: full solution `dotnet build`, then
 `./build.ps1 -Command UnitTest -NoBuild`, then the DB and E2E test runs
 described in **Verification** below.
 
-## Phase 2 — `PlatformUsersContextTestBase` de-static
+## Phase 2 — unify AdminApiDbContext, then de-static the two test bases
 
-Add `protected abstract string AdminConnectionString { get; }` to the base
-class (mirrors the fix already applied to `PlatformSecurityContextTestBase`),
-replace the `using static Testing;`-derived `ConnectionString` property with
-that hook, and drop `static` from every member (`Save`, `Transaction`,
-`GetDbContextOptions`, `ConnectionString`) so the abstract member is legal.
-Move the file into `EdFi.Ods.AdminApi.DBTests.Common`, delete the v2 and v3
-copies.
+Investigation while planning Phase 1 found `AdminApiDbContext.cs` (the
+production EF Core context — `Infrastructure/AdminApiDbContext.cs` in both
+v2 and v3) is itself a namespace-only duplicate: every using except one
+already points at `EdFi.Ods.AdminApi.Common...`; the sole holdout is
+`Infrastructure.Security` (`SecurityModels.cs`, moved to Common in Phase 1).
+Once that dependency is gone, `AdminApiDbContext` can move too — which
+unblocks `AdminApiAuditLogWriter.cs` (constructs `AdminApiDbContext`
+directly, so it inherited the same block) and `AdminApiDbContextTestBase.cs`
+(same static/`using static Testing` shape as `PlatformUsersContextTestBase`,
+blocked the same way).
 
-Each of the ~105 files that inherit `PlatformUsersContextTestBase` (directly
-or via an intermediate base) needs one added line:
-```csharp
-protected override string AdminConnectionString => Testing.AdminConnectionString;
-```
-No other change — inherited-member call syntax (`Save(...)`, `Transaction(...)`)
-is identical whether the members are static or instance, so nothing in the
-105 files' actual test bodies changes.
+`AdminApiDbContext` is not test-only — it's the live production context,
+referenced by ~30 files per version (DI registration in
+`WebApplicationBuilderExtensions.cs` and `TenantSpecificDbContextProvider.cs`,
+plus roughly a dozen Command/Query/Job classes each in v2 and v3). This is
+the widest-blast-radius step in this cleanup; every consumer needs its
+`using EdFi.Ods.AdminApi(.V3).Infrastructure;` (or wherever it currently
+resolves `AdminApiDbContext` from) updated to
+`using EdFi.Ods.AdminApi.Common.Infrastructure;` — mechanical, one `using`
+line each, caught immediately by `dotnet build` if missed, but wide.
+
+Order within Phase 2:
+1. Move `AdminApiDbContext.cs` to `EdFi.Ods.AdminApi.Common/Infrastructure`,
+   delete the v2/v3 copies, fix up every consumer's `using` (production code
+   first, then the two test bases below still compile against the old
+   per-project type until step 3/4).
+2. Move `AdminApiAuditLogWriter.cs` to Common the same way (now unblocked).
+3. De-static `PlatformUsersContextTestBase.cs`: add
+   `protected abstract string AdminConnectionString { get; }`, replace the
+   `using static Testing;`-derived `ConnectionString` property with that
+   hook, drop `static` from every member (`Save`, `Transaction`,
+   `GetDbContextOptions`, `ConnectionString`). Move to
+   `EdFi.Ods.AdminApi.DBTests.Common`, delete the v2/v3 copies. 43 v2 + 43
+   v3 = 86 direct-subclass test-fixture files each need one added line:
+   ```csharp
+   protected override string AdminConnectionString => Testing.AdminConnectionString;
+   ```
+4. De-static `AdminApiDbContextTestBase.cs` the same way — it needs two
+   hooks, not one, since it also resolves `Testing.Configuration()`:
+   ```csharp
+   protected abstract string AdminConnectionString { get; }
+   protected abstract IConfiguration Configuration { get; }
+   ```
+   Move to `EdFi.Ods.AdminApi.DBTests.Common`, delete the v2/v3 copies. 7 v2
+   + 7 v3 = 14 direct-subclass files each need two added lines.
+
+No other change in any of the 100 (86 + 14) test-fixture files — inherited
+member call syntax (`Save(...)`, `Transaction(...)`) is identical whether
+the base's members are static or instance.
 
 Verify after Phase 2: same as Phase 1 — full build, unit tests, then DB/E2E
 runs.
@@ -162,19 +188,28 @@ don't catch it. Both phases must additionally pass:
   ./eng/run-bruno-e2e.ps1 -ApiVersion 3 -DbEngine mssql -TenantMode singletenant -TearDown
   ./eng/run-bruno-e2e.ps1 -ApiVersion 3 -DbEngine mssql -TenantMode multitenant  -TearDown
   ```
-  Phase 2 only touches DBTests-internal plumbing (no production
-  Features/Infrastructure change), so re-running the full Bruno matrix
-  after Phase 2 is optional — the DB test run is the relevant check there.
+  Phase 2 moves `AdminApiDbContext` and `AdminApiAuditLogWriter` — real
+  production code, not just test plumbing — so re-run the full 8-run Bruno
+  matrix after Phase 2 too, not just after Phase 1.
 
 If either script fails after a phase, treat it as that phase's regression
 signal before moving to the next phase.
 
 ## Risks
 
-- **Wide-but-shallow blast radius in Phase 2.** 105 files touched, but each
-  change is a single mechanical added line with no logic change — the risk
-  is a missed file (compile error, not a silent bug), which `dotnet build`
-  catches immediately.
+- **`AdminApiDbContext` is production code, not test infra.** Unlike every
+  other move in this spec, this one changes a type used by the running
+  application (DI registration, Command/Query/Job classes), not just test
+  fixtures. The change itself is still mechanical (move file, fix usings,
+  no logic change), but it's the one step in this plan where the Bruno E2E
+  matrix — not just unit tests — is the real safety net, since DI wiring
+  and EF `OnModelCreating` behavior only prove out against a live app +
+  database.
+- **Wide-but-shallow blast radius in Phase 2.** ~30 production consumer
+  files per version for `AdminApiDbContext`, plus 100 test-fixture files
+  (86 + 14) for the two de-static'd base classes — all single mechanical
+  line additions with no logic change. The risk is a missed file (compile
+  error, not a silent bug), which `dotnet build` catches immediately.
 - **`packages.lock.json` ripple.** Phase 1 doesn't add new package
   references (all moved code already depends only on packages `Common`
   already references), so no repeat of the transitive-conflict ripple seen
