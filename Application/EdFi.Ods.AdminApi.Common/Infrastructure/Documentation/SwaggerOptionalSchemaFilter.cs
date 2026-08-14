@@ -10,7 +10,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Linq;
 using EdFi.Common.Extensions;
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class SwaggerOptionalAttribute : Attribute
@@ -59,4 +59,3 @@ public class SwaggerSchemaRemoveRequiredFilter : ISchemaFilter
         }
     }
 }
-

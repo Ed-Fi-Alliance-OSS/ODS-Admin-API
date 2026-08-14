@@ -8,7 +8,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using FluentValidation;
 using FluentValidation.Results;

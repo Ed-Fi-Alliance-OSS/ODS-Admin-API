@@ -7,8 +7,11 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace EdFi.Ods.AdminApi.Infrastructure;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 public static class HealthCheckServiceExtensions
 {

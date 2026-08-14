@@ -7,7 +7,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
-namespace EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class SwaggerExcludeAttribute : Attribute
@@ -32,4 +32,3 @@ public class SwaggerExcludeSchemaFilter : ISchemaFilter
         }
     }
 }
-

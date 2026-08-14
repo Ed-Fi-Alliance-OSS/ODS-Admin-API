@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Documentation;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class ProfileRequestExampleAttribute : Attribute
@@ -26,9 +26,9 @@ public class ProfileRequestExampleFilter : IOperationFilter
         }
 
         var profileDefinition = @"<Profile name=""Test-Profile""><Resource name=""Resource1""><ReadContentType memberSelection=""IncludeOnly""><Collection name=""Collection1"" memberSelection=""IncludeOnly"">" +
-                @"<Property name=""Property1"" /><Property name=""Property2"" /></Collection></ReadContentType><WriteContentType memberSelection=""IncludeOnly"">" +
-                @"<Collection name=""Collection2"" memberSelection=""IncludeOnly""><Property name=""Property1"" /><Property name=""Property2"" />" +
-                @"</Collection></WriteContentType></Resource></Profile>";
+                    @"<Property name=""Property1"" /><Property name=""Property2"" /></Collection></ReadContentType><WriteContentType memberSelection=""IncludeOnly"">" +
+                    @"<Collection name=""Collection2"" memberSelection=""IncludeOnly""><Property name=""Property1"" /><Property name=""Property2"" />" +
+                    @"</Collection></WriteContentType></Resource></Profile>";
 
         var profileRequest = new
         {
