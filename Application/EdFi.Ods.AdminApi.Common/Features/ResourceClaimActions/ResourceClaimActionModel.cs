@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-namespace EdFi.Ods.AdminApi.V3.Features.ResourceClaimActions
+namespace EdFi.Ods.AdminApi.Common.Features.ResourceClaimActions
 {
     public class ResourceClaimActionModel
     {
@@ -18,4 +18,3 @@ namespace EdFi.Ods.AdminApi.V3.Features.ResourceClaimActions
         public string Name { get; set; } = string.Empty;
     }
 }
-
