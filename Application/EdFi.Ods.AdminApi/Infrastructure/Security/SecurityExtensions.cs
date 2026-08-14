@@ -102,7 +102,7 @@ public static class SecurityExtensions
             {
                 opt.UseEntityFrameworkCore()
                     .UseDbContext<V3.Infrastructure.AdminApiDbContext>()
-                    .ReplaceDefaultEntities<V3.Infrastructure.Security.ApiApplication, V3.Infrastructure.Security.ApiAuthorization, V3.Infrastructure.Security.ApiScope, V3.Infrastructure.Security.ApiToken, int>();
+                    .ReplaceDefaultEntities<ApiApplication, ApiAuthorization, ApiScope, ApiToken, int>();
             })
             .AddServer(opt =>
             {

@@ -28,6 +28,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" />
         <PackageReference Include="NJsonSchema" />
         <PackageReference Include="Npgsql" />
+        <PackageReference Include="OpenIddict.EntityFrameworkCore" />
         <PackageReference Include="Quartz" />
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
