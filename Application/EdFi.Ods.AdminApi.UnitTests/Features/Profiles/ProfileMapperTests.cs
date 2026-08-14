@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Features.Profiles;
+using EdFi.Ods.AdminApi.Common.Features.Profiles;
 using NUnit.Framework;
 using Shouldly;
 

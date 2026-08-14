@@ -21,6 +21,21 @@
           "Npgsql": "8.0.3"
         }
       },
+      "EdFi.Suite3.Admin.DataAccess": {
+        "type": "Direct",
+        "requested": "[7.3.67, )",
+        "resolved": "7.3.67",
+        "contentHash": "FPuQLnqGYHZJE5RvRA2bnj0Ep2700gGH6xsy0hpDcvPUzkZnm54aVnjwqfo99Gd20vZcI1/pSyGg2dLKAD+l6w==",
+        "dependencies": {
+          "EdFi.Suite3.Common": "7.3.33",
+          "Microsoft.EntityFrameworkCore.Abstractions": "8.0.7",
+          "Microsoft.EntityFrameworkCore.Proxies": "8.0.7",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.7",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.7",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.4",
+          "log4net": "2.0.17"
+        }
+      },
       "EdFi.Suite3.Security.DataAccess": {
         "type": "Direct",
         "requested": "[7.4.102, )",
@@ -710,6 +725,16 @@
           "Microsoft.EntityFrameworkCore.Relational": "8.0.0",
           "Microsoft.Extensions.DependencyModel": "8.0.0",
           "Mono.TextTemplating": "2.2.1"
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Proxies": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.8, )",
+        "resolved": "8.0.7",
+        "contentHash": "QXaz3KxardLcEc++7nNy35LGTuLxf/bIMV4+gLV+mbvfXMdC2p5yLuW+S0qcX6hNWqtDo7OHEbZ1Jcf2ezh9ZA==",
+        "dependencies": {
+          "Castle.Core": "5.1.1",
+          "Microsoft.EntityFrameworkCore": "8.0.7"
         }
       },
       "Microsoft.Identity.Client": {

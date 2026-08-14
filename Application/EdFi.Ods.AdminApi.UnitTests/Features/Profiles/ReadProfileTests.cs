@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Features.Profiles;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Features.Profiles;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;

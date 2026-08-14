@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Xml;
 using System.Xml.Schema;
 
-namespace EdFi.Ods.AdminApi.Features.Profiles
+namespace EdFi.Ods.AdminApi.Common.Features.Profiles
 {
     public class ProfileValidator
     {
@@ -41,7 +41,7 @@ namespace EdFi.Ods.AdminApi.Features.Profiles
                     {
                         context.AddFailure(propertyName, $"Profile name attribute value should match with {name}." );
                     }
-                }          
+                }
             }
             catch (Exception ex)
             {

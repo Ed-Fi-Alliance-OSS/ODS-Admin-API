@@ -5,7 +5,7 @@
 
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EdFi.Ods.AdminApi.Features.Profiles;
+namespace EdFi.Ods.AdminApi.Common.Features.Profiles;
 
 [SwaggerSchema(Title = "Profile")]
 public class ProfileModel

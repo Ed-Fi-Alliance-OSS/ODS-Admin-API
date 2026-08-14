@@ -5,7 +5,7 @@
 
 using AdminProfile = EdFi.Admin.DataAccess.Models.Profile;
 
-namespace EdFi.Ods.AdminApi.V3.Features.Profiles;
+namespace EdFi.Ods.AdminApi.Common.Features.Profiles;
 
 public static class ProfileMapper
 {
@@ -33,4 +33,3 @@ public static class ProfileMapper
         return source.Select(ToModel).ToList();
     }
 }
-
