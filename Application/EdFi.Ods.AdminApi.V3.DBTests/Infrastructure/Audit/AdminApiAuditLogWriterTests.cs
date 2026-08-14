@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Shouldly;
@@ -17,6 +18,10 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.Infrastructure.Audit;
 [TestFixture]
 public class AdminApiAuditLogWriterTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     [Test]
     public async Task WriteAsync_PersistsAuditLogRowWithAllFields()
     {

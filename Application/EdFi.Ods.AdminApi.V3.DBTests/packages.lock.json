@@ -835,6 +835,7 @@
       "edfi.ods.adminapi.dbtests.common": {
         "type": "Project",
         "dependencies": {
+          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
           "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
           "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",

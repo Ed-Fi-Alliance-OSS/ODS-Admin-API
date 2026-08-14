@@ -15,12 +15,18 @@ using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.DBTestsShared;
+using Microsoft.Extensions.Configuration;
 
 namespace EdFi.Ods.AdminApi.DBTests.Services.Jobs;
 
 [TestFixture]
 public class JobStatusServiceTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     private DbContextOptions<AdminApiDbContext> _dbContextOptions = null!;
 
     [SetUp]

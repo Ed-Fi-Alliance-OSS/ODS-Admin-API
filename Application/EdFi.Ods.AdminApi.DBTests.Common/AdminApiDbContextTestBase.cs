@@ -6,10 +6,11 @@
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Respawn;
 
-namespace EdFi.Ods.AdminApi.V3.DBTests;
+namespace EdFi.Ods.AdminApi.DBTestsShared;
 
 [TestFixture]
 public abstract class AdminApiDbContextTestBase
@@ -23,7 +24,11 @@ public abstract class AdminApiDbContextTestBase
         SchemasToExclude = []
     };
 
-    protected static string ConnectionString => Testing.AdminConnectionString;
+    protected abstract string AdminConnectionString { get; }
+
+    protected abstract IConfiguration Configuration { get; }
+
+    protected string ConnectionString => AdminConnectionString;
 
     [OneTimeTearDown]
     public async Task FixtureTearDown()
@@ -37,7 +42,7 @@ public abstract class AdminApiDbContextTestBase
         await _checkpoint.Reset(ConnectionString);
     }
 
-    protected static void Save(params object[] entities)
+    protected void Save(params object[] entities)
     {
         Transaction(context =>
         {
@@ -48,18 +53,18 @@ public abstract class AdminApiDbContextTestBase
         });
     }
 
-    protected static void Transaction(System.Action<AdminApiDbContext> action)
+    protected void Transaction(System.Action<AdminApiDbContext> action)
     {
         using var context = new AdminApiDbContext(
             GetAdminApiDbContextOptions(ConnectionString),
-            Testing.Configuration());
+            Configuration);
         using var transaction = context.Database.BeginTransaction();
         action(context);
         context.SaveChanges();
         transaction.Commit();
     }
 
-    protected static TResult Transaction<TResult>(System.Func<AdminApiDbContext, TResult> query)
+    protected TResult Transaction<TResult>(System.Func<AdminApiDbContext, TResult> query)
     {
         var result = default(TResult);
         Transaction(database =>
@@ -69,22 +74,22 @@ public abstract class AdminApiDbContextTestBase
         return result;
     }
 
-    protected static async Task Transaction(System.Func<AdminApiDbContext, Task> action)
+    protected async Task Transaction(System.Func<AdminApiDbContext, Task> action)
     {
         using var context = new AdminApiDbContext(
             GetAdminApiDbContextOptions(ConnectionString),
-            Testing.Configuration());
+            Configuration);
         using var transaction = await context.Database.BeginTransactionAsync();
         await action(context);
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
     }
 
-    protected static async Task<TResult> Transaction<TResult>(System.Func<AdminApiDbContext, Task<TResult>> query)
+    protected async Task<TResult> Transaction<TResult>(System.Func<AdminApiDbContext, Task<TResult>> query)
     {
         using var context = new AdminApiDbContext(
             GetAdminApiDbContextOptions(ConnectionString),
-            Testing.Configuration());
+            Configuration);
         using var transaction = await context.Database.BeginTransactionAsync();
         var result = await query(context);
         await context.SaveChangesAsync();
@@ -92,12 +97,10 @@ public abstract class AdminApiDbContextTestBase
         return result;
     }
 
-    public static DbContextOptions<AdminApiDbContext> GetAdminApiDbContextOptions(string connectionString)
+    protected DbContextOptions<AdminApiDbContext> GetAdminApiDbContextOptions(string connectionString)
     {
         var builder = new DbContextOptionsBuilder<AdminApiDbContext>();
         builder.UseSqlServer(connectionString);
         return builder.Options;
     }
 }
-
-

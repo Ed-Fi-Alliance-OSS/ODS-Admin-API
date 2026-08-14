@@ -7,7 +7,9 @@ using System;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Shouldly;
 
@@ -16,6 +18,10 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
 [TestFixture]
 public class DeleteOdsInstanceManageCommandTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     [Test]
     public void ShouldSetStatusToPendingDelete()
     {
