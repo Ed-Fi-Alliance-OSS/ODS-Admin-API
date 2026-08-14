@@ -23,7 +23,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
-using EdFi.Ods.AdminApi.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Infrastructure.Services;
@@ -99,17 +98,7 @@ public static class WebApplicationBuilderExtensions
             RegisterAdminApiServices(webApplicationBuilder, adminApiV1Types);
         }
 
-        if (adminApiMode == AdminApiMode.V3)
-        {
-            webApplicationBuilder.Services.AddSingleton<
-                IAuditLogWriter,
-                EdFi.Ods.AdminApi.V3.Infrastructure.Audit.AdminApiAuditLogWriter
-            >();
-        }
-        else
-        {
-            webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, Audit.AdminApiAuditLogWriter>();
-        }
+        webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, AdminApiAuditLogWriter>();
 
         webApplicationBuilder.Services.AddHostedService<AuditLogBackgroundService>();
 

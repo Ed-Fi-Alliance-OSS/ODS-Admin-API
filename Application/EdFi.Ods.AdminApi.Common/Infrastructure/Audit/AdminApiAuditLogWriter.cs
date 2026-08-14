@@ -4,11 +4,11 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
-namespace EdFi.Ods.AdminApi.Infrastructure.Audit;
+namespace EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 
 public class AdminApiAuditLogWriter(IConfiguration configuration) : IAuditLogWriter
 {

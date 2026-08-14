@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Audit;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Shouldly;
