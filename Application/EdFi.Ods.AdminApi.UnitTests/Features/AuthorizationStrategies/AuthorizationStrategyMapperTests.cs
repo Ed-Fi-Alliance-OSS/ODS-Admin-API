@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Collections.Generic;
-using EdFi.Ods.AdminApi.Features.AuthorizationStrategies;
+using EdFi.Ods.AdminApi.Common.Features.AuthorizationStrategies;
 using EdFi.Security.DataAccess.Models;
 using NUnit.Framework;
 using Shouldly;

@@ -9,7 +9,9 @@ using System.Linq;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Shouldly;
 
@@ -18,6 +20,10 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetOdsInstanceManagesQueryTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     private static IEnumerable<string> AllStatuses =>
         Enum.GetValues<OdsInstanceManageStatus>().Select(status => status.ToString());
 

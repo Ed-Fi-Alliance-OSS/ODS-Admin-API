@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.InstanceM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.InstanceManagement.UnitTests", "EdFi.Ods.AdminApi.InstanceManagement.UnitTests\EdFi.Ods.AdminApi.InstanceManagement.UnitTests.csproj", "{C4B74E6E-4C76-41F2-A5F1-A613BFAB6871}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdFi.Ods.AdminApi.DBTests.Common", "EdFi.Ods.AdminApi.DBTests.Common\EdFi.Ods.AdminApi.DBTests.Common.csproj", "{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -118,6 +120,14 @@ Global
 		{C4B74E6E-4C76-41F2-A5F1-A613BFAB6871}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C4B74E6E-4C76-41F2-A5F1-A613BFAB6871}.Release|x64.ActiveCfg = Release|Any CPU
 		{C4B74E6E-4C76-41F2-A5F1-A613BFAB6871}.Release|x64.Build.0 = Release|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Debug|x64.Build.0 = Debug|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Release|x64.ActiveCfg = Release|Any CPU
+		{E2E7A73C-43AF-4C8E-8C9E-CE8A4CE04E5D}.Release|x64.Build.0 = Release|Any CPU
 		{694F830D-62F7-49F6-AF86-67DBEA056734}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{694F830D-62F7-49F6-AF86-67DBEA056734}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{694F830D-62F7-49F6-AF86-67DBEA056734}.Debug|x64.ActiveCfg = Debug|Any CPU

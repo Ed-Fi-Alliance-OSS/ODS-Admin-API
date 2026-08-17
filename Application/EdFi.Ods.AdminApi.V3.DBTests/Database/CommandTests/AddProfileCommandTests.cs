@@ -4,17 +4,20 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 
-using System.Linq;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using Moq;
 using NUnit.Framework;
 using Shouldly;
+using System.Linq;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 
 [TestFixture]
 public class AddProfileCommandTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     [Test]
     public void ShouldAddProfile()
     {

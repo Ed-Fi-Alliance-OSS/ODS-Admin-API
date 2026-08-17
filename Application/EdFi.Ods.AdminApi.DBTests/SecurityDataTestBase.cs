@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Security.DataAccess.Contexts;
 using EdFi.Security.DataAccess.Models;
@@ -22,6 +23,8 @@ namespace EdFi.Ods.AdminApi.DBTests;
 public abstract class SecurityDataTestBase : PlatformSecurityContextTestBase
 {
     protected override string ConnectionString => Testing.SecurityConnectionString;
+
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
 
     protected override SqlServerSecurityContext CreateDbContext()
     {

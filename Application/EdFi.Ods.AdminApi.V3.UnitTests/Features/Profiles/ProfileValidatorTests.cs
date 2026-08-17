@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Collections.Generic;
-using EdFi.Ods.AdminApi.V3.Features.Profiles;
+using EdFi.Ods.AdminApi.Common.Features.Profiles;
 using FluentValidation;
 using FluentValidation.Results;
 using NUnit.Framework;

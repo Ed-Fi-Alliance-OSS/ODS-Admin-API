@@ -812,6 +812,10 @@
         "dependencies": {
           "Asp.Versioning.Http": "[8.1.1, )",
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
+          "AspNetCore.HealthChecks.SqlServer": "[9.0.0, )",
+          "EFCore.NamingConventions": "[10.0.1, )",
+          "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
+          "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
@@ -822,9 +826,22 @@
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[10.0.2, )",
+          "OpenIddict.EntityFrameworkCore": "[4.10.1, )",
           "Quartz": "[3.15.1, )",
           "Swashbuckle.AspNetCore": "[7.1.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )"
+        }
+      },
+      "edfi.ods.adminapi.dbtests.common": {
+        "type": "Project",
+        "dependencies": {
+          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
+          "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
+          "FluentValidation.AspNetCore": "[11.3.1, )",
+          "NUnit": "[4.1.0, )",
+          "Respawn": "[4.0.0, )",
+          "Shouldly": "[4.2.1, )"
         }
       },
       "edfi.ods.adminapi.instancemanagement": {

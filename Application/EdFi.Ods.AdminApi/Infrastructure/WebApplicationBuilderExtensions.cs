@@ -12,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
@@ -22,9 +23,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Connect;
-using EdFi.Ods.AdminApi.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Infrastructure.Documentation;
-using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Security;
 using EdFi.Ods.AdminApi.Infrastructure.Services;
 using EdFi.Ods.AdminApi.Infrastructure.Services.EducationOrganizationService;
@@ -42,7 +41,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Quartz;
-using V3AdminApiDbContext = EdFi.Ods.AdminApi.V3.Infrastructure.AdminApiDbContext;
 
 namespace EdFi.Ods.AdminApi.Infrastructure;
 
@@ -100,17 +98,7 @@ public static class WebApplicationBuilderExtensions
             RegisterAdminApiServices(webApplicationBuilder, adminApiV1Types);
         }
 
-        if (adminApiMode == AdminApiMode.V3)
-        {
-            webApplicationBuilder.Services.AddSingleton<
-                IAuditLogWriter,
-                EdFi.Ods.AdminApi.V3.Infrastructure.Audit.AdminApiAuditLogWriter
-            >();
-        }
-        else
-        {
-            webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, Audit.AdminApiAuditLogWriter>();
-        }
+        webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, AdminApiAuditLogWriter>();
 
         webApplicationBuilder.Services.AddHostedService<AuditLogBackgroundService>();
 
@@ -472,7 +460,7 @@ public static class WebApplicationBuilderExtensions
             case AdminApiMode.V3:
                 if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.PostgreSql))
                 {
-                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseNpgsql(
@@ -502,7 +490,7 @@ public static class WebApplicationBuilderExtensions
                 }
                 else if (DatabaseEngineEnum.Parse(databaseEngine).Equals(DatabaseEngineEnum.SqlServer))
                 {
-                    webApplicationBuilder.Services.AddDbContext<V3AdminApiDbContext>(
+                    webApplicationBuilder.Services.AddDbContext<AdminApiDbContext>(
                         (sp, options) =>
                         {
                             options.UseSqlServer(

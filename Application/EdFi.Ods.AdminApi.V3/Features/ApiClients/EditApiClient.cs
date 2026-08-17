@@ -6,9 +6,10 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
 using FluentValidation.Results;
 using Swashbuckle.AspNetCore.Annotations;
@@ -43,18 +44,8 @@ public class EditApiClient : IFeature
 
     private static void ValidateDataStoreIds(EditApiClientRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && allOdsInstanceIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", request.DataStoreIds)}") });
-        }
-
-        if ((request.DataStoreIds != null && request.DataStoreIds.Any()) && (!request.DataStoreIds.All(p => allOdsInstanceIds.Contains(p))))
-        {
-            var notExist = request.DataStoreIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.DataStoreIds), $"The following DataStoreIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "EditApiClientRequest")]

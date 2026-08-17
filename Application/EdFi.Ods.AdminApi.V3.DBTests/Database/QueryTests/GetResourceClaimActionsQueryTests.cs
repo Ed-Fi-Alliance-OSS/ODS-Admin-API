@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using EdFi.Ods.AdminApi.Common.Features.ResourceClaimActions;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Features.ResourceClaimActions;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
-using EdFi.Ods.AdminApi.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;

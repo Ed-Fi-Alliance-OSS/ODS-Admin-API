@@ -5,6 +5,7 @@
 
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Security.DataAccess.Contexts;
@@ -18,6 +19,8 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 public class GetAuthStrategiesQueryTest : PlatformSecurityContextTestBase
 {
     protected override string ConnectionString => Testing.SecurityConnectionString;
+
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
 
     protected override SqlServerSecurityContext CreateDbContext()
     {

@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,8 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 [TestFixture]
 public class DeleteApplicationCommandTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     [Test]
     public void ShouldDeleteApplication()
     {

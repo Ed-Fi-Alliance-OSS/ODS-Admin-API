@@ -6,7 +6,9 @@
 using System;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 using Shouldly;
@@ -16,6 +18,10 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
 [TestFixture]
 public class AddDataStoreManageCommandTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     [Test]
     public void ShouldAddDataStoreManage()
     {

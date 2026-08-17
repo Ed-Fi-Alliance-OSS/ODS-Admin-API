@@ -5,20 +5,23 @@
 
 #nullable enable
 
-using System;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
 using EdFi.Ods.AdminApi.Common.Settings;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
+using System;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 
 [TestFixture]
 public class GetOdsInstanceByIdQueryTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     private static readonly string TestEncryptionKey = Convert.ToBase64String(new byte[32]);
     private static readonly Aes256SymmetricStringEncryptionProvider EncryptionProvider = new();
     private const string PlainConnectionString = "Data Source=(local);Initial Catalog=EdFi_Ods;Integrated Security=True;Encrypt=False";

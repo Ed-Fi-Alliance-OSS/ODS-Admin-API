@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Features.Tenants;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Information;
 using EdFi.Ods.AdminApi.Features.Tenants;
@@ -136,10 +137,10 @@ public class ReadInformationTest
         var tenantsService = A.Fake<EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.ITenantsService>();
 
         A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = true });
-        A.CallTo(() => tenantsService.GetTenantsAsync(A<bool>._)).ReturnsLazily(call => Task.FromResult(new List<EdFi.Ods.AdminApi.V3.Features.Tenants.TenantModel>
+        A.CallTo(() => tenantsService.GetTenantsAsync(A<bool>._)).ReturnsLazily(call => Task.FromResult(new List<TenantModel>
         {
-            new EdFi.Ods.AdminApi.V3.Features.Tenants.TenantModel { TenantName = "tenant1" },
-            new EdFi.Ods.AdminApi.V3.Features.Tenants.TenantModel { TenantName = "tenant2" }
+            new TenantModel { TenantName = "tenant1" },
+            new TenantModel { TenantName = "tenant2" }
         }));
 
         var serviceProvider = new ServiceCollection()

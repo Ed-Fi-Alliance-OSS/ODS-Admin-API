@@ -6,10 +6,11 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
-using EdFi.Ods.AdminApi.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Options;
@@ -47,34 +48,14 @@ public class AddApplication : IFeature
 
     private static void ValidateProfileIds(AddApplicationRequest request, IUsersContext db)
     {
-        var allProfileIds = db.Profiles.Select(p => p.ProfileId).ToList();
-
-        if ((request.ProfileIds != null && request.ProfileIds.Any()) && allProfileIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileIds), $"The following ProfileIds were not found in database: {string.Join(", ", request.ProfileIds)}") });
-        }
-
-        if ((request.ProfileIds != null && request.ProfileIds.Any()) && (!request.ProfileIds.All(p => allProfileIds.Contains(p))))
-        {
-            var notExist = request.ProfileIds.Where(p => !allProfileIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.ProfileIds), $"The following ProfileIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allProfileIds = new HashSet<int>(db.Profiles.Select(p => p.ProfileId));
+        EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
     }
 
     private static void ValidateOdsInstanceIds(AddApplicationRequest request, IUsersContext db)
     {
-        var allOdsInstanceIds = db.OdsInstances.Select(p => p.OdsInstanceId).ToList();
-
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && allOdsInstanceIds.Count == 0)
-        {
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", request.OdsInstanceIds)}") });
-        }
-
-        if ((request.OdsInstanceIds != null && request.OdsInstanceIds.Any()) && (!request.OdsInstanceIds.All(p => allOdsInstanceIds.Contains(p))))
-        {
-            var notExist = request.OdsInstanceIds.Where(p => !allOdsInstanceIds.Contains(p));
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.OdsInstanceIds), $"The following OdsInstanceIds were not found in database: {string.Join(", ", notExist)}") });
-        }
+        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
+        EntityReferenceValidator.ValidateIdsExist(request.OdsInstanceIds, allOdsInstanceIds, nameof(request.OdsInstanceIds));
     }
 
     [SwaggerSchema(Title = "AddApplicationRequest")]

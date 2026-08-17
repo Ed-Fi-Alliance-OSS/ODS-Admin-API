@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using NUnit.Framework;
 using Shouldly;
@@ -14,6 +15,8 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetDataStoreDerivativeByIdQueryTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     [Test]
     public void Should_Retreive_OdsInstanceDerivative()
     {

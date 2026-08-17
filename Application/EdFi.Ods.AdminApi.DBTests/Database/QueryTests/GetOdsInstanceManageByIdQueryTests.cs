@@ -5,7 +5,9 @@
 
 using System;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Shouldly;
 
@@ -14,6 +16,10 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetOdsInstanceManageByIdQueryTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     [Test]
     public void ShouldReturnNullForNonExistentId()
     {

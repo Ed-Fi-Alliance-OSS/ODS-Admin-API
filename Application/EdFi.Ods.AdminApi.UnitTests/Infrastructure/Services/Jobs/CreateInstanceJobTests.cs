@@ -18,7 +18,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
 using EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using EdFi.Ods.AdminApi.InstanceManagement.Provisioners;

@@ -5,14 +5,15 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using Profile = EdFi.Admin.DataAccess.Models.Profile;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;
-using Profile = EdFi.Admin.DataAccess.Models.Profile;
 using VendorUser = EdFi.Admin.DataAccess.Models.User;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
@@ -20,6 +21,8 @@ namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
 [TestFixture]
 public class EditApplicationCommandTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     private Vendor _vendor;
     private Vendor _otherVendor;
     private VendorUser _user;

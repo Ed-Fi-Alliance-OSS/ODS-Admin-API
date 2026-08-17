@@ -20,7 +20,7 @@ public class ApiClientModel
     public IList<int>? DataStoreIds { get; set; }
 }
 
-[SwaggerSchema(Title = "ApiClient")]
+[SwaggerSchema(Title = "ApiClientResult")]
 public class ApiClientResult
 {
     public int Id { get; set; }

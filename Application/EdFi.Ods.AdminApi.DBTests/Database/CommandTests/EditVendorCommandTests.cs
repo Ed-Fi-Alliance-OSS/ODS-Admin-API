@@ -3,22 +3,25 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Collections.Generic;
+using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.Infrastructure.Helpers;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Shouldly;
+using System.Collections.Generic;
 using System.Linq;
-using EdFi.Admin.DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
 using VendorUser = EdFi.Admin.DataAccess.Models.User;
-using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
 
 [TestFixture]
 internal class EditVendorCommandTests : PlatformUsersContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
     private int _vendorId;
     private int _vendorWithNoNameSpaceId;
     private const string OriginalVendorNamespacePrefix = "old namespace prefix";

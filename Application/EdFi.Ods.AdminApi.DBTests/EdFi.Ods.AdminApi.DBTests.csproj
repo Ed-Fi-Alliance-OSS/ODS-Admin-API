@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\EdFi.Ods.AdminApi\EdFi.Ods.AdminApi.csproj" />
+    <ProjectReference Include="..\EdFi.Ods.AdminApi.DBTests.Common\EdFi.Ods.AdminApi.DBTests.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />

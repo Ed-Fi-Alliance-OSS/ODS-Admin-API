@@ -99,7 +99,7 @@ public abstract class PlatformSecurityContextTestBase
         using var usersContext = new SqlServerUsersContext(Testing.GetDbContextOptions(Testing.AdminConnectionString));
         using var transaction = usersContext.Database.BeginTransaction();
         action(usersContext);
-        TestContext.SaveChanges();
+        usersContext.SaveChanges();
         transaction.Commit();
     }
 

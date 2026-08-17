@@ -7,7 +7,9 @@ using System;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
+using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Shouldly;
 
@@ -16,6 +18,10 @@ namespace EdFi.Ods.AdminApi.V3.DBTests.Database.QueryTests;
 [TestFixture]
 public class GetTenantEdOrgsByDataStoresTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     [Test]
     public void ShouldDistinguishLinkedAndUnlinkedDataStoreManages()
     {

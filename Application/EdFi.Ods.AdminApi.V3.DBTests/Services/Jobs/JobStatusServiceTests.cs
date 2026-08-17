@@ -8,19 +8,25 @@ using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
-using V3Infra = EdFi.Ods.AdminApi.V3.Infrastructure;
+using V3Infra = EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.DBTestsShared;
+using Microsoft.Extensions.Configuration;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.Services.Jobs;
 
 [TestFixture]
 public class JobStatusServiceTests : AdminApiDbContextTestBase
 {
+    protected override string AdminConnectionString => Testing.AdminConnectionString;
+
+    protected override IConfiguration Configuration => Testing.Configuration();
+
     private DbContextOptions<V3Infra.AdminApiDbContext> _dbContextOptions = null!;
 
     [SetUp]
