@@ -111,7 +111,7 @@ public class AddApiClient : IFeature
 
         private bool BeUniqueCombinedKey(AddApiClientRequest request)
         {
-            return !_getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(request.ApplicationId, request.Name);
+            return !_getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(request.ApplicationId, request.Name?.Trim());
         }
     }
 }

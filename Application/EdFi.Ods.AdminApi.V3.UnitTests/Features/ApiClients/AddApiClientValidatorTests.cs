@@ -101,6 +101,23 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
 
             result.Errors.Any(x => x.ErrorMessage == FeatureConstants.ApiClientCombinedKeyMustBeUnique).ShouldBeTrue();
         }
+
+        [Test]
+        public void Should_Have_Error_When_ApplicationId_And_Name_Already_Exist_With_Leading_Or_Trailing_Whitespace()
+        {
+            var model = new AddApiClient.AddApiClientRequest
+            {
+                Name = "ValidName",
+                ApplicationId = 1,
+                DataStoreIds = new[] { 1 }
+            };
+            A.CallTo(() => _getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(model.ApplicationId, model.Name)).Returns(true);
+            model.Name = $" {model.Name} ";
+
+            var result = _validator.Validate(model);
+
+            result.Errors.Any(x => x.ErrorMessage == FeatureConstants.ApiClientCombinedKeyMustBeUnique).ShouldBeTrue();
+        }
     }
 }
 

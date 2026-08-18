@@ -52,42 +52,4 @@ public class GetAllApplicationsQueryTests
         result.Count.ShouldBe(1);
         result[0].ApplicationName.ShouldBe("App1");
     }
-
-    [Test]
-    public void ExistsByVendorIdAndName_WhenVendorIdAndNameMatch_ReturnsTrue()
-    {
-        using var ctx = CreateContext();
-        var vendor = new Vendor { VendorName = "V1" };
-        ctx.Vendors.Add(vendor);
-        ctx.Applications.Add(new Application { ApplicationName = "App1", ClaimSetName = "CS1", Vendor = vendor, OperationalContextUri = "uri" });
-        ctx.SaveChanges();
-
-        new GetAllApplicationsQuery(ctx, DefaultOptions()).ExistsByVendorIdAndName(vendor.VendorId, "App1").ShouldBeTrue();
-    }
-
-    [Test]
-    public void ExistsByVendorIdAndName_WhenNameMatchesButVendorIdDoesNot_ReturnsFalse()
-    {
-        using var ctx = CreateContext();
-        var vendor = new Vendor { VendorName = "V1" };
-        var otherVendor = new Vendor { VendorName = "V2" };
-        ctx.Vendors.Add(vendor);
-        ctx.Vendors.Add(otherVendor);
-        ctx.Applications.Add(new Application { ApplicationName = "App1", ClaimSetName = "CS1", Vendor = vendor, OperationalContextUri = "uri" });
-        ctx.SaveChanges();
-
-        new GetAllApplicationsQuery(ctx, DefaultOptions()).ExistsByVendorIdAndName(otherVendor.VendorId, "App1").ShouldBeFalse();
-    }
-
-    [Test]
-    public void ExistsByVendorIdAndName_WhenNoMatch_ReturnsFalse()
-    {
-        using var ctx = CreateContext();
-        var vendor = new Vendor { VendorName = "V1" };
-        ctx.Vendors.Add(vendor);
-        ctx.Applications.Add(new Application { ApplicationName = "App1", ClaimSetName = "CS1", Vendor = vendor, OperationalContextUri = "uri" });
-        ctx.SaveChanges();
-
-        new GetAllApplicationsQuery(ctx, DefaultOptions()).ExistsByVendorIdAndName(vendor.VendorId, "Nonexistent App").ShouldBeFalse();
-    }
 }

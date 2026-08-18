@@ -16,15 +16,15 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
     [TestFixture]
     public class AddApplicationValidatorTests
     {
-        private IGetAllApplicationsQuery _getAllApplicationsQuery = null!;
+        private IGetApplicationsByVendorIdQuery _getApplicationsByVendorIdQuery = null!;
         private AddApplication.Validator _validator = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _getAllApplicationsQuery = A.Fake<IGetAllApplicationsQuery>();
-            A.CallTo(() => _getAllApplicationsQuery.ExistsByVendorIdAndName(A<int>._, A<string>._)).Returns(false);
-            _validator = new AddApplication.Validator(_getAllApplicationsQuery);
+            _getApplicationsByVendorIdQuery = A.Fake<IGetApplicationsByVendorIdQuery>();
+            A.CallTo(() => _getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(A<int>._, A<string>._)).Returns(false);
+            _validator = new AddApplication.Validator(_getApplicationsByVendorIdQuery);
         }
 
         [TestCase("claimset name")]
@@ -61,7 +61,20 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
         public void Should_Have_Error_When_VendorId_And_ApplicationName_Already_Exist()
         {
             var request = ValidRequest();
-            A.CallTo(() => _getAllApplicationsQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName)).Returns(true);
+            A.CallTo(() => _getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName)).Returns(true);
+
+            var result = _validator.Validate(request);
+
+            result.Errors.Any(x => x.ErrorMessage == FeatureConstants.ApplicationCombinedKeyMustBeUnique)
+                .ShouldBeTrue();
+        }
+
+        [Test]
+        public void Should_Have_Error_When_VendorId_And_ApplicationName_Already_Exist_With_Leading_Or_Trailing_Whitespace()
+        {
+            var request = ValidRequest();
+            A.CallTo(() => _getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName)).Returns(true);
+            request.ApplicationName = $" {request.ApplicationName} ";
 
             var result = _validator.Validate(request);
 

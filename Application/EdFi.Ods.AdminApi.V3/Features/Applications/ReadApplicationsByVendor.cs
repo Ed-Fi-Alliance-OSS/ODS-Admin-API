@@ -23,7 +23,7 @@ public class ReadApplicationsByVendor : IFeature
     }
 
     internal static Task<IResult> GetVendorApplications(
-        GetApplicationsByVendorIdQuery getApplicationByVendorIdQuery,
+        IGetApplicationsByVendorIdQuery getApplicationByVendorIdQuery,
         IGetDataStoreIdsByApplicationIdQuery getDataStoreIdsByApplicationIdQuery,
         int id)
     {

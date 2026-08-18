@@ -43,7 +43,7 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         var apiClient = new ApiClient(true)
         {
-            Name = applicationModel.ApplicationName,
+            Name = applicationModel.ApplicationName?.Trim(),
             IsApproved = applicationModel.Enabled ?? true,
             UseSandbox = false,
             KeyStatus = "Active",
@@ -60,7 +60,7 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         var application = new Application
         {
-            ApplicationName = applicationModel.ApplicationName,
+            ApplicationName = applicationModel.ApplicationName?.Trim(),
             ApiClients = new List<ApiClient> { apiClient },
             ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>(applicationEdOrgs),
             ClaimSetName = applicationModel.ClaimSetName,

@@ -90,11 +90,11 @@ public class AddApplication : IFeature
 
     public class Validator : AbstractValidator<AddApplicationRequest>
     {
-        private readonly IGetAllApplicationsQuery _getAllApplicationsQuery;
+        private readonly IGetApplicationsByVendorIdQuery _getApplicationsByVendorIdQuery;
 
-        public Validator(IGetAllApplicationsQuery getAllApplicationsQuery)
+        public Validator(IGetApplicationsByVendorIdQuery getApplicationsByVendorIdQuery)
         {
-            _getAllApplicationsQuery = getAllApplicationsQuery;
+            _getApplicationsByVendorIdQuery = getApplicationsByVendorIdQuery;
 
             RuleFor(m => m.ApplicationName)
              .NotEmpty();
@@ -129,7 +129,7 @@ public class AddApplication : IFeature
 
         private bool BeUniqueCombinedKey(AddApplicationRequest request)
         {
-            return !_getAllApplicationsQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName);
+            return !_getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName?.Trim());
         }
 
         private static bool BeWithinApplicationNameMaxLength<T>(IAddApplicationModel model, string? applicationName, ValidationContext<T> context)

@@ -47,6 +47,20 @@ public class AddApplicationCommandTests
         ctx.Applications.Count().ShouldBe(1);
     }
 
+    [Test]
+    public void Execute_TrimsApplicationNameBeforePersisting()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        ctx.SaveChanges();
+        var result = new AddApplicationCommand(ctx).Execute(new AddApplicationModelStub
+        {
+            ApplicationName = " MyApp ", VendorId = vendor.VendorId, ClaimSetName = "CS"
+        }, Options());
+        ctx.Applications.Single(a => a.ApplicationId == result.ApplicationId).ApplicationName.ShouldBe("MyApp");
+    }
+
     private class AddApplicationModelStub : IAddApplicationModel
     {
         public string? ApplicationName { get; init; }
