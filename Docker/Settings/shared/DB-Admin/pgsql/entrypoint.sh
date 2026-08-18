@@ -32,8 +32,17 @@ if [ ! -s "$PGDATA_DIR/PG_VERSION" ]; then
   # live here under their numeric prefixes so any script a downstream consumer mounts
   # alongside them (e.g. Ed-Fi-AdminApp's 2-bootstrap.sh, which seeds tenant
   # OdsInstances rows) sorts in between them and runs in the intended order.
+  # Mirror the vanilla entrypoint's own handling of *.sh files: run it directly
+  # (honoring its shebang, e.g. #!/bin/bash) if it's executable, otherwise source
+  # it into this shell, instead of forcing every script through "sh".
   for f in "$INITDB_DIR"/*.sh; do
-    [ -f "$f" ] && sh "$f"
+    if [ -f "$f" ]; then
+      if [ -x "$f" ]; then
+        "$f"
+      else
+        . "$f"
+      fi
+    fi
   done
 
   wait "$postgres_pid"
