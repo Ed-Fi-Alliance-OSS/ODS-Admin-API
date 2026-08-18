@@ -3,13 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
 using System.Linq;
-using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Ods.AdminApi.V3.Features.Applications;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
 
@@ -18,23 +16,15 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
     [TestFixture]
     public class AddApplicationValidatorTests
     {
-        private SqlServerUsersContext _usersContext = null!;
+        private IGetAllApplicationsQuery _getAllApplicationsQuery = null!;
         private AddApplication.Validator _validator = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _usersContext = new SqlServerUsersContext(
-                new DbContextOptionsBuilder<SqlServerUsersContext>()
-                    .UseInMemoryDatabase(databaseName: $"AddApplicationValidator_{Guid.NewGuid()}")
-                    .Options);
-            _validator = new AddApplication.Validator(_usersContext);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _usersContext.Dispose();
+            _getAllApplicationsQuery = A.Fake<IGetAllApplicationsQuery>();
+            A.CallTo(() => _getAllApplicationsQuery.ExistsByVendorIdAndName(A<int>._, A<string>._)).Returns(false);
+            _validator = new AddApplication.Validator(_getAllApplicationsQuery);
         }
 
         [TestCase("claimset name")]
@@ -71,15 +61,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
         public void Should_Have_Error_When_VendorId_And_ApplicationName_Already_Exist()
         {
             var request = ValidRequest();
-            var vendor = new Vendor { VendorId = request.VendorId, VendorName = "Existing Vendor" };
-            _usersContext.Vendors.Add(vendor);
-            _usersContext.Applications.Add(new Application
-            {
-                ApplicationName = request.ApplicationName,
-                Vendor = vendor,
-                OperationalContextUri = "uri"
-            });
-            _usersContext.SaveChanges();
+            A.CallTo(() => _getAllApplicationsQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName)).Returns(true);
 
             var result = _validator.Validate(request);
 

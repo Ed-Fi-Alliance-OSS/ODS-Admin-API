@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
 using FluentValidation.Results;
@@ -89,11 +90,11 @@ public class AddApplication : IFeature
 
     public class Validator : AbstractValidator<AddApplicationRequest>
     {
-        private readonly IUsersContext _usersContext;
+        private readonly IGetAllApplicationsQuery _getAllApplicationsQuery;
 
-        public Validator(IUsersContext usersContext)
+        public Validator(IGetAllApplicationsQuery getAllApplicationsQuery)
         {
-            _usersContext = usersContext;
+            _getAllApplicationsQuery = getAllApplicationsQuery;
 
             RuleFor(m => m.ApplicationName)
              .NotEmpty();
@@ -128,9 +129,7 @@ public class AddApplication : IFeature
 
         private bool BeUniqueCombinedKey(AddApplicationRequest request)
         {
-            return !_usersContext.Applications.Any(
-                a => a.Vendor.VendorId == request.VendorId
-                    && a.ApplicationName == request.ApplicationName);
+            return !_getAllApplicationsQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName);
         }
 
         private static bool BeWithinApplicationNameMaxLength<T>(IAddApplicationModel model, string? applicationName, ValidationContext<T> context)

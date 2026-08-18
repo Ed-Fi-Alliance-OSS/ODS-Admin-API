@@ -19,6 +19,7 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 public interface IGetAllApplicationsQuery
 {
     IReadOnlyList<Application> Execute(CommonQueryParams commonQueryParams, int? id, string? applicationName, string? claimsetName, string? ids);
+    bool ExistsByVendorIdAndName(int vendorId, string? applicationName);
 }
 
 public class GetAllApplicationsQuery : IGetAllApplicationsQuery
@@ -59,6 +60,12 @@ public class GetAllApplicationsQuery : IGetAllApplicationsQuery
             .ToList();
 
         return applications;
+    }
+
+    public bool ExistsByVendorIdAndName(int vendorId, string? applicationName)
+    {
+        return _context.Applications.Any(
+            a => a.Vendor.VendorId == vendorId && a.ApplicationName == applicationName);
     }
 }
 

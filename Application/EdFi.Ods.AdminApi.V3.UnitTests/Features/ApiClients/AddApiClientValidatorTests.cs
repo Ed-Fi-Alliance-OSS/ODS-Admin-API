@@ -3,14 +3,12 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
 using System.Linq;
-using EdFi.Admin.DataAccess.Contexts;
-using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Ods.AdminApi.V3.Features.ApiClients;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
-using Microsoft.EntityFrameworkCore;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
 
@@ -19,23 +17,15 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
     [TestFixture]
     public class AddApiClientValidatorTests
     {
-        private SqlServerUsersContext _usersContext = null!;
+        private IGetApiClientsByApplicationIdQuery _getApiClientsByApplicationIdQuery = null!;
         private AddApiClient.Validator _validator;
 
         [SetUp]
         public void SetUp()
         {
-            _usersContext = new SqlServerUsersContext(
-                new DbContextOptionsBuilder<SqlServerUsersContext>()
-                    .UseInMemoryDatabase(databaseName: $"AddApiClientValidator_{Guid.NewGuid()}")
-                    .Options);
-            _validator = new AddApiClient.Validator(_usersContext);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _usersContext.Dispose();
+            _getApiClientsByApplicationIdQuery = A.Fake<IGetApiClientsByApplicationIdQuery>();
+            A.CallTo(() => _getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(A<int>._, A<string>._)).Returns(false);
+            _validator = new AddApiClient.Validator(_getApiClientsByApplicationIdQuery);
         }
 
         [Test]
@@ -99,24 +89,14 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         [Test]
         public void Should_Have_Error_When_ApplicationId_And_Name_Already_Exist()
         {
-            var vendor = new Vendor { VendorName = "Existing Vendor" };
-            var application = new Application
-            {
-                ApplicationName = "Existing App",
-                Vendor = vendor,
-                OperationalContextUri = "uri"
-            };
-            _usersContext.Applications.Add(application);
-            _usersContext.SaveChanges();
-            _usersContext.ApiClients.Add(new ApiClient(true) { Name = "ValidName", Application = application });
-            _usersContext.SaveChanges();
-
             var model = new AddApiClient.AddApiClientRequest
             {
                 Name = "ValidName",
-                ApplicationId = application.ApplicationId,
+                ApplicationId = 1,
                 DataStoreIds = new[] { 1 }
             };
+            A.CallTo(() => _getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(model.ApplicationId, model.Name)).Returns(true);
+
             var result = _validator.Validate(model);
 
             result.Errors.Any(x => x.ErrorMessage == FeatureConstants.ApiClientCombinedKeyMustBeUnique).ShouldBeTrue();

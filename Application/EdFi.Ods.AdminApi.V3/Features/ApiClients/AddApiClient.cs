@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Options;
@@ -70,11 +71,11 @@ public class AddApiClient : IFeature
 
     public class Validator : AbstractValidator<AddApiClientRequest>
     {
-        private readonly IUsersContext _usersContext;
+        private readonly IGetApiClientsByApplicationIdQuery _getApiClientsByApplicationIdQuery;
 
-        public Validator(IUsersContext usersContext)
+        public Validator(IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery)
         {
-            _usersContext = usersContext;
+            _getApiClientsByApplicationIdQuery = getApiClientsByApplicationIdQuery;
 
             RuleFor(m => m.Name)
              .NotEmpty();
@@ -110,9 +111,7 @@ public class AddApiClient : IFeature
 
         private bool BeUniqueCombinedKey(AddApiClientRequest request)
         {
-            return !_usersContext.ApiClients.Any(
-                c => c.Application.ApplicationId == request.ApplicationId
-                    && c.Name == request.Name);
+            return !_getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(request.ApplicationId, request.Name);
         }
     }
 }

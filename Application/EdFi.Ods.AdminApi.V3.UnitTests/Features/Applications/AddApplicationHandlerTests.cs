@@ -11,6 +11,7 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Features.Applications;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +45,7 @@ public class AddApplicationHandlerTests
         A.CallTo(() => fakeAddCommand.Execute(A<IAddApplicationModel>._, A<IOptions<AppSettings>>._))
             .Returns(new AddApplicationResult { ApplicationId = 1, Key = "k", Secret = "s" });
 
-        var validator = new AddApplication.Validator(ctx);
+        var validator = new AddApplication.Validator(new GetAllApplicationsQuery(ctx, Options()));
         var request = new AddApplication.AddApplicationRequest
         {
             ApplicationName = "App1",
@@ -66,8 +67,9 @@ public class AddApplicationHandlerTests
     [Test]
     public async Task Validator_WhenApplicationNameEmpty_FailsValidation()
     {
-        using var ctx = CreateContext();
-        var validator = new AddApplication.Validator(ctx);
+        var fakeGetAllApplicationsQuery = A.Fake<IGetAllApplicationsQuery>();
+        A.CallTo(() => fakeGetAllApplicationsQuery.ExistsByVendorIdAndName(A<int>._, A<string>._)).Returns(false);
+        var validator = new AddApplication.Validator(fakeGetAllApplicationsQuery);
         var result = await validator.ValidateAsync(new AddApplication.AddApplicationRequest
         {
             ApplicationName = "",
