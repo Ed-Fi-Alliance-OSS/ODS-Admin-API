@@ -42,4 +42,48 @@ public class GetApiClientsByApplicationIdQueryTests
         using var ctx = CreateContext();
         new GetApiClientsByApplicationIdQuery(ctx).Execute(9999).ShouldBeEmpty();
     }
+
+    [Test]
+    public void ExistsByApplicationIdAndName_WhenApplicationIdAndNameMatch_ReturnsTrue()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "C1", Application = app });
+        ctx.SaveChanges();
+
+        new GetApiClientsByApplicationIdQuery(ctx).ExistsByApplicationIdAndName(app.ApplicationId, "C1").ShouldBeTrue();
+    }
+
+    [Test]
+    public void ExistsByApplicationIdAndName_WhenNameMatchesButApplicationIdDoesNot_ReturnsFalse()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        var otherApp = new Application { ApplicationName = "App2", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.Applications.Add(otherApp);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "C1", Application = app });
+        ctx.SaveChanges();
+
+        new GetApiClientsByApplicationIdQuery(ctx).ExistsByApplicationIdAndName(otherApp.ApplicationId, "C1").ShouldBeFalse();
+    }
+
+    [Test]
+    public void ExistsByApplicationIdAndName_WhenNoMatch_ReturnsFalse()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "C1", Application = app });
+        ctx.SaveChanges();
+
+        new GetApiClientsByApplicationIdQuery(ctx).ExistsByApplicationIdAndName(app.ApplicationId, "Nonexistent Client").ShouldBeFalse();
+    }
 }

@@ -9,7 +9,6 @@ using System.Linq;
 using System.Collections.Generic;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -26,11 +25,10 @@ public class AddApplicationCommandTests
         new(new DbContextOptionsBuilder<SqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"AddAppCmdV3_{Guid.NewGuid()}")
             .Options);
-    private static IOptions<AppSettings> Options(bool preventDuplicates = false) =>
+    private static IOptions<AppSettings> Options() =>
         Microsoft.Extensions.Options.Options.Create(new AppSettings
         {
-            DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25,
-            PreventDuplicateApplications = preventDuplicates
+            DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25
         });
 
     [Test]
@@ -50,15 +48,17 @@ public class AddApplicationCommandTests
     }
 
     [Test]
-    public void Execute_WhenPreventDuplicatesAndDuplicateExists_ThrowsAdminApiException()
+    public void Execute_TrimsApplicationNameBeforePersisting()
     {
         using var ctx = CreateContext();
         var vendor = new Vendor { VendorName = "V1" };
         ctx.Vendors.Add(vendor);
         ctx.SaveChanges();
-        var model = new AddApplicationModelStub { ApplicationName = "MyApp", VendorId = vendor.VendorId, ClaimSetName = "CS" };
-        new AddApplicationCommand(ctx).Execute(model, Options());
-        Should.Throw<AdminApiException>(() => new AddApplicationCommand(ctx).Execute(model, Options(preventDuplicates: true)));
+        var result = new AddApplicationCommand(ctx).Execute(new AddApplicationModelStub
+        {
+            ApplicationName = " MyApp ", VendorId = vendor.VendorId, ClaimSetName = "CS"
+        }, Options());
+        ctx.Applications.Single(a => a.ApplicationId == result.ApplicationId).ApplicationName.ShouldBe("MyApp");
     }
 
     private class AddApplicationModelStub : IAddApplicationModel

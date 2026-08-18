@@ -6,6 +6,8 @@
 using System.Linq;
 using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Ods.AdminApi.V3.Features.Applications;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
 
@@ -14,12 +16,15 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
     [TestFixture]
     public class AddApplicationValidatorTests
     {
+        private IGetApplicationsByVendorIdQuery _getApplicationsByVendorIdQuery = null!;
         private AddApplication.Validator _validator = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _validator = new AddApplication.Validator();
+            _getApplicationsByVendorIdQuery = A.Fake<IGetApplicationsByVendorIdQuery>();
+            A.CallTo(() => _getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(A<int>._, A<string>._)).Returns(false);
+            _validator = new AddApplication.Validator(_getApplicationsByVendorIdQuery);
         }
 
         [TestCase("claimset name")]
@@ -50,6 +55,31 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
             result.Errors.Any(x => x.PropertyName == nameof(request.ClaimSetName)
                 && x.ErrorMessage == FeatureConstants.ClaimSetNameNoWhitespaceMessage)
                 .ShouldBeFalse();
+        }
+
+        [Test]
+        public void Should_Have_Error_When_VendorId_And_ApplicationName_Already_Exist()
+        {
+            var request = ValidRequest();
+            A.CallTo(() => _getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName)).Returns(true);
+
+            var result = _validator.Validate(request);
+
+            result.Errors.Any(x => x.ErrorMessage == FeatureConstants.ApplicationCombinedKeyMustBeUnique)
+                .ShouldBeTrue();
+        }
+
+        [Test]
+        public void Should_Have_Error_When_VendorId_And_ApplicationName_Already_Exist_With_Leading_Or_Trailing_Whitespace()
+        {
+            var request = ValidRequest();
+            A.CallTo(() => _getApplicationsByVendorIdQuery.ExistsByVendorIdAndName(request.VendorId, request.ApplicationName)).Returns(true);
+            request.ApplicationName = $" {request.ApplicationName} ";
+
+            var result = _validator.Validate(request);
+
+            result.Errors.Any(x => x.ErrorMessage == FeatureConstants.ApplicationCombinedKeyMustBeUnique)
+                .ShouldBeTrue();
         }
 
         private static AddApplication.AddApplicationRequest ValidRequest()

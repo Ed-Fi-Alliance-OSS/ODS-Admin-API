@@ -41,6 +41,15 @@ GET {{adminapi_url}}/v3/claimSets
 Content-Type: application/json
 Authorization: bearer {{token}}
 
+### Create claimset V3 - send twice to test duplicate-name rejection (reference: ClaimSets already enforce this; second call should return 400, "already exists")
+POST {{adminapi_url}}/v3/claimSets
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "ClaimSetDuplicateTest"
+}
+
 ### Import claimset V3
 # @name importClaimSetV3
 POST {{adminapi_url}}/v3/claimSets/import

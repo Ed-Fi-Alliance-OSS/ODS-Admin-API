@@ -1,0 +1,175 @@
+meta {
+  name: ApiClients - Invalid Existing Name
+  type: http
+  seq: 5.5
+}
+
+post {
+  url: {{API_URL}}/v3/apiClients
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Existing ApiClient Name",
+    "isApproved": true,
+    "applicationId": {{ExistingApiClientApplicationId}},
+    "dataStoreIds": [
+      {{DataStoreId}}
+    ]
+  }
+}
+
+script:pre-request {
+  console.log("🔧 Setting pre environment to ignore SSL certificates...");
+
+  // Safely set Node.js environment variable if available (CLI only)
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  // Generate unique identifiers to avoid conflicts
+  const timestamp = Date.now();
+  const uniqueId = Math.random().toString(36).substring(2, 8);
+
+  // Configure axios to handle SSL and network issues
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  // Add tenant header if multitenant mode is enabled
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    // Create a vendor for the application under test
+    const vendorResponse = await axios.post(`${API_URL}/v3/vendors`, {
+      "company": `Existing ApiClient Vendor ${timestamp}`,
+      "namespacePrefixes": "uri://ed-fi.org",
+      "contactName": `Existing ApiClient User ${uniqueId}`,
+      "contactEmailAddress": `existingapiclient-${uniqueId}@example.com`
+    }, axiosConfig);
+
+    if (vendorResponse.status === 201 && vendorResponse.headers && vendorResponse.headers.location) {
+      const vendorId = vendorResponse.headers.location.split("/").pop();
+      bru.setVar("ExistingApiClientVendorId", vendorId);
+      console.log("✅ Vendor created successfully with ID:", vendorId);
+    } else {
+      console.log("❌ Failed to create vendor:");
+      console.log("Status:", vendorResponse.status);
+      console.log("Response data:", JSON.stringify(vendorResponse.data, null, 2));
+      throw new Error(`Failed to create vendor - Status: ${vendorResponse.status}, Data: ${JSON.stringify(vendorResponse.data)}`);
+    }
+
+    // Get first DataStore
+    const odsResponse = await axios.get(`${API_URL}/v3/dataStores?offset=0&limit=1`, axiosConfig);
+
+    if (odsResponse.status === 200 && odsResponse.data && odsResponse.data.length > 0 && odsResponse.data[0].id) {
+      bru.setVar("DataStoreId", odsResponse.data[0].id);
+      console.log("✅ DataStore found with ID:", odsResponse.data[0].id);
+    } else {
+      console.log("❌ Failed to get DataStore:");
+      console.log("Status:", odsResponse.status);
+      console.log("Response data:", JSON.stringify(odsResponse.data, null, 2));
+      throw new Error(`Failed to get DataStore - Status: ${odsResponse.status}, Data: ${JSON.stringify(odsResponse.data)}`);
+    }
+
+    // Create a claimset without spaces
+    const claimSetName = `ExistingApiClientClaimSet-${timestamp}`;
+    const claimSetResp = await axios.post(`${API_URL}/v3/claimSets`, {
+      "name": claimSetName
+    }, axiosConfig);
+    if (claimSetResp.status === 201) {
+      console.log("✅ ClaimSet created successfully:", claimSetName);
+    } else {
+      throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
+    }
+
+    // Create application
+    const applicationResponse = await axios.post(`${API_URL}/v3/applications`, {
+      "applicationName": `Existing ApiClient Application ${uniqueId}`,
+      "vendorId": bru.getVar("ExistingApiClientVendorId"),
+      "claimSetName": claimSetName,
+      "profileIds": [],
+      "educationOrganizationIds": [255901],
+      "dataStoreIds": [bru.getVar("DataStoreId")],
+      "enabled": true
+    }, axiosConfig);
+
+    if (applicationResponse.status === 201 && applicationResponse.headers && applicationResponse.headers.location) {
+      const applicationId = applicationResponse.headers.location.split("/").pop();
+      bru.setVar("ExistingApiClientApplicationId", applicationId);
+      console.log("✅ Application created successfully with ID:", applicationId);
+    } else {
+      console.log("❌ Failed to create application:");
+      console.log("Status:", applicationResponse.status);
+      console.log("Response data:", JSON.stringify(applicationResponse.data, null, 2));
+      throw new Error(`Failed to create application - Status: ${applicationResponse.status}, Data: ${JSON.stringify(applicationResponse.data)}`);
+    }
+
+    // Create the ApiClient once so the main request collides with it
+    const apiClientResponse = await axios.post(`${API_URL}/v3/apiClients`, {
+      "name": "Existing ApiClient Name",
+      "isApproved": true,
+      "applicationId": bru.getVar("ExistingApiClientApplicationId"),
+      "dataStoreIds": [bru.getVar("DataStoreId")]
+    }, axiosConfig);
+
+    if (apiClientResponse.status === 201) {
+      console.log("✅ ApiClient created successfully");
+    } else {
+      console.log("❌ Failed to create ApiClient:");
+      console.log("Status:", apiClientResponse.status);
+      console.log("Response data:", JSON.stringify(apiClientResponse.data, null, 2));
+      throw new Error(`Failed to create ApiClient - Status: ${apiClientResponse.status}, Data: ${JSON.stringify(apiClientResponse.data)}`);
+    }
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+}
+
+script:post-response {
+  test("POST ApiClients Invalid Existing Name: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  test("POST ApiClients Invalid Existing Name: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("errors");
+  });
+
+  test("POST ApiClients Invalid Existing Name: Response title is helpful and accurate", function () {
+      expect(response.title.toLowerCase()).to.contain("validation");
+  });
+
+  test("POST ApiClients Invalid Existing Name: Response errors include combined-key message", function () {
+      expect(response.errors[""]).to.be.an("array").that.includes("An ApiClient with this name already exists for this application. Please enter a unique name.");
+  });
+
+  test("POST ApiClients Invalid Existing Name: type URN is correct", function () {
+      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:validation");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

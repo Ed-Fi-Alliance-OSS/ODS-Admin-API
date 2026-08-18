@@ -4,8 +4,10 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Linq;
+using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Ods.AdminApi.V3.Features.Vendors;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using FakeItEasy;
 using NUnit.Framework;
 using Shouldly;
 
@@ -14,12 +16,15 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
     [TestFixture]
     public class AddVendorValidatorTests
     {
+        private IGetVendorsQuery _getVendorsQuery = null!;
         private AddVendor.Validator _validator = null!;
 
         [SetUp]
         public void SetUp()
         {
-            _validator = new AddVendor.Validator();
+            _getVendorsQuery = A.Fake<IGetVendorsQuery>();
+            A.CallTo(() => _getVendorsQuery.ExistsByName(A<string>._)).Returns(false);
+            _validator = new AddVendor.Validator(_getVendorsQuery);
         }
 
         [Test]
@@ -75,6 +80,33 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
             var result = _validator.Validate(request);
 
             result.Errors.Any(x => x.PropertyName == nameof(request.NamespacePrefixes)).ShouldBeTrue();
+        }
+
+        [Test]
+        public void Should_Have_Error_When_Company_Already_Exists()
+        {
+            var request = ValidRequest();
+            A.CallTo(() => _getVendorsQuery.ExistsByName(request.Company)).Returns(true);
+
+            var result = _validator.Validate(request);
+
+            result.Errors.Any(x => x.PropertyName == nameof(request.Company)
+                && x.ErrorMessage == FeatureConstants.VendorAlreadyExistsMessage)
+                .ShouldBeTrue();
+        }
+
+        [Test]
+        public void Should_Have_Error_When_Company_Already_Exists_With_Leading_Or_Trailing_Whitespace()
+        {
+            var request = ValidRequest();
+            A.CallTo(() => _getVendorsQuery.ExistsByName(request.Company)).Returns(true);
+            request.Company = $" {request.Company} ";
+
+            var result = _validator.Validate(request);
+
+            result.Errors.Any(x => x.PropertyName == nameof(request.Company)
+                && x.ErrorMessage == FeatureConstants.VendorAlreadyExistsMessage)
+                .ShouldBeTrue();
         }
 
         [Test]

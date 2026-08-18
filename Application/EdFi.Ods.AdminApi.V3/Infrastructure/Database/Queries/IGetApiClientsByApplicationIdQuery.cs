@@ -11,5 +11,6 @@ namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 public interface IGetApiClientsByApplicationIdQuery
 {
     IReadOnlyList<ApiClient> Execute(int applicationId);
+    bool ExistsByApplicationIdAndName(int applicationId, string? name);
 }
 

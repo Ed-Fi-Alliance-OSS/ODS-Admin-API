@@ -10,7 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 
-public class GetApplicationsByVendorIdQuery
+public interface IGetApplicationsByVendorIdQuery
+{
+    List<Application> Execute(int vendorid);
+    bool ExistsByVendorIdAndName(int vendorId, string? applicationName);
+}
+
+public class GetApplicationsByVendorIdQuery : IGetApplicationsByVendorIdQuery
 {
     private readonly IUsersContext _context;
 
@@ -35,6 +41,12 @@ public class GetApplicationsByVendorIdQuery
         }
 
         return applications;
+    }
+
+    public bool ExistsByVendorIdAndName(int vendorId, string? applicationName)
+    {
+        return _context.Applications.Any(
+            a => a.Vendor != null && a.Vendor.VendorId == vendorId && a.ApplicationName == applicationName);
     }
 }
 

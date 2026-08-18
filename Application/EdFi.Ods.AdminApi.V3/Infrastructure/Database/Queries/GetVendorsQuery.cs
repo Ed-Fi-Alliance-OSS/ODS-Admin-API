@@ -21,6 +21,7 @@ public interface IGetVendorsQuery
 {
     List<Vendor> Execute();
     List<Vendor> Execute(CommonQueryParams commonQueryParams, int? id, string? company, string? namespacePrefixes, string? contactName, string? contactEmailAddress);
+    bool ExistsByName(string? company);
 }
 
 public class GetVendorsQuery : IGetVendorsQuery
@@ -82,6 +83,11 @@ public class GetVendorsQuery : IGetVendorsQuery
             .OrderByColumn(columnToOrderBy, commonQueryParams.IsDescending)
             .Paginate(commonQueryParams.Offset, commonQueryParams.Limit, _options)
             .ToList();
+    }
+
+    public bool ExistsByName(string? company)
+    {
+        return _context.Vendors.Any(v => v.VendorName == company);
     }
 }
 

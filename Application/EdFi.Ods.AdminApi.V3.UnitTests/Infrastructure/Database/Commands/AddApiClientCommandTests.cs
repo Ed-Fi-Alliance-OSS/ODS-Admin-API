@@ -42,6 +42,19 @@ public class AddApiClientCommandTests
         ctx.ApiClients.Count().ShouldBe(1);
     }
 
+    [Test]
+    public void Execute_TrimsNameBeforePersisting()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.SaveChanges();
+        var result = new AddApiClientCommand(ctx).Execute(new AddApiClientModelStub { Name = " Client1 ", IsApproved = true, ApplicationId = app.ApplicationId }, DefaultOptions());
+        ctx.ApiClients.Single(c => c.ApiClientId == result.Id).Name.ShouldBe("Client1");
+    }
+
     private class AddApiClientModelStub : IAddApiClientModel
     {
         public string Name { get; init; } = string.Empty;

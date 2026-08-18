@@ -11,6 +11,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Options;
@@ -70,9 +71,12 @@ public class AddApiClient : IFeature
 
     public class Validator : AbstractValidator<AddApiClientRequest>
     {
-        //Since this is a PoC, we are not implementing the full validation logic.
-        public Validator()
+        private readonly IGetApiClientsByApplicationIdQuery _getApiClientsByApplicationIdQuery;
+
+        public Validator(IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery)
         {
+            _getApiClientsByApplicationIdQuery = getApiClientsByApplicationIdQuery;
+
             RuleFor(m => m.Name)
              .NotEmpty();
 
@@ -88,6 +92,10 @@ public class AddApiClient : IFeature
                 .NotEmpty()
                 .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
+            RuleFor(m => m)
+                .Must(BeUniqueCombinedKey)
+                .WithMessage(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
+
             static bool BeWithinApiClientNameMaxLength<T>(IAddApiClientModel model, string? name, ValidationContext<T> context)
             {
                 var extraCharactersInName = name!.Length - ValidationConstants.MaximumApiClientNameLength;
@@ -99,6 +107,11 @@ public class AddApiClient : IFeature
                 context.MessageFormatter.AppendArgument("ExtraCharactersInName", extraCharactersInName);
                 return false;
             }
+        }
+
+        private bool BeUniqueCombinedKey(AddApiClientRequest request)
+        {
+            return !_getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(request.ApplicationId, request.Name?.Trim());
         }
     }
 }

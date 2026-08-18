@@ -69,7 +69,18 @@ Authorization: bearer {{token}}
 
 {
   "name": "profile1",
-  "definition": "<Profile name=\"profile1\"><Resource name=\"School\"><ReadContentType memberSelection=\"ExcludeOnly\"><Property name=\"NameOfInstitution\" /><Property name=\"OperationalStatusDescriptor\" />  <Property name=\"CharterApprovalSchoolYearTypeReference\" /><Property name=\"SchoolType\" /><Property name=\"AdministrativeFundingControlDescriptor\" /><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeAll\" /><Collection name=\"SchoolCategories\" memberSelection=\"IncludeAll\" /></ReadContentType></Resource></Profile>" 
+  "definition": "<Profile name=\"profile1\"><Resource name=\"School\"><ReadContentType memberSelection=\"ExcludeOnly\"><Property name=\"NameOfInstitution\" /><Property name=\"OperationalStatusDescriptor\" />  <Property name=\"CharterApprovalSchoolYearTypeReference\" /><Property name=\"SchoolType\" /><Property name=\"AdministrativeFundingControlDescriptor\" /><Collection name=\"EducationOrganizationAddresses\" memberSelection=\"IncludeAll\" /><Collection name=\"SchoolCategories\" memberSelection=\"IncludeAll\" /></ReadContentType></Resource></Profile>"
+}
+
+
+### Create profile V3 - send twice to test duplicate-name rejection (reference: Profiles already enforce this; second call should return 400, "already exists")
+POST {{adminapi_url}}/v3/profiles
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "profileV3DuplicateTest",
+  "definition": "<Profile name=\"profileV3DuplicateTest\"><Resource name=\"School\"><ReadContentType memberSelection=\"ExcludeOnly\"><Property name=\"NameOfInstitution\" /></ReadContentType></Resource></Profile>"
 }
 
 

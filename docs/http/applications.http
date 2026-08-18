@@ -1,0 +1,94 @@
+# This file is intended for use with Admin API 3 (V3) running against a
+# local ODS/API instance. Update the vendorId/claimSetName/dataStoreIds
+# values below to match IDs that exist in your environment - use the GET
+# requests to look them up.
+
+@adminapi_url=https://localhost:7214
+@adminapi_client=adminapi_client
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+
+### Register a new client
+POST {{adminapi_url}}/connect/register
+Content-Type: application/x-www-form-urlencoded
+
+ClientId={{adminapi_client}}&ClientSecret={{adminapi_secret}}&DisplayName=Admin+API+{{adminapi_client}}
+
+### Get a token
+# @name tokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@token={{tokenRequest.response.body.access_token}}
+
+
+### Get vendors (grab a vendorId to use below)
+GET {{adminapi_url}}/v3/vendors
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### Get data stores (grab a dataStoreId to use below)
+GET {{adminapi_url}}/v3/dataStores
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### Get claim sets (grab a claimSetName to use below)
+GET {{adminapi_url}}/v3/claimSets
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### Create an Application - send twice to test duplicate (VendorId, ApplicationName) rejection (ADMINAPI-1483: second call should return 400, "already exists for this vendor")
+# @name createApplication
+POST {{adminapi_url}}/v3/applications
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "applicationName": "Application Duplicate Test",
+  "vendorId": 992,
+  "claimSetName": "Bootstrap Descriptors and EdOrgs",
+  "educationOrganizationIds": [1],
+  "dataStoreIds": [
+    2224
+  ]
+}
+
+
+### Get application
+GET {{createApplication.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### Update Application
+PUT {{createApplication.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "applicationName": "Application Duplicate Test - updated",
+  "vendorId": 992,
+  "claimSetName": "Bootstrap Descriptors and EdOrgs",
+  "educationOrganizationIds": [1],
+  "dataStoreIds": [
+    2224
+  ]
+}
+
+
+### Reset application secret
+PUT {{createApplication.response.headers.Location}}/reset-credential
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+
+### Delete application
+DELETE {{createApplication.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}

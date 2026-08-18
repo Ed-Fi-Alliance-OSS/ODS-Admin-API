@@ -3,14 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Net;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
-using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -32,17 +28,6 @@ public class AddApplicationCommand : IAddApplicationCommand
 
     public AddApplicationResult Execute(IAddApplicationModel applicationModel, IOptions<AppSettings> options)
     {
-        if (options.Value.PreventDuplicateApplications)
-        {
-            ValidateApplicationExistsQuery validateApplicationExists = new ValidateApplicationExistsQuery(_usersContext);
-            bool applicationExists = validateApplicationExists.Execute(applicationModel);
-            if (applicationExists)
-            {
-                var adminApiException = new AdminApiException("The Application already exists");
-                adminApiException.StatusCode = HttpStatusCode.Conflict;
-                throw adminApiException;
-            }
-        }
         var profiles = applicationModel.ProfileIds != null
            ? _usersContext.Profiles.Where(p => applicationModel.ProfileIds!.Contains(p.ProfileId))
            : null;
@@ -58,7 +43,7 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         var apiClient = new ApiClient(true)
         {
-            Name = applicationModel.ApplicationName,
+            Name = applicationModel.ApplicationName?.Trim(),
             IsApproved = applicationModel.Enabled ?? true,
             UseSandbox = false,
             KeyStatus = "Active",
@@ -75,7 +60,7 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         var application = new Application
         {
-            ApplicationName = applicationModel.ApplicationName,
+            ApplicationName = applicationModel.ApplicationName?.Trim(),
             ApiClients = new List<ApiClient> { apiClient },
             ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>(applicationEdOrgs),
             ClaimSetName = applicationModel.ClaimSetName,

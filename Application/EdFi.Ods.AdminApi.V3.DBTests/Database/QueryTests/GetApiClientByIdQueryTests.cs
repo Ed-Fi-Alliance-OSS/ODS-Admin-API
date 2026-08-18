@@ -5,10 +5,8 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
-using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
 using System;
@@ -25,14 +23,11 @@ internal class GetApiClientByIdQueryTests : PlatformUsersContextTestBase
 {
     protected override string AdminConnectionString => Testing.AdminConnectionString;
 
-    private IOptions<AppSettings> _options { get; set; }
     private int secondApiClientId = 0;
 
     [SetUp]
     public virtual async Task FixtureSetup()
     {
-        _options = Testing.GetAppSettings();
-        _options.Value.PreventDuplicateApplications = false;
         LoadApiClients();
         await Task.Yield();
     }

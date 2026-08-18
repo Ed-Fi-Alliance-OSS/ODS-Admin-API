@@ -220,6 +220,40 @@ public class GetVendorsQueryTests
     }
 
     [Test]
+    public void ExistsByName_WhenVendorNameMatches_ReturnsTrue()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        usersContext.Vendors.Add(new Vendor { VendorName = "Acme Vendor" });
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        query.ExistsByName("Acme Vendor").ShouldBeTrue();
+    }
+
+    [Test]
+    public void ExistsByName_WhenNoVendorMatches_ReturnsFalse()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"GetVendorsQuery_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        usersContext.Vendors.Add(new Vendor { VendorName = "Acme Vendor" });
+        usersContext.SaveChanges();
+
+        var options = Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });
+        var query = new GetVendorsQuery(usersContext, options);
+
+        query.ExistsByName("Nonexistent Vendor").ShouldBeFalse();
+    }
+
+    [Test]
     public void Execute_WithSqlServerDatabaseEngine_ReturnsVendors()
     {
         var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()

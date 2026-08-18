@@ -29,6 +29,12 @@ public class GetApiClientsByApplicationIdQuery : IGetApiClientsByApplicationIdQu
 
         return apiClients.ToReadOnlyList();
     }
+
+    public bool ExistsByApplicationIdAndName(int applicationId, string? name)
+    {
+        return _context.ApiClients.Any(
+            c => c.Application.ApplicationId == applicationId && c.Name == name);
+    }
 }
 
 

@@ -8,6 +8,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
+using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FluentValidation;
@@ -52,18 +53,31 @@ public class AddVendor : IFeature
 
     public class Validator : AbstractValidator<AddVendorRequest>
     {
-        public Validator()
+        private readonly IGetVendorsQuery _getVendorsQuery;
+
+        public Validator(IGetVendorsQuery getVendorsQuery)
         {
+            _getVendorsQuery = getVendorsQuery;
+
             RuleFor(m => m.Company).NotEmpty();
             RuleFor(m => m.Company)
                 .Must(name => !VendorExtensions.IsSystemReservedVendorName(name))
                 .WithMessage(p => $"'{p.Company}' is a reserved name and may not be used. Please choose another name.");
+
+            RuleFor(m => m.Company)
+                .Must(BeAUniqueName)
+                .WithMessage(FeatureConstants.VendorAlreadyExistsMessage);
 
             RuleFor(m => m.ContactName).NotEmpty();
             RuleFor(m => m.ContactEmailAddress).NotEmpty().EmailAddress();
 
             RuleFor(m => m.NamespacePrefixes).Must((vendorNamespacePrefixes) => HaveACorrectLength(vendorNamespacePrefixes))
                 .WithMessage(p => $"'{p.NamespacePrefixes}' exceeds maximum length");
+        }
+
+        private bool BeAUniqueName(string? company)
+        {
+            return !_getVendorsQuery.ExistsByName(company?.Trim());
         }
 
         private bool HaveACorrectLength(string? vendorNamespacePrefixes)
