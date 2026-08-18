@@ -7,8 +7,7 @@
 set -e
 
 ORIGINAL_ENTRYPOINT="/usr/local/bin/docker-entrypoint.sh"
-MIGRATIONS_SCRIPT="/usr/local/share/adminapi-init/3-run-adminapi-migrations.sh"
-BASE_BOOTSTRAP_SCRIPT="/usr/local/share/adminapi-init/1-init-database.sh"
+INITDB_DIR="/docker-entrypoint-initdb.d"
 POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 POSTGRES_USER="${POSTGRES_USER:-postgres}"
 PGDATA_DIR="${PGDATA:-/var/lib/postgresql/data}"
@@ -27,8 +26,15 @@ if [ ! -s "$PGDATA_DIR/PG_VERSION" ]; then
     sleep 1
   done
 
-  sh "$BASE_BOOTSTRAP_SCRIPT"
-  sh "$MIGRATIONS_SCRIPT"
+  # Run every script under /docker-entrypoint-initdb.d/, sorted lexicographically,
+  # the same way the vanilla Postgres entrypoint scans that directory on first init.
+  # This image's own init scripts (1-init-database.sh, 3-run-adminapi-migrations.sh)
+  # live here under their numeric prefixes so any script a downstream consumer mounts
+  # alongside them (e.g. Ed-Fi-AdminApp's 2-bootstrap.sh, which seeds tenant
+  # OdsInstances rows) sorts in between them and runs in the intended order.
+  for f in "$INITDB_DIR"/*.sh; do
+    [ -f "$f" ] && sh "$f"
+  done
 
   wait "$postgres_pid"
   exit $?

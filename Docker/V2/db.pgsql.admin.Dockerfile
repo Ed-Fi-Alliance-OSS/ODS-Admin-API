@@ -42,8 +42,8 @@ LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 USER root
 
 COPY --from=prep /tmp/entrypoint.sh /usr/local/bin/adminapi-db-entrypoint.sh
-COPY --from=prep /tmp/1-init-database.sh /usr/local/share/adminapi-init/1-init-database.sh
-COPY --from=prep /tmp/3-run-adminapi-migrations.sh /usr/local/share/adminapi-init/3-run-adminapi-migrations.sh
+COPY --from=prep /tmp/1-init-database.sh /docker-entrypoint-initdb.d/1-init-database.sh
+COPY --from=prep /tmp/3-run-adminapi-migrations.sh /docker-entrypoint-initdb.d/3-run-adminapi-migrations.sh
 COPY --from=prep /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
 COPY --from=prep /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
 COPY --from=prep /tmp/AdminApiScripts /tmp/AdminApiScripts
