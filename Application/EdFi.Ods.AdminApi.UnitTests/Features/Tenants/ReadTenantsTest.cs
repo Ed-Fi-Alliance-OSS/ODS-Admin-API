@@ -3,7 +3,9 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using EdFi.Ods.AdminApi.Common.Features.Tenants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.OdsInstances;
@@ -13,6 +15,7 @@ using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -36,6 +39,82 @@ public class ReadTenantsTest
         _getOdsInstanceManagesQuery = A.Fake<IGetOdsInstanceManagesQuery>();
         A.CallTo(() => _getOdsInstanceManagesQuery.Execute(A<CommonQueryParams>._, A<int?>._, A<string>.Ignored))
             .Returns([]);
+    }
+
+    [Test]
+    public async Task GetTenantsAsync_ReturnsOk_WithMappedConnectionStrings()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "PostgreSql", MultiTenancy = true });
+
+        var tenants = new List<TenantModel>
+        {
+            new()
+            {
+                TenantName = "tenant1",
+                ConnectionStrings = new TenantModelConnectionStrings(
+                    "Host=admin-host;Database=admin-db;",
+                    "Host=security-host;Database=security-db;")
+            }
+        };
+        A.CallTo(() => tenantsService.GetTenantsAsync(true)).Returns(tenants);
+
+        var result = await ReadTenants.GetTenantsAsync(tenantsService, memoryCache, options);
+
+        var ok = result as Ok<List<TenantsResponse>>;
+        ok.ShouldNotBeNull();
+        ok.Value.ShouldNotBeNull();
+        ok.Value.Count.ShouldBe(1);
+        ok.Value[0].TenantName.ShouldBe("tenant1");
+        ok.Value[0].AdminConnectionString!.host.ShouldBe("admin-host");
+        ok.Value[0].AdminConnectionString!.database.ShouldBe("admin-db");
+        ok.Value[0].SecurityConnectionString!.host.ShouldBe("security-host");
+        ok.Value[0].SecurityConnectionString!.database.ShouldBe("security-db");
+    }
+
+    [Test]
+    public async Task GetTenantsByTenantIdAsync_ReturnsOk_WhenTenantExists()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "PostgreSql", MultiTenancy = true });
+
+        var tenant = new TenantModel
+        {
+            TenantName = "tenant1",
+            ConnectionStrings = new TenantModelConnectionStrings(
+                "Host=admin-host;Database=admin-db;",
+                "Host=security-host;Database=security-db;")
+        };
+        A.CallTo(() => tenantsService.GetTenantByTenantIdAsync("tenant1")).Returns(tenant);
+
+        var result = await ReadTenants.GetTenantsByTenantIdAsync(tenantsService, memoryCache, "tenant1", options);
+
+        var ok = result as Ok<TenantsResponse>;
+        ok.ShouldNotBeNull();
+        ok.Value.ShouldNotBeNull();
+        ok.Value!.TenantName.ShouldBe("tenant1");
+        ok.Value.AdminConnectionString!.host.ShouldBe("admin-host");
+        ok.Value.AdminConnectionString!.database.ShouldBe("admin-db");
+        ok.Value.SecurityConnectionString!.host.ShouldBe("security-host");
+        ok.Value.SecurityConnectionString!.database.ShouldBe("security-db");
+    }
+
+    [Test]
+    public async Task GetTenantsByTenantIdAsync_ReturnsNotFound_WhenTenantDoesNotExist()
+    {
+        var tenantsService = A.Fake<ITenantsService>();
+        var memoryCache = A.Fake<IMemoryCache>();
+        var options = A.Fake<IOptions<AppSettings>>();
+        A.CallTo(() => options.Value).Returns(new AppSettings { DatabaseEngine = "Postgres", MultiTenancy = true });
+        A.CallTo(() => tenantsService.GetTenantByTenantIdAsync("notfound")).Returns((TenantModel)null!);
+
+        var result = await ReadTenants.GetTenantsByTenantIdAsync(tenantsService, memoryCache, "notfound", options);
+
+        result.ShouldBeOfType<NotFound>();
     }
 
     [Test]

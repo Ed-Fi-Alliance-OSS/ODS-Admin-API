@@ -5,8 +5,10 @@
 
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
+using EdFi.Ods.AdminApi.Common.Features.Tenants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
@@ -24,9 +26,105 @@ public class ReadTenants : IFeature
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder
+            .MapGet(endpoints, "/tenants", GetTenantsAsync)
+            .WithRouteOptions(b => b.WithResponse<List<TenantsResponse>>(200))
+            .BuildForVersions(AdminApiVersions.V2);
+
+        AdminApiEndpointBuilder
+            .MapGet(endpoints, "/tenants/{tenantName}", GetTenantsByTenantIdAsync)
+            .WithRouteOptions(b => b.WithResponse<TenantsResponse>(200))
+            .BuildForVersions(AdminApiVersions.V2);
+
+        AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}/odsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
             .WithRouteOptions(b => b.WithResponse<TenantDetailsResponse>(200))
             .BuildForVersions(AdminApiVersions.V2);
+    }
+
+    public static async Task<IResult> GetTenantsAsync(
+        [FromServices] ITenantsService tenantsService,
+        IMemoryCache memoryCache,
+        IOptions<AppSettings> options
+    )
+    {
+        var _databaseEngine =
+            options.Value.DatabaseEngine
+            ?? throw new NotFoundException<string>("AppSettings", "DatabaseEngine");
+
+        var tenants = await tenantsService.GetTenantsAsync(true);
+
+        var response = tenants
+            .Select(t =>
+            {
+                var adminHostAndDatabase = ConnectionStringHelper.GetHostAndDatabase(
+                    _databaseEngine,
+                    t.ConnectionStrings.EdFiAdminConnectionString
+                );
+                var securityHostAndDatabase = ConnectionStringHelper.GetHostAndDatabase(
+                    _databaseEngine,
+                    t.ConnectionStrings.EdFiSecurityConnectionString
+                );
+
+                return new TenantsResponse
+                {
+                    TenantName = t.TenantName,
+                    AdminConnectionString = new EdfiConnectionString()
+                    {
+                        host = adminHostAndDatabase.Host,
+                        database = adminHostAndDatabase.Database
+                    },
+                    SecurityConnectionString = new EdfiConnectionString()
+                    {
+                        host = securityHostAndDatabase.Host,
+                        database = securityHostAndDatabase.Database
+                    }
+                };
+            })
+            .ToList();
+
+        return Results.Ok(response);
+    }
+
+    public static async Task<IResult> GetTenantsByTenantIdAsync(
+        [FromServices] ITenantsService tenantsService,
+        IMemoryCache memoryCache,
+        string tenantName,
+        IOptions<AppSettings> options
+    )
+    {
+        var _databaseEngine =
+            options.Value.DatabaseEngine
+            ?? throw new NotFoundException<string>("AppSettings", "DatabaseEngine");
+
+        var tenant = await tenantsService.GetTenantByTenantIdAsync(tenantName);
+        if (tenant is null)
+            return Results.NotFound();
+
+        var adminHostAndDatabase = ConnectionStringHelper.GetHostAndDatabase(
+            _databaseEngine,
+            tenant.ConnectionStrings.EdFiAdminConnectionString
+        );
+        var securityHostAndDatabase = ConnectionStringHelper.GetHostAndDatabase(
+            _databaseEngine,
+            tenant.ConnectionStrings.EdFiSecurityConnectionString
+        );
+
+        return Results.Ok(
+            new TenantsResponse
+            {
+                TenantName = tenant.TenantName,
+                AdminConnectionString = new EdfiConnectionString()
+                {
+                    host = adminHostAndDatabase.Host,
+                    database = adminHostAndDatabase.Database
+                },
+                SecurityConnectionString = new EdfiConnectionString()
+                {
+                    host = securityHostAndDatabase.Host,
+                    database = securityHostAndDatabase.Database
+                }
+            }
+        );
     }
 
     public static async Task<IResult> GetTenantEdOrgsByInstancesAsync(
@@ -89,4 +187,17 @@ public class TenantDetailsResponse
     public string? Id { get; set; }
     public string? Name { get; set; }
     public List<TenantOdsInstanceModel>? OdsInstances { get; set; }
+}
+
+public class TenantsResponse
+{
+    public string? TenantName { get; set; }
+    public EdfiConnectionString? AdminConnectionString { get; set; }
+    public EdfiConnectionString? SecurityConnectionString { get; set; }
+}
+
+public class EdfiConnectionString
+{
+    public string? host { get; set; }
+    public string? database { get; set; }
 }
