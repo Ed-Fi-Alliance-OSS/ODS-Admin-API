@@ -32,7 +32,9 @@ public class ReadTenants : IFeature
 
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}", GetTenantsByTenantIdAsync)
-            .WithRouteOptions(b => b.WithResponse<TenantsResponse>(200))
+            .WithRouteOptions(b => b
+                .WithResponse<TenantsResponse>(200)
+                .WithResponseCode(404, "Not found. A resource with given identifier could not be found."))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder

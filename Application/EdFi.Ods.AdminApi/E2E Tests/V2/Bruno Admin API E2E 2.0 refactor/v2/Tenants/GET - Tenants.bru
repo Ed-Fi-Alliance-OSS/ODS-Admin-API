@@ -20,41 +20,39 @@ script:post-response {
   const ajv = new Ajv();
   const GetTenantsSchema = {
     "type": "array",
-    "items": [
-      {
-        "type": "object",
-        "properties": {
-          "tenantName": {
-            "type": "string"
-          },
-          "adminConnectionString": {
-            "type": "object",
-            "properties": {
-              "host": {
-                "type": "string"
-              },
-              "database": {
-                "type": "string"
-              }
+    "items": {
+      "type": "object",
+      "properties": {
+        "tenantName": {
+          "type": "string"
+        },
+        "adminConnectionString": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
             },
+            "database": {
+              "type": "string"
+            }
           },
-          "securityConnectionString": {
-            "type": "object",
-            "properties": {
-              "host": {
-                "type": "string"
-              },
-              "database": {
-                "type": "string"
-              }
+        },
+        "securityConnectionString": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "database": {
+              "type": "string"
             }
           }
-        },
-        "required": [
-          "tenantName"
-        ]
-      }
-    ]
+        }
+      },
+      "required": [
+        "tenantName"
+      ]
+    }
   }
 
   test("GET Tenants: Validation Schema Response", () => {
