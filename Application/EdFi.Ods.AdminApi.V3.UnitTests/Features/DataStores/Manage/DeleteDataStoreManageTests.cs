@@ -108,7 +108,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(2));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("provisioned"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage is being provisioned"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -126,7 +126,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(3));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("provisioned"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage is currently being provisioned"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -144,7 +144,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(4));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("creation failed"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage creation failed. It will be retried automatically"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -162,7 +162,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(5));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("creation failed permanently"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage creation failed permanently"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -180,7 +180,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(6));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("queued for deletion"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage is already queued for deletion"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -198,7 +198,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(7));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("currently being deleted"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage is currently being deleted"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -216,7 +216,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(8));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("retried automatically"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage deletion failed. It will be retried automatically"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
@@ -234,7 +234,7 @@ public class DeleteDataStoreManageTests
 
         var ex = await Should.ThrowAsync<ValidationException>(() => Handle(9));
 
-        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("deletion failed permanently"));
+        ex.Errors.ShouldContain(e => e.ErrorMessage.Contains("DataStoreManage deletion failed permanently"));
         A.CallTo(() => _deleteDataStoreManageCommand.Execute(A<int>._)).MustNotHaveHappened();
     }
 
