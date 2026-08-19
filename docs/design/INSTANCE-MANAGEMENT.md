@@ -228,11 +228,11 @@ in `Application/EdFi.Ods.AdminApi.V3/Features/DataStores/Manage/`. Behavior is
 equivalent apart from four things:
 
 1. the route path;
-2. the `OdsInstanceManage` / `DataStoreManage` wording in **create-validator**
-   error messages (`AddOdsInstanceManage.Validator` vs
-   `AddDataStoreManage.Validator`) — the delete endpoint's status-blocked
-   messages use identical `OdsInstanceManage` wording in both versions (see
-   [Delete](#delete));
+2. the `OdsInstanceManage` / `DataStoreManage` wording in error messages —
+   both the create validators (`AddOdsInstanceManage.Validator` vs
+   `AddDataStoreManage.Validator`) and the delete endpoints' status-blocked
+   messages (`DeleteOdsInstanceManage` vs `DeleteDataStoreManage`, see
+   [Delete](#delete)) use their respective version's wording;
 3. the POST `Location` header — v2 returns a **relative** path
    (`Results.Accepted($"/odsinstances/manage/{added.Id}", null)` in
    `AddOdsInstanceManage.Handle`), while v3 returns an **absolute** URL built by

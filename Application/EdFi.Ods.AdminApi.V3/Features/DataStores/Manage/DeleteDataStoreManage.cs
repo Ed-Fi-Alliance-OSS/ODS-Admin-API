@@ -97,14 +97,14 @@ public class DeleteDataStoreManage : IFeature
         {
             return parsed switch
             {
-                OdsInstanceManageStatus.PendingCreate    => "OdsInstanceManage is being provisioned. Wait for creation to complete.",
-                OdsInstanceManageStatus.CreateInProgress => "OdsInstanceManage is currently being provisioned. Wait for creation to complete.",
-                OdsInstanceManageStatus.CreateFailed     => "OdsInstanceManage creation failed. It will be retried automatically by the background job.",
-                OdsInstanceManageStatus.CreateError      => "OdsInstanceManage creation failed permanently. Manual database intervention required before deleting.",
-                OdsInstanceManageStatus.PendingDelete    => "OdsInstanceManage is already queued for deletion.",
-                OdsInstanceManageStatus.DeleteInProgress => "OdsInstanceManage is currently being deleted.",
-                OdsInstanceManageStatus.DeleteFailed     => "OdsInstanceManage deletion failed. It will be retried automatically by the background job.",
-                OdsInstanceManageStatus.DeleteError      => "OdsInstanceManage deletion failed permanently. Manual database intervention required.",
+                OdsInstanceManageStatus.PendingCreate    => "DataStoreManage is being provisioned. Wait for creation to complete.",
+                OdsInstanceManageStatus.CreateInProgress => "DataStoreManage is currently being provisioned. Wait for creation to complete.",
+                OdsInstanceManageStatus.CreateFailed     => "DataStoreManage creation failed. It will be retried automatically by the background job.",
+                OdsInstanceManageStatus.CreateError      => "DataStoreManage creation failed permanently. Manual database intervention required before deleting.",
+                OdsInstanceManageStatus.PendingDelete    => "DataStoreManage is already queued for deletion.",
+                OdsInstanceManageStatus.DeleteInProgress => "DataStoreManage is currently being deleted.",
+                OdsInstanceManageStatus.DeleteFailed     => "DataStoreManage deletion failed. It will be retried automatically by the background job.",
+                OdsInstanceManageStatus.DeleteError      => "DataStoreManage deletion failed permanently. Manual database intervention required.",
                 _ => null,
             };
         }
