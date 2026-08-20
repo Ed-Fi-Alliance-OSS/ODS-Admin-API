@@ -30,8 +30,11 @@ namespace EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 
 public class AddOdsInstanceManage : IFeature
 {
-    private const int MaxSynchronizedNameLength = 100;
-    private const int MaxOdsInstanceManageNameLength = MaxSynchronizedNameLength;
+    // 63 (OdsInstanceManageDatabaseNameFormatter.MaxPortableDatabaseNameLength) minus 17 fixed
+    // overhead chars ("EdFi_Ods_" prefix + "_" separator + longest DatabaseTemplate value
+    // "Minimal") — the largest Name that can never push the generated DatabaseName over the
+    // portable limit, for either DatabaseTemplate value, with no prefix stripping applied.
+    private const int MaxOdsInstanceManageNameLength = 46;
     private static readonly Regex _validOdsInstanceManageNamePattern = new(
         "^[A-Za-z0-9 _]+$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -96,7 +99,7 @@ public class AddOdsInstanceManage : IFeature
     [SwaggerSchema(Title = "AddOdsInstanceManageRequest")]
     public class AddOdsInstanceManageRequest : IAddOdsInstanceManageModel
     {
-        [SwaggerSchema(Description = "Name of the database instance", Nullable = false)]
+        [SwaggerSchema(Description = "Name of the database instance (46 characters or fewer)", Nullable = false)]
         public string? Name { get; set; }
 
         [SwaggerSchema(Description = "Database template to use for the instance", Nullable = false)]
@@ -117,7 +120,7 @@ public class AddOdsInstanceManage : IFeature
             RuleFor(m => m.Name)
                 .NotEmpty()
                 .MaximumLength(MaxOdsInstanceManageNameLength)
-                .WithMessage($"'{{PropertyName}}' must be {MaxOdsInstanceManageNameLength} characters or fewer so the synchronized ODS instance name fits within {MaxSynchronizedNameLength} characters.")
+                .WithMessage($"'{{PropertyName}}' must be {MaxOdsInstanceManageNameLength} characters or fewer so the generated database name fits within the {OdsInstanceManageDatabaseNameFormatter.MaxPortableDatabaseNameLength}-character portable limit.")
                 .Matches(_validOdsInstanceManageNamePattern)
                 .WithMessage("'{PropertyName}' may only contain letters, numbers, spaces, and underscores.");
 
