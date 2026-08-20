@@ -145,3 +145,17 @@ Tenant: {{tenant}}
   "name": "My DB Instance",
   "databaseTemplate": "InvalidTemplate"
 }
+
+### Create DB instance - invalid (name exceeds 46-character max)
+# Name is capped at 46 characters so the generated database name
+# (EdFi_Ods_{name}_{databaseTemplate}) can never exceed the 63-character
+# portable limit. This name is 51 characters, so the request fails.
+POST {{adminapi_url}}/v2/odsinstances/manage
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: {{tenant}}
+
+{
+  "name": "This Instance Name Is Too Long And Must Be Rejected",
+  "databaseTemplate": "Minimal"
+}
