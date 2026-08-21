@@ -81,7 +81,7 @@ public class RefreshAndJobStatusE2ETests
     /// Test Scenario 1: Refresh all education organizations and poll status
     /// 
     /// Flow:
-    /// 1. POST /v2/odsInstances/edOrgs/refresh → 201 Created
+    /// 1. POST /v2/odsInstances/edOrgs/refresh → 202 Accepted
     /// 2. GET /v2/jobs/{jobId} → 200 OK with Pending status
     /// 3. Poll until completion
     /// 4. Verify final status is Completed or Error
@@ -92,7 +92,7 @@ public class RefreshAndJobStatusE2ETests
         // Step 1: Trigger refresh of all education organizations
         var refreshResponse = await _httpClient.PostAsync("/v2/odsInstances/edOrgs/refresh", null);
         
-        // Verify 201 Created response
+        // Verify 202 Accepted response
         refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
         // Parse response body
@@ -130,7 +130,7 @@ public class RefreshAndJobStatusE2ETests
     /// Test Scenario 2: Refresh specific ODS instance by instance ID
     /// 
     /// Flow:
-    /// 1. POST /v2/odsInstances/{instanceId}/edOrgs/refresh → 201 Created
+    /// 1. POST /v2/odsInstances/{instanceId}/edOrgs/refresh → 202 Accepted
     /// 2. GET /v2/jobs/{jobId} → 200 OK
     /// 3. Poll until completion
     /// 4. Verify Location header and response structure
@@ -144,7 +144,7 @@ public class RefreshAndJobStatusE2ETests
         // Step 1: Trigger refresh for specific instance
         var refreshResponse = await _httpClient.PostAsync($"/v2/odsInstances/{instanceId}/edOrgs/refresh", null);
         
-        // Verify 201 Created response
+        // Verify 202 Accepted response
         refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
         // Parse response
@@ -168,7 +168,7 @@ public class RefreshAndJobStatusE2ETests
     /// Test Scenario 3: V3 API returns correct version in Location header
     /// 
     /// Flow:
-    /// 1. POST /v3/dataStores/edOrgs/refresh → 201 Created
+    /// 1. POST /v3/dataStores/edOrgs/refresh → 202 Accepted
     /// 2. Verify Location header uses /v3/jobs/{jobId} (not /v2)
     /// 3. GET /v3/jobs/{jobId} → 200 OK
     /// 4. Verify response matches expected structure
