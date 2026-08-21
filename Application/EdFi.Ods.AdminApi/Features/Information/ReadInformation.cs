@@ -68,7 +68,14 @@ public class ReadInformation : IFeature
         {
             AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, "v1", tenancy),
             AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, "v2", tenancy),
-            AdminApiMode.V3 => new InformationResult(V3.Infrastructure.Helpers.ConstantsHelpers.Version, V3.Infrastructure.Helpers.ConstantsHelpers.Build, "v3", tenancy),
+            AdminApiMode.V3 => new InformationResult(
+                V3.Infrastructure.Helpers.ConstantsHelpers.Version,
+                V3.Infrastructure.Helpers.ConstantsHelpers.Build,
+                "v3",
+                tenancy,
+                V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
+                V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
+                new ApiUrlsResult($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/metadata/specifications")),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

@@ -11,12 +11,22 @@ namespace EdFi.Ods.AdminApi.Features.Information;
 [SwaggerSchema(Title = "Information")]
 public class InformationResult
 {
-    public InformationResult(string version, string build, string specificationVersion, TenancyResult? tenancy = null)
+    public InformationResult(
+        string version,
+        string build,
+        string specificationVersion,
+        TenancyResult? tenancy = null,
+        string? applicationName = null,
+        string? informationalVersion = null,
+        ApiUrlsResult? urls = null)
     {
         Build = build;
         Version = version;
         Tenancy = tenancy;
         SpecificationVersion = specificationVersion;
+        ApplicationName = applicationName;
+        InformationalVersion = informationalVersion;
+        Urls = urls;
     }
 
     [SwaggerSchema("Tenancy information", Nullable = true)]
@@ -28,6 +38,27 @@ public class InformationResult
     public string Build { get; }
     [SwaggerSchema("Admin API specification version", Nullable = false)]
     public string SpecificationVersion { get; }
+    [SwaggerSchema("Application name", Nullable = true)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ApplicationName { get; }
+    [SwaggerSchema("Informational/semantic version", Nullable = true)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? InformationalVersion { get; }
+    [SwaggerSchema("Related URLs", Nullable = true)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ApiUrlsResult? Urls { get; }
+}
+
+[SwaggerSchema(Title = "ApiUrls")]
+public class ApiUrlsResult
+{
+    public ApiUrlsResult(string openApiMetadata)
+    {
+        OpenApiMetadata = openApiMetadata;
+    }
+
+    [SwaggerSchema("Absolute URL to the OpenAPI/metadata document", Nullable = false)]
+    public string OpenApiMetadata { get; }
 }
 
 [SwaggerSchema(Title = "Tenancy")]

@@ -131,6 +131,48 @@ public class ReadInformationTest
     }
 
     [Test]
+    public async Task GetInformation_V3Mode_ReturnsApplicationNameInformationalVersionAndUrls()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = false });
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("admin-api.example.com");
+        httpContext.Request.PathBase = "/v3";
+
+        var result = await ReadInformation.GetInformation(options, httpContext);
+
+        result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
+        result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v3/metadata/specifications");
+    }
+
+    [Test]
+    public async Task GetInformation_V1Mode_DoesNotReturnApplicationNameInformationalVersionOrUrls()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1", MultiTenancy = false });
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+
+        var result = await ReadInformation.GetInformation(options, httpContext);
+
+        result.ApplicationName.ShouldBeNull();
+        result.InformationalVersion.ShouldBeNull();
+        result.Urls.ShouldBeNull();
+    }
+
+    [Test]
     public async Task GetInformation_V3MultiTenantMode_ReturnsTenantNames()
     {
         var options = A.Fake<IOptions<AppSettings>>();
