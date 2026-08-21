@@ -270,8 +270,12 @@ public class AddOdsInstanceManageTests
     }
 
     [Test]
-    public async Task Handle_WithFormattedDatabaseNameExceedingPortableLimit_ThrowsValidationException()
+    public async Task Handle_WithNameOneOverMaxLength_ThrowsValidationExceptionEvenWhenTemplateWouldFitPortableLimit()
     {
+        // With DatabaseTemplate = "Sample" (the shorter template), a 47-char Name would not by
+        // itself exceed the 63-char portable DatabaseName limit. The flat, template-agnostic
+        // Name length rule must still reject it, since the rule is sized for the longest
+        // template ("Minimal") and applies regardless of which template is requested.
         using var context = CreateContext();
         using var usersContext = CreateUsersContext();
         var validator = new AddOdsInstanceManage.Validator(context, usersContext);
@@ -282,14 +286,14 @@ public class AddOdsInstanceManageTests
         var request = new AddOdsInstanceManage.AddOdsInstanceManageRequest
         {
             Name = new string('a', 47),
-            DatabaseTemplate = "Minimal"
+            DatabaseTemplate = "Sample"
         };
 
         var exception = await Should.ThrowAsync<ValidationException>(async () => await AddOdsInstanceManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request));
 
         exception.Errors.ShouldContain(error =>
             error.PropertyName == nameof(AddOdsInstanceManage.AddOdsInstanceManageRequest.Name)
-            && error.ErrorMessage.Contains("portable limit of 63 characters"));
+            && error.ErrorMessage.Contains("must be 46 characters or fewer"));
     }
 
     [TestCase("My-DB-Instance")]

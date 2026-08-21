@@ -30,8 +30,11 @@ namespace EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 
 public class AddDataStoreManage : IFeature
 {
-    private const int MaxSynchronizedNameLength = 100;
-    private const int MaxDataStoreManageNameLength = MaxSynchronizedNameLength;
+    // 63 (DataStoreManageDatabaseNameFormatter.MaxPortableDatabaseNameLength) minus 17 fixed
+    // overhead chars ("EdFi_Ods_" prefix + "_" separator + longest DatabaseTemplate value
+    // "Minimal") — the largest Name that can never push the generated DatabaseName over the
+    // portable limit, for either DatabaseTemplate value, with no prefix stripping applied.
+    private const int MaxDataStoreManageNameLength = 46;
     private static readonly Regex _validDataStoreManageNamePattern = new(
         "^[A-Za-z0-9 _]+$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -98,7 +101,7 @@ public class AddDataStoreManage : IFeature
     [SwaggerSchema(Title = "AddDataStoreManageRequest")]
     public class AddDataStoreManageRequest : IAddDataStoreManageModel
     {
-        [SwaggerSchema(Description = "Name of the DataStore database", Nullable = false)]
+        [SwaggerSchema(Description = "Name of the DataStore database (46 characters or fewer)", Nullable = false)]
         public string? Name { get; set; }
 
         [SwaggerSchema(Description = "Database template to use for the DataStore database", Nullable = false)]
@@ -119,7 +122,7 @@ public class AddDataStoreManage : IFeature
             RuleFor(m => m.Name)
                 .NotEmpty()
                 .MaximumLength(MaxDataStoreManageNameLength)
-                .WithMessage($"'{{PropertyName}}' must be {MaxDataStoreManageNameLength} characters or fewer so the synchronized DataStore name fits within {MaxSynchronizedNameLength} characters.")
+                .WithMessage($"'{{PropertyName}}' must be {MaxDataStoreManageNameLength} characters or fewer so the generated database name fits within the {DataStoreManageDatabaseNameFormatter.MaxPortableDatabaseNameLength}-character portable limit.")
                 .Matches(_validDataStoreManageNamePattern)
                 .WithMessage("'{PropertyName}' may only contain letters, numbers, spaces, and underscores.");
 

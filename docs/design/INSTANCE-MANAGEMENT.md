@@ -178,11 +178,16 @@ PostgreSQL).
 > indexes) by `00007-RenameDbInstancesToOdsInstanceManages.sql`. Both files exist
 > in `Artifacts/MsSql/Structure/Admin/` and `Artifacts/PgSql/Structure/Admin/`.
 
-> **Note:** `DatabaseName` is 255 characters wide at the schema level, but the
-> create-request validator additionally rejects any request whose *generated*
-> database name would exceed 63 characters — see
-> [Database name generation](#database-name-generation). The 63-char limit is
-> an application business rule, not a schema constraint.
+> **Note:** `Name` is 100 characters wide at the schema level and
+> `DatabaseName` is 255, but the create-request validator caps `Name` at 46
+> characters — the largest value that can never push the *generated*
+> `DatabaseName` (`EdFi_Ods_{name}_{databaseTemplate}`) over the 63-character
+> portable limit, for either `DatabaseTemplate` value, with no prefix
+> stripping — see [Database name generation](#database-name-generation). The
+> validator also keeps a direct check that the generated name doesn't exceed
+> 63 characters, as defense-in-depth; with the 46-char `Name` cap in place,
+> that check should rarely-to-never trigger. Both the 46-char and 63-char
+> limits are application business rules, not schema constraints.
 
 `OdsInstanceId` and `OdsInstanceName` are nullable because a management
 record starts life with neither set — they're only populated once the create
@@ -263,11 +268,16 @@ Content-Type: application/json
 
 * `databaseTemplate` must be exactly `"Minimal"` or `"Sample"` (case-sensitive
   — these are the `SandboxType` enum member names, not free text).
-* `name` must match `^[A-Za-z0-9 _]+$` and be 1–100 characters.
+* `name` must match `^[A-Za-z0-9 _]+$` and be 1–46 characters — 46 is the
+  largest length that can never produce a generated database name over the
+  63-character portable limit, for either `databaseTemplate` value (see
+  [Database name generation](#database-name-generation)).
 * The request is rejected if `name` (trimmed) already matches a non-`Deleted`
   `OdsInstanceManage.Name`, or an existing `OdsInstance.Name`.
-* The request is rejected if the database name that would be generated from
-  `name` + `databaseTemplate` (see below) would exceed 63 characters.
+* The request is also rejected, as defense-in-depth, if the database name
+  that would be generated from `name` + `databaseTemplate` (see below) would
+  exceed 63 characters — given the 46-char `name` limit above, this should
+  rarely-to-never trigger.
 * On success, a new `OdsInstanceManage` row is inserted with status
   `PendingCreate`, `CreateInstanceJob` is scheduled to run immediately, and
   the endpoint returns **202 Accepted** with a `Location` header pointing at
@@ -320,6 +330,13 @@ background job.
 This value becomes `OdsInstanceManage.DatabaseName`, generated lazily by
 `CreateInstanceJob` the first time it processes the row (not at POST time —
 POST only validates that the *would-be* name fits within 63 characters).
+
+The fixed overhead in the composed name is `"EdFi_Ods_"` (9 chars) + `"_"`
+separator (1 char) + the longest `DatabaseTemplate` value, `"Minimal"` (7
+chars) = 17 characters, before any prefix-stripping in step 2 above. That's
+why `name`'s own limit (46 = 63 − 17, see [Create](#create)) is enough to
+guarantee the 63-character portable limit on its own, regardless of which
+`databaseTemplate` is requested.
 
 ## Background Jobs (Quartz.NET)
 
