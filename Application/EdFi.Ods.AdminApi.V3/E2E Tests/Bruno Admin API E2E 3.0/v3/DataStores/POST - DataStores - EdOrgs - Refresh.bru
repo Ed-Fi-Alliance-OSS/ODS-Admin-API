@@ -11,8 +11,8 @@ post {
 }
 
 script:post-response {
-  test("POST DataStores EdOrgs Refresh: Status code is Created", function () {
-      expect(res.getStatus()).to.equal(201);
+  test("POST DataStores EdOrgs Refresh: Status code is Accepted", function () {
+      expect(res.getStatus()).to.equal(202);
   });
 
   test("POST DataStores EdOrgs Refresh: Response has jobId", function () {

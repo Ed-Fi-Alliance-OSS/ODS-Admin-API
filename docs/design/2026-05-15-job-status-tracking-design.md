@@ -4,6 +4,14 @@
 **Status:** Design Approved  
 **API Versions:** v2, v3  
 
+> **Superseded (2026-08-21):** The decision below to return `201 Created` was reversed.
+> The refresh endpoints queue an async job and return no synchronously created resource,
+> so `202 Accepted` is the more accurate status code. All four refresh endpoints
+> (v2 `/odsInstances/edOrgs/refresh`, v2 `/odsInstances/{instanceId}/edOrgs/refresh`,
+> v3 `/dataStores/edOrgs/refresh`, v3 `/dataStores/{dataStoreId}/edOrgs/refresh`)
+> now return `202 Accepted`. The `201`/`202` references throughout this document are
+> kept as-written for historical context.
+
 ## Overview
 
 This design adds a mechanism to track the asynchronous job status for education organization refresh operations. When users initiate a refresh via POST endpoints, they receive a jobId and can poll a new GET endpoint to check completion status, error messages, and timing information.

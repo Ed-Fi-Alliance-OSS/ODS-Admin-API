@@ -37,7 +37,7 @@ public class RefreshEducationOrganizationsTests
     }
 
     [Test]
-    public async Task RefreshAllEducationOrganizations_ReturnsCreatedResult()
+    public async Task RefreshAllEducationOrganizations_ReturnsAcceptedResult()
     {
         // Arrange
         var tenantConfiguration = new TenantConfiguration { TenantIdentifier = "EdFi_Admin" };
@@ -53,11 +53,11 @@ public class RefreshEducationOrganizationsTests
         result.ShouldNotBeNull();
         // Verify the handler was called and returned something
         var resultType = result.GetType().Name;
-        resultType.ShouldContain("Created");
+        resultType.ShouldContain("Accepted");
     }
 
     [Test]
-    public async Task RefreshEducationOrganizationsByInstance_ReturnsCreatedResult()
+    public async Task RefreshEducationOrganizationsByInstance_ReturnsAcceptedResult()
     {
         // Arrange
         var instanceId = 1;
@@ -79,7 +79,7 @@ public class RefreshEducationOrganizationsTests
         result.ShouldNotBeNull();
         // Verify the handler was called and returned something
         var resultType = result.GetType().Name;
-        resultType.ShouldContain("Created");
+        resultType.ShouldContain("Accepted");
     }
 
     private class TestSchedulerFactory : ISchedulerFactory
