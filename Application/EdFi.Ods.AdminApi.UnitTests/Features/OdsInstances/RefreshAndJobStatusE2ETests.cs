@@ -93,8 +93,8 @@ public class RefreshAndJobStatusE2ETests
         var refreshResponse = await _httpClient.PostAsync("/v2/odsInstances/edOrgs/refresh", null);
         
         // Verify 201 Created response
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
         // Parse response body
         var refreshContent = await refreshResponse.Content.ReadAsStringAsync();
         var refreshJson = JsonDocument.Parse(refreshContent);
@@ -145,14 +145,14 @@ public class RefreshAndJobStatusE2ETests
         var refreshResponse = await _httpClient.PostAsync($"/v2/odsInstances/{instanceId}/edOrgs/refresh", null);
         
         // Verify 201 Created response
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
         // Parse response
         var refreshContent = await refreshResponse.Content.ReadAsStringAsync();
         var refreshJson = JsonDocument.Parse(refreshContent);
         var jobId = refreshJson.RootElement.GetProperty("jobId").GetString();
         jobId.ShouldNotBeNullOrEmpty();
-        
+
         // Step 2: Verify Location header
         refreshResponse.Headers.Location.ShouldNotBeNull();
         refreshResponse.Headers.Location!.OriginalString.ShouldBe($"/v2/jobs/{jobId}");
@@ -179,15 +179,15 @@ public class RefreshAndJobStatusE2ETests
         // Step 1: Trigger refresh using V3 endpoint
         var refreshResponse = await _httpClient.PostAsync("/v3/dataStores/edOrgs/refresh", null);
         
-        // Verify 201 Created
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        
+        // Verify 202 Accepted
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
         // Parse response
         var refreshContent = await refreshResponse.Content.ReadAsStringAsync();
         var refreshJson = JsonDocument.Parse(refreshContent);
         var jobId = refreshJson.RootElement.GetProperty("jobId").GetString();
         jobId.ShouldNotBeNullOrEmpty();
-        
+
         // Step 2: Verify Location header uses /v3 (not /v2)
         refreshResponse.Headers.Location.ShouldNotBeNull();
         var locationHeader = refreshResponse.Headers.Location!.OriginalString;
@@ -214,15 +214,15 @@ public class RefreshAndJobStatusE2ETests
         // Step 1: Trigger refresh using V3 endpoint
         var refreshResponse = await _httpClient.PostAsync($"/v3/dataStores/{instanceId}/edOrgs/refresh", null);
         
-        // Verify 201 Created
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        
+        // Verify 202 Accepted
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
         // Parse response
         var refreshContent = await refreshResponse.Content.ReadAsStringAsync();
         var refreshJson = JsonDocument.Parse(refreshContent);
         var jobId = refreshJson.RootElement.GetProperty("jobId").GetString();
         jobId.ShouldNotBeNullOrEmpty();
-        
+
         // Step 2: Verify Location header uses /v3
         refreshResponse.Headers.Location.ShouldNotBeNull();
         refreshResponse.Headers.Location!.OriginalString.ShouldBe($"/v3/jobs/{jobId}");
@@ -271,12 +271,12 @@ public class RefreshAndJobStatusE2ETests
     {
         // Step 1: Create a job
         var refreshResponse = await _httpClient.PostAsync("/v2/odsInstances/edOrgs/refresh", null);
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
         var refreshContent = await refreshResponse.Content.ReadAsStringAsync();
         var refreshJson = JsonDocument.Parse(refreshContent);
         var jobId = refreshJson.RootElement.GetProperty("jobId").GetString();
-        
+
         // Step 2: Get job status
         var statusResponse = await _httpClient.GetAsync($"/v2/jobs/{jobId}");
         statusResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -319,12 +319,12 @@ public class RefreshAndJobStatusE2ETests
     {
         // Step 1: Create a job
         var refreshResponse = await _httpClient.PostAsync("/v2/odsInstances/edOrgs/refresh", null);
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
-        
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
+
         var refreshContent = await refreshResponse.Content.ReadAsStringAsync();
         var refreshJson = JsonDocument.Parse(refreshContent);
         var jobId = refreshJson.RootElement.GetProperty("jobId").GetString();
-        
+
         // Step 2: Immediately check status (should be Pending)
         var statusResponse = await _httpClient.GetAsync($"/v2/jobs/{jobId}");
         statusResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -403,7 +403,7 @@ public class RefreshAndJobStatusE2ETests
     {
         var refreshResponse = await _httpClient.PostAsync("/v2/odsInstances/edOrgs/refresh", null);
         
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
         refreshResponse.Content.Headers.ContentType.ShouldNotBeNull();
         refreshResponse.Content.Headers.ContentType!.MediaType.ShouldBe("application/json");
     }
@@ -416,7 +416,7 @@ public class RefreshAndJobStatusE2ETests
     {
         var refreshResponse = await _httpClient.PostAsync("/v2/odsInstances/edOrgs/refresh", null);
         
-        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Created);
+        refreshResponse.StatusCode.ShouldBe(HttpStatusCode.Accepted);
         refreshResponse.Headers.Location.ShouldNotBeNull();
         
         var location = refreshResponse.Headers.Location!.OriginalString;

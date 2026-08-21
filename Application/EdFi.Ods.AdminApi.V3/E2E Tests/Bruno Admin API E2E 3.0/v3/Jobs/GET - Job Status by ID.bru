@@ -31,8 +31,8 @@ script:pre-request {
 
   const refreshResponse = await axios.post(`${API_URL}/v3/dataStores/edOrgs/refresh`, null, axiosConfig);
 
-  test("Pre: Refresh endpoint returns 201", function () {
-    expect(refreshResponse.status).to.equal(201);
+  test("Pre: Refresh endpoint returns 202", function () {
+    expect(refreshResponse.status).to.equal(202);
   });
 
   const jobId = refreshResponse.data.jobId;

@@ -26,7 +26,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
             )
-            .WithRouteOptions(b => b.WithResponseCode(201, locationDescription: "URI of the queued job's status endpoint."))
+            .WithRouteOptions(b => b.WithResponseCode(202, locationDescription: "URI of the queued job's status endpoint."))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
@@ -36,7 +36,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified ODS instance"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(201, locationDescription: "URI of the queued job's status endpoint.")
+                .WithResponseCode(202, locationDescription: "URI of the queued job's status endpoint.")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V2);
     }
@@ -71,7 +71,7 @@ public class RefreshEducationOrganizations : IFeature
         };
         var locationUri = $"/v2/jobs/{jobId}";
 
-        return Results.Created(locationUri, response);
+        return Results.Accepted(locationUri, response);
     }
 
     public static async Task<IResult> RefreshEducationOrganizationsByInstance(
@@ -113,6 +113,6 @@ public class RefreshEducationOrganizations : IFeature
         };
         var locationUri = $"/v2/jobs/{jobId}";
 
-        return Results.Created(locationUri, response);
+        return Results.Accepted(locationUri, response);
     }
 }
