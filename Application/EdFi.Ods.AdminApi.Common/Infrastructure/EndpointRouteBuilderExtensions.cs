@@ -29,7 +29,7 @@ public static class EndpointRouteBuilderExtensions
 
     private static void AddLocationHeaderDescription(RouteHandlerBuilder builder, int code, string? locationDescription)
     {
-        if (code == 201 && locationDescription is not null)
+        if ((code == 201 || code == 202) && locationDescription is not null)
             builder.WithMetadata(new LocationHeaderDescriptionMetadata(locationDescription));
     }
 }
