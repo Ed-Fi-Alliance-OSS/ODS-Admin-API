@@ -24,7 +24,7 @@ public static class ConstantsHelpers
     /// <summary>
     /// Application name.
     /// </summary>
-    public const string ApplicationName = "Ed-Fi Admin API";
+    public const string ApplicationName = "Ed-Fi Management API";
 
     /// <summary>
     /// Informational version description.

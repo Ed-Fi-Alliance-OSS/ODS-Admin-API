@@ -29,7 +29,10 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    public static async Task<InformationResult> GetInformation(IOptions<AppSettings> options, HttpContext httpContext)
+    public static async Task<InformationResult> GetInformation(
+        IOptions<AppSettings> options,
+        IOptions<SwaggerSettings> swaggerOptions,
+        HttpContext httpContext)
     {
         if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
         {
@@ -75,7 +78,9 @@ public class ReadInformation : IFeature
                 tenancy,
                 V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
                 V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
-                new ApiUrlsResult($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/metadata/specifications")),
+                swaggerOptions.Value.EnableSwagger
+                    ? new ApiUrlsResult($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/swagger/v3/swagger.json")
+                    : null),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

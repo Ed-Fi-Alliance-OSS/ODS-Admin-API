@@ -37,6 +37,6 @@ public class ConstantsHelperTest
     [Test]
     public void ApplicationName_IsEdFiAdminApi()
     {
-        ConstantsHelpers.ApplicationName.ShouldBe("Ed-Fi Admin API");
+        ConstantsHelpers.ApplicationName.ShouldBe("Ed-Fi Management API");
     }
 }
