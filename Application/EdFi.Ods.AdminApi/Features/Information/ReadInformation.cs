@@ -67,6 +67,9 @@ public class ReadInformation : IFeature
             tenancy = new TenancyResult(isMultiTenant, tenantNames);
         }
 
+        var scheme = httpContext.Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? httpContext.Request.Scheme;
+        var host = httpContext.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? httpContext.Request.Host.ToString();
+
         return adminApiMode switch
         {
             AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, "v1", tenancy),
@@ -79,7 +82,7 @@ public class ReadInformation : IFeature
                 V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
                 V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
                 swaggerOptions.Value.EnableSwagger
-                    ? new ApiUrlsResult($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}/swagger/v3/swagger.json")
+                    ? new ApiUrlsResult($"{scheme}://{host}{httpContext.Request.PathBase}/swagger/v3/swagger.json")
                     : null),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };

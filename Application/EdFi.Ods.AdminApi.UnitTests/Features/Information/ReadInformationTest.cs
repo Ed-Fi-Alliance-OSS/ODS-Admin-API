@@ -157,6 +157,29 @@ public class ReadInformationTest
     }
 
     [Test]
+    public async Task GetInformation_V3ModeBehindReverseProxy_UsesForwardedProtoAndHost()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = false });
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Host = new HostString("adminapi");
+        httpContext.Request.PathBase = "/adminapi";
+        httpContext.Request.Headers["X-Forwarded-Proto"] = "https";
+        httpContext.Request.Headers["X-Forwarded-Host"] = "localhost";
+
+        var result = await ReadInformation.GetInformation(options, SwaggerOptions(true), httpContext);
+
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe("https://localhost/adminapi/swagger/v3/swagger.json");
+    }
+
+    [Test]
     public async Task GetInformation_V3ModeWithSwaggerDisabled_DoesNotReturnUrls()
     {
         var options = A.Fake<IOptions<AppSettings>>();

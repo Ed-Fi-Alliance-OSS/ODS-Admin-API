@@ -12,7 +12,7 @@ public static class ConstantsHelpers
     /// <summary>
     /// Semantic version of the admin api.
     /// </summary>
-    public const string Version = "2.0";
+    public const string Version = "3.0";
 
     /// <summary>
     /// Assembly version of the admin api.
