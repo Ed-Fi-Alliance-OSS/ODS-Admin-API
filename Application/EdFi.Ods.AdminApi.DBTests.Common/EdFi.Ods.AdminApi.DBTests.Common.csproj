@@ -9,6 +9,7 @@
     <ProjectReference Include="..\EdFi.Ods.AdminApi.Common\EdFi.Ods.AdminApi.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="Respawn" />
     <PackageReference Include="EdFi.Suite3.Admin.DataAccess" />
