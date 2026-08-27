@@ -55,11 +55,11 @@ jobs:
 
           if [[ "$REF" == Pre-Release-* ]]
           then
-             # Remove Pre-Release prefix
-             PREFIX="Pre-Release-"
-             PACKAGEVERSION="${REF#"$PREFIX"}"
+            # Remove Pre-Release prefix
+            PREFIX="Pre-Release-"
+            PACKAGEVERSION="${REF#"$PREFIX"}"
           else
-             PACKAGEVERSION="$REF"
+            PACKAGEVERSION="$REF"
           fi
 
           if [[ "$PACKAGEVERSION" == *alpha* ]]
