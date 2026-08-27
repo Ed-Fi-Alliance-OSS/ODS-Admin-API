@@ -19,7 +19,7 @@ namespace EdFi.Ods.AdminApi.V3.Features.Jobs;
 
 public class GetJobStatus : IFeature
 {
-    public class Response
+    public class JobStatusResult
     {
         public string JobId { get; set; } = null!;
         public string Status { get; set; } = null!;
@@ -38,7 +38,7 @@ public class GetJobStatus : IFeature
             )
             .WithRouteOptions(b => b
                 .WithResponseCode(200)
-                .WithResponse<Response>(200)
+                .WithResponse<JobStatusResult>(200)
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V3);
     }
@@ -75,7 +75,7 @@ public class GetJobStatus : IFeature
             throw new NotFoundException<string>("Job", jobId);
         }
 
-        var response = new Response
+        var response = new JobStatusResult
         {
             JobId = jobStatus.JobId,
             Status = jobStatus.Status,
