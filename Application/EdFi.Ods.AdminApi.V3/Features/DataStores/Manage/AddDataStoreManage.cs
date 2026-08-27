@@ -43,8 +43,8 @@ public class AddDataStoreManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/dataStores/manage", Handle)
-            .WithSummaryAndDescription("Asynchronously creates a data store based on the supplied values", "Creates a data store based on the supplied values. The request is accepted and the creation process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithSummaryAndDescription("Asynchronously creates a data store based on the supplied values", "Asynchronously creates a data store based on the supplied values. The request is accepted and the creation process is queued for processing.")
+            .WithRouteOptions(b => b.WithResponseCode(202, "Accepted. The dataStore record has been created and provisioning has been queued; the database is not yet available. The response has no body. Poll the resource identified by the Location header and read its status property, which progresses PendingCreate, CreateInProgress, then Created or CreateFailed.", "Absolute URL of the created dataStore, of the form {scheme}://{host}/v3/dataStores/manage/{id}."))
             .BuildForVersions(AdminApiVersions.V3);
     }
 

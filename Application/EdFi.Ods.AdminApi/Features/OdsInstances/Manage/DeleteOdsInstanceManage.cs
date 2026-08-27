@@ -29,7 +29,7 @@ public class DeleteOdsInstanceManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/odsInstances/manage/{id}", Handle)
-            .WithDefaultSummaryAndDescription()
+            .WithSummaryAndDescription("Asynchronously deletes an ODS instance based on the supplied values", "Asynchronously deletes an ODS instance. The request is accepted and the deletion process is queued for processing.")
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V2);
     }
