@@ -43,7 +43,7 @@ public class AddDataStoreManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/dataStores/manage", Handle)
-            .WithDefaultSummaryAndDescription()
+            .WithSummaryAndDescription("Asynchronously creates a data store based on the supplied values", "Creates a data store based on the supplied values. The request is accepted and the creation process is queued for processing.")
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V3);
     }

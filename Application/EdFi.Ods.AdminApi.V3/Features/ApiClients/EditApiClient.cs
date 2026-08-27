@@ -51,7 +51,7 @@ public class EditApiClient : IFeature
     [SwaggerSchema(Title = "EditApiClientRequest")]
     public class EditApiClientRequest : IEditApiClientModel
     {
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientIdDescription, Nullable = false)]
         public int Id { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.ApiClientNameDescription, Nullable = false)]

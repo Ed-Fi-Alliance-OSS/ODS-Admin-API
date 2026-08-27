@@ -190,9 +190,9 @@ public static class WebApplicationBuilderExtensions
                     version,
                     new OpenApiInfo
                     {
-                        Title = "Admin API Documentation",
+                        Title = "Ed-Fi Management API",
                         Description =
-                            "The Ed-Fi Admin API is a REST API-based administrative interface for managing vendors, applications, client credentials, and authorization rules for accessing an Ed-Fi API.",
+                            "The Ed-Fi Management API is a REST API-based administrative interface for managing vendors, applications, client credentials, and authorization rules for accessing an Ed-Fi API.",
                         Version = version
                     }
                 );

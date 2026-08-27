@@ -26,7 +26,7 @@ public class InformationResult
     public string Version { get; }
     [SwaggerSchema("Build / release version", Nullable = false)]
     public string Build { get; }
-    [SwaggerSchema("Admin API specification version", Nullable = false)]
+    [SwaggerSchema("Management API specification version", Nullable = false)]
     public string SpecificationVersion { get; }
 }
 

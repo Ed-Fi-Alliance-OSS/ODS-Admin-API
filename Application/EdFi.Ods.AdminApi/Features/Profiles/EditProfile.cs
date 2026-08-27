@@ -46,7 +46,6 @@ public class EditProfile : IFeature
         public string? Definition { get; set; }
 
         [SwaggerExclude]
-        [SwaggerSchema(Description = FeatureConstants.ProfileIdDescription, Nullable = false)]
         public int Id { get; set; }
     }
 

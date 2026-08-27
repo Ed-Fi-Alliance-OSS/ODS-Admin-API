@@ -15,6 +15,7 @@ public static class FeatureConstants
     public const string ApplicationIdDescription = "Application id";
     public const string ApplicationNameDescription = "Application name";
     public const string ClaimSetIdDescription = "Claim set id";
+    public const string AuthorizationStrategyIdsDescription = "Authorization Strategy Ids";
     public const string ClaimSetNameDescription = "Claim set name";
     public const string ProfileIdDescription = "Profile id";
     public const string EducationOrganizationIdsDescription = "Education organization ids";
@@ -43,6 +44,7 @@ public static class FeatureConstants
     public const string AnotherProfileAlreadyExistsMessage = "Another Profile with this name already exists in the database. Please enter a unique name.";
     public const string ProfileDefinition = "Profile definition";
     public const string DataStoreName = "Data store name";
+    public const string DataStoreIdDescription = "Data store id.";
     public const string DataStoreTypeDescription = "Data store type";
     public const string DataStoreConnectionString = "Data store connection string";
     public const string DataStoreAlreadyExistsMessage = "A data store with this name already exists in the database. Please enter a unique name.";
@@ -64,6 +66,7 @@ public static class FeatureConstants
     public const string ActionIdDescription = "Action id";
     public const string ActionNameDescription = "Action name";
 
+    public const string ApiClientIdDescription = "Api client id.";
     public const string ApiClientNameDescription = "Api client name";
     public const string ApiClientIsApprovedDescription = "Is approved";
     public const string ApiClientApplicationIdDescription = "Application id";

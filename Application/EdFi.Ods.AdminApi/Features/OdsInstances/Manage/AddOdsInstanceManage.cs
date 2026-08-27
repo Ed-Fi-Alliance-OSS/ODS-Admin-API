@@ -43,7 +43,7 @@ public class AddOdsInstanceManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/odsInstances/manage", Handle)
-            .WithDefaultSummaryAndDescription()
+            .WithSummaryAndDescription("Asynchronously creates an ODS instance based on the supplied values", "Creates an ODS instance based on the supplied values. The request is accepted and the creation process is queued for processing.")
             .WithRouteOptions(b => b.WithResponseCode(202))
             .BuildForVersions(AdminApiVersions.V2);
     }

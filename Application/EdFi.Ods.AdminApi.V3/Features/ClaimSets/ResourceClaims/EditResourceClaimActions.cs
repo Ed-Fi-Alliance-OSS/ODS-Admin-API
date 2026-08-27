@@ -36,6 +36,7 @@ public class EditResourceClaimActions : IFeature
         IGetResourcesByClaimSetIdQuery getResourcesByClaimSetIdQuery,
         AddResourceClaimOnClaimSetRequest request, int claimSetId)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(claimSetId, request.ClaimSetId, nameof(request.ClaimSetId));
         request.ClaimSetId = claimSetId;
         await validator.GuardAsync(request);
         await ExecuteHandle(editResourcesOnClaimSetCommand, request);
@@ -70,10 +71,10 @@ public class EditResourceClaimActions : IFeature
     [SwaggerSchema(Title = "AddResourceClaimActionsOnClaimSetRequest")]
     public class AddResourceClaimOnClaimSetRequest : IResourceClaimOnClaimSetRequest
     {
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.ClaimSetIdDescription, Nullable = false)]
         public int ClaimSetId { get; set; }
 
-        [SwaggerSchema(Description = "ResourceClaim id", Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.ResourceClaimIdDescription, Nullable = false)]
         public int ResourceClaimId { get; set; }
 
         [SwaggerSchema(Nullable = false)]
@@ -83,10 +84,10 @@ public class EditResourceClaimActions : IFeature
     [SwaggerSchema(Title = "EditResourceClaimActionsOnClaimSetRequest")]
     public class EditResourceClaimOnClaimSetRequest : IResourceClaimOnClaimSetRequest
     {
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.ClaimSetIdDescription, Nullable = false)]
         public int ClaimSetId { get; set; }
 
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.ResourceClaimIdDescription, Nullable = false)]
         public int ResourceClaimId { get; set; }
 
         [SwaggerSchema(Nullable = false)]

@@ -36,7 +36,6 @@ public class EditDataStoreContext : IFeature
     [SwaggerSchema(Title = "EditDataStoreContextRequest")]
     public class EditDataStoreContextRequest : IEditDataStoreContextModel
     {
-        [SwaggerExclude]
         [SwaggerSchema(Description = FeatureConstants.DataStoreContextIdDescription, Nullable = false)]
         public int Id { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreContextDataStoreIdDescription, Nullable = false)]
