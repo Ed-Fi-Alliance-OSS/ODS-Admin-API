@@ -12,12 +12,13 @@ post {
 
 body:json {
   {
+    "claimSetId": {{SystemReservedClaimSetId}},
     "actionName": "create",
     "authorizationStrategies": [
       "RelationshipsWithStudentsOnly"
     ]
   }
-  
+
 }
 
 script:pre-request {

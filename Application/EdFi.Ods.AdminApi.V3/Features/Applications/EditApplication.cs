@@ -62,7 +62,7 @@ public class EditApplication : IFeature
     [SwaggerSchema(Title = "EditApplicationRequest")]
     public class EditApplicationRequest : IEditApplicationModel
     {
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.ApplicationIdDescription, Nullable = false)]
         public int Id { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.ApplicationNameDescription, Nullable = false)]

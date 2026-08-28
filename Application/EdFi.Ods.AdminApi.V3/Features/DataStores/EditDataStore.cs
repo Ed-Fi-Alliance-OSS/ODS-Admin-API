@@ -59,7 +59,7 @@ public class EditDataStore : IFeature
         public string? DataStoreType { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreConnectionString, Nullable = true)]
         public string? ConnectionString { get; set; }
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.DataStoreIdDescription, Nullable = false)]
         public int Id { get; set; }
     }
 

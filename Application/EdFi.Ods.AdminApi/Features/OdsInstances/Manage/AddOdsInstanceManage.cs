@@ -43,8 +43,8 @@ public class AddOdsInstanceManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/odsInstances/manage", Handle)
-            .WithDefaultSummaryAndDescription()
-            .WithRouteOptions(b => b.WithResponseCode(202))
+            .WithSummaryAndDescription("Asynchronously creates an ODS instance based on the supplied values", "Asynchronously creates an ODS instance based on the supplied values. The request is accepted and the creation process is queued for processing.")
+            .WithRouteOptions(b => b.WithResponseCode(202, "Accepted. The ODS instance record has been created and provisioning has been queued; the database is not yet available. The response has no body. Poll the resource identified by the Location header and read its status property, which progresses PendingCreate, CreateInProgress, then Created or CreateFailed.", "Absolute URL of the created ODS instance, of the form {scheme}://{host}/v3/odsInstances/manage/{id}."))
             .BuildForVersions(AdminApiVersions.V2);
     }
 

@@ -12,10 +12,11 @@ post {
 
 body:json {
   {
+    "claimSetId": {{CreatedClaimSetId}},
     "actionName": "NotExist",
     "authorizationStrategies": ["RelationshipsWithStudentsOnlys"]
   }
-  
+
 }
 
 script:post-response {

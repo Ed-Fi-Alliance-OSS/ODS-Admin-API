@@ -12,12 +12,13 @@ post {
 
 body:json {
   {
+    "claimSetId": {{CreatedClaimSetId}},
     "actionName": "delete",
     "authorizationStrategies": [
       "RelationshipsWithStudentsOnly"
     ]
   }
-  
+
 }
 
 script:post-response {
