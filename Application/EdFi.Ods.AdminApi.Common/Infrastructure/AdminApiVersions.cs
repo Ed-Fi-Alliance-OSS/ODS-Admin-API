@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Globalization;
 using System.Reflection;
 using Asp.Versioning.Builder;
 using Asp.Versioning.Conventions;
@@ -15,9 +16,9 @@ public class AdminApiVersions
 {
     private static bool _isInitialized;
 
-    public static readonly AdminApiVersion V1 = new(1.1, "1.4.4");
-    public static readonly AdminApiVersion V2 = new(2.0, "2.4.0");
-    public static readonly AdminApiVersion V3 = new(3.0, "3.0.0");
+    public static readonly AdminApiVersion V1 = new(2.4, "1.4.4");
+    public static readonly AdminApiVersion V2 = new(2.4, "2.4.0");
+    public static readonly AdminApiVersion V3 = new(2.4, "3.0.0");
     private static ApiVersionSet? _versionSet;
 
     public static void Initialize(WebApplication app)
@@ -66,7 +67,8 @@ public class AdminApiVersions
         }
 
         public double Version { get; }
-        public string VersionPath => $"v{Version.ToString("0")}";
+        public string VersionString => Version.ToString("0.0", CultureInfo.InvariantCulture);
+        public string VersionPath => $"v{DisplayName.Split('.')[0]}";
         public string DisplayName { get; }
         public override string ToString() => DisplayName;
     }

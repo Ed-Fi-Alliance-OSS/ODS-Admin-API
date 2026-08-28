@@ -88,7 +88,7 @@ public class ReadInformationTest
 
         var result = await ReadInformation.GetInformation(options, httpContext);
 
-        result.Version.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.Version);
+        result.Version.ShouldBe(AdminApiVersions.V2.VersionString);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.Build);
         result.SpecificationVersion.ShouldBe(AdminApiVersions.V2.VersionPath);
     }
@@ -130,7 +130,7 @@ public class ReadInformationTest
 
         var result = await ReadInformation.GetInformation(options, httpContext);
 
-        result.Version.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.Version);
+        result.Version.ShouldBe(AdminApiVersions.V1.VersionString);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.Build);
         result.SpecificationVersion.ShouldBe(AdminApiVersions.V1.VersionPath);
     }
@@ -172,7 +172,7 @@ public class ReadInformationTest
 
         var result = await ReadInformation.GetInformation(options, httpContext);
 
-        result.Version.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Version);
+        result.Version.ShouldBe(AdminApiVersions.V3.VersionString);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Build);
         result.SpecificationVersion.ShouldBe(AdminApiVersions.V3.VersionPath);
     }

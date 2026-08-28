@@ -93,21 +93,21 @@ public class ReadInformation : IFeature
         return adminApiMode switch
         {
             AdminApiMode.V1 => BuildResult(
-                V1.Infrastructure.Helpers.ConstantsHelpers.Version,
+                AdminApiVersions.V1.VersionString,
                 V1.Infrastructure.Helpers.ConstantsHelpers.Build,
                 AdminApiVersions.V1.VersionPath,
                 V1.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
                 V1.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
                 AdminApiVersions.V1.ToString()),
             AdminApiMode.V2 => BuildResult(
-                ConstantsHelpers.Version,
+                AdminApiVersions.V2.VersionString,
                 ConstantsHelpers.Build,
                 AdminApiVersions.V2.VersionPath,
                 ConstantsHelpers.ApplicationName,
                 ConstantsHelpers.InformationalVersion,
                 AdminApiVersions.V2.ToString()),
             AdminApiMode.V3 => BuildResult(
-                V3.Infrastructure.Helpers.ConstantsHelpers.Version,
+                AdminApiVersions.V3.VersionString,
                 V3.Infrastructure.Helpers.ConstantsHelpers.Build,
                 AdminApiVersions.V3.VersionPath,
                 V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
