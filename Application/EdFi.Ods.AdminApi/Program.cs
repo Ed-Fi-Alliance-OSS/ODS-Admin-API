@@ -109,7 +109,14 @@ app.UseHealthChecks("/health", new HealthCheckOptions
 app.UseSwagger();
 if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
 {
-    app.DefineSwaggerUIWithApiVersions(AdminApiVersions.GetAllVersionStrings());
+    var currentVersion = adminApiMode switch
+    {
+        AdminApiMode.V1 => AdminApiVersions.V1,
+        AdminApiMode.V2 => AdminApiVersions.V2,
+        AdminApiMode.V3 => AdminApiVersions.V3,
+        _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
+    };
+    app.DefineSwaggerUIWithApiVersions(currentVersion.ToString());
 }
 
 var edOrgsRefreshIntervalInMins = app.Configuration.GetValue<string>(

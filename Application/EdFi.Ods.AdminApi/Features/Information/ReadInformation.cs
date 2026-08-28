@@ -95,24 +95,24 @@ public class ReadInformation : IFeature
             AdminApiMode.V1 => BuildResult(
                 V1.Infrastructure.Helpers.ConstantsHelpers.Version,
                 V1.Infrastructure.Helpers.ConstantsHelpers.Build,
-                "v1",
+                AdminApiVersions.V1.VersionPath,
                 V1.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
                 V1.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
-                "v1"),
+                AdminApiVersions.V1.ToString()),
             AdminApiMode.V2 => BuildResult(
                 ConstantsHelpers.Version,
                 ConstantsHelpers.Build,
-                "v2",
+                AdminApiVersions.V2.VersionPath,
                 ConstantsHelpers.ApplicationName,
                 ConstantsHelpers.InformationalVersion,
-                "v2"),
+                AdminApiVersions.V2.ToString()),
             AdminApiMode.V3 => BuildResult(
                 V3.Infrastructure.Helpers.ConstantsHelpers.Version,
                 V3.Infrastructure.Helpers.ConstantsHelpers.Build,
-                "v3",
+                AdminApiVersions.V3.VersionPath,
                 V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
                 V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
-                "v3"),
+                AdminApiVersions.V3.ToString()),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

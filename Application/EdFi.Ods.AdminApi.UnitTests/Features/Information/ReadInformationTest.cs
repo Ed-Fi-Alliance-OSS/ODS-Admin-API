@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Features.Tenants;
+using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Information;
 using EdFi.Ods.AdminApi.Features.Tenants;
@@ -89,7 +90,7 @@ public class ReadInformationTest
 
         result.Version.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.Version);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.Build);
-        result.SpecificationVersion.ShouldBe("v2");
+        result.SpecificationVersion.ShouldBe(AdminApiVersions.V2.VersionPath);
     }
 
     [Test]
@@ -112,7 +113,7 @@ public class ReadInformationTest
         result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
         result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
         result.Urls.ShouldNotBeNull();
-        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v2/swagger/v2/swagger.json");
+        result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v2/swagger/{AdminApiVersions.V2}/swagger.json");
     }
 
     [Test]
@@ -131,7 +132,7 @@ public class ReadInformationTest
 
         result.Version.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.Version);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.Build);
-        result.SpecificationVersion.ShouldBe("v1");
+        result.SpecificationVersion.ShouldBe(AdminApiVersions.V1.VersionPath);
     }
 
     [Test]
@@ -154,7 +155,7 @@ public class ReadInformationTest
         result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
         result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
         result.Urls.ShouldNotBeNull();
-        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v1/swagger/v1/swagger.json");
+        result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v1/swagger/{AdminApiVersions.V1}/swagger.json");
     }
 
     [Test]
@@ -173,7 +174,7 @@ public class ReadInformationTest
 
         result.Version.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Version);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Build);
-        result.SpecificationVersion.ShouldBe("v3");
+        result.SpecificationVersion.ShouldBe(AdminApiVersions.V3.VersionPath);
     }
 
     [Test]
@@ -196,7 +197,7 @@ public class ReadInformationTest
         result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
         result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
         result.Urls.ShouldNotBeNull();
-        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v3/swagger/v3/swagger.json");
+        result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v3/swagger/{AdminApiVersions.V3}/swagger.json");
     }
 
     [Test]
@@ -219,7 +220,7 @@ public class ReadInformationTest
         var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.Urls.ShouldNotBeNull();
-        result.Urls.OpenApiMetadata.ShouldBe("https://localhost/adminapi/swagger/v3/swagger.json");
+        result.Urls.OpenApiMetadata.ShouldBe($"https://localhost/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
     }
 
     [Test]
@@ -255,6 +256,6 @@ public class ReadInformationTest
         result.Tenancy.Tenants.ShouldContain("tenant1");
         result.Tenancy.Tenants.ShouldContain("tenant2");
         result.Urls.ShouldNotBeNull();
-        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v3/swagger/v3/swagger.json");
+        result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v3/swagger/{AdminApiVersions.V3}/swagger.json");
     }
 }
