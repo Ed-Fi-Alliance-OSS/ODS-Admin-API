@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System.Reflection;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Helpers;
 
@@ -24,29 +25,14 @@ public static class ConstantsHelpers
     /// <summary>
     /// Application name.
     /// </summary>
-    public const string ApplicationName = "Ed-Fi Management API";
+    public const string ApplicationName = ApiInformationHelper.ApplicationName;
 
     /// <summary>
     /// Informational version description.
     /// </summary>
-    public static readonly string InformationalVersion = NormalizeInformationalVersion(
+    public static readonly string InformationalVersion = ApiInformationHelper.NormalizeInformationalVersion(
         Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-            ?.InformationalVersion);
-
-    /// <summary>
-    /// Strips any build-metadata suffix (e.g. "+&lt;git-sha&gt;") from the informational version so it
-    /// does not leak into the response, falling back to the release version when none is present.
-    /// </summary>
-    public static string NormalizeInformationalVersion(string? informationalVersion)
-    {
-        if (string.IsNullOrWhiteSpace(informationalVersion))
-        {
-            return Version;
-        }
-
-        var metadataIndex = informationalVersion.IndexOf('+');
-        return metadataIndex >= 0 ? informationalVersion[..metadataIndex] : informationalVersion;
-    }
+            ?.InformationalVersion,
+        Version);
 }
-

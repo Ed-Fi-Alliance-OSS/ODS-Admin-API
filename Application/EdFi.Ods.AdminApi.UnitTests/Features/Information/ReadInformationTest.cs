@@ -22,9 +22,6 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Information;
 [TestFixture]
 public class ReadInformationTest
 {
-    private static IOptions<SwaggerSettings> SwaggerOptions(bool enableSwagger) =>
-        Microsoft.Extensions.Options.Options.Create(new SwaggerSettings { EnableSwagger = enableSwagger });
-
     [Test]
     public async Task GetInformation_MultiTenantMode_ReturnsTenantNames()
     {
@@ -46,7 +43,7 @@ public class ReadInformationTest
             RequestServices = serviceProvider
         };
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.ShouldNotBeNull();
         result.Tenancy.ShouldNotBeNull();
@@ -68,7 +65,7 @@ public class ReadInformationTest
             RequestServices = new ServiceCollection().BuildServiceProvider()
         };
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.ShouldNotBeNull();
         result.Tenancy.ShouldNotBeNull();
@@ -88,11 +85,34 @@ public class ReadInformationTest
             RequestServices = new ServiceCollection().BuildServiceProvider()
         };
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.Version.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.Version);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.Build);
         result.SpecificationVersion.ShouldBe("v2");
+    }
+
+    [Test]
+    public async Task GetInformation_V2Mode_ReturnsApplicationNameInformationalVersionAndUrls()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2", MultiTenancy = false });
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("admin-api.example.com");
+        httpContext.Request.PathBase = "/v2";
+
+        var result = await ReadInformation.GetInformation(options, httpContext);
+
+        result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
+        result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v2/swagger/v2/swagger.json");
     }
 
     [Test]
@@ -107,11 +127,34 @@ public class ReadInformationTest
             RequestServices = new ServiceCollection().BuildServiceProvider()
         };
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.Version.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.Version);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.Build);
         result.SpecificationVersion.ShouldBe("v1");
+    }
+
+    [Test]
+    public async Task GetInformation_V1Mode_ReturnsApplicationNameInformationalVersionAndUrls()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1", MultiTenancy = false });
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("admin-api.example.com");
+        httpContext.Request.PathBase = "/v1";
+
+        var result = await ReadInformation.GetInformation(options, httpContext);
+
+        result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
+        result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.V1.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v1/swagger/v1/swagger.json");
     }
 
     [Test]
@@ -126,7 +169,7 @@ public class ReadInformationTest
             RequestServices = new ServiceCollection().BuildServiceProvider()
         };
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.Version.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Version);
         result.Build.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.Build);
@@ -134,7 +177,7 @@ public class ReadInformationTest
     }
 
     [Test]
-    public async Task GetInformation_V3ModeWithSwaggerEnabled_ReturnsApplicationNameInformationalVersionAndUrls()
+    public async Task GetInformation_V3Mode_ReturnsApplicationNameInformationalVersionAndUrls()
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
@@ -148,7 +191,7 @@ public class ReadInformationTest
         httpContext.Request.Host = new HostString("admin-api.example.com");
         httpContext.Request.PathBase = "/v3";
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(true), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
         result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
@@ -173,52 +216,14 @@ public class ReadInformationTest
         httpContext.Request.Headers["X-Forwarded-Proto"] = "https";
         httpContext.Request.Headers["X-Forwarded-Host"] = "localhost";
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(true), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe("https://localhost/adminapi/swagger/v3/swagger.json");
     }
 
     [Test]
-    public async Task GetInformation_V3ModeWithSwaggerDisabled_DoesNotReturnUrls()
-    {
-        var options = A.Fake<IOptions<AppSettings>>();
-
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = false });
-
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = new ServiceCollection().BuildServiceProvider()
-        };
-
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
-
-        result.ApplicationName.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName);
-        result.InformationalVersion.ShouldBe(EdFi.Ods.AdminApi.V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion);
-        result.Urls.ShouldBeNull();
-    }
-
-    [Test]
-    public async Task GetInformation_V1Mode_DoesNotReturnApplicationNameInformationalVersionOrUrls()
-    {
-        var options = A.Fake<IOptions<AppSettings>>();
-
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1", MultiTenancy = false });
-
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = new ServiceCollection().BuildServiceProvider()
-        };
-
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(true), httpContext);
-
-        result.ApplicationName.ShouldBeNull();
-        result.InformationalVersion.ShouldBeNull();
-        result.Urls.ShouldBeNull();
-    }
-
-    [Test]
-    public async Task GetInformation_V3MultiTenantMode_ReturnsTenantNames()
+    public async Task GetInformation_V3MultiTenantMode_ReturnsTenantNamesAndUrls()
     {
         var options = A.Fake<IOptions<AppSettings>>();
         var tenantsService = A.Fake<EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.ITenantsService>();
@@ -237,8 +242,11 @@ public class ReadInformationTest
         {
             RequestServices = serviceProvider
         };
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("admin-api.example.com");
+        httpContext.Request.PathBase = "/v3";
 
-        var result = await ReadInformation.GetInformation(options, SwaggerOptions(false), httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.ShouldNotBeNull();
         result.Tenancy.ShouldNotBeNull();
@@ -246,5 +254,7 @@ public class ReadInformationTest
         result.Tenancy.Tenants.Count.ShouldBe(2);
         result.Tenancy.Tenants.ShouldContain("tenant1");
         result.Tenancy.Tenants.ShouldContain("tenant2");
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe("https://admin-api.example.com/v3/swagger/v3/swagger.json");
     }
 }

@@ -10,6 +10,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
+using log4net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
@@ -19,6 +20,8 @@ namespace EdFi.Ods.AdminApi.Features.Information;
 
 public class ReadInformation : IFeature
 {
+    private static readonly ILog _logger = LogManager.GetLogger(typeof(ReadInformation));
+
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("", GetInformation)
@@ -31,7 +34,6 @@ public class ReadInformation : IFeature
 
     public static async Task<InformationResult> GetInformation(
         IOptions<AppSettings> options,
-        IOptions<SwaggerSettings> swaggerOptions,
         HttpContext httpContext)
     {
         if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
@@ -67,23 +69,50 @@ public class ReadInformation : IFeature
             tenancy = new TenancyResult(isMultiTenant, tenantNames);
         }
 
-        var scheme = httpContext.Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? httpContext.Request.Scheme;
-        var host = httpContext.Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? httpContext.Request.Host.ToString();
+        var forwardedProto = httpContext.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
+        var forwardedHost = httpContext.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+        var scheme = forwardedProto ?? httpContext.Request.Scheme;
+        var host = forwardedHost ?? httpContext.Request.Host.ToString();
+
+        if (forwardedProto is not null || forwardedHost is not null)
+        {
+            _logger.DebugFormat(
+                "Information endpoint resolved host '{0}://{1}' from X-Forwarded-* headers (raw request was '{2}://{3}')",
+                scheme,
+                host,
+                httpContext.Request.Scheme,
+                httpContext.Request.Host
+            );
+        }
+
+        var baseUrl = $"{scheme}://{host}{httpContext.Request.PathBase}";
+
+        InformationResult BuildResult(string version, string build, string specificationVersion, string appName, string informationalVersion, string swaggerDocName) =>
+            new(version, build, specificationVersion, tenancy, appName, informationalVersion, new ApiUrlsResult($"{baseUrl}/swagger/{swaggerDocName}/swagger.json"));
 
         return adminApiMode switch
         {
-            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, "v1", tenancy),
-            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, "v2", tenancy),
-            AdminApiMode.V3 => new InformationResult(
+            AdminApiMode.V1 => BuildResult(
+                V1.Infrastructure.Helpers.ConstantsHelpers.Version,
+                V1.Infrastructure.Helpers.ConstantsHelpers.Build,
+                "v1",
+                V1.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
+                V1.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
+                "v1"),
+            AdminApiMode.V2 => BuildResult(
+                ConstantsHelpers.Version,
+                ConstantsHelpers.Build,
+                "v2",
+                ConstantsHelpers.ApplicationName,
+                ConstantsHelpers.InformationalVersion,
+                "v2"),
+            AdminApiMode.V3 => BuildResult(
                 V3.Infrastructure.Helpers.ConstantsHelpers.Version,
                 V3.Infrastructure.Helpers.ConstantsHelpers.Build,
                 "v3",
-                tenancy,
                 V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
                 V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
-                swaggerOptions.Value.EnableSwagger
-                    ? new ApiUrlsResult($"{scheme}://{host}{httpContext.Request.PathBase}/swagger/v3/swagger.json")
-                    : null),
+                "v3"),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

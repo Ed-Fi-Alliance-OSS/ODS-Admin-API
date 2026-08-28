@@ -104,9 +104,11 @@ app.UseHealthChecks("/health", new HealthCheckOptions
     }
 });
 
+// The raw OpenAPI/swagger.json documents are always served so that the /information endpoint's
+// openApiMetadata URL is always reachable; only the interactive Swagger UI is flag-gated.
+app.UseSwagger();
 if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
 {
-    app.UseSwagger();
     app.DefineSwaggerUIWithApiVersions(AdminApiVersions.GetAllVersionStrings());
 }
 
