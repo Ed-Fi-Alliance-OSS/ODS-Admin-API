@@ -37,7 +37,7 @@ public class EditVendor : IFeature
     [SwaggerSchema(Title = "EditVendorRequest")]
     public class EditVendorRequest : IEditVendor
     {
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.VendorIdDescription, Nullable = false)]
         public int Id { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.VendorNameDescription, Nullable = false)]

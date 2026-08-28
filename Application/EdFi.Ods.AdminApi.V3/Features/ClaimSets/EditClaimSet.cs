@@ -53,7 +53,7 @@ public class EditClaimSet : IFeature
     [SwaggerSchema(Title = "EditClaimSetRequest")]
     public class EditClaimSetRequest
     {
-        [SwaggerExclude]
+        [SwaggerSchema(Description = FeatureConstants.ClaimSetIdDescription, Nullable = false)]
         public int Id { get; set; }
 
         [SwaggerSchema(Description = FeatureConstants.ClaimSetNameDescription, Nullable = false)]

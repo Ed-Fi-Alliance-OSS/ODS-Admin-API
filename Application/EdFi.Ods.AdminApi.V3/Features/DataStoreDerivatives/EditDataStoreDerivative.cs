@@ -48,7 +48,6 @@ public class EditDataStoreDerivative : IFeature
     [SwaggerSchema(Title = "EditDataStoreDerivativeRequest")]
     public class EditDataStoreDerivativeRequest : IEditDataStoreDerivativeModel
     {
-        [SwaggerExclude]
         [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeIdDescription, Nullable = false)]
         public int Id { get; set; }
         [SwaggerSchema(Description = FeatureConstants.DataStoreDerivativeDataStoreIdDescription, Nullable = false)]

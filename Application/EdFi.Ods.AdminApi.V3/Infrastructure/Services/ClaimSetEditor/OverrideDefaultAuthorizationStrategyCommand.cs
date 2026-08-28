@@ -4,11 +4,13 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
+using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Security.DataAccess.Contexts;
 using EdFi.Security.DataAccess.Models;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 
@@ -243,7 +245,6 @@ public class OverrideDefaultAuthorizationStrategyCommand
     }
 }
 
-
 public interface IOverrideDefaultAuthorizationStrategyModel
 {
     int ClaimSetId { get; }
@@ -253,14 +254,11 @@ public interface IOverrideDefaultAuthorizationStrategyModel
 
 public class OverrideAuthStrategyOnClaimSetModel
 {
-    [SwaggerExclude]
+    [SwaggerSchema(Description = FeatureConstants.ClaimSetIdDescription, Nullable = false)]
     public int ClaimSetId { get; set; }
-    [SwaggerExclude]
+    [SwaggerSchema(Description = FeatureConstants.ResourceClaimIdDescription, Nullable = false)]
     public int ResourceClaimId { get; set; }
     public string? ActionName { get; set; }
-    [SwaggerExclude]
+    [SwaggerSchema(Description = FeatureConstants.AuthorizationStrategyIdsDescription, Nullable = false)]
     public List<int>? AuthStrategyIds { get; set; }
 }
-
-
-

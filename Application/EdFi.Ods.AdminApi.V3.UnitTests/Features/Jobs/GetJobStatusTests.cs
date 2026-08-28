@@ -63,7 +63,7 @@ public class GetJobStatusTests
 
         // Assert
         result.ShouldNotBeNull();
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
+        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.JobStatusResult>;
         okResult.ShouldNotBeNull();
         okResult.Value.ShouldNotBeNull();
         okResult.Value.JobId.ShouldBe(jobId);
@@ -121,7 +121,7 @@ public class GetJobStatusTests
         var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
+        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.JobStatusResult>;
         okResult.ShouldNotBeNull();
         okResult!.Value!.FinishedAt.ShouldBe(finishedAt);
         okResult!.Value!.ErrorMessage.ShouldBeNull();
@@ -150,7 +150,7 @@ public class GetJobStatusTests
         var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
+        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.JobStatusResult>;
         okResult.ShouldNotBeNull();
         okResult!.Value!.Status.ShouldBe("Error");
         okResult!.Value!.ErrorMessage.ShouldBe(errorMsg);
@@ -178,7 +178,7 @@ public class GetJobStatusTests
         var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
+        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.JobStatusResult>;
         okResult.ShouldNotBeNull();
         okResult!.Value!.Status.ShouldBe("Pending");
         okResult!.Value!.FinishedAt.ShouldBeNull();
@@ -205,7 +205,7 @@ public class GetJobStatusTests
         var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
+        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.JobStatusResult>;
         okResult.ShouldNotBeNull();
         okResult!.Value!.Status.ShouldBe("InProgress");
         okResult!.Value!.FinishedAt.ShouldBeNull();
@@ -232,7 +232,7 @@ public class GetJobStatusTests
         var result = await GetJobStatus.Handle(jobId, _jobStatusService, _tenantConfigurationProvider, _options, _httpContext);
 
         // Assert
-        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.Response>;
+        var okResult = result as Microsoft.AspNetCore.Http.HttpResults.Ok<GetJobStatus.JobStatusResult>;
         okResult.ShouldNotBeNull();
         var response = okResult!.Value!;
         response.JobId.ShouldNotBeNullOrEmpty();

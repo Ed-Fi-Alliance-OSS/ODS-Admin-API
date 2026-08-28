@@ -32,7 +32,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all data stores",
                 "Triggers a refresh of education organization data from all data stores"
             )
-            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, locationDescription: "URI of the queued job's status endpoint."))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v3/jobs/{jobId}."))
             .BuildForVersions(AdminApiVersions.V3);
 
         AdminApiEndpointBuilder
@@ -42,7 +42,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified data store"
             )
             .WithRouteOptions(b => b
-                .WithResponse<JobQueuedResult>(202, locationDescription: "URI of the queued job's status endpoint.")
+                .WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v3/jobs/{jobId}.")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V3);
     }

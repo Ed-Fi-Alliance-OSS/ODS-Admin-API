@@ -29,7 +29,7 @@ public class DeleteDataStoreManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/dataStores/manage/{id}", Handle)
-            .WithDefaultSummaryAndDescription()
+            .WithSummaryAndDescription("Asynchronously deletes a data store based on the supplied values", "Asynchronously deletes a data store. The request is accepted and the deletion process is queued for processing.")
             .WithRouteOptions(b => b.WithResponseCode(204))
             .BuildForVersions(AdminApiVersions.V3);
     }

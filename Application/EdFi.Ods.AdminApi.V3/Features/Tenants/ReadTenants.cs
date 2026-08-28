@@ -26,6 +26,7 @@ public class ReadTenants : IFeature
     {
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}/dataStores/edOrgs", GetTenantEdOrgsByDataStoresAsync)
+            .WithSummaryAndDescription("Retrieves the data stores and their education organizations for a specific tenant", "Returns the tenant along with each of its data stores and the education organizations within them. In multi-tenant mode the tenant header must be supplied and must match the tenantName in the route. In single-tenant mode only the default tenant name is accepted.")
             .WithRouteOptions(b => b.WithResponse<TenantDetailsResponse>(200))
             .BuildForVersions(AdminApiVersions.V3);
     }

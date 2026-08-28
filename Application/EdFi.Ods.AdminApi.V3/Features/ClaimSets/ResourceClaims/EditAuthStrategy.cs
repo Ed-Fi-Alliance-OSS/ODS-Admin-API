@@ -35,6 +35,7 @@ public class EditAuthStrategy : IFeature
             IGetAuthStrategyIdsByNameQuery getAuthStrategyIdsByNameQuery,
       OverrideAuthStategyOnClaimSetRequest request, int claimSetId, int resourceClaimId)
     {
+        ValidatorExtensions.GuardRouteIdMatchesBodyId(claimSetId, request.ClaimSetId, nameof(request.ClaimSetId));
         request.ClaimSetId = claimSetId;
         request.ResourceClaimId = resourceClaimId;
         await validator.GuardAsync(request);

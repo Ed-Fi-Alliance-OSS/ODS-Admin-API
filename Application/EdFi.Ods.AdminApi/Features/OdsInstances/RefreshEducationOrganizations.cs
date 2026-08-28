@@ -26,7 +26,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
             )
-            .WithRouteOptions(b => b.WithResponseCode(202, locationDescription: "URI of the queued job's status endpoint."))
+            .WithRouteOptions(b => b.WithResponseCode(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v3/jobs/{jobId}."))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
@@ -36,7 +36,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified ODS instance"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(202, locationDescription: "URI of the queued job's status endpoint.")
+                .WithResponseCode(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v3/jobs/{jobId}.")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V2);
     }

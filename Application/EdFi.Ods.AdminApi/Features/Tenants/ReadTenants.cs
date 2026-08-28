@@ -27,18 +27,21 @@ public class ReadTenants : IFeature
     {
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants", GetTenantsAsync)
+            .WithSummaryAndDescription("Retrieves the list of tenants", "Returns a list of tenants with their connection string information.")
             .WithRouteOptions(b => b.WithResponse<List<TenantsResponse>>(200))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}", GetTenantsByTenantIdAsync)
+            .WithSummaryAndDescription("Retrieves a specific tenant by tenant name", "Returns a specific tenant with its connection string information.")
             .WithRouteOptions(b => b
-                .WithResponse<TenantsResponse>(200)
-                .WithResponseCode(404, "Not found. A resource with given identifier could not be found."))
+            .WithResponse<TenantsResponse>(200)
+            .WithResponseCode(404, "Not found. A resource with given identifier could not be found."))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}/odsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
+            .WithSummaryAndDescription("Retrieves the ODS instances and their education organizations for a specific tenant", "Returns the tenant along with each of its ODS instances and the education organizations within them. In multi-tenant mode the tenant header must be supplied and must match the tenantName in the route. In single-tenant mode only the default tenant name is accepted.")
             .WithRouteOptions(b => b.WithResponse<TenantDetailsResponse>(200))
             .BuildForVersions(AdminApiVersions.V2);
     }
