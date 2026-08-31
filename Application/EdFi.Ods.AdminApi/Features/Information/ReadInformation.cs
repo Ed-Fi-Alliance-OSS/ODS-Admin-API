@@ -94,7 +94,7 @@ public class ReadInformation : IFeature
             new(
                 ApiInformationHelper.Version,
                 ApiInformationHelper.Build,
-                specificationVersion,
+                adminApiMode.ToString().ToLowerInvariant(),
                 tenancy,
                 ApiInformationHelper.ApplicationName,
                 ApiInformationHelper.InformationalVersion,

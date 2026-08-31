@@ -91,7 +91,7 @@ public class ReadInformationTest
 
         result.Version.ShouldBe(ApiInformationHelper.Version);
         result.Build.ShouldBe(ApiInformationHelper.Build);
-        result.SpecificationVersion.ShouldBe(AdminApiVersions.V2.ToString());
+        result.SpecificationVersion.ShouldBe("v2");
     }
 
     [Test]
@@ -133,7 +133,7 @@ public class ReadInformationTest
 
         result.Version.ShouldBe(ApiInformationHelper.Version);
         result.Build.ShouldBe(ApiInformationHelper.Build);
-        result.SpecificationVersion.ShouldBe(AdminApiVersions.V1.ToString());
+        result.SpecificationVersion.ShouldBe("v1");
     }
 
     [Test]
@@ -175,7 +175,7 @@ public class ReadInformationTest
 
         result.Version.ShouldBe(ApiInformationHelper.Version);
         result.Build.ShouldBe(ApiInformationHelper.Build);
-        result.SpecificationVersion.ShouldBe(AdminApiVersions.V3.ToString());
+        result.SpecificationVersion.ShouldBe("v3");
     }
 
     [Test]
