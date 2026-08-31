@@ -3,12 +3,14 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Reflection;
+
 namespace EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 
 /// <summary>
-/// Shared logic behind the per-version ConstantsHelpers' informational-metadata fields, so the
-/// normalization algorithm and the product name live in one place instead of being duplicated
-/// across the V1/V2/V3 projects.
+/// Single source of truth for the Information endpoint's product-wide metadata (application name,
+/// release version, build, informational version), shared across V1/V2/V3 now that all three ship
+/// together as one product release rather than being versioned independently.
 /// </summary>
 public static class ApiInformationHelper
 {
@@ -16,6 +18,32 @@ public static class ApiInformationHelper
     /// Application name.
     /// </summary>
     public const string ApplicationName = "Ed-Fi ODS Admin API";
+
+    /// <summary>
+    /// Assembly version of the admin api, as stamped by the build script (VersionPrefix) from the
+    /// release version/git tag.
+    /// </summary>
+    public static readonly string Build = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0.0";
+
+    /// <summary>
+    /// Semantic (major.minor.build) release version of the admin api, shared across V1/V2/V3.
+    /// </summary>
+    public static readonly string Version = FormatVersion(Assembly.GetExecutingAssembly().GetName().Version);
+
+    /// <summary>
+    /// Informational version description.
+    /// </summary>
+    public static readonly string InformationalVersion = NormalizeInformationalVersion(
+        Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion,
+        Version);
+
+    /// <summary>
+    /// Drops the 4th (revision) segment .NET pads AssemblyVersion with, so the exposed version reads
+    /// as a clean "major.minor.build" (e.g. "2.4.0") rather than "2.4.0.0".
+    /// </summary>
+    public static string FormatVersion(Version? version) => version?.ToString(3) ?? "0.0.0";
 
     /// <summary>
     /// Strips any build-metadata suffix (e.g. "+&lt;git-sha&gt;") from the informational version so it

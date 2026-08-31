@@ -6,9 +6,9 @@
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using log4net;
 using Microsoft.AspNetCore.Http;
@@ -87,32 +87,24 @@ public class ReadInformation : IFeature
 
         var baseUrl = $"{scheme}://{host}{httpContext.Request.PathBase}";
 
-        InformationResult BuildResult(string version, string build, string specificationVersion, string appName, string informationalVersion, string swaggerDocName) =>
-            new(version, build, specificationVersion, tenancy, appName, informationalVersion, new ApiUrlsResult($"{baseUrl}/swagger/{swaggerDocName}/swagger.json"));
+        // Version/Build/ApplicationName/InformationalVersion are shared across V1/V2/V3 now that all
+        // three ship together as one product release; only specificationVersion (and the swagger doc
+        // it points at) varies per mode.
+        InformationResult BuildResult(string specificationVersion) =>
+            new(
+                ApiInformationHelper.Version,
+                ApiInformationHelper.Build,
+                specificationVersion,
+                tenancy,
+                ApiInformationHelper.ApplicationName,
+                ApiInformationHelper.InformationalVersion,
+                new ApiUrlsResult($"{baseUrl}/swagger/{specificationVersion}/swagger.json"));
 
         return adminApiMode switch
         {
-            AdminApiMode.V1 => BuildResult(
-                AdminApiVersions.V1.VersionString,
-                V1.Infrastructure.Helpers.ConstantsHelpers.Build,
-                AdminApiVersions.V1.VersionPath,
-                V1.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
-                V1.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
-                AdminApiVersions.V1.ToString()),
-            AdminApiMode.V2 => BuildResult(
-                AdminApiVersions.V2.VersionString,
-                ConstantsHelpers.Build,
-                AdminApiVersions.V2.VersionPath,
-                ConstantsHelpers.ApplicationName,
-                ConstantsHelpers.InformationalVersion,
-                AdminApiVersions.V2.ToString()),
-            AdminApiMode.V3 => BuildResult(
-                AdminApiVersions.V3.VersionString,
-                V3.Infrastructure.Helpers.ConstantsHelpers.Build,
-                AdminApiVersions.V3.VersionPath,
-                V3.Infrastructure.Helpers.ConstantsHelpers.ApplicationName,
-                V3.Infrastructure.Helpers.ConstantsHelpers.InformationalVersion,
-                AdminApiVersions.V3.ToString()),
+            AdminApiMode.V1 => BuildResult(AdminApiVersions.V1.ToString()),
+            AdminApiMode.V2 => BuildResult(AdminApiVersions.V2.ToString()),
+            AdminApiMode.V3 => BuildResult(AdminApiVersions.V3.ToString()),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
     }

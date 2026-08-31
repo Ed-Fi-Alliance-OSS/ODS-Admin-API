@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using Shouldly;
 
@@ -35,5 +36,29 @@ public class ApiInformationHelperTests
     public void ApplicationName_IsEdFiOdsAdminApi()
     {
         ApiInformationHelper.ApplicationName.ShouldBe("Ed-Fi ODS Admin API");
+    }
+
+    [Test]
+    public void FormatVersion_WithFourPartVersion_DropsRevisionSegment()
+    {
+        var formatted = ApiInformationHelper.FormatVersion(new Version(2, 4, 0, 0));
+
+        formatted.ShouldBe("2.4.0");
+    }
+
+    [Test]
+    public void FormatVersion_WithNullVersion_ReturnsZeroFallback()
+    {
+        var formatted = ApiInformationHelper.FormatVersion(null);
+
+        formatted.ShouldBe("0.0.0");
+    }
+
+    [Test]
+    public void Version_And_Build_AreDerivedFromTheSameAssemblyVersion()
+    {
+        // Version drops the 4th (revision) segment that Build carries, so the two must always
+        // share the same major.minor.build prefix rather than being stamped independently.
+        ApiInformationHelper.Build.ShouldStartWith(ApiInformationHelper.Version);
     }
 }
