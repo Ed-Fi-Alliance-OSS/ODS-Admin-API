@@ -15,23 +15,18 @@ public class InformationResult
         string version,
         string build,
         string specificationVersion,
-        TenancyResult? tenancy = null,
         string? applicationName = null,
         string? informationalVersion = null,
         ApiUrlsResult? urls = null)
     {
         Build = build;
         Version = version;
-        Tenancy = tenancy;
         SpecificationVersion = specificationVersion;
         ApplicationName = applicationName;
         InformationalVersion = informationalVersion;
         Urls = urls;
     }
 
-    [SwaggerSchema("Tenancy information", Nullable = true)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public TenancyResult? Tenancy { get; }
     [SwaggerSchema("Application version", Nullable = false)]
     public string Version { get; }
     [SwaggerSchema("Build / release version", Nullable = false)]
@@ -59,19 +54,4 @@ public class ApiUrlsResult
 
     [SwaggerSchema("Absolute URL to the OpenAPI/metadata document", Nullable = false)]
     public string OpenApiMetadata { get; }
-}
-
-[SwaggerSchema(Title = "Tenancy")]
-public class TenancyResult
-{
-    public TenancyResult(bool multitenantMode, List<string> tenants)
-    {
-        MultitenantMode = multitenantMode;
-        Tenants = tenants;
-    }
-
-    [SwaggerSchema("Indicates whether multi-tenant mode is enabled", Nullable = false)]
-    public bool MultitenantMode { get; }
-    [SwaggerSchema("List of available tenant names", Nullable = false)]
-    public List<string> Tenants { get; }
 }

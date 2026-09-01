@@ -9,12 +9,10 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using log4net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
-using V3Tenants = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 
 namespace EdFi.Ods.AdminApi.Features.Information;
 
@@ -32,41 +30,13 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    public static async Task<InformationResult> GetInformation(
+    public static Task<InformationResult> GetInformation(
         IOptions<AppSettings> options,
         HttpContext httpContext)
     {
         if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
         {
             throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
-        }
-
-        TenancyResult? tenancy = null;
-
-        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
-        {
-            var isMultiTenant = options.Value.MultiTenancy;
-            List<string> tenantNames;
-
-            if (isMultiTenant)
-            {
-                tenantNames = adminApiMode switch
-                {
-                    AdminApiMode.V2 => (await httpContext.RequestServices.GetRequiredService<ITenantsService>().GetTenantsAsync())
-                        .Select(t => t.TenantName)
-                        .ToList(),
-                    AdminApiMode.V3 => (await httpContext.RequestServices.GetRequiredService<V3Tenants.ITenantsService>().GetTenantsAsync())
-                        .Select(t => t.TenantName)
-                        .ToList(),
-                    _ => []
-                };
-            }
-            else
-            {
-                tenantNames = [];
-            }
-
-            tenancy = new TenancyResult(isMultiTenant, tenantNames);
         }
 
         var forwardedProto = httpContext.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
@@ -95,17 +65,18 @@ public class ReadInformation : IFeature
                 ApiInformationHelper.Version,
                 ApiInformationHelper.Build,
                 adminApiMode.ToString().ToLowerInvariant(),
-                tenancy,
                 ApiInformationHelper.ApplicationName,
                 ApiInformationHelper.InformationalVersion,
                 new ApiUrlsResult($"{baseUrl}/swagger/{specificationVersion}/swagger.json"));
 
-        return adminApiMode switch
+        var result = adminApiMode switch
         {
             AdminApiMode.V1 => BuildResult(AdminApiVersions.V1.ToString()),
             AdminApiMode.V2 => BuildResult(AdminApiVersions.V2.ToString()),
             AdminApiMode.V3 => BuildResult(AdminApiVersions.V3.ToString()),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
+
+        return Task.FromResult(result);
     }
 }

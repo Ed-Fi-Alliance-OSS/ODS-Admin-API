@@ -3,15 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using EdFi.Ods.AdminApi.Common.Features.Tenants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Information;
-using EdFi.Ods.AdminApi.Features.Tenants;
-using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,62 +21,11 @@ namespace EdFi.Ods.AdminApi.UnitTests.Features.Information;
 public class ReadInformationTest
 {
     [Test]
-    public async Task GetInformation_MultiTenantMode_ReturnsTenantNames()
-    {
-        var options = A.Fake<IOptions<AppSettings>>();
-        var tenantsService = A.Fake<ITenantsService>();
-
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2", MultiTenancy = true });
-        A.CallTo(() => tenantsService.GetTenantsAsync(A<bool>._)).ReturnsLazily(call => Task.FromResult(new List<TenantModel>
-        {
-            new TenantModel { TenantName = "tenant1" },
-            new TenantModel { TenantName = "tenant2" }
-        }));
-
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton(tenantsService)
-            .BuildServiceProvider();
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = serviceProvider
-        };
-
-        var result = await ReadInformation.GetInformation(options, httpContext);
-
-        result.ShouldNotBeNull();
-        result.Tenancy.ShouldNotBeNull();
-        result.Tenancy.MultitenantMode.ShouldBeTrue();
-        result.Tenancy.Tenants.Count.ShouldBe(2);
-        result.Tenancy.Tenants.ShouldContain("tenant1");
-        result.Tenancy.Tenants.ShouldContain("tenant2");
-    }
-
-    [Test]
-    public async Task GetInformation_SingleTenantMode_ReturnsEmptyTenants()
-    {
-        var options = A.Fake<IOptions<AppSettings>>();
-
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2", MultiTenancy = false });
-
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = new ServiceCollection().BuildServiceProvider()
-        };
-
-        var result = await ReadInformation.GetInformation(options, httpContext);
-
-        result.ShouldNotBeNull();
-        result.Tenancy.ShouldNotBeNull();
-        result.Tenancy.MultitenantMode.ShouldBeFalse();
-        result.Tenancy.Tenants.ShouldBeEmpty();
-    }
-
-    [Test]
     public async Task GetInformation_V2Mode_ReturnsVersionAndBuild()
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -99,7 +44,7 @@ public class ReadInformationTest
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V2" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -122,7 +67,7 @@ public class ReadInformationTest
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -141,7 +86,7 @@ public class ReadInformationTest
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V1" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -164,7 +109,7 @@ public class ReadInformationTest
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -183,7 +128,7 @@ public class ReadInformationTest
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -206,7 +151,7 @@ public class ReadInformationTest
     {
         var options = A.Fake<IOptions<AppSettings>>();
 
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = false });
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3" });
 
         var httpContext = new DefaultHttpContext
         {
@@ -222,41 +167,5 @@ public class ReadInformationTest
 
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://localhost/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
-    }
-
-    [Test]
-    public async Task GetInformation_V3MultiTenantMode_ReturnsTenantNamesAndUrls()
-    {
-        var options = A.Fake<IOptions<AppSettings>>();
-        var tenantsService = A.Fake<EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants.ITenantsService>();
-
-        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3", MultiTenancy = true });
-        A.CallTo(() => tenantsService.GetTenantsAsync(A<bool>._)).ReturnsLazily(call => Task.FromResult(new List<TenantModel>
-        {
-            new TenantModel { TenantName = "tenant1" },
-            new TenantModel { TenantName = "tenant2" }
-        }));
-
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton(tenantsService)
-            .BuildServiceProvider();
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = serviceProvider
-        };
-        httpContext.Request.Scheme = "https";
-        httpContext.Request.Host = new HostString("admin-api.example.com");
-        httpContext.Request.PathBase = "/v3";
-
-        var result = await ReadInformation.GetInformation(options, httpContext);
-
-        result.ShouldNotBeNull();
-        result.Tenancy.ShouldNotBeNull();
-        result.Tenancy.MultitenantMode.ShouldBeTrue();
-        result.Tenancy.Tenants.Count.ShouldBe(2);
-        result.Tenancy.Tenants.ShouldContain("tenant1");
-        result.Tenancy.Tenants.ShouldContain("tenant2");
-        result.Urls.ShouldNotBeNull();
-        result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v3/swagger/{AdminApiVersions.V3}/swagger.json");
     }
 }
