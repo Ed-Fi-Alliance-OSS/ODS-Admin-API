@@ -29,9 +29,18 @@ public class ReadTenancy : IFeature
         [FromServices] ITenantsService tenantsService,
         IOptions<AppSettings> options)
     {
-        var tenantNames = options.Value.MultiTenancy
-            ? (await tenantsService.GetTenantsAsync()).Select(t => t.TenantName).ToList()
-            : [];
+        if (!options.Value.MultiTenancy)
+        {
+            return new TenancyResult([]);
+        }
+
+        var tenantNames = (await tenantsService.GetTenantsAsync()).Select(t => t.TenantName).ToList();
+
+        if (tenantNames.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings.");
+        }
 
         return new TenancyResult(tenantNames);
     }

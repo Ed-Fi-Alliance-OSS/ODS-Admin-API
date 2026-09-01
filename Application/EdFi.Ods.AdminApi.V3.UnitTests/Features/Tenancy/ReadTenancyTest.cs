@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Features.Tenants;
@@ -50,5 +51,17 @@ public class ReadTenancyTest
         var result = await ReadTenancy.GetTenancyAsync(tenantsService, options);
 
         result.Tenants.ShouldBeEmpty();
+    }
+
+    [Test]
+    public async Task GetTenancyAsync_MultiTenantModeWithNoTenantsConfigured_ThrowsInvalidOperationException()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+        var tenantsService = A.Fake<ITenantsService>();
+
+        A.CallTo(() => options.Value).Returns(new AppSettings { MultiTenancy = true });
+        A.CallTo(() => tenantsService.GetTenantsAsync(A<bool>._)).ReturnsLazily(call => Task.FromResult(new List<TenantModel>()));
+
+        await Should.ThrowAsync<InvalidOperationException>(() => ReadTenancy.GetTenancyAsync(tenantsService, options));
     }
 }
