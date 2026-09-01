@@ -3,8 +3,10 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Net;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.AspNetCore.Mvc;
@@ -38,8 +40,11 @@ public class ReadTenancy : IFeature
 
         if (tenantNames.Count == 0)
         {
-            throw new InvalidOperationException(
-                "MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings.");
+            throw new AdminApiException(
+                "MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings.")
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            };
         }
 
         return new TenancyResult(tenantNames);

@@ -3,10 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Features.Tenants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Tenancy;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
@@ -54,7 +55,7 @@ public class ReadTenancyTest
     }
 
     [Test]
-    public async Task GetTenancyAsync_MultiTenantModeWithNoTenantsConfigured_ThrowsInvalidOperationException()
+    public async Task GetTenancyAsync_MultiTenantModeWithNoTenantsConfigured_ThrowsAdminApiException()
     {
         var options = A.Fake<IOptions<AppSettings>>();
         var tenantsService = A.Fake<ITenantsService>();
@@ -62,6 +63,9 @@ public class ReadTenancyTest
         A.CallTo(() => options.Value).Returns(new AppSettings { MultiTenancy = true });
         A.CallTo(() => tenantsService.GetTenantsAsync(A<bool>._)).ReturnsLazily(call => Task.FromResult(new List<TenantModel>()));
 
-        await Should.ThrowAsync<InvalidOperationException>(() => ReadTenancy.GetTenancyAsync(tenantsService, options));
+        var exception = await Should.ThrowAsync<AdminApiException>(() => ReadTenancy.GetTenancyAsync(tenantsService, options));
+
+        exception.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        exception.Message.ShouldBe("MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings.");
     }
 }
