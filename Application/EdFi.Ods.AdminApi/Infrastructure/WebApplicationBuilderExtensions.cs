@@ -202,6 +202,7 @@ public static class WebApplicationBuilderExtensions
             opt.SchemaFilter<SwaggerOptionalSchemaFilter>();
             opt.SchemaFilter<SwaggerSchemaRemoveRequiredFilter>();
             opt.SchemaFilter<SwaggerExcludeSchemaFilter>();
+            opt.SchemaFilter<ProblemDetailsSchemaFilter>();
             opt.OperationFilter<SwaggerDefaultParameterFilter>();
             opt.OperationFilter<ProfileRequestExampleFilter>();
 
