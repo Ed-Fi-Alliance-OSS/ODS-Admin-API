@@ -41,20 +41,23 @@ public class ReadInformation : IFeature
         // Version/Build/ApplicationName/InformationalVersion are shared across V1/V2/V3 now that all
         // three ship together as one product release; only specificationVersion (and the swagger doc
         // it points at) varies per mode.
-        InformationResult BuildResult(string specificationVersion) =>
+        InformationResult BuildResult(string specificationVersion, string? tenancyVersionPath) =>
             new(
                 ApiInformationHelper.Version,
                 ApiInformationHelper.Build,
                 adminApiMode.ToString().ToLowerInvariant(),
                 ApiInformationHelper.ApplicationName,
                 ApiInformationHelper.InformationalVersion,
-                new ApiUrlsResult($"{baseUrl}/swagger/{specificationVersion}/swagger.json"));
+                new ApiUrlsResult(
+                    $"{baseUrl}/swagger/{specificationVersion}/swagger.json",
+                    tenancyVersionPath is null ? string.Empty : $"{baseUrl}/{tenancyVersionPath}/tenancy"));
 
         var result = adminApiMode switch
         {
-            AdminApiMode.V1 => BuildResult(AdminApiVersions.V1.ToString()),
-            AdminApiMode.V2 => BuildResult(AdminApiVersions.V2.ToString()),
-            AdminApiMode.V3 => BuildResult(AdminApiVersions.V3.ToString()),
+            // V1 has no tenancy endpoint.
+            AdminApiMode.V1 => BuildResult(AdminApiVersions.V1.ToString(), null),
+            AdminApiMode.V2 => BuildResult(AdminApiVersions.V2.ToString(), AdminApiVersions.V2.VersionPath),
+            AdminApiMode.V3 => BuildResult(AdminApiVersions.V3.ToString(), AdminApiVersions.V3.VersionPath),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
 

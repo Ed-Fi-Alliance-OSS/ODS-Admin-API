@@ -64,6 +64,7 @@ public class ReadInformationTest
         result.InformationalVersion.ShouldBe(ApiInformationHelper.InformationalVersion);
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v2/swagger/{AdminApiVersions.V2}/swagger.json");
+        result.Urls.Tenancy.ShouldBe($"https://admin-api.example.com/v2/{AdminApiVersions.V2.VersionPath}/tenancy");
     }
 
     [Test]
@@ -106,6 +107,7 @@ public class ReadInformationTest
         result.InformationalVersion.ShouldBe(ApiInformationHelper.InformationalVersion);
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v1/swagger/{AdminApiVersions.V1}/swagger.json");
+        result.Urls.Tenancy.ShouldBe(string.Empty);
     }
 
     [Test]
@@ -148,6 +150,7 @@ public class ReadInformationTest
         result.InformationalVersion.ShouldBe(ApiInformationHelper.InformationalVersion);
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://admin-api.example.com/v3/swagger/{AdminApiVersions.V3}/swagger.json");
+        result.Urls.Tenancy.ShouldBe($"https://admin-api.example.com/v3/{AdminApiVersions.V3.VersionPath}/tenancy");
     }
 
     [Test]
@@ -173,6 +176,7 @@ public class ReadInformationTest
 
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://localhost/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
+        result.Urls.Tenancy.ShouldBe($"https://localhost/adminapi/{AdminApiVersions.V3.VersionPath}/tenancy");
     }
 
     [Test]
@@ -210,6 +214,7 @@ public class ReadInformationTest
 
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://localhost/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
+        result.Urls.Tenancy.ShouldBe($"https://localhost/adminapi/{AdminApiVersions.V3.VersionPath}/tenancy");
     }
 
     [Test]
@@ -247,5 +252,6 @@ public class ReadInformationTest
 
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"http://adminapi/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
+        result.Urls.Tenancy.ShouldBe($"http://adminapi/adminapi/{AdminApiVersions.V3.VersionPath}/tenancy");
     }
 }

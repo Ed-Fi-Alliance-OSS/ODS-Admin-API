@@ -27,6 +27,11 @@ script:post-response {
     expect(response.specificationVersion).to.equal("v2");
   });
 
+  test("GET Landing: urls.tenancy points at the v2 tenancy endpoint", function () {
+    expect(response.urls).to.have.property("tenancy");
+    expect(response.urls.tenancy).to.match(/\/v2\/tenancy$/);
+  });
+
   const Ajv = require('ajv');
   const ajv = new Ajv();
   const GetSchemaLanding =  {

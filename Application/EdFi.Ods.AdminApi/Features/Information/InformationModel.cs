@@ -43,11 +43,14 @@ public class InformationResult
 [SwaggerSchema(Title = "ApiUrls")]
 public class ApiUrlsResult
 {
-    public ApiUrlsResult(string openApiMetadata)
+    public ApiUrlsResult(string openApiMetadata, string tenancy)
     {
         OpenApiMetadata = openApiMetadata;
+        Tenancy = tenancy;
     }
 
     [SwaggerSchema("Absolute URL to the OpenAPI/metadata document", Nullable = false)]
     public string OpenApiMetadata { get; }
+    [SwaggerSchema("Absolute URL to the tenancy endpoint; empty for V1, which has no tenancy endpoint", Nullable = false)]
+    public string Tenancy { get; }
 }
