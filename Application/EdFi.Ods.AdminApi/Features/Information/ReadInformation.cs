@@ -9,7 +9,6 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
-using log4net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
@@ -18,8 +17,6 @@ namespace EdFi.Ods.AdminApi.Features.Information;
 
 public class ReadInformation : IFeature
 {
-    private static readonly ILog _logger = LogManager.GetLogger(typeof(ReadInformation));
-
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("", GetInformation)
@@ -39,23 +36,7 @@ public class ReadInformation : IFeature
             throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
         }
 
-        var forwardedProto = httpContext.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
-        var forwardedHost = httpContext.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
-        var scheme = forwardedProto ?? httpContext.Request.Scheme;
-        var host = forwardedHost ?? httpContext.Request.Host.ToString();
-
-        if (forwardedProto is not null || forwardedHost is not null)
-        {
-            _logger.DebugFormat(
-                "Information endpoint resolved host '{0}://{1}' from X-Forwarded-* headers (raw request was '{2}://{3}')",
-                scheme,
-                host,
-                httpContext.Request.Scheme,
-                httpContext.Request.Host
-            );
-        }
-
-        var baseUrl = $"{scheme}://{host}{httpContext.Request.PathBase}";
+        var baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}";
 
         // Version/Build/ApplicationName/InformationalVersion are shared across V1/V2/V3 now that all
         // three ship together as one product release; only specificationVersion (and the swagger doc

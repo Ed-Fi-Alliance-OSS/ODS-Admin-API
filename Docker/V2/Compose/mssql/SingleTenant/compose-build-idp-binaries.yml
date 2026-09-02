@@ -44,6 +44,8 @@ services:
       AppSettings__EnableDataStoreManagement: ${ENABLE_DATA_STORE_MANAGEMENT:-true}
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-false}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      AppSettings__ReverseProxy__UseForwardedHeaders: "true"
+      AppSettings__ReverseProxy__KnownNetworks: "172.16.0.0/12,192.168.0.0/16"
       AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-true}"
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"

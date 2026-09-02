@@ -49,7 +49,14 @@ var pathBase = app.Configuration.GetValue<string>("AppSettings:PathBase");
 if (!string.IsNullOrEmpty(pathBase))
 {
     app.UsePathBase($"/{pathBase.Trim('/')}");
-    app.UseForwardedHeaders();
+}
+
+var reverseProxySettings = app.Services.GetRequiredService<IOptions<ReverseProxySettings>>().Value;
+if (reverseProxySettings.UseForwardedHeaders)
+{
+    var forwardedHeadersOptions = new ForwardedHeadersOptions();
+    ForwardedHeadersConfigurator.Configure(forwardedHeadersOptions, reverseProxySettings);
+    app.UseForwardedHeaders(forwardedHeadersOptions);
 }
 
 AdminApiVersions.Initialize(app);

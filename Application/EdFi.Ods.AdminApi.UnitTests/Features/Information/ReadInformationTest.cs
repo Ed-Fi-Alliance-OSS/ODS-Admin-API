@@ -3,14 +3,18 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Net;
 using System.Threading.Tasks;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Information;
 using FakeItEasy;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -149,6 +153,10 @@ public class ReadInformationTest
     [Test]
     public async Task GetInformation_V3ModeBehindReverseProxy_UsesForwardedProtoAndHost()
     {
+        // ForwardedHeadersMiddleware (wired via ForwardedHeadersConfigurator when
+        // ReverseProxySettings.UseForwardedHeaders is enabled) normalizes Request.Scheme/Request.Host
+        // from X-Forwarded-Proto/X-Forwarded-Host *before* ReadInformation runs; ReadInformation itself
+        // no longer reads those headers, so this simulates the middleware's effect directly.
         var options = A.Fake<IOptions<AppSettings>>();
 
         A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3" });
@@ -157,15 +165,87 @@ public class ReadInformationTest
         {
             RequestServices = new ServiceCollection().BuildServiceProvider()
         };
+        httpContext.Request.Scheme = "https";
+        httpContext.Request.Host = new HostString("localhost");
+        httpContext.Request.PathBase = "/adminapi";
+
+        var result = await ReadInformation.GetInformation(options, httpContext);
+
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe($"https://localhost/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
+    }
+
+    [Test]
+    public async Task GetInformation_V3ModeWithForwardedHeadersMiddlewareEnabled_UsesForwardedProtoAndHost()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3" });
+
+        var reverseProxySettings = new ReverseProxySettings
+        {
+            UseForwardedHeaders = true,
+            KnownProxies = "10.0.0.1"
+        };
+        var forwardedHeadersOptions = new ForwardedHeadersOptions();
+        ForwardedHeadersConfigurator.Configure(forwardedHeadersOptions, reverseProxySettings);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        httpContext.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
         httpContext.Request.Scheme = "http";
         httpContext.Request.Host = new HostString("adminapi");
         httpContext.Request.PathBase = "/adminapi";
         httpContext.Request.Headers["X-Forwarded-Proto"] = "https";
         httpContext.Request.Headers["X-Forwarded-Host"] = "localhost";
 
+        var middleware = new ForwardedHeadersMiddleware(
+            _ => Task.CompletedTask,
+            NullLoggerFactory.Instance,
+            Options.Create(forwardedHeadersOptions));
+
+        await middleware.Invoke(httpContext);
         var result = await ReadInformation.GetInformation(options, httpContext);
 
         result.Urls.ShouldNotBeNull();
         result.Urls.OpenApiMetadata.ShouldBe($"https://localhost/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
+    }
+
+    [Test]
+    public async Task GetInformation_V3ModeWithForwardedHeadersFromUntrustedSource_IgnoresForwardedProtoAndHost()
+    {
+        var options = A.Fake<IOptions<AppSettings>>();
+        A.CallTo(() => options.Value).Returns(new AppSettings { AdminApiMode = "V3" });
+
+        var reverseProxySettings = new ReverseProxySettings
+        {
+            UseForwardedHeaders = true,
+            KnownProxies = "10.0.0.1"
+        };
+        var forwardedHeadersOptions = new ForwardedHeadersOptions();
+        ForwardedHeadersConfigurator.Configure(forwardedHeadersOptions, reverseProxySettings);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().BuildServiceProvider()
+        };
+        httpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.5"); // not in KnownProxies
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Host = new HostString("adminapi");
+        httpContext.Request.PathBase = "/adminapi";
+        httpContext.Request.Headers["X-Forwarded-Proto"] = "https";
+        httpContext.Request.Headers["X-Forwarded-Host"] = "spoofed-host";
+
+        var middleware = new ForwardedHeadersMiddleware(
+            _ => Task.CompletedTask,
+            NullLoggerFactory.Instance,
+            Options.Create(forwardedHeadersOptions));
+
+        await middleware.Invoke(httpContext);
+        var result = await ReadInformation.GetInformation(options, httpContext);
+
+        result.Urls.ShouldNotBeNull();
+        result.Urls.OpenApiMetadata.ShouldBe($"http://adminapi/adminapi/swagger/{AdminApiVersions.V3}/swagger.json");
     }
 }
