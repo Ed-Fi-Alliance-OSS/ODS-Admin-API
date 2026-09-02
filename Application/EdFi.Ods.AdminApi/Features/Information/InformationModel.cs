@@ -4,7 +4,6 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using Swashbuckle.AspNetCore.Annotations;
-using System.Text.Json.Serialization;
 
 namespace EdFi.Ods.AdminApi.Features.Information;
 
@@ -15,9 +14,9 @@ public class InformationResult
         string version,
         string build,
         string specificationVersion,
-        string? applicationName = null,
-        string? informationalVersion = null,
-        ApiUrlsResult? urls = null)
+        string applicationName,
+        string informationalVersion,
+        ApiUrlsResult urls)
     {
         Build = build;
         Version = version;
@@ -33,15 +32,12 @@ public class InformationResult
     public string Build { get; }
     [SwaggerSchema("Management API specification version", Nullable = false)]
     public string SpecificationVersion { get; }
-    [SwaggerSchema("Application name", Nullable = true)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ApplicationName { get; }
-    [SwaggerSchema("Informational/semantic version", Nullable = true)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? InformationalVersion { get; }
-    [SwaggerSchema("Related URLs", Nullable = true)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ApiUrlsResult? Urls { get; }
+    [SwaggerSchema("Application name", Nullable = false)]
+    public string ApplicationName { get; }
+    [SwaggerSchema("Informational/semantic version", Nullable = false)]
+    public string InformationalVersion { get; }
+    [SwaggerSchema("Related URLs", Nullable = false)]
+    public ApiUrlsResult Urls { get; }
 }
 
 [SwaggerSchema(Title = "ApiUrls")]

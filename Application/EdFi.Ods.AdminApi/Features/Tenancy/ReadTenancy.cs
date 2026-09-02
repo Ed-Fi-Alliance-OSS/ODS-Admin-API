@@ -3,15 +3,13 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Net;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.Features.Tenancy;
 
@@ -31,34 +29,10 @@ public class ReadTenancy : IFeature
         [FromServices] ITenantsService tenantsService,
         IOptions<AppSettings> options)
     {
-        if (!options.Value.MultiTenancy)
-        {
-            return new TenancyResult([]);
-        }
+        var tenantNames = options.Value.MultiTenancy
+            ? (await tenantsService.GetTenantsAsync()).Select(t => t.TenantName)
+            : [];
 
-        var tenantNames = (await tenantsService.GetTenantsAsync()).Select(t => t.TenantName).ToList();
-
-        if (tenantNames.Count == 0)
-        {
-            throw new AdminApiException(
-                "MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings.")
-            {
-                StatusCode = HttpStatusCode.InternalServerError
-            };
-        }
-
-        return new TenancyResult(tenantNames);
+        return TenancyHelper.BuildTenancyResult(options.Value.MultiTenancy, tenantNames);
     }
-}
-
-[SwaggerSchema(Title = "Tenancy")]
-public class TenancyResult
-{
-    public TenancyResult(List<string> tenants)
-    {
-        Tenants = tenants;
-    }
-
-    [SwaggerSchema("List of available tenant names", Nullable = false)]
-    public List<string> Tenants { get; }
 }

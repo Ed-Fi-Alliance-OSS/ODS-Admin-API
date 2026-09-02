@@ -65,7 +65,7 @@ public class ReadTenancyTest
 
         var exception = await Should.ThrowAsync<AdminApiException>(() => ReadTenancy.GetTenancyAsync(tenantsService, options));
 
-        exception.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        exception.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         exception.Message.ShouldBe("MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings.");
     }
 }
