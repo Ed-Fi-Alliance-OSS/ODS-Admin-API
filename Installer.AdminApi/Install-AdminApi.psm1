@@ -746,7 +746,7 @@ function Invoke-TransferAppsettings {
 
         $backUpPath = $Config.ApplicationBackupPath
         Write-Warning "The following appsettings will be copied over from existing application: "
-        $appSettings = @('DatabaseEngine', 'ApiStartupType', 'ApiExternalUrl', 'PathBase', 'Log4NetConfigFileName', 'Authority', 'IssuerUrl', 'SigningKey', 'AllowRegistration')
+        $appSettings = @('DatabaseEngine', 'ApiStartupType', 'ApiExternalUrl', 'PathBase', 'Log4NetConfigFileName', 'IssuerUrl', 'SigningKey', 'AllowRegistration')
         foreach ($property in $appSettings) {
            Write-Host $property;
         }
@@ -762,7 +762,6 @@ function Invoke-TransferAppsettings {
         $newSettings.AppSettings.PathBase = $oldSettings.AppSettings.PathBase
         $newSettings.Log4NetCore.Log4NetConfigFileName = $oldSettings.Log4NetCore.Log4NetConfigFileName
 
-        $newSettings.Authentication.Authority = $oldSettings.Authentication.Authority
         $newSettings.Authentication.IssuerUrl = $oldSettings.Authentication.IssuerUrl
         $newSettings.Authentication.SigningKey = $oldSettings.Authentication.SigningKey
         $newSettings.Authentication.AllowRegistration = $oldSettings.Authentication.AllowRegistration
@@ -958,12 +957,6 @@ function Invoke-TransformAppSettings {
         $settings.AppSettings.MultiTenancy = $config.IsMultiTenant
 
         $missingAuthenticationSettings = @()
-        if ($Config.AuthenticationSettings.ContainsKey("Authority")) {
-            $settings.Authentication.Authority = $Config.AuthenticationSettings.Authority
-        } else {
-            $missingAuthenticationSettings += 'Authority'
-        }
-
         if ($Config.AuthenticationSettings.ContainsKey("IssuerUrl")) {
             $settings.Authentication.IssuerUrl = $Config.AuthenticationSettings.IssuerUrl
         } else {

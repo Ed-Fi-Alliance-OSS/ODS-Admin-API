@@ -69,10 +69,9 @@ Configure Admin Api with Multi tenant
 
 # Authentication Settings
 # Authentication:SigningKey must be a Base64-encoded string
-# Authentication:Authority and Authentication:IssuerUrl should be the same URL as your application
+# Authentication:IssuerUrl should be the same URL as your application
 # Changing Authentication:AllowRegistration to true allows unrestricted registration of new Admin API clients. This is not recommended for production.
 $authenticationSettings = @{
-    Authority = ""
     IssuerUrl = ""
     SigningKey = ""
     AllowRegistration = $false
@@ -89,7 +88,7 @@ $p = @{
     AuthenticationSettings = $authenticationSettings
 }
 
-if ([string]::IsNullOrWhiteSpace($p.AuthenticationSettings.Authority) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.IssuerUrl) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.SigningKey) -or $p.AuthenticationSettings.AllowRegistration -isnot [bool]) {
+if ([string]::IsNullOrWhiteSpace($p.AuthenticationSettings.IssuerUrl) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.SigningKey) -or $p.AuthenticationSettings.AllowRegistration -isnot [bool]) {
     Write-Error "Authentication Settings have not been configured correctly. Edit install.ps1 to pass in valid authentication settings for Admin Api."
 }
 else {

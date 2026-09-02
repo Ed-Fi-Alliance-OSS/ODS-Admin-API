@@ -141,22 +141,6 @@ public static class SecurityExtensions
                     return Task.CompletedTask;
                 }
             };
-        })
-
-        // Named scheme for external Identity provider support
-        .AddJwtBearer("IdentityProvider", options =>
-        {
-            options.Authority = issuer;
-            options.SaveToken = true;
-            options.RequireHttpsMetadata = false;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = validateIssuerSigningKey,
-                ValidIssuer = issuer,
-                RoleClaimType = roleClaimType
-            };
         });
 
         services.AddAuthorization(opt =>
