@@ -18,12 +18,4 @@ public class AdminApiVersionsTests
         AdminApiVersions.V2.VersionPath.ShouldBe("v2");
         AdminApiVersions.V3.VersionPath.ShouldBe("v3");
     }
-
-    [Test]
-    public void VersionString_IsSameSharedValueForEveryVersion()
-    {
-        AdminApiVersions.V1.VersionString.ShouldBe("2.4");
-        AdminApiVersions.V2.VersionString.ShouldBe("2.4");
-        AdminApiVersions.V3.VersionString.ShouldBe("2.4");
-    }
 }

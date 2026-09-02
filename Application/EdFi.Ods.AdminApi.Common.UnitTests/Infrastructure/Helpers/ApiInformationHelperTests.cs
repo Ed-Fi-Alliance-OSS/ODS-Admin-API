@@ -15,11 +15,21 @@ public class ApiInformationHelperTests
     [TestCase("2.0.1+0a1b2c3", "2.0.1")]
     [TestCase("2.0.1-rc.1+0a1b2c3", "2.0.1-rc.1")]
     [TestCase("2.0.1", "2.0.1")]
+    [TestCase("2.0.1+0a1b2c3+extra", "2.0.1")]
     public void NormalizeInformationalVersion_WithMetadataSuffix_StripsBuildMetadata(string raw, string expected)
     {
         var normalized = ApiInformationHelper.NormalizeInformationalVersion(raw, fallbackVersion: "9.9.9");
 
         normalized.ShouldBe(expected);
+    }
+
+    [TestCase("+0a1b2c3")]
+    [TestCase("+")]
+    public void NormalizeInformationalVersion_WithMetadataMarkerAtStart_ReturnsFallback(string raw)
+    {
+        var normalized = ApiInformationHelper.NormalizeInformationalVersion(raw, fallbackVersion: "9.9.9");
+
+        normalized.ShouldBe("9.9.9");
     }
 
     [TestCase(null)]

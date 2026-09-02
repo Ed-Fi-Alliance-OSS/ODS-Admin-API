@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using System.Globalization;
 using System.Reflection;
 using Asp.Versioning.Builder;
 using Asp.Versioning.Conventions;
@@ -68,7 +67,6 @@ public class AdminApiVersions
         }
 
         public double Version { get; }
-        public string VersionString => Version.ToString("0.0", CultureInfo.InvariantCulture);
         public string VersionPath { get; }
         public string DisplayName { get; }
         public override string ToString() => DisplayName;

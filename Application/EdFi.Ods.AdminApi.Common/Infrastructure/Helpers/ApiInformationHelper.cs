@@ -57,6 +57,7 @@ public static class ApiInformationHelper
         }
 
         var metadataIndex = informationalVersion.IndexOf('+');
-        return metadataIndex >= 0 ? informationalVersion[..metadataIndex] : informationalVersion;
+        var stripped = metadataIndex >= 0 ? informationalVersion[..metadataIndex] : informationalVersion;
+        return string.IsNullOrWhiteSpace(stripped) ? fallbackVersion : stripped;
     }
 }
