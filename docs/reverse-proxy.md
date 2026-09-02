@@ -9,17 +9,23 @@ actually sees — so that values it returns to the client, most notably
 `urls.openApiMetadata` on `GET /` (see `ReadInformation.cs`), are correct
 and usable.
 
+This applies to all three API modes (V1, V2, V3) — `AppSettings:AdminApiMode`
+only selects which `specificationVersion`/swagger doc `GET /` returns; the
+forwarded-headers pipeline wiring in `Program.cs` sits above that branch and
+runs the same way regardless of mode.
+
 ## The setting
 
-Controlled by `AppSettings:ReverseProxy` in `appsettings.json`:
+Controlled by a top-level `ReverseProxy` section in `appsettings.json`,
+alongside other feature-settings sections such as `AuditLogging` and
+`SwaggerSettings` (not nested under `AppSettings`, which is a single flat
+settings object rather than a place other features' settings live):
 
 ```json
-"AppSettings": {
-  "ReverseProxy": {
-    "UseForwardedHeaders": false,
-    "KnownProxies": "",
-    "KnownNetworks": ""
-  }
+"ReverseProxy": {
+  "UseForwardedHeaders": false,
+  "KnownProxies": "",
+  "KnownNetworks": ""
 }
 ```
 
@@ -72,8 +78,8 @@ RFC1918 ranges rather than a single static IP, since the bridge subnet's
 exact address is assigned dynamically per environment:
 
 ```yaml
-AppSettings__ReverseProxy__UseForwardedHeaders: "true"
-AppSettings__ReverseProxy__KnownNetworks: "172.16.0.0/12,192.168.0.0/16"
+ReverseProxy__UseForwardedHeaders: "true"
+ReverseProxy__KnownNetworks: "172.16.0.0/12,192.168.0.0/16"
 ```
 
 See [docker.md](docker.md) for the full nginx/Admin API network diagram.
@@ -94,5 +100,8 @@ effect on:
 * Authentication/authorization decisions.
 * `AppSettings:PathBase`, which is applied independently via
   `app.UsePathBase(...)` regardless of this setting.
-* Rate limiting's `IpRateLimiting:RealIpHeader`, which is a separate,
-  unrelated header-trust setting for client-IP-based rate limiting.
+* Rate limiting. `IpRateLimiting:RealIpHeader`/`ClientIdHeader` look like a
+  parallel header-trust mechanism but are currently unused dead
+  configuration — the rate limiter partitions by request path/method only,
+  not by any client-IP header — so there's nothing to keep in sync between
+  the two sections.

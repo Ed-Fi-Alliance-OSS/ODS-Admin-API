@@ -302,7 +302,7 @@ list of captured events, the table schema, and the fail-open write pipeline.
 ### Reverse Proxy / Forwarded Headers
 
 When Admin API runs behind a TLS-terminating reverse proxy (nginx, IIS with
-ARR, a cloud load balancer), it needs `AppSettings:ReverseProxy` configured
+ARR, a cloud load balancer), it needs `ReverseProxy` configured
 so it trusts `X-Forwarded-Proto`/`X-Forwarded-Host` from that proxy — used
 to build correct absolute URLs such as `urls.openApiMetadata` on `GET /`.
 Off and empty by default. See [reverse-proxy.md](reverse-proxy.md) for the

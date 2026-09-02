@@ -66,7 +66,7 @@ public static class WebApplicationBuilderExtensions
         ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
         webApplicationBuilder.Services.AddOptions<ReverseProxySettings>()
-            .Bind(config.GetSection("AppSettings:ReverseProxy"))
+            .Bind(config.GetSection("ReverseProxy"))
             .ValidateOnStart();
         webApplicationBuilder.Services.AddSingleton<IValidateOptions<ReverseProxySettings>, ReverseProxySettingsValidator>();
         webApplicationBuilder.Services.Configure<AuditLoggingSettings>(config.GetSection("AuditLogging"));

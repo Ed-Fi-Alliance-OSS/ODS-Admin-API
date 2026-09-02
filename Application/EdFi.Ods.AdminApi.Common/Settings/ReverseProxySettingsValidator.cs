@@ -19,7 +19,7 @@ public class ReverseProxySettingsValidator : IValidateOptions<ReverseProxySettin
         catch (Exception ex)
         {
             return ValidateOptionsResult.Fail(
-                $"AppSettings:ReverseProxy contains an invalid KnownProxies/KnownNetworks entry: {ex.Message}");
+                $"ReverseProxy contains an invalid KnownProxies/KnownNetworks entry: {ex.Message}");
         }
 
         return ValidateOptionsResult.Success;
