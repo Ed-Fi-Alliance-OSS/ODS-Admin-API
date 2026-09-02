@@ -18,12 +18,8 @@ public class ReverseProxySettings
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(IPAddress.Parse);
 
-    public IEnumerable<(IPAddress Prefix, int PrefixLength)> GetKnownNetworks() =>
+    public IEnumerable<IPNetwork> GetKnownNetworks() =>
         KnownNetworks
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(cidr =>
-            {
-                var parts = cidr.Split('/');
-                return (IPAddress.Parse(parts[0]), int.Parse(parts[1]));
-            });
+            .Select(IPNetwork.Parse);
 }

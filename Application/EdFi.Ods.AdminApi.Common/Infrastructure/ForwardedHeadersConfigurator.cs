@@ -24,9 +24,9 @@ public static class ForwardedHeadersConfigurator
             options.KnownProxies.Add(proxy);
         }
 
-        foreach (var (prefix, length) in settings.GetKnownNetworks())
+        foreach (var network in settings.GetKnownNetworks())
         {
-            options.KnownIPNetworks.Add(new System.Net.IPNetwork(prefix, length));
+            options.KnownIPNetworks.Add(network);
         }
     }
 }

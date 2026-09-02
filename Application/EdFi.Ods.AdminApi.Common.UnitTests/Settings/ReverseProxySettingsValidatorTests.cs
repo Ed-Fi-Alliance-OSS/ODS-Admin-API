@@ -57,4 +57,24 @@ public class ReverseProxySettingsValidatorTests
         result.Failed.ShouldBeTrue();
         result.FailureMessage.ShouldContain("KnownProxies");
     }
+
+    [Test]
+    public void Validate_WithOutOfRangePrefixLength_Fails()
+    {
+        var settings = new ReverseProxySettings { KnownNetworks = "10.0.0.0/33" };
+
+        var result = _validator.Validate(null, settings);
+
+        result.Failed.ShouldBeTrue();
+    }
+
+    [Test]
+    public void Validate_WithTrailingSegmentAfterPrefix_Fails()
+    {
+        var settings = new ReverseProxySettings { KnownNetworks = "10.0.0.0/24/typo" };
+
+        var result = _validator.Validate(null, settings);
+
+        result.Failed.ShouldBeTrue();
+    }
 }

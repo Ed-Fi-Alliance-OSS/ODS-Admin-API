@@ -57,11 +57,17 @@ is the correct and safe behavior for:
   handling is needed.
 
 Turning `UseForwardedHeaders` on without also restricting `KnownProxies`/
-`KnownNetworks` to your actual proxy would mean **any** caller that can
-reach Admin API directly could forge `X-Forwarded-Proto`/`X-Forwarded-Host`
-and get back a manipulated `openApiMetadata` URL. Restricting to the
-proxy's known address (or network) closes that off: the header is honored
-only when it really came from the proxy, not from an arbitrary client.
+`KnownNetworks` to your actual proxy leaves the ASP.NET Core framework
+default in place, which trusts only loopback callers (`127.0.0.1`/`::1`) —
+`ForwardedHeadersConfigurator` never clears it. Any *non-loopback* caller
+that can reach Admin API directly could still forge
+`X-Forwarded-Proto`/`X-Forwarded-Host` and get back a manipulated
+`openApiMetadata` URL, since it matches neither the loopback default nor
+your configured entries. Restricting to the proxy's known address (or
+network) — in addition to the loopback default, which remains trusted even
+after you add entries — narrows this further: the header is honored only
+from loopback or the configured proxy, not from an arbitrary external
+client.
 
 ## When you need to turn it on
 
@@ -91,11 +97,31 @@ load balancer, an IIS instance with ARR in front of it — set
 not the Docker ranges above (those are specific to the shipped compose
 topology).
 
+## Effect on audit log source IPs
+
+Enabling `UseForwardedHeaders` also honors `X-Forwarded-For`, which makes
+`ForwardedHeadersMiddleware` rewrite `Connection.RemoteIpAddress` to the
+value from that header. `AuditActionLoggingMiddleware` and authentication
+audit events record `Connection.RemoteIpAddress` as the caller's source IP,
+so this setting changes what shows up there, not just `openApiMetadata`.
+
+With it off, or on but not trusted, audit entries show the proxy's own IP
+for every request (e.g. `10.0.0.5`), which is useless for tracing which
+client made a call. With it on and `KnownProxies`/`KnownNetworks` scoped
+to the actual proxy, audit entries show the real client IP
+(e.g. `203.0.113.9`) instead. But if `KnownProxies`/`KnownNetworks` is
+scoped too broadly — wide enough that an attacker can reach Admin API
+directly while still matching the trusted range — that attacker can send
+their own `X-Forwarded-For` header and have the forged IP recorded in the
+audit log instead of their real one. Keep `KnownProxies`/`KnownNetworks`
+scoped to addresses/networks only your real reverse proxy can originate
+from.
+
 ## What it does not affect
 
 This setting only controls how `Request.Scheme`/`Request.Host` are
-resolved for building response values like `openApiMetadata`. It has no
-effect on:
+resolved for building response values like `openApiMetadata`, plus the
+audit-log source IP described above. It has no effect on:
 
 * Authentication/authorization decisions.
 * `AppSettings:PathBase`, which is applied independently via

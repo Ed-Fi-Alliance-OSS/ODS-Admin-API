@@ -88,9 +88,9 @@
 
         Stamps Directory.Build.props for all four projects (EdFi.Ods.AdminApi,
         .V1, .V3, .Common) with VersionPrefix 2.4.0, then builds and publishes.
-        Useful for testing locally with real version values in the /information
+        Useful for testing locally with real version values in the GET /
         endpoint's "version" ("2.4.0") and "build" ("2.4.0.0") fields, instead of
-        the default "0.1"/"0.1.0.0". Remember to revert Directory.Build.props
+        the default "0.1.0"/"0.1.0.0". Remember to revert Directory.Build.props
         (git checkout) afterward, since it's a generated file, not meant to be
         committed with a manually-set version.
 
