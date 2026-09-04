@@ -17,6 +17,6 @@
        <file src="..\..\..\Installer.AdminApi\uninstall.ps1" target="installer"/>
        <file src="..\..\..\Installer.AdminApi\global.json" target="installer"/>
        <file src="..\..\..\Installer.AdminApi\Install-AdminApi.psm1" target="installer"/>
-       <file src="AppCommon\**" target="installer/AppCommon/"/>
+       <file src="..\..\..\Installer.AdminApi\AppCommon\**" target="installer/AppCommon/"/>
   </files>
 </package>
