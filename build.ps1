@@ -465,7 +465,7 @@ function Invoke-InstallerPesterTests {
     }
     Import-Module Pester -MinimumVersion 5.0.0 -Force
 
-    $result = Invoke-Pester -Path "$PSScriptRoot/Installer.AdminApi/AdminApiModeValidation.Tests.ps1" -PassThru -CI
+    $result = Invoke-Pester -Path "$PSScriptRoot/Installer.AdminApi/AdminApiModeValidation.Tests.ps1" -PassThru
     if ($result.FailedCount -gt 0) {
         throw "$($result.FailedCount) Pester test(s) failed in AdminApiModeValidation.Tests.ps1."
     }
