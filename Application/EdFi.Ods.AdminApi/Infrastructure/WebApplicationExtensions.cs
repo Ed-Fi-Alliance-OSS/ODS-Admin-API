@@ -26,6 +26,9 @@ public static class WebApplicationExtensions
                 break;
 
             case AdminApiMode.V2:
+                // ReadInformation lives in this same assembly, so AdminApiFeatureHelper.GetFeatures()
+                // already discovers and maps it via reflection — no explicit call needed here, unlike
+                // V1/V3 whose feature helpers only reflect over their own (different) assemblies.
                 foreach (var routeBuilder in AdminApiV2Features.AdminApiFeatureHelper.GetFeatures())
                 {
                     routeBuilder.MapEndpoints(application);

@@ -38,6 +38,7 @@ using log4net.Config;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Quartz;
@@ -64,6 +65,10 @@ public static class WebApplicationBuilderExtensions
         ConfigureRateLimiting(webApplicationBuilder);
         ConfigurationManager config = webApplicationBuilder.Configuration;
         webApplicationBuilder.Services.Configure<AppSettings>(config.GetSection("AppSettings"));
+        webApplicationBuilder.Services.AddOptions<ReverseProxySettings>()
+            .Bind(config.GetSection("ReverseProxy"))
+            .ValidateOnStart();
+        webApplicationBuilder.Services.AddSingleton<IValidateOptions<ReverseProxySettings>, ReverseProxySettingsValidator>();
         webApplicationBuilder.Services.Configure<AuditLoggingSettings>(config.GetSection("AuditLogging"));
         webApplicationBuilder.Services.AddSingleton<AuditLogChannel>();
         webApplicationBuilder.Services.AddSingleton<IAuditEventRecorder, AuditEventRecorder>();

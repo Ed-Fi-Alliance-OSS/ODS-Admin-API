@@ -224,9 +224,12 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                     detail: string.IsNullOrWhiteSpace(adminApiException.Message)
                         ? "The server encountered an unexpected condition that prevented it from fulfilling the request."
                         : adminApiException.Message,
-                    type: adminApiException.StatusCode.HasValue && (int)adminApiException.StatusCode.Value < 500
-                        ? AdminApiProblemTypes.BadRequest
-                        : AdminApiProblemTypes.InternalServerError,
+                    type: adminApiException.StatusCode switch
+                    {
+                        < HttpStatusCode.InternalServerError => AdminApiProblemTypes.BadRequest,
+                        HttpStatusCode.ServiceUnavailable => AdminApiProblemTypes.ServiceUnavailable,
+                        _ => AdminApiProblemTypes.InternalServerError
+                    },
                     correlationId: correlationId
                 )
             ),

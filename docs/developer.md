@@ -16,6 +16,7 @@
     * [Validation](#validation)
     * [OdsInstanceManage Provisioning Jobs](#odsinstancemanage-provisioning-jobs)
     * [Audit Trail Logging](#audit-trail-logging)
+    * [Reverse Proxy / Forwarded Headers](#reverse-proxy--forwarded-headers)
   * [Feature-specific prerequisites and configuration](#feature-specific-prerequisites-and-configuration)
 
 ## Development Pre-Requisites
@@ -274,6 +275,15 @@ database-backed audit trail (`adminapi.AuditLogs`), controlled by a single
 `AuditLogging:Enabled` flag in `appsettings.json`. See
 [audit-logging.md](audit-logging.md) for the configuration flag, the exact
 list of captured events, the table schema, and the fail-open write pipeline.
+
+### Reverse Proxy / Forwarded Headers
+
+When Admin API runs behind a TLS-terminating reverse proxy (nginx, IIS with
+ARR, a cloud load balancer), it needs `ReverseProxy` configured
+so it trusts `X-Forwarded-Proto`/`X-Forwarded-Host` from that proxy — used
+to build correct absolute URLs such as `urls.openApiMetadata` on `GET /`.
+Off and empty by default. See [reverse-proxy.md](reverse-proxy.md) for the
+setting, why it's safe-by-default, and when to enable it.
 
 ## Feature-specific prerequisites and configuration
 

@@ -1,0 +1,71 @@
+meta {
+  name: GET - Tenancy
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{API_URL}}/v3/tenancy
+  body: none
+  auth: none
+}
+
+script:post-response {
+  test("GET Tenancy: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const response = res.getBody();
+
+  test("GET Tenancy: Response includes expected properties", function () {
+      expect(response).to.have.property("tenants");
+      expect(response.tenants).to.be.an("array");
+  });
+
+  const Ajv = require('ajv');
+  const ajv = new Ajv();
+  const GetSchemaTenancy = {
+    "type": "object",
+    "properties": {
+      "tenants": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "tenants"
+    ]
+  }
+
+  test("GET Tenancy: Validation Schema Response", () => {
+      const valid = ajv.validate(GetSchemaTenancy, response);
+      expect(valid).to.be.true;
+
+      if (!valid) {
+          console.log("Schema validation errors:", ajv.errors);
+      }
+  });
+
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    test("GET Tenancy: Multitenant mode - tenants list is not empty", function () {
+        expect(response.tenants.length).to.be.greaterThan(0);
+    });
+
+    test("GET Tenancy: Multitenant mode - tenants list contains configured tenants", function () {
+        const tenant1 = bru.getEnvVar("tenant1");
+        const tenant2 = bru.getEnvVar("tenant2");
+        if (tenant1) expect(response.tenants).to.include(tenant1);
+        if (tenant2) expect(response.tenants).to.include(tenant2);
+    });
+  } else {
+    test("GET Tenancy: Singletenant mode - tenants list is empty", function () {
+        expect(response.tenants).to.have.length(0);
+    });
+  }
+}
+
+settings {
+  encodeUrl: true
+}
