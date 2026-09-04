@@ -71,8 +71,12 @@ Add to the existing `param()` block in
 > `StandardVersion`, and `EncryptionKey` are declared as plain
 > `[string]`s, and all of the validation described in this section lives
 > in a standalone function, `Assert-AdminApiModeCompatibility` (plus a
-> `Test-EncryptionKeyFormat` helper it calls), in a new
-> dependency-free module, `Installer.AdminApi/AdminApiModeValidation.psm1`.
+> `Test-EncryptionKeyFormat` helper it calls), in a new module,
+> `Installer.AdminApi/AppCommon/Utility/AdminApiModeValidation.psm1` —
+> placed alongside the other vendored `AppCommon/Utility/*.psm1` helpers
+> so it ships as part of the same `AppCommon` folder the installer
+> package delivers to clients (see the packaging note below), while
+> still having no IIS/`AppCommon`-cascading dependency of its own.
 > `Install-EdFiOdsAdminApi` imports that module and calls
 > `Assert-AdminApiModeCompatibility` explicitly at the top of its body
 > (see §2).
@@ -92,6 +96,17 @@ Add to the existing `param()` block in
 > `Assert-AdminApiModeCompatibility` manually re-implement what
 > `[ValidateSet]` would otherwise give for free — an accepted tradeoff
 > for CI coverage.
+>
+> **Packaging note:** both `Application/EdFi.Ods.AdminApi/EdFi.Ods.AdminApi.nuspec`
+> and `Application/EdFi.Ods.AdminApi.V3/EdFi.Ods.AdminApi.nuspec` ship
+> `Installer.AdminApi/AppCommon/**` as a single wildcard entry
+> (`target="installer/AppCommon/"`), so placing `AdminApiModeValidation.psm1`
+> under `AppCommon/Utility/` means it needs no separate `<file>` entry —
+> it is included automatically, the same way every other
+> `AppCommon/Utility/*.psm1` helper is. Its `AdminApiModeValidation.Tests.ps1`
+> sibling is dev-only and must never ship; both nuspecs add an
+> `exclude="..\..\..\Installer.AdminApi\AppCommon\**\*.Tests.ps1"` on
+> that same `<file>` entry to keep it out of the package.
 
 ### 2. Validation gates
 
@@ -168,7 +183,8 @@ single/multi-tenant example style, showing `AdminApiMode = "v1"`,
 
 ### 6. Pester test coverage
 
-New file `Installer.AdminApi/Install-AdminApi.Tests.ps1`, pinned via
+New file `Installer.AdminApi/AppCommon/Utility/AdminApiModeValidation.Tests.ps1`,
+alongside the module it tests, pinned via
 `#Requires -Modules @{ModuleName='Pester'; ModuleVersion='5.x'}`.
 Covers only the new validation logic (no real IIS/DB calls):
 

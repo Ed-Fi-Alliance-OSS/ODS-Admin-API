@@ -12,8 +12,6 @@ function Set-TlsVersion {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 }
 
-Import-Module -Force "$PSScriptRoot/AdminApiModeValidation.psm1" -Scope Global
-
 $appCommonDirectory = "$PSScriptRoot/AppCommon"
 $RequiredDotNetHostingBundleVersion = "10.0.0"
 
@@ -24,6 +22,7 @@ Import-Module -Force "$appCommonDirectory/Utility/hashtable.psm1" -Scope Global
 Import-Module -Force "$appCommonDirectory/Utility/nuget-helper.psm1"
 Import-Module -Force "$appCommonDirectory/Utility/TaskHelper.psm1"
 Import-Module -Force "$appCommonDirectory/Utility/ToolsHelper.psm1"
+Import-Module -Force "$appCommonDirectory/Utility/AdminApiModeValidation.psm1" -Scope Global
 
 # Import the following with global scope so that they are available inside of script blocks
 Import-Module -Force "$appCommonDirectory/Application/Install.psm1" -Scope Global
