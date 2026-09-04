@@ -193,9 +193,6 @@ $supportedApiVersions6x = @(
 )
 $maintainers = "Ed-Fi Alliance, LLC and contributors"
 
-$appCommonPackageName = "EdFi.Installer.AppCommon"
-$appCommonPackageVersion = "3.0.0"
-
 # Code coverage analysis
 $script:coverageOutputFile = "coverage.cobertura.xml"
 $script:targetDir = "coveragereport"
@@ -424,21 +421,6 @@ function NewDevCertificate {
     }
 }
 
-function AddAppCommonPackageForInstaller {
-    $project = "EdFi.Ods.AdminApi"
-    $mainPath = "$solutionRoot/$project"
-    $destinationPath = "$mainPath/publish"
-
-    $arguments = @{
-        AppCommonPackageName    = $appCommonPackageName
-        AppCommonPackageVersion = $appCommonPackageVersion
-        NuGetFeed               = $EdFiNuGetFeed
-        DestinationPath         = $destinationPath
-    }
-
-    Add-AppCommon @arguments
-}
-
 function BuildApiPackage {
     $project = "EdFi.Ods.AdminApi"
     $mainPath = "$solutionRoot/$project"
@@ -498,8 +480,22 @@ function Invoke-Clean {
     Invoke-Step { DotNetClean }
 }
 
+function Invoke-InstallerPesterTests {
+    $pesterModule = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge [version]"5.0.0" } | Select-Object -First 1
+    if (-not $pesterModule) {
+        Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck -Scope CurrentUser
+    }
+    Import-Module Pester -MinimumVersion 5.0.0 -Force
+
+    $result = Invoke-Pester -Path "$PSScriptRoot/Installer.AdminApi/AppCommon/Utility/AdminApiModeValidation.Tests.ps1" -PassThru
+    if ($result.FailedCount -gt 0) {
+        throw "$($result.FailedCount) Pester test(s) failed in AdminApiModeValidation.Tests.ps1."
+    }
+}
+
 function Invoke-UnitTestSuite {
     Invoke-Step { UnitTests }
+    Invoke-Step { Invoke-InstallerPesterTests }
 }
 
 function Invoke-IntegrationTestSuite {
@@ -563,7 +559,6 @@ function Invoke-IntegrationTestSuite {
 }
 
 function Invoke-BuildApiPackage {
-    Invoke-Step { AddAppCommonPackageForInstaller }
     Invoke-Step { BuildApiPackage }
 }
 

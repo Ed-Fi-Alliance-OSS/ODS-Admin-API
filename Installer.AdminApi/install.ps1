@@ -37,19 +37,33 @@ $dbConnectionInfo = @{
 }
 
 <#
-Review and edit the following application settings and connection information for Admin App
+Review and edit the following application settings and connection information for Admin Api
 
 .EXAMPLE
+Configure Admin Api with V1
+
+    $p = @{
+        ToolsPath = "C:/temp/tools"
+        AdminApiMode = "v1"
+        StandardVersion = "4.0.0"
+        DbConnectionInfo = $dbConnectionInfo
+        PackageVersion = "__ADMINAPI_VERSION__"
+    }
+
 Configure Admin Api with Single tenant
 
     $p = @{
         ToolsPath = "C:/temp/tools"
+        AdminApiMode = "v3"
+        StandardVersion = "5.2.0"
         DbConnectionInfo = $dbConnectionInfo
         PackageVersion = "__ADMINAPI_VERSION__"
     }
 
 Configure Admin Api with Multi tenant
     $p = @{
+        AdminApiMode = "v3"
+        StandardVersion = "5.2.0"
         IsMultiTenant = $true
         ToolsPath = "C:/temp/tools"
         DbConnectionInfo = $dbConnectionInfo
@@ -77,15 +91,24 @@ $authenticationSettings = @{
     AllowRegistration = $false
 }
 
+# Encryption key for securing sensitive data. Required for AdminApiMode v2 and v3.
+# Must be a valid base64-encoded 256-bit (32 byte) key.
+# IMPORTANT: When using AdminApiMode v2 or v3, this key MUST match the
+# OdsConnectionStringEncryptionKey used in your Ed-Fi ODS / API installation.
+$odsEncryptionKey = ""
+
 $packageSource = Split-Path $PSScriptRoot -Parent
 $adminApiSource = "$packageSource/AdminApi"
 
 $p = @{
     ToolsPath = "C:/temp/tools"
+    AdminApiMode = "v3"
+    StandardVersion = "5.2.0"
     DbConnectionInfo = $dbConnectionInfo
     PackageVersion = "__ADMINAPI_VERSION__"
     PackageSource = $adminApiSource
     AuthenticationSettings = $authenticationSettings
+    EncryptionKey = $odsEncryptionKey
 }
 
 if ([string]::IsNullOrWhiteSpace($p.AuthenticationSettings.IssuerUrl) -or [string]::IsNullOrWhiteSpace($p.AuthenticationSettings.SigningKey) -or $p.AuthenticationSettings.AllowRegistration -isnot [bool]) {
