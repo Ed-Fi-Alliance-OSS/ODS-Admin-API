@@ -81,6 +81,10 @@ Configure Admin Api with Multi tenant
     }
 #>
 
+# Authentication Settings
+# Authentication:SigningKey must be a Base64-encoded string
+# Authentication:IssuerUrl should be the same URL as your application
+# Changing Authentication:AllowRegistration to true allows unrestricted registration of new Admin API clients. This is not recommended for production.
 $authenticationSettings = @{
     IssuerUrl = ""
     SigningKey = ""
