@@ -81,12 +81,16 @@ function Get-NuGetPackageContent {
 
     New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
 
-    $nupkgPath = Join-Path $OutputDirectory "$lowerId.$version.nupkg"
-    Invoke-RestMethod -Uri "$packageBaseAddress$lowerId/$version/$lowerId.$version.nupkg" -OutFile $nupkgPath
+    # Windows PowerShell 5.1's Expand-Archive validates the file extension and
+    # rejects .nupkg even though it is a plain zip, so the downloaded file is
+    # saved as .zip locally. The request itself still targets .nupkg -- that's
+    # the actual resource path on the feed.
+    $zipPath = Join-Path $OutputDirectory "$lowerId.$version.zip"
+    Invoke-RestMethod -Uri "$packageBaseAddress$lowerId/$version/$lowerId.$version.nupkg" -OutFile $zipPath
 
     $extractPath = Join-Path $OutputDirectory "$PackageName.$version"
-    Expand-Archive -Path $nupkgPath -DestinationPath $extractPath -Force
-    Remove-Item -Path $nupkgPath -Force
+    Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+    Remove-Item -Path $zipPath -Force
 
     return $extractPath
 }
