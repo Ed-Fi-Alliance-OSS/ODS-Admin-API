@@ -45,6 +45,8 @@ services:
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-true}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      ReverseProxy__UseForwardedHeaders: "true"
+      ReverseProxy__KnownNetworks: "172.16.0.0/12,192.168.0.0/16"
       AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-false}"
       ASPNETCORE_ENVIRONMENT: "multitenantdocker"
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"
@@ -64,6 +66,8 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
       POSTGRES_USER: "${POSTGRES_USER}"
+      SwaggerSettings__EnableSwagger: ${SWAGGER_ENABLED:-true}
+      SwaggerSettings__DefaultTenant: ${SWAGGER_DEFAULT_TENANT:-tenant1}
       Tenants__tenant1__ConnectionStrings__EdFi_Admin: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Admin;pooling=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Security: "host=db-admin-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Security;pooling=true"
       Tenants__tenant1__ConnectionStrings__EdFi_Ods: "host=db-ods-tenant1;port=${POSTGRES_PORT:-5432};username=${POSTGRES_USER};password=${POSTGRES_PASSWORD};database=EdFi_Ods;pooling=true"

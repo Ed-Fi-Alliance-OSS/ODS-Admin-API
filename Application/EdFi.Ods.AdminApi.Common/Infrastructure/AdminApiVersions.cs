@@ -15,9 +15,9 @@ public class AdminApiVersions
 {
     private static bool _isInitialized;
 
-    public static readonly AdminApiVersion V1 = new(1.1, "1.4.4");
-    public static readonly AdminApiVersion V2 = new(2.0, "2.4.0");
-    public static readonly AdminApiVersion V3 = new(3.0, "3.0.0");
+    public static readonly AdminApiVersion V1 = new(2.4, "1.4.4", "v1");
+    public static readonly AdminApiVersion V2 = new(2.4, "2.4.0", "v2");
+    public static readonly AdminApiVersion V3 = new(2.4, "3.0.0", "v3");
     private static ApiVersionSet? _versionSet;
 
     public static void Initialize(WebApplication app)
@@ -59,14 +59,15 @@ public class AdminApiVersions
 
     public class AdminApiVersion
     {
-        public AdminApiVersion(double version, string displayName)
+        public AdminApiVersion(double version, string displayName, string routePath)
         {
             Version = version;
             DisplayName = displayName;
+            VersionPath = routePath;
         }
 
         public double Version { get; }
-        public string VersionPath => $"v{Version.ToString("0")}";
+        public string VersionPath { get; }
         public string DisplayName { get; }
         public override string ToString() => DisplayName;
     }

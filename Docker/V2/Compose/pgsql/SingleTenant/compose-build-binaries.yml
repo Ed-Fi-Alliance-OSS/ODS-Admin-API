@@ -41,6 +41,8 @@ services:
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-false}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      ReverseProxy__UseForwardedHeaders: "true"
+      ReverseProxy__KnownNetworks: "172.16.0.0/12,192.168.0.0/16"
       AppSettings__PreventDuplicateApplications: "${PREVENT_DUPLICATE_APPLICATIONS:-false}"
       Authentication__IssuerUrl: ${ISSUER_URL}
       Authentication__SigningKey: ${SIGNING_KEY}

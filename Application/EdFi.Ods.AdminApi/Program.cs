@@ -49,7 +49,14 @@ var pathBase = app.Configuration.GetValue<string>("AppSettings:PathBase");
 if (!string.IsNullOrEmpty(pathBase))
 {
     app.UsePathBase($"/{pathBase.Trim('/')}");
-    app.UseForwardedHeaders();
+}
+
+var reverseProxySettings = app.Services.GetRequiredService<IOptions<ReverseProxySettings>>().Value;
+if (reverseProxySettings.UseForwardedHeaders)
+{
+    var forwardedHeadersOptions = new ForwardedHeadersOptions();
+    ForwardedHeadersConfigurator.Configure(forwardedHeadersOptions, reverseProxySettings);
+    app.UseForwardedHeaders(forwardedHeadersOptions);
 }
 
 AdminApiVersions.Initialize(app);
@@ -104,10 +111,19 @@ app.UseHealthChecks("/health", new HealthCheckOptions
     }
 });
 
+// The raw OpenAPI/swagger.json documents are always served so that the /information endpoint's
+// openApiMetadata URL is always reachable; only the interactive Swagger UI is flag-gated.
+app.UseSwagger();
 if (app.Configuration.GetValue<bool>("SwaggerSettings:EnableSwagger"))
 {
-    app.UseSwagger();
-    app.DefineSwaggerUIWithApiVersions(AdminApiVersions.GetAllVersionStrings());
+    var currentVersion = adminApiMode switch
+    {
+        AdminApiMode.V1 => AdminApiVersions.V1,
+        AdminApiMode.V2 => AdminApiVersions.V2,
+        AdminApiMode.V3 => AdminApiVersions.V3,
+        _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
+    };
+    app.DefineSwaggerUIWithApiVersions(currentVersion.ToString());
 }
 
 var edOrgsRefreshIntervalInMins = app.Configuration.GetValue<string>(

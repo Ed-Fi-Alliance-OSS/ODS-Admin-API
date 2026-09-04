@@ -12,5 +12,6 @@ public static class AdminApiProblemTypes
     public const string BadRequestData = "urn:ed-fi:management-api:bad-request:data";
     public const string BadRequest = "urn:ed-fi:management-api:bad-request";
     public const string InternalServerError = "urn:ed-fi:management-api:internal-server-error";
+    public const string ServiceUnavailable = "urn:ed-fi:management-api:service-unavailable";
     public const string BadRequestVersionMismatch = "urn:ed-fi:management-api:bad-request:version-mismatch";
 }

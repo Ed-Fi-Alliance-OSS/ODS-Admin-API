@@ -40,6 +40,8 @@ services:
       AppSettings__EncryptionKey: "TDMyNH0lJmo7aDRnNXYoSmAwSXQpV09nbitHSWJTKn0="
       AppSettings__MultiTenancy: "${MULTITENANCY_ENABLED:-true}"
       AppSettings__PathBase: ${ADMIN_API_VIRTUAL_NAME:-adminapi}
+      ReverseProxy__UseForwardedHeaders: "true"
+      ReverseProxy__KnownNetworks: "172.16.0.0/12,192.168.0.0/16"
       AppSettings__PreventDuplicateApplications: ${PREVENT_DUPLICATE_APPLICATIONS:-false}
       ASPNETCORE_ENVIRONMENT: "multitenantdocker"
       AdminConsoleSettings__CorsSettings__AllowedOrigins: "${ALLOWED_ORIGINS:-https://localhost}"

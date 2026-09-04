@@ -6,14 +6,12 @@
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
-using EdFi.Ods.AdminApi.Infrastructure.Helpers;
-using EdFi.Ods.AdminApi.Infrastructure.Services.Tenants;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
-using V3Tenants = EdFi.Ods.AdminApi.V3.Infrastructure.Services.Tenants;
 
 namespace EdFi.Ods.AdminApi.Features.Information;
 
@@ -29,47 +27,40 @@ public class ReadInformation : IFeature
             .AllowAnonymous();
     }
 
-    public static async Task<InformationResult> GetInformation(IOptions<AppSettings> options, HttpContext httpContext)
+    public static Task<InformationResult> GetInformation(
+        IOptions<AppSettings> options,
+        HttpContext httpContext)
     {
         if (!Enum.TryParse<AdminApiMode>(options.Value.AdminApiMode, true, out var adminApiMode))
         {
             throw new InvalidOperationException($"Invalid adminApiMode: {options.Value.AdminApiMode}");
         }
 
-        TenancyResult? tenancy = null;
+        var baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}{httpContext.Request.PathBase}";
 
-        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
+        // Version/Build/ApplicationName/InformationalVersion are shared across V1/V2/V3 now that all
+        // three ship together as one product release; only specificationVersion (and the swagger doc
+        // it points at) varies per mode.
+        InformationResult BuildResult(string specificationVersion, string? tenancyVersionPath) =>
+            new(
+                ApiInformationHelper.Version,
+                ApiInformationHelper.Build,
+                adminApiMode.ToString().ToLowerInvariant(),
+                ApiInformationHelper.ApplicationName,
+                ApiInformationHelper.InformationalVersion,
+                new ApiUrlsResult(
+                    $"{baseUrl}/swagger/{specificationVersion}/swagger.json",
+                    tenancyVersionPath is null ? string.Empty : $"{baseUrl}/{tenancyVersionPath}/tenancy"));
+
+        var result = adminApiMode switch
         {
-            var isMultiTenant = options.Value.MultiTenancy;
-            List<string> tenantNames;
-
-            if (isMultiTenant)
-            {
-                tenantNames = adminApiMode switch
-                {
-                    AdminApiMode.V2 => (await httpContext.RequestServices.GetRequiredService<ITenantsService>().GetTenantsAsync())
-                        .Select(t => t.TenantName)
-                        .ToList(),
-                    AdminApiMode.V3 => (await httpContext.RequestServices.GetRequiredService<V3Tenants.ITenantsService>().GetTenantsAsync())
-                        .Select(t => t.TenantName)
-                        .ToList(),
-                    _ => []
-                };
-            }
-            else
-            {
-                tenantNames = [];
-            }
-
-            tenancy = new TenancyResult(isMultiTenant, tenantNames);
-        }
-
-        return adminApiMode switch
-        {
-            AdminApiMode.V1 => new InformationResult(V1.Infrastructure.Helpers.ConstantsHelpers.Version, V1.Infrastructure.Helpers.ConstantsHelpers.Build, "v1", tenancy),
-            AdminApiMode.V2 => new InformationResult(ConstantsHelpers.Version, ConstantsHelpers.Build, "v2", tenancy),
-            AdminApiMode.V3 => new InformationResult(V3.Infrastructure.Helpers.ConstantsHelpers.Version, V3.Infrastructure.Helpers.ConstantsHelpers.Build, "v3", tenancy),
+            // V1 has no tenancy endpoint.
+            AdminApiMode.V1 => BuildResult(AdminApiVersions.V1.ToString(), null),
+            AdminApiMode.V2 => BuildResult(AdminApiVersions.V2.ToString(), AdminApiVersions.V2.VersionPath),
+            AdminApiMode.V3 => BuildResult(AdminApiVersions.V3.ToString(), AdminApiVersions.V3.VersionPath),
             _ => throw new InvalidOperationException($"Invalid adminApiMode: {adminApiMode}")
         };
+
+        return Task.FromResult(result);
     }
 }
