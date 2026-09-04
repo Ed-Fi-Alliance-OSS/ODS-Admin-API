@@ -17,7 +17,6 @@
 #>
 
 $p = @{
-    Authority        = "http://api"
     IssuerUrl        = "https://localhost:5001"
     DatabaseEngine   = "PostgreSql"
     PathBase         = "adminapi"

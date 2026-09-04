@@ -10,7 +10,6 @@
     * [Configuring Admin API to Run with the ODS/API](#configuring-admin-api-to-run-with-the-odsapi)
     * [Resetting the Database State](#resetting-the-database-state)
     * [Running Locally in Docker](#running-locally-in-docker)
-    * [Using Keycloak (IDP)](#using-keycloak-idp)
     * [Running Unit Tests, Integration Tests, and Generating Code Coverage Reports](#running-unit-tests-integration-tests-and-generating-code-coverage-reports)
   * [Application Architecture](#application-architecture)
     * [Database Layer](#database-layer)
@@ -163,28 +162,6 @@ eng/run-dbup-migrations.ps1
 
 As mentioned above, you can run locally in Docker. See [docker.md](docker.md)
 for more information.
-
-### Using Keycloak (IDP)
-
-To use Keycloak for authenticating the API, you need to configure the parameters in the OIDC section. Additionally, you must specify with `"UseSelfcontainedAuthorization": false`, that the API’s own authentication will be disabled in favor of using Keycloak.
-
-Furthermore, when using Keycloak, the Register and Token endpoints will not be available in Swagger or for direct calls. Attempting to access these endpoints will result in a 404 error.
-
-```json
-{
-  "Authentication": {
-    "IssuerUrl": "",
-    "SigningKey": "",
-    "AllowRegistration": false,
-    "OIDC": {
-      "Authority": "https://localhost/auth/realms/edfi-admin-console",
-      "ValidateIssuer": true,
-      "RequireHttpsMetadata": false,
-      "EnableServerCertificateCustomValidationCallback": true
-    }
-  }
-}
-```
 
 ### Running Unit Tests, Integration Tests, and Generating Code Coverage Reports
 

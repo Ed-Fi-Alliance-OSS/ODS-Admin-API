@@ -62,7 +62,6 @@ jobs:
       - name: Build and generate YAML files
         run: |
           $p = @{
-              Authority        = "http://api"
               IssuerUrl        = "https://localhost"
               DatabaseEngine   = "PostgreSql"
               PathBase         = "adminapi"

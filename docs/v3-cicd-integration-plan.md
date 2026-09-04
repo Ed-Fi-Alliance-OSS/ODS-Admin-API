@@ -412,6 +412,6 @@ Before closing this plan, verify:
 | DB-Admin shell scripts | **Shared** — moved to `Settings/shared/DB-Admin/`; both V2 and V3 reference them |
 | DB-Admin Dockerfiles | **Version-specific** — remain in `Settings/V2/` and `Settings/V3/` (hardcoded NuGet version defaults) |
 | Bruno `.bru` test requests | **Out of scope** — placeholder `v3/` directory only; separate follow-up task |
-| IDP (Keycloak) compose variants | **Included** for full parity; no new IDP workflow files (original 4 V2 workflows did not include IDP) |
+| IDP (Keycloak) compose variants | **Included** for full parity at the time; no new IDP workflow files (original 4 V2 workflows did not include IDP). Removed entirely in [ADMINAPI-1503](https://edfi.atlassian.net/browse/ADMINAPI-1503) — external-IdP/Keycloak support was dropped, so no IDP compose variants exist for any version as of that change. |
 | `ADMINAPI_MODE` | `V3` as default in compose files and hardcoded in `.automation_*.env` files |
 | V3 NuGet package versions in DB Dockerfiles | **TBD** — use placeholder ARG until V3 packages are published |
