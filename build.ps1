@@ -138,10 +138,6 @@ param(
     [ValidateSet("EdFi.Ods.AdminApi (Dev)", "EdFi.Ods.AdminApi (Prod)", "EdFi.Ods.AdminApi (Docker)", "IIS Express")]
     $LaunchProfile,
 
-    # Only required with local builds and testing.
-    [switch]
-    $IsLocalBuild,
-
     # Option to run coverlet for code coverage analysis, only applicable when running tests
     [switch]
     $RunCoverageAnalysis,
@@ -210,10 +206,6 @@ Import-Module -Name "$PSScriptRoot/eng/database-manager.psm1" -Force
 function DotNetClean {
     Invoke-Execute { dotnet clean $solutionRoot -c $Configuration --nologo -v minimal }
 }
-function InitializeNuGet {
-    Invoke-Execute { $script:nugetExe = Install-NugetCli }
-}
-
 function Restore {
     Invoke-Execute { dotnet restore $solutionRoot }
 }
@@ -691,10 +683,6 @@ function Invoke-PushPackage {
 }
 
 Invoke-Main {
-    if ($IsLocalBuild) {
-        $nugetExePath = Install-NugetCli
-        Set-Alias nuget $nugetExePath -Scope Global -Verbose
-    }
     switch ($Command) {
         Clean { Invoke-Clean }
         Build { Invoke-Build }
