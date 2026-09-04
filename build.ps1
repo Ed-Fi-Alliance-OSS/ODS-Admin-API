@@ -458,8 +458,22 @@ function Invoke-Clean {
     Invoke-Step { DotNetClean }
 }
 
+function Invoke-InstallerPesterTests {
+    $pesterModule = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge [version]"5.0.0" } | Select-Object -First 1
+    if (-not $pesterModule) {
+        Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck -Scope CurrentUser
+    }
+    Import-Module Pester -MinimumVersion 5.0.0 -Force
+
+    $result = Invoke-Pester -Path "$PSScriptRoot/Installer.AdminApi/AdminApiModeValidation.Tests.ps1" -PassThru -CI
+    if ($result.FailedCount -gt 0) {
+        throw "$($result.FailedCount) Pester test(s) failed in AdminApiModeValidation.Tests.ps1."
+    }
+}
+
 function Invoke-UnitTestSuite {
     Invoke-Step { UnitTests }
+    Invoke-Step { Invoke-InstallerPesterTests }
 }
 
 function Invoke-IntegrationTestSuite {
