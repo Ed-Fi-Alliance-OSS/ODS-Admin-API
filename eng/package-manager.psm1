@@ -7,73 +7,88 @@
 
 $ErrorActionPreference = "Stop"
 
-function MeetsMinimumNuGetVersion {
+# Azure DevOps hosts the Ed-Fi packages, and it requires TLS 1.2. Older Windows
+# PowerShell hosts don't always enable it by default.
+if (-not [Net.ServicePointManager]::SecurityProtocol.HasFlag([Net.SecurityProtocolType]::Tls12)) {
+    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+}
+
+function Get-NuGetPackageContent {
+    <#
+    .SYNOPSIS
+        Downloads and extracts the content of a NuGet package without requiring
+        nuget.exe or a project-based `dotnet restore`.
+
+    .DESCRIPTION
+        Queries the feed's NuGet v3 service index for the PackageBaseAddress
+        (flat container) resource, resolves the requested version -- an exact
+        match, or the latest available (including prerelease) when
+        -Prerelease is set -- downloads that version's .nupkg over HTTP, and
+        expands it. A .nupkg is just a zip file, so no NuGet client is needed.
+
+    .OUTPUTS
+        Path to the directory containing the extracted package content, named
+        "<PackageName>.<ResolvedVersion>" so callers can resolve it the same
+        way they did with nuget.exe's install output.
+    #>
     param (
-        [Version]
-        $Version
-    )
-
-    if (-not $Version) {
-        return $false
-    }
-
-    $major = $Version.Major -as [int]
-    $minor = $Version.Minor -as [int]
-
-    # Version 5.4 or higher required
-    switch ($major) {
-        6 {
-            return $true
-        }
-        5 {
-            if ($minor -ge 4) {
-                return $true
-            }
-            return $false
-        }
-        default {
-            return $false
-        }
-    }
-}
-
-function Set-TlsVersion {
-
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
-}
-
-function Install-NugetCli {
-    param(
         [string]
-        $ToolsPath  = "$PSScriptRoot/.tools",
+        [Parameter(Mandatory=$true)]
+        $PackageName,
 
         [string]
-        $SourceNugetExe = "https://dist.nuget.org/win-x86-commandline/v5.4.0/nuget.exe"
+        $PackageVersion,
+
+        [Switch]
+        $Prerelease,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $NuGetFeed,
+
+        [string]
+        [Parameter(Mandatory=$true)]
+        $OutputDirectory
     )
 
-    $exePath = "$ToolsPath/nuget.exe"
-    # See if NuGet >= 5.4.0 already in the path
-    $info = Get-Command nuget.exe -ErrorAction SilentlyContinue
-    if (MeetsMinimumNuGetVersion -Version $info.Version) {
-        return $info.path
+    if (-not $Prerelease -and -not $PackageVersion) {
+        throw "Get-NuGetPackageContent requires either -PackageVersion or -Prerelease."
     }
 
-    # Next see if it is in the .tools directory
-    $info = Get-Command $exePath -ErrorAction SilentlyContinue
-    if (MeetsMinimumNuGetVersion -Version $info.Version) {
-        return $exePath
+    $serviceIndex = Invoke-RestMethod -Uri $NuGetFeed
+    $packageBaseAddress = $serviceIndex.resources `
+        | Where-Object { $_."@type" -like "PackageBaseAddress*" } `
+        | Select-Object -First 1 -ExpandProperty "@id"
+
+    if (-not $packageBaseAddress) {
+        throw "Feed $NuGetFeed does not advertise a PackageBaseAddress resource."
     }
 
-    # Not found, therefore remove any older version and download the current version
-    New-Item -Path $ToolsPath -Type Directory -Force | Out-Null
-    Remove-Item -Path $exePath -Force -ErrorAction SilentlyContinue | Out-Null
+    $lowerId = $PackageName.ToLowerInvariant()
+    $availableVersions = (Invoke-RestMethod -Uri "$packageBaseAddress$lowerId/index.json").versions
 
-    Write-Host "Downloading nuget.exe official distribution from " $sourceNugetExe
-    Write-Host "Saving to $exePath"
-    Set-TlsVersion
-    Invoke-WebRequest $sourceNugetExe -OutFile $exePath
+    if ($Prerelease) {
+        # The flat container index returns versions in ascending order, so the
+        # last entry is the newest available, prerelease or not.
+        $version = $availableVersions | Select-Object -Last 1
+    }
+    else {
+        $version = $availableVersions | Where-Object { $_ -eq $PackageVersion } | Select-Object -First 1
+        if (-not $version) {
+            throw "Version $PackageVersion of package $PackageName was not found on feed $NuGetFeed."
+        }
+    }
 
-    return $exePath
+    New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
+
+    $nupkgPath = Join-Path $OutputDirectory "$lowerId.$version.nupkg"
+    Invoke-RestMethod -Uri "$packageBaseAddress$lowerId/$version/$lowerId.$version.nupkg" -OutFile $nupkgPath
+
+    $extractPath = Join-Path $OutputDirectory "$PackageName.$version"
+    Expand-Archive -Path $nupkgPath -DestinationPath $extractPath -Force
+    Remove-Item -Path $nupkgPath -Force
+
+    return $extractPath
 }
 
 function Push-Package {
@@ -240,26 +255,12 @@ function Get-RestApiPackage {
 
         New-Item -Path $PackagesPath -ItemType Directory -Force | Out-Null
 
-        $arguments = @(
-            "install", "$RestApiPackageName",
-            "-OutputDirectory", "$PackagesPath",
-            "-Source", "$NuGetFeed"
-        )
-
-        if ($RestApiPackagePrerelease) {
-            $arguments += "-Prerelease"
-        }
-        else {
-            $arguments += "-Version"
-            $arguments += "$RestApiPackageVersion"
-        }
-
-        Write-Host "Executing: nuget $arguments" -ForegroundColor Magenta
-        nuget @arguments | Out-Null
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "NuGet package install failed for RestApi.Databases"
-        }
+        Write-Host "Downloading $RestApiPackageName from $NuGetFeed" -ForegroundColor Magenta
+        Get-NuGetPackageContent -PackageName $RestApiPackageName `
+            -PackageVersion $RestApiPackageVersion `
+            -Prerelease:$RestApiPackagePrerelease `
+            -NuGetFeed $NuGetFeed `
+            -OutputDirectory $PackagesPath | Out-Null
 
         Update-PackageCache -PackageName $RestApiPackageName -PackageVersion $fullPackageVersion -PackagesPath $PackagesPath
     }
@@ -309,20 +310,11 @@ function Add-AppCommon {
 
         New-Item -Path $PackagesPath -ItemType Directory -Force | Out-Null
 
-        $parameters = @(
-            "install", $AppCommonPackageName,
-            "-source", $NuGetFeed,
-            "-outputDirectory", $PackagesPath
-            "-version", $AppCommonPackageVersion
-        )
-
         Write-Host "Downloading AppCommon"
-        Write-Host -ForegroundColor Magenta "Executing nuget: $parameters"
-        nuget $parameters | Out-Null
-
-        if ($LASTEXITCODE -ne 0) {
-            throw "NuGet package install failed for AppCommon"
-        }
+        Get-NuGetPackageContent -PackageName $AppCommonPackageName `
+            -PackageVersion $AppCommonPackageVersion `
+            -NuGetFeed $NuGetFeed `
+            -OutputDirectory $PackagesPath | Out-Null
 
         Update-PackageCache -PackageName $AppCommonPackageName -PackageVersion $AppCommonPackageVersion -PackagesPath $PackagesPath
     }
@@ -334,7 +326,7 @@ function Add-AppCommon {
 }
 
 $functions = @(
-    "Install-NugetCli",
+    "Get-NuGetPackageContent",
     "Get-RestApiPackage",
     "Push-Package",
     "Add-AppCommon",
