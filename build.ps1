@@ -60,7 +60,6 @@
 
     .EXAMPLE
        $p = @{
-            Authority        = "http://api"
             IssuerUrl        = "https://localhost:5001"
             DatabaseEngine   = "PostgreSql"
             PathBase         = "adminapi"
@@ -72,7 +71,6 @@
         .\build.ps1 -APIVersion "2.2.0" -Configuration Release -DockerEnvValues $p -Command BuildAndDeployToAdminApiDockerContainer
     .EXAMPLE
        $p = @{
-            Authority        = "http://api"
             IssuerUrl        = "https://localhost"
             DatabaseEngine   = "PostgreSql"
             PathBase         = "adminapi"
