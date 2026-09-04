@@ -12,6 +12,8 @@ function Set-TlsVersion {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
 }
 
+Import-Module -Force "$PSScriptRoot/AdminApiModeValidation.psm1" -Scope Global
+
 $appCommonDirectory = "$PSScriptRoot/AppCommon"
 $RequiredDotNetHostingBundleVersion = "10.0.0"
 
@@ -235,12 +237,31 @@ function Install-EdFiOdsAdminApi {
         # Set Encrypt=false for all connection strings
         # Not recomended for production environment.
         [switch]
-        $UnEncryptedConnection
+        $UnEncryptedConnection,
+
+        # Admin Api mode selector. Determines which Admin Api routes and behavior are active.
+        # v1 requires StandardVersion 4.0.0. v2 and v3 require EncryptionKey.
+        [Parameter(Mandatory=$true)]
+        [string]
+        $AdminApiMode,
+
+        # Ed-Fi Data Standard version being installed against. v1 mode only supports 4.0.0.
+        [Parameter(Mandatory=$true)]
+        [string]
+        $StandardVersion,
+
+        # Encryption key for securing sensitive data (e.g. ODS connection strings). Required for
+        # AdminApiMode v2 and v3. Must be a valid base64-encoded 256-bit (32 byte) key, and MUST
+        # match the OdsConnectionStringEncryptionKey used in your Ed-Fi ODS / API installation.
+        [string]
+        $EncryptionKey
     )
 
     Write-InvocationInfo $MyInvocation
 
     Clear-Error
+
+    Assert-AdminApiModeCompatibility -AdminApiMode $AdminApiMode -StandardVersion $StandardVersion -EncryptionKey $EncryptionKey
 
     $result = @()
 
@@ -272,6 +293,8 @@ function Install-EdFiOdsAdminApi {
         IsMultiTenant = $IsMultiTenant.IsPresent
         Tenants = $Tenants
         UnEncryptedConnection = $UnEncryptedConnection
+        AdminApiMode = $AdminApiMode
+        EncryptionKey = $EncryptionKey
     }
 
     if($IsMultiTenant.IsPresent)
@@ -746,7 +769,7 @@ function Invoke-TransferAppsettings {
 
         $backUpPath = $Config.ApplicationBackupPath
         Write-Warning "The following appsettings will be copied over from existing application: "
-        $appSettings = @('DatabaseEngine', 'ApiStartupType', 'ApiExternalUrl', 'PathBase', 'Log4NetConfigFileName', 'IssuerUrl', 'SigningKey', 'AllowRegistration')
+        $appSettings = @('DatabaseEngine', 'AdminApiMode', 'EncryptionKey', 'ApiStartupType', 'ApiExternalUrl', 'PathBase', 'Log4NetConfigFileName', 'IssuerUrl', 'SigningKey', 'AllowRegistration')
         foreach ($property in $appSettings) {
            Write-Host $property;
         }
@@ -757,6 +780,8 @@ function Invoke-TransferAppsettings {
         $newSettings = Get-Content $newSettingsFile | ConvertFrom-Json | ConvertTo-Hashtable
 
         $newSettings.AppSettings.DatabaseEngine = $oldSettings.AppSettings.DatabaseEngine
+        $newSettings.AppSettings.AdminApiMode = $oldSettings.AppSettings.AdminApiMode
+        $newSettings.AppSettings.EncryptionKey = $oldSettings.AppSettings.EncryptionKey
         $newSettings.AppSettings.ApiStartupType = $oldSettings.AppSettings.ApiStartupType
         $newSettings.AppSettings.ApiExternalUrl =  $oldSettings.AppSettings.ApiExternalUrl
         $newSettings.AppSettings.PathBase = $oldSettings.AppSettings.PathBase
@@ -953,6 +978,8 @@ function Invoke-TransformAppSettings {
         $settingsFile = Join-Path $Config.WebConfigLocation "appsettings.json"
         $settings = Get-Content $settingsFile | ConvertFrom-Json | ConvertTo-Hashtable
         $settings.AppSettings.DatabaseEngine = $config.engine
+        $settings.AppSettings.AdminApiMode = $Config.AdminApiMode
+        $settings.AppSettings.EncryptionKey = $Config.EncryptionKey
 
         $settings.AppSettings.MultiTenancy = $config.IsMultiTenant
 
