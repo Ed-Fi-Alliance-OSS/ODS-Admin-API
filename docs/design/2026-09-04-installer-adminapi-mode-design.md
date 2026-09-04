@@ -65,6 +65,34 @@ Add to the existing `param()` block in
   level; the mode/key relationship is enforced below.
 - `StandardVersion` — mandatory, `[ValidateSet('4.0.0', '5.2.0')]`.
 
+> **Implementation note (deviation, intentional):** the shipped code does
+> *not* use `[ValidateSet]`/`[ValidateScript]` attributes directly on
+> `Install-EdFiOdsAdminApi`'s parameters. Instead, `AdminApiMode`,
+> `StandardVersion`, and `EncryptionKey` are declared as plain
+> `[string]`s, and all of the validation described in this section lives
+> in a standalone function, `Assert-AdminApiModeCompatibility` (plus a
+> `Test-EncryptionKeyFormat` helper it calls), in a new
+> dependency-free module, `Installer.AdminApi/AdminApiModeValidation.psm1`.
+> `Install-EdFiOdsAdminApi` imports that module and calls
+> `Assert-AdminApiModeCompatibility` explicitly at the top of its body
+> (see §2).
+>
+> Reason: `Install-AdminApi.psm1` transitively imports
+> `AppCommon/IIS/IIS-Components.psm1`, which runs `Import-Module
+> WebAdministration` at import time — a Windows/IIS-only module. The
+> Pester suite added for this feature (§6) runs as part of
+> `./build.ps1 -Command UnitTest`, which executes in CI on
+> `ubuntu-latest`. If the validation lived in attributes on
+> `Install-EdFiOdsAdminApi` itself, testing it would require importing
+> (or at least binding parameters on) that function — impossible on
+> Linux CI, since the module can't even be imported there. Extracting
+> the validation into its own IIS-independent module is what makes it
+> testable in CI at all. The cost is that the `-notin @('v1','v2','v3')`
+> and `-notin @('4.0.0','5.2.0')` checks inside
+> `Assert-AdminApiModeCompatibility` manually re-implement what
+> `[ValidateSet]` would otherwise give for free — an accepted tradeoff
+> for CI coverage.
+
 ### 2. Validation gates
 
 Immediately after `Clear-Error` in `Install-EdFiOdsAdminApi`, before
