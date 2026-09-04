@@ -82,3 +82,62 @@ function Assert-AdminApiModeCompatibility {
 
     return $true
 }
+
+function Get-RedactedBoundParameters {
+    <#
+    .SYNOPSIS
+        Returns a copy of a bound-parameters dictionary with sensitive keys masked.
+    .DESCRIPTION
+        Never mutates the input. Used to build a safe object to pass to
+        invocation-logging helpers (e.g. Write-InvocationInfo) without ever
+        exposing a secret parameter's real value in console output or logs.
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        $BoundParameters,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]
+        $SensitiveKeys
+    )
+
+    $redacted = @{}
+    foreach ($key in $BoundParameters.Keys) {
+        $redacted[$key] = $BoundParameters[$key]
+    }
+
+    foreach ($key in $SensitiveKeys) {
+        if ($redacted.ContainsKey($key) -and -not [string]::IsNullOrWhiteSpace([string]$redacted[$key])) {
+            $redacted[$key] = '***REDACTED***'
+        }
+    }
+
+    return $redacted
+}
+
+function Get-CarriedForwardAppSetting {
+    <#
+    .SYNOPSIS
+        Chooses between a value carried forward from a prior install and a
+        newly-deployed package's default.
+    .DESCRIPTION
+        Returns OldValue when it is present (not null), so an existing
+        installation's setting survives an upgrade. Returns CurrentValue when
+        OldValue is null/absent (e.g. upgrading from an install that predates
+        this setting), so the newly-deployed package's shipped default is not
+        silently overwritten with null.
+    #>
+    [CmdletBinding()]
+    param (
+        $OldValue,
+
+        $CurrentValue
+    )
+
+    if ($null -ne $OldValue) {
+        return $OldValue
+    }
+
+    return $CurrentValue
+}

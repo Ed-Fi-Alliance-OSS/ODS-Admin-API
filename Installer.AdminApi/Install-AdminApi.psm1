@@ -257,10 +257,11 @@ function Install-EdFiOdsAdminApi {
         $EncryptionKey
     )
 
-    if ($MyInvocation.BoundParameters.ContainsKey('EncryptionKey') -and $MyInvocation.BoundParameters['EncryptionKey']) {
-        $MyInvocation.BoundParameters['EncryptionKey'] = '***REDACTED***'
+    $loggableInvocation = [PSCustomObject]@{
+        MyCommand = $MyInvocation.MyCommand
+        BoundParameters = Get-RedactedBoundParameters -BoundParameters $MyInvocation.BoundParameters -SensitiveKeys @('EncryptionKey')
     }
-    Write-InvocationInfo $MyInvocation
+    Write-InvocationInfo $loggableInvocation
 
     Clear-Error
 
@@ -783,12 +784,8 @@ function Invoke-TransferAppsettings {
         $newSettings = Get-Content $newSettingsFile | ConvertFrom-Json | ConvertTo-Hashtable
 
         $newSettings.AppSettings.DatabaseEngine = $oldSettings.AppSettings.DatabaseEngine
-        if ($null -ne $oldSettings.AppSettings.AdminApiMode) {
-            $newSettings.AppSettings.AdminApiMode = $oldSettings.AppSettings.AdminApiMode
-        }
-        if ($null -ne $oldSettings.AppSettings.EncryptionKey) {
-            $newSettings.AppSettings.EncryptionKey = $oldSettings.AppSettings.EncryptionKey
-        }
+        $newSettings.AppSettings.AdminApiMode = Get-CarriedForwardAppSetting -OldValue $oldSettings.AppSettings.AdminApiMode -CurrentValue $newSettings.AppSettings.AdminApiMode
+        $newSettings.AppSettings.EncryptionKey = Get-CarriedForwardAppSetting -OldValue $oldSettings.AppSettings.EncryptionKey -CurrentValue $newSettings.AppSettings.EncryptionKey
         $newSettings.AppSettings.ApiStartupType = $oldSettings.AppSettings.ApiStartupType
         $newSettings.AppSettings.ApiExternalUrl =  $oldSettings.AppSettings.ApiExternalUrl
         $newSettings.AppSettings.PathBase = $oldSettings.AppSettings.PathBase

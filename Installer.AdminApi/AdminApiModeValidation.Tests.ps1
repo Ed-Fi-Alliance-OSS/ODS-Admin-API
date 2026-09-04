@@ -65,4 +65,59 @@ Describe 'Assert-AdminApiModeCompatibility' {
     It 'does not throw for v3 mode with a valid EncryptionKey' {
         { Assert-AdminApiModeCompatibility -AdminApiMode 'v3' -StandardVersion '5.2.0' -EncryptionKey $script:validKey } | Should -Not -Throw
     }
+
+    It 'throws when v2 mode is given a malformed (non-base64) EncryptionKey' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '5.2.0' -EncryptionKey 'not-base64!!!' } | Should -Throw '*valid base64-encoded string*'
+    }
+
+    It 'throws when v3 mode is given an EncryptionKey of the wrong decoded length' {
+        $shortKey = [Convert]::ToBase64String((New-Object byte[] 16))
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v3' -StandardVersion '5.2.0' -EncryptionKey $shortKey } | Should -Throw '*exactly 32 bytes*'
+    }
+}
+
+Describe 'Get-RedactedBoundParameters' {
+    It 'masks a sensitive key that is present and non-empty' {
+        $bound = @{ EncryptionKey = 'super-secret-value'; AdminApiMode = 'v2' }
+        $redacted = Get-RedactedBoundParameters -BoundParameters $bound -SensitiveKeys @('EncryptionKey')
+        $redacted['EncryptionKey'] | Should -Be '***REDACTED***'
+    }
+
+    It 'leaves non-sensitive keys untouched' {
+        $bound = @{ EncryptionKey = 'super-secret-value'; AdminApiMode = 'v2' }
+        $redacted = Get-RedactedBoundParameters -BoundParameters $bound -SensitiveKeys @('EncryptionKey')
+        $redacted['AdminApiMode'] | Should -Be 'v2'
+    }
+
+    It 'does not mutate the original dictionary' {
+        $bound = @{ EncryptionKey = 'super-secret-value' }
+        Get-RedactedBoundParameters -BoundParameters $bound -SensitiveKeys @('EncryptionKey') | Out-Null
+        $bound['EncryptionKey'] | Should -Be 'super-secret-value'
+    }
+
+    It 'leaves an absent sensitive key absent' {
+        $bound = @{ AdminApiMode = 'v1' }
+        $redacted = Get-RedactedBoundParameters -BoundParameters $bound -SensitiveKeys @('EncryptionKey')
+        $redacted.ContainsKey('EncryptionKey') | Should -Be $false
+    }
+
+    It 'leaves an empty sensitive key unredacted' {
+        $bound = @{ EncryptionKey = '' }
+        $redacted = Get-RedactedBoundParameters -BoundParameters $bound -SensitiveKeys @('EncryptionKey')
+        $redacted['EncryptionKey'] | Should -Be ''
+    }
+}
+
+Describe 'Get-CarriedForwardAppSetting' {
+    It 'returns OldValue when OldValue is present' {
+        Get-CarriedForwardAppSetting -OldValue 'v2' -CurrentValue 'v3' | Should -Be 'v2'
+    }
+
+    It 'returns CurrentValue when OldValue is null (pre-feature install)' {
+        Get-CarriedForwardAppSetting -OldValue $null -CurrentValue 'v3' | Should -Be 'v3'
+    }
+
+    It 'returns null when both OldValue and CurrentValue are null' {
+        Get-CarriedForwardAppSetting -OldValue $null -CurrentValue $null | Should -Be $null
+    }
 }
