@@ -417,7 +417,7 @@ function Test-DbLoginExistsWithSspi {
     )
     $loginExists = $False
     if($isPostgres){
-        $queryResult = &psql -U postgres -c "SELECT 1 FROM pg_user WHERE usename = '$userName'" | Select-String -Pattern '1'
+        $queryResult = &psql -h $serverName -U postgres -c "SELECT 1 FROM pg_user WHERE usename = '$userName'" | Select-String -Pattern '1'
         $loginExists = $queryResult -ne "" -and $queryResult -ne [String]::Empty -and $null -ne $queryResult
     } else {
         Import-Module SqlServer
@@ -501,7 +501,7 @@ function Add-PostgreSqlLogin ($databaseServer, $postgresUsername, $identityMapMe
     $sqlLoginCreated = $False
     try {
         if(!(Test-DbLoginExistsWithSspi $databaseServer $postgresUsername -isPostgres)){
-            &psql -d postgres -c "CREATE USER $postgresUsername LOGIN SUPERUSER INHERIT CREATEDB CREATEROLE;"  | Out-Host
+            &psql -h $databaseServer -d postgres -c "CREATE USER $postgresUsername LOGIN SUPERUSER INHERIT CREATEDB CREATEROLE;"  | Out-Host
             Write-Host $identityMapMessage -ForegroundColor Green
         } else {
             Write-Host "PostgreSQL Login, $postgresUsername, already exists in $databaseServer"
@@ -577,7 +577,7 @@ function Add-SqlLogins {
             }
             $sqlServerUsername = "IIS APPPOOL\$UserToCreate"
             if($IsCustomLogin){
-                $customUsernameConfirmation = Prompt-YN-Retry-Loop -DefaultValue 'y' -Prompt "Continue with ""$sqlServerUsername"" for SQL Login? Press 'n' to customize [Y/n]"
+                $customUsernameConfirmation = Prompt-YN-Retry-Loop -default 'y' -Prompt "Continue with ""$sqlServerUsername"" for SQL Login? Press 'n' to customize [Y/n]"
                 if($customUsernameConfirmation -ieq 'n')
                 {
                     $sqlServerUsername = Prompt-For-SQLServer-Username $sqlServerUsername

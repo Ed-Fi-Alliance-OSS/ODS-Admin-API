@@ -281,8 +281,8 @@ function Uninstall-WebApplication {
         Remove-WebApplication -Name $WebApplicationName -Site $WebSiteName
     }
 
-    $childApps = (Get-IISAppPool -Name $appPoolName).WorkerProcesses
-    if ($null -ne $childApps.length){
+    $remainingApps = Get-WebApplication | Where-Object { $_.applicationPool -eq $appPoolName }
+    if ($null -eq $remainingApps) {
         Write-Debug "Removing app pool $appPoolName"
         Remove-WebAppPool -Name $appPoolName
     }

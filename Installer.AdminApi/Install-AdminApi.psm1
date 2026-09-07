@@ -297,6 +297,7 @@ function Install-EdFiOdsAdminApi {
         Tenants = $Tenants
         UnEncryptedConnection = $UnEncryptedConnection
         AdminApiMode = $AdminApiMode
+        StandardVersion = $StandardVersion
         EncryptionKey = $EncryptionKey
     }
 
@@ -785,6 +786,13 @@ function Invoke-TransferAppsettings {
         $newSettings.AppSettings.DatabaseEngine = $oldSettings.AppSettings.DatabaseEngine
         $newSettings.AppSettings.AdminApiMode = Get-CarriedForwardAppSetting -OldValue $oldSettings.AppSettings.AdminApiMode -CurrentValue $newSettings.AppSettings.AdminApiMode
         $newSettings.AppSettings.EncryptionKey = Get-CarriedForwardAppSetting -OldValue $oldSettings.AppSettings.EncryptionKey -CurrentValue $newSettings.AppSettings.EncryptionKey
+
+        $carriedForwardMode = $newSettings.AppSettings.AdminApiMode
+        $carriedForwardKey = $newSettings.AppSettings.EncryptionKey
+        if (($carriedForwardMode -eq 'v2' -or $carriedForwardMode -eq 'v3') -and [string]::IsNullOrWhiteSpace($carriedForwardKey)) {
+            throw "EncryptionKey is required for Admin API v2 and v3 modes, but no valid key was found in the existing installation or the new package default. Re-run the upgrade with a valid EncryptionKey."
+        }
+        Test-EncryptionKeyFormat -EncryptionKey $carriedForwardKey | Out-Null
         $newSettings.AppSettings.ApiStartupType = $oldSettings.AppSettings.ApiStartupType
         $newSettings.AppSettings.ApiExternalUrl =  $oldSettings.AppSettings.ApiExternalUrl
         $newSettings.AppSettings.PathBase = $oldSettings.AppSettings.PathBase
@@ -1173,6 +1181,10 @@ function Invoke-DbUpScripts {
             ConnectionString = ""
             FilePaths = $Config.WebApplicationPath
             ToolsPath = $Config.ToolsPath
+        }
+
+        if ($Config.ContainsKey("StandardVersion") -and $Config.StandardVersion) {
+            $params["StandardVersion"] = $Config.StandardVersion
         }
 
         if($Config.IsMultiTenant)

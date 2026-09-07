@@ -151,7 +151,7 @@ function Assert-DatabaseConnectionInfo {
     if (-not $DbConnectionInfo.ContainsKey("Engine")) {
         $DbConnectionInfo.Engine = "SqlServer"
     }
-    if (-not $DbConnectionInfo.Engine.toLower -in ("sqlserver","postgresql","postgres")) {
+    if ($DbConnectionInfo.Engine.ToLower() -notin ("sqlserver","postgresql","postgres")) {
         throw "Database connection info specifies an invalid engine: $($DbConnectionInfo.Engine). " +
               "Valid engines: SqlServer, PostgreSQL"
     }

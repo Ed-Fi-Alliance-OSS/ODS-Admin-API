@@ -188,7 +188,8 @@ function Publish-PrereleasePackage {
         $parameters += "detailed"
     }
 
-    Write-Host $NuGet @parameters -ForegroundColor Magenta
+    $redactedParameters = $parameters | ForEach-Object { if ($_ -eq $ApiKey) { '***REDACTED***' } else { $_ } }
+    Write-Host $NuGet @redactedParameters -ForegroundColor Magenta
     & $NuGet @parameters
 }
 
