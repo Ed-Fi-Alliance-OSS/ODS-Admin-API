@@ -61,9 +61,6 @@ Available commands (e.g., `./build.ps1 clean`) (commands are not case sensitive)
     over the latest files to existing AdminApi docker container for testing.
 * `run`: runs the Admin API
 
-Note: use the `IsLocalBuild` switch to install NuGet.exe if you do not already
-have it in your local path.
-
 Review the parameters at the top of `build.ps1` for additional command line
 arguments.
 

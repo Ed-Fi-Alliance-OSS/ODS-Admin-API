@@ -74,9 +74,6 @@ jobs:
           $fileVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath).FileVersion
           "file-version=$fileVersion" >> $env:GITHUB_OUTPUT
 
-      - name: Setup Nuget.exe
-        uses: nuget/setup-nuget@323ab0502cd38fdc493335025a96c8fdb0edc71f #v2.0.1
-
       - name: Replace Installer Version Token
         shell: pwsh
         run: |
