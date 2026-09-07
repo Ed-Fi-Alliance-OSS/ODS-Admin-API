@@ -88,3 +88,4 @@ coveragereport/
 
 # Superpowers subagent-driven-development workspace
 .superpowers/
+docs/superpowers/
