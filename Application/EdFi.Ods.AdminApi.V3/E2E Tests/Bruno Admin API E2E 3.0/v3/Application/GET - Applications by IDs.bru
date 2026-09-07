@@ -27,12 +27,13 @@ script:post-response {
       .filter(Number.isInteger)
   )];
   
-  test("GET ApplicationID: Ensures returned applications are a subset of requested IDs", function () {
+  test("GET ApplicationID: Ensures returned applications exactly match requested IDs", function () {
     expect(requestedIds.length).to.be.greaterThan(0);
-    expect(result.length).to.be.at.most(requestedIds.length);
+    expect(result.length).to.equal(requestedIds.length);
 
-    result.forEach(function(application) {
-      expect(requestedIds).to.include(application.id);
+    const resultIds = result.map(function(application) { return application.id; });
+    requestedIds.forEach(function(id) {
+      expect(resultIds).to.include(id);
     });
   });
 }
