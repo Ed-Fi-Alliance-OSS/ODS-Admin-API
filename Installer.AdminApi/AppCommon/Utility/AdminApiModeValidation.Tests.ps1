@@ -143,3 +143,34 @@ Describe 'Get-DbDeployVersionForStandardVersion' {
         { Get-DbDeployVersionForStandardVersion -StandardVersion '6.0.0' } | Should -Throw '*No known EdFi.Db.Deploy version*'
     }
 }
+
+Describe 'StandardVersion validation and DbDeploy mapping cannot drift apart' {
+    <#
+        Assert-AdminApiModeCompatibility and Get-DbDeployVersionForStandardVersion
+        both read $script:SupportedStandardVersions instead of keeping their own
+        separate lists. These tests exercise that guarantee behaviorally: for
+        every version below, either both functions accept it or both reject it
+        -- never one accepting what the other rejects, which is exactly the bug
+        class that caused the original "Option 's' is unknown" failure (the
+        installer built a DbDeploy call with a StandardVersion the downloaded
+        tool version didn't support).
+    #>
+    BeforeAll {
+        $script:validKeyForSync = [Convert]::ToBase64String((New-Object byte[] 32))
+    }
+
+    It 'accepts 4.0.0 in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v1' -StandardVersion '4.0.0' } | Should -Not -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' } | Should -Not -Throw
+    }
+
+    It 'accepts 5.2.0 in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '5.2.0' -EncryptionKey $script:validKeyForSync } | Should -Not -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '5.2.0' } | Should -Not -Throw
+    }
+
+    It 'rejects an unsupported StandardVersion (e.g. 6.0.0) in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '6.0.0' -EncryptionKey $script:validKeyForSync } | Should -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '6.0.0' } | Should -Throw
+    }
+}

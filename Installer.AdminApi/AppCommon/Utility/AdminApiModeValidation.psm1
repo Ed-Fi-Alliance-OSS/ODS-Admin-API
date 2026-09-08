@@ -3,6 +3,20 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
+# Single source of truth for which Ed-Fi Data Standard versions this repo's
+# installer supports, and which EdFi.Db.Deploy tool version understands each
+# one's -s/--standardVersion CLI flag (AppCommon/Utility/ToolsHelper.psm1's
+# Invoke-DbDeploy). Mirrors build.ps1's supportedApiVersions6x/7x tables and
+# eng/run-dbup-migrations.ps1. Note: Invoke-DbDeploy's own [ValidateSet] also
+# allows '6.0.0', because the EdFi.Db.Deploy CLI itself already anticipates
+# that future Data Standard version — but nothing else in this repo (build.ps1
+# included) supports it yet, so it is intentionally absent here. Add it to
+# this one hashtable, with its correct DbDeployVersion, when that changes.
+$script:SupportedStandardVersions = [ordered]@{
+    '4.0.0' = '3.2.27'
+    '5.2.0' = '4.1.52'
+}
+
 function Test-EncryptionKeyFormat {
     <#
     .SYNOPSIS
@@ -66,8 +80,8 @@ function Assert-AdminApiModeCompatibility {
         throw "AdminApiMode must be one of: v1, v2, v3. Received: $AdminApiMode."
     }
 
-    if ($StandardVersion -notin @('4.0.0', '5.2.0')) {
-        throw "StandardVersion must be one of: 4.0.0, 5.2.0. Received: $StandardVersion."
+    if ($StandardVersion -notin $script:SupportedStandardVersions.Keys) {
+        throw "StandardVersion must be one of: $($script:SupportedStandardVersions.Keys -join ', '). Received: $StandardVersion."
     }
 
     if ($AdminApiMode -eq 'v1' -and $StandardVersion -ne '4.0.0') {
@@ -149,13 +163,13 @@ function Get-DbDeployVersionForStandardVersion {
         supports it.
     .DESCRIPTION
         EdFi.Db.Deploy's -s/--standardVersion CLI flag is only understood by
-        newer tool builds. Mirrors the StandardVersion -> DbDeployVersion
-        mapping already used by build.ps1's supportedApiVersions6x/7x tables
-        and eng/run-dbup-migrations.ps1, so the installer downloads a
-        DbDeploy build that actually understands the -s flag Invoke-DbDeploy
-        (AppCommon/Utility/ToolsHelper.psm1) passes it. An empty/unset
-        StandardVersion (e.g. the upgrade path, which does not track it)
-        defaults to 5.2.0's mapping, matching Invoke-DbDeploy's own default.
+        newer tool builds. Looks up $script:SupportedStandardVersions — the
+        same table Assert-AdminApiModeCompatibility validates against — so
+        the installer downloads a DbDeploy build that actually understands
+        the -s flag Invoke-DbDeploy (AppCommon/Utility/ToolsHelper.psm1)
+        passes it. An empty/unset StandardVersion (e.g. the upgrade path,
+        which does not track it) defaults to 5.2.0's mapping, matching
+        Invoke-DbDeploy's own default.
     #>
     [CmdletBinding()]
     param (
@@ -167,9 +181,9 @@ function Get-DbDeployVersionForStandardVersion {
         $StandardVersion = '5.2.0'
     }
 
-    switch ($StandardVersion) {
-        '4.0.0' { return '3.2.27' }
-        '5.2.0' { return '4.1.52' }
-        default { throw "No known EdFi.Db.Deploy version for StandardVersion: $StandardVersion." }
+    if (-not $script:SupportedStandardVersions.Contains($StandardVersion)) {
+        throw "No known EdFi.Db.Deploy version for StandardVersion: $StandardVersion."
     }
+
+    return $script:SupportedStandardVersions[$StandardVersion]
 }
