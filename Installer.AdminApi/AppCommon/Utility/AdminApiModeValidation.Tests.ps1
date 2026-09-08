@@ -121,3 +121,25 @@ Describe 'Get-CarriedForwardAppSetting' {
         Get-CarriedForwardAppSetting -OldValue $null -CurrentValue $null | Should -Be $null
     }
 }
+
+Describe 'Get-DbDeployVersionForStandardVersion' {
+    It 'returns 3.2.27 for StandardVersion 4.0.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' | Should -Be '3.2.27'
+    }
+
+    It 'returns 4.1.52 for StandardVersion 5.2.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '5.2.0' | Should -Be '4.1.52'
+    }
+
+    It 'defaults to the 5.2.0 mapping when StandardVersion is empty (e.g. the upgrade path)' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '' | Should -Be '4.1.52'
+    }
+
+    It 'defaults to the 5.2.0 mapping when StandardVersion is not supplied' {
+        Get-DbDeployVersionForStandardVersion | Should -Be '4.1.52'
+    }
+
+    It 'throws for an unsupported StandardVersion' {
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '6.0.0' } | Should -Throw '*No known EdFi.Db.Deploy version*'
+    }
+}

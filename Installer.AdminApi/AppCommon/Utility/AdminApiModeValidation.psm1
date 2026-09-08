@@ -141,3 +141,35 @@ function Get-CarriedForwardAppSetting {
 
     return $CurrentValue
 }
+
+function Get-DbDeployVersionForStandardVersion {
+    <#
+    .SYNOPSIS
+        Maps a Data Standard version to the EdFi.Db.Deploy tool version that
+        supports it.
+    .DESCRIPTION
+        EdFi.Db.Deploy's -s/--standardVersion CLI flag is only understood by
+        newer tool builds. Mirrors the StandardVersion -> DbDeployVersion
+        mapping already used by build.ps1's supportedApiVersions6x/7x tables
+        and eng/run-dbup-migrations.ps1, so the installer downloads a
+        DbDeploy build that actually understands the -s flag Invoke-DbDeploy
+        (AppCommon/Utility/ToolsHelper.psm1) passes it. An empty/unset
+        StandardVersion (e.g. the upgrade path, which does not track it)
+        defaults to 5.2.0's mapping, matching Invoke-DbDeploy's own default.
+    #>
+    [CmdletBinding()]
+    param (
+        [string]
+        $StandardVersion
+    )
+
+    if ([string]::IsNullOrWhiteSpace($StandardVersion)) {
+        $StandardVersion = '5.2.0'
+    }
+
+    switch ($StandardVersion) {
+        '4.0.0' { return '3.2.27' }
+        '5.2.0' { return '4.1.52' }
+        default { throw "No known EdFi.Db.Deploy version for StandardVersion: $StandardVersion." }
+    }
+}
