@@ -103,9 +103,13 @@ public static class WebApplicationBuilderExtensions
             RegisterAdminApiServices(webApplicationBuilder, adminApiV1Types);
         }
 
-        webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, AdminApiAuditLogWriter>();
+        if (adminApiMode is AdminApiMode.V2 or AdminApiMode.V3)
+        {
+            // Audit trail logging is only supported in V2/V3 - V1's database schema has no AuditLogs table.
+            webApplicationBuilder.Services.AddSingleton<IAuditLogWriter, AdminApiAuditLogWriter>();
 
-        webApplicationBuilder.Services.AddHostedService<AuditLogBackgroundService>();
+            webApplicationBuilder.Services.AddHostedService<AuditLogBackgroundService>();
+        }
 
         // Add services to the container.
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

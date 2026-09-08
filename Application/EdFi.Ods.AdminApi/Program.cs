@@ -65,7 +65,11 @@ AdminApiVersions.Initialize(app);
 //AuditActionLoggingMiddleware must be outermost so it observes the final response status
 //code after RequestLoggingMiddleware/V3RequestErrorMiddleware has translated any exception
 //into its real HTTP status (they catch and never rethrow), rather than guessing 500 itself.
-app.UseMiddleware<AuditActionLoggingMiddleware>();
+//Audit trail logging is only supported in V2/V3 - V1's database schema has no AuditLogs table.
+if (adminApiMode != AdminApiMode.V1)
+{
+    app.UseMiddleware<AuditActionLoggingMiddleware>();
+}
 
 if (adminApiMode == AdminApiMode.V3)
 {
