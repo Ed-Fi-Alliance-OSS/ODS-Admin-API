@@ -3,9 +3,12 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.RateLimiting;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -113,6 +117,38 @@ public class WebApplicationBuilderExtensionsTests
 
         var differentResult = globalLimiter.AttemptAcquire(differentContext);
         differentResult.IsAcquired.ShouldBeTrue("Non-matching endpoint should be allowed");
+    }
+
+    [TestCase("v1", false)]
+    [TestCase("v2", true)]
+    [TestCase("v3", true)]
+    public void AddServices_AuditLogWriterAndBackgroundService_OnlyRegisteredForV2AndV3(
+        string adminApiMode, bool shouldBeRegistered)
+    {
+        // Arrange
+        var builder = WebApplication.CreateBuilder();
+        builder.Configuration["AppSettings:AdminApiMode"] = adminApiMode;
+        builder.Configuration["AppSettings:DatabaseEngine"] = "SqlServer";
+        builder.Configuration["AppSettings:MultiTenancy"] = "false";
+        builder.Configuration["ConnectionStrings:EdFi_Admin"] =
+            "Data Source=.\\;Initial Catalog=EdFi_Admin;Integrated Security=True";
+        builder.Configuration["ConnectionStrings:EdFi_Security"] =
+            "Data Source=.\\;Initial Catalog=EdFi_Security;Integrated Security=True";
+        builder.Configuration["Authentication:IssuerUrl"] = "https://localhost";
+        builder.Configuration["Authentication:SigningKey"] = Convert.ToBase64String(new byte[32]);
+        builder.Configuration["Authentication:ValidateIssuerSigningKey"] = "true";
+
+        // Act
+        builder.AddServices();
+
+        // Assert
+        var writerDescriptor = builder.Services.FirstOrDefault(d => d.ServiceType == typeof(IAuditLogWriter));
+        var hostedServiceDescriptors = builder.Services.Where(d => d.ServiceType == typeof(IHostedService));
+
+        (writerDescriptor is not null).ShouldBe(shouldBeRegistered);
+        hostedServiceDescriptors
+            .Any(d => d.ImplementationType == typeof(AuditLogBackgroundService))
+            .ShouldBe(shouldBeRegistered);
     }
 
     private static WebApplicationBuilder CreateWebApplicationBuilder(
