@@ -7,21 +7,19 @@
 # installer supports, and which EdFi.Db.Deploy tool version to use for each.
 # This is NOT a technical constraint of the -s/--standardVersion CLI flag
 # itself: EdFi.Db.Deploy ships no embedded per-standard SQL and its -s flag
-# takes any string (confirmed against the cached 4.1.52 tool -- '--help' shows
+# takes any string (confirmed against the cached 4.3.2 tool -- '--help' shows
 # no ValidateSet, just a free-text default of '5.1.0'), so a single tool build
 # can run any Data Standard version whose migration scripts exist at the
-# --filePaths it's given. 4.1.52 is confirmed to work for both 4.0.0 and
-# 5.2.0, so both map to it here. The table stays keyed by StandardVersion
-# (rather than collapsing to one constant) so a future Data Standard version
-# (e.g. '6.0.0') can be added with whatever DbDeployVersion it actually needs,
-# without disturbing the existing entries. Note: Invoke-DbDeploy's own
-# [ValidateSet] already allows '6.0.0', because the EdFi.Db.Deploy CLI itself
-# already anticipates that future Data Standard version -- but nothing else in
-# this repo (build.ps1 included) supports it yet, so it is intentionally
-# absent here.
+# --filePaths it's given. 4.3.2 (.NET 10, matching this repo's own TargetFramework)
+# is confirmed to work for 4.0.0, 5.2.0, 6.0.0, and 6.1.0, so all four map to it
+# here. The table stays keyed by StandardVersion (rather than collapsing to one
+# constant) so a future Data Standard version can be added with whatever
+# DbDeployVersion it actually needs, without disturbing the existing entries.
 $script:SupportedStandardVersions = [ordered]@{
-    '4.0.0' = '4.1.52'
-    '5.2.0' = '4.1.52'
+    '4.0.0' = '4.3.2'
+    '5.2.0' = '4.3.2'
+    '6.0.0' = '4.3.2'
+    '6.1.0' = '4.3.2'
 }
 
 function Test-EncryptionKeyFormat {
