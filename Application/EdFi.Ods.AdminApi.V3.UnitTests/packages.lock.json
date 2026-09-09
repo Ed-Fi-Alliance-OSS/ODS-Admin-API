@@ -43,12 +43,12 @@
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[17.10.0, )",
-        "resolved": "17.10.0",
-        "contentHash": "0/2HeACkaHEYU3wc83YlcD2Fi4LMtECJjqrtvw0lPi9DCEa35zSPt1j4fuvM8NagjDqJuh1Ja35WcRtn1Um6/A==",
+        "requested": "[18.9.0, )",
+        "resolved": "18.9.0",
+        "contentHash": "xIzVXa/VpKXqDWzyC/5Hw8JbFY5u9k3Jc53CpcjBiOXvkQGio484LD9FNwOiGUSMDcYL3Rcw9sNgGi5WrswlPQ==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "17.10.0",
-          "Microsoft.TestPlatform.TestHost": "17.10.0"
+          "Microsoft.CodeCoverage": "18.9.0",
+          "Microsoft.TestPlatform.TestHost": "18.9.0"
         }
       },
       "Npgsql": {
@@ -154,8 +154,8 @@
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "17.10.0",
-        "contentHash": "yC7oSlnR54XO5kOuHlVOKtxomNNN1BWXX8lK1G2jaPXT9sUok7kCOoA4Pgs0qyFaCtMrNsprztYMeoEGqCm4uA=="
+        "resolved": "18.9.0",
+        "contentHash": "MtegCIKGuG0r/LCdIjoR1HgzCGIUBhR3aNdbtQpts5vMXQuqBDZ2Jsd2uFKoHFM2XrQV6ZrDf3F5oLi3SLTp8w=="
       },
       "Microsoft.Data.SqlClient.SNI.runtime": {
         "type": "Transitive",
@@ -413,16 +413,15 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "17.10.0",
-        "contentHash": "KkwhjQevuDj0aBRoPLY6OLAhGqbPUEBuKLbaCs0kUVw29qiOYncdORd4mLVJbn9vGZ7/iFGQ/+AoJl0Tu5Umdg=="
+        "resolved": "18.9.0",
+        "contentHash": "Fz/qXC52VXXopzHj7v2reCKcCqSxkTDCkEDfkNAH0vni/7qK/KLMiEYtRmnUanxO2F2g2zZZ60qCpxF0AF7URA=="
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "17.10.0",
-        "contentHash": "LWpMdfqhHvcUkeMCvNYJO8QlPLlYz9XPPb+ZbaXIKhdmjAV0wqTSrTiW5FLaf7RRZT50AQADDOYMOe0HxDxNgA==",
+        "resolved": "18.9.0",
+        "contentHash": "Oq+Pma/J86aZL72t71bcESvDszDsTjUfl6PIsuDdPoKTHZfNMhKamCfLD5fKx51W/u0KozXtJo2/3fnt0sgPxg==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "17.10.0",
-          "Newtonsoft.Json": "13.0.1"
+          "Microsoft.TestPlatform.ObjectModel": "18.9.0"
         }
       },
       "Namotion.Reflection": {
@@ -751,7 +750,7 @@
         "type": "Project",
         "dependencies": {
           "Dapper": "[2.1.72, )",
-          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )"
         }
       },
@@ -763,7 +762,7 @@
           "AspNetCore.HealthChecks.SqlServer": "[9.0.0, )",
           "Autofac.Extras.DynamicProxy": "[7.1.0, )",
           "EFCore.NamingConventions": "[10.0.1, )",
-          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "EdFi.Suite3.Common": "[7.4.296, )",
           "FluentValidation": "[11.11.0, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
@@ -793,9 +792,9 @@
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
           "AspNetCore.HealthChecks.SqlServer": "[9.0.0, )",
           "Azure.Identity": "[1.14.2, )",
-          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "EdFi.Ods.AdminApi.InstanceManagement": "[0.1.0.1, )",
-          "EdFi.Ods.AdminApi.V1": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.V1": "[0.1.0, )",
           "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
           "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
