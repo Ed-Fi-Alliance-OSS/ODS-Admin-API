@@ -4,16 +4,23 @@
 # See the LICENSE and NOTICES files in the project root for more information.
 
 # Single source of truth for which Ed-Fi Data Standard versions this repo's
-# installer supports, and which EdFi.Db.Deploy tool version understands each
-# one's -s/--standardVersion CLI flag (AppCommon/Utility/ToolsHelper.psm1's
-# Invoke-DbDeploy). Mirrors build.ps1's supportedApiVersions6x/7x tables and
-# eng/run-dbup-migrations.ps1. Note: Invoke-DbDeploy's own [ValidateSet] also
-# allows '6.0.0', because the EdFi.Db.Deploy CLI itself already anticipates
-# that future Data Standard version — but nothing else in this repo (build.ps1
-# included) supports it yet, so it is intentionally absent here. Add it to
-# this one hashtable, with its correct DbDeployVersion, when that changes.
+# installer supports, and which EdFi.Db.Deploy tool version to use for each.
+# This is NOT a technical constraint of the -s/--standardVersion CLI flag
+# itself: EdFi.Db.Deploy ships no embedded per-standard SQL and its -s flag
+# takes any string (confirmed against the cached 4.1.52 tool -- '--help' shows
+# no ValidateSet, just a free-text default of '5.1.0'), so a single tool build
+# can run any Data Standard version whose migration scripts exist at the
+# --filePaths it's given. 4.1.52 is confirmed to work for both 4.0.0 and
+# 5.2.0, so both map to it here. The table stays keyed by StandardVersion
+# (rather than collapsing to one constant) so a future Data Standard version
+# (e.g. '6.0.0') can be added with whatever DbDeployVersion it actually needs,
+# without disturbing the existing entries. Note: Invoke-DbDeploy's own
+# [ValidateSet] already allows '6.0.0', because the EdFi.Db.Deploy CLI itself
+# already anticipates that future Data Standard version -- but nothing else in
+# this repo (build.ps1 included) supports it yet, so it is intentionally
+# absent here.
 $script:SupportedStandardVersions = [ordered]@{
-    '4.0.0' = '3.2.27'
+    '4.0.0' = '4.1.52'
     '5.2.0' = '4.1.52'
 }
 
@@ -159,17 +166,17 @@ function Get-CarriedForwardAppSetting {
 function Get-DbDeployVersionForStandardVersion {
     <#
     .SYNOPSIS
-        Maps a Data Standard version to the EdFi.Db.Deploy tool version that
-        supports it.
+        Maps a Data Standard version to the known-good EdFi.Db.Deploy tool
+        version this repo tests it against.
     .DESCRIPTION
-        EdFi.Db.Deploy's -s/--standardVersion CLI flag is only understood by
-        newer tool builds. Looks up $script:SupportedStandardVersions — the
-        same table Assert-AdminApiModeCompatibility validates against — so
-        the installer downloads a DbDeploy build that actually understands
-        the -s flag Invoke-DbDeploy (AppCommon/Utility/ToolsHelper.psm1)
-        passes it. An empty/unset StandardVersion (e.g. the upgrade path,
-        which does not track it) defaults to 5.2.0's mapping, matching
-        Invoke-DbDeploy's own default.
+        Looks up $script:SupportedStandardVersions — the same table
+        Assert-AdminApiModeCompatibility validates against — so the installer
+        downloads the DbDeploy build this repo pairs with the install's
+        StandardVersion, which Invoke-DbUpScripts then passes through to
+        Invoke-DbDeploy's -s flag (AppCommon/Utility/ToolsHelper.psm1). An
+        empty/unset StandardVersion (e.g. the upgrade path, which does not
+        track it) defaults to 5.2.0's mapping, matching Invoke-DbDeploy's own
+        default.
     #>
     [CmdletBinding()]
     param (

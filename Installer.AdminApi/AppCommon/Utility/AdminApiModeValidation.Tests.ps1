@@ -123,8 +123,8 @@ Describe 'Get-CarriedForwardAppSetting' {
 }
 
 Describe 'Get-DbDeployVersionForStandardVersion' {
-    It 'returns 3.2.27 for StandardVersion 4.0.0' {
-        Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' | Should -Be '3.2.27'
+    It 'returns 4.1.52 for StandardVersion 4.0.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' | Should -Be '4.1.52'
     }
 
     It 'returns 4.1.52 for StandardVersion 5.2.0' {
