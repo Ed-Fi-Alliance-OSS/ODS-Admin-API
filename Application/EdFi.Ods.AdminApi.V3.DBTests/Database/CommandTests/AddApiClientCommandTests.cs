@@ -9,6 +9,8 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using NUnit.Framework;
 using Shouldly;
 using System;
@@ -164,6 +166,68 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
 
             persistedApiClient.ShouldNotBeNull();
             persistedApiClient.IsApproved.ShouldBeFalse();
+        });
+    }
+
+
+    [Test]
+    public void ShouldGiveNewApiClientTheApplicationsEducationOrganizations()
+    {
+        var vendor = new Vendor
+        {
+            VendorId = 0,
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
+            VendorName = "Integration Tests EdOrg Reuse"
+        };
+
+        var application = new Application
+        {
+            ApplicationName = "EdOrg Reuse Application",
+            ClaimSetName = "FakeClaimSet",
+            OperationalContextUri = "http://test.com",
+            Profiles = null,
+            Vendor = vendor
+        };
+        application.ApplicationEducationOrganizations.Add(application.CreateApplicationEducationOrganization(12345));
+        application.ApplicationEducationOrganizations.Add(application.CreateApplicationEducationOrganization(67890));
+
+        Save(application);
+
+        var newApiClientId = 0;
+        Transaction(usersContext =>
+        {
+            var command = new AddApiClientCommand(usersContext);
+            var result = command.Execute(new TestApiClient
+            {
+                Name = "EdOrg Reuse Credential",
+                ApplicationId = application.ApplicationId,
+                IsApproved = true,
+                DataStoreIds = null
+            }, _options);
+            newApiClientId = result.Id;
+        });
+
+        Transaction(usersContext =>
+        {
+            // ADMINAPI-1514: the new credential joins the Application's existing rows.
+            // The row count must not grow - parallel copies would be a duplication bug.
+            var applicationEdOrgIds = usersContext.ApplicationEducationOrganizations
+                .Where(a => a.Application.ApplicationId == application.ApplicationId)
+                .Select(a => a.ApplicationEducationOrganizationId)
+                .OrderBy(id => id)
+                .ToList();
+
+            applicationEdOrgIds.Count.ShouldBe(2);
+
+            var createdApiClient = usersContext.ApiClients
+                .Include(c => c.ApplicationEducationOrganizations)
+                .Single(c => c.ApiClientId == newApiClientId);
+
+            createdApiClient.ApplicationEducationOrganizations
+                .Select(a => a.ApplicationEducationOrganizationId)
+                .OrderBy(id => id)
+                .ToList()
+                .ShouldBe(applicationEdOrgIds);
         });
     }
 

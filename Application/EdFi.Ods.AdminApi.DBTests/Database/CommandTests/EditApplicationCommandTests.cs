@@ -205,6 +205,103 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
 
     }
 
+
+    [Test]
+    public void ShouldEditApplicationWithMultipleApiClients()
+    {
+        SetupTestEntities();
+
+        // Give the Application a second credential with its own name, so this exercises
+        // the ADMINAPI-1514 crash fix against a real database engine.
+        Transaction(usersContext =>
+        {
+            var application = usersContext.Applications
+                .Include(a => a.ApiClients)
+                .Single(a => a.ApplicationId == _application.ApplicationId);
+
+            application.ApiClients.Add(new ApiClient(true)
+            {
+                Name = "Second Integration Test",
+                UseSandbox = false
+            });
+        });
+
+        var editModel = new TestEditApplicationModel
+        {
+            Id = _application.ApplicationId,
+            ApplicationName = "Multi Credential Renamed",
+            ClaimSetName = _application.ClaimSetName,
+            EducationOrganizationIds = new List<long> { 12345, 67890 },
+            ProfileIds = null,
+            VendorId = _vendor.VendorId,
+            OdsInstanceIds = new List<int> { _odsInstance.OdsInstanceId }
+        };
+
+        // Before ADMINAPI-1514 this threw InvalidOperationException from ApiClients.Single().
+        Transaction(usersContext =>
+        {
+            var command = new EditApplicationCommand(usersContext);
+            command.Execute(editModel);
+        });
+
+        Transaction(usersContext =>
+        {
+            var persistedApplication = usersContext.Applications
+                .Include(a => a.ApiClients)
+                .Include(a => a.ApplicationEducationOrganizations)
+                .Single(a => a.ApplicationId == _application.ApplicationId);
+
+            persistedApplication.ApplicationName.ShouldBe("Multi Credential Renamed");
+            persistedApplication.ApiClients.Count.ShouldBe(2);
+
+            // Neither credential was renamed by the Application edit.
+            persistedApplication.ApiClients.Select(c => c.Name).OrderBy(n => n).ToList()
+                .ShouldBe(new List<string> { "Integration Test", "Second Integration Test" });
+
+            persistedApplication.ApplicationEducationOrganizations.Count.ShouldBe(2);
+        });
+
+        Transaction(usersContext =>
+        {
+            var applicationEdOrgIds = usersContext.ApplicationEducationOrganizations
+                .Where(a => a.Application.ApplicationId == _application.ApplicationId)
+                .Select(a => a.ApplicationEducationOrganizationId)
+                .OrderBy(id => id)
+                .ToList();
+
+            applicationEdOrgIds.Count.ShouldBe(2);
+
+            var apiClients = usersContext.ApiClients
+                .Include(c => c.ApplicationEducationOrganizations)
+                .Where(c => c.Application.ApplicationId == _application.ApplicationId)
+                .ToList();
+
+            apiClients.Count.ShouldBe(2);
+
+            // Every credential holds every one of the Application's education-organization
+            // grants - this is the scope-widening behaviour the fix introduces.
+            foreach (var apiClient in apiClients)
+            {
+                apiClient.ApplicationEducationOrganizations
+                    .Select(a => a.ApplicationEducationOrganizationId)
+                    .OrderBy(id => id)
+                    .ToList()
+                    .ShouldBe(applicationEdOrgIds);
+            }
+
+            // And each credential got a data-store row for the submitted data store.
+            var apiClientIds = apiClients.Select(c => c.ApiClientId).ToList();
+            var dataStoreRows = usersContext.ApiClientOdsInstances
+                .Include(o => o.ApiClient)
+                .Include(o => o.OdsInstance)
+                .Where(o => apiClientIds.Contains(o.ApiClient.ApiClientId))
+                .ToList();
+
+            dataStoreRows.Count.ShouldBe(2);
+            dataStoreRows.ShouldAllBe(o => o.OdsInstance.OdsInstanceId == _odsInstance.OdsInstanceId);
+        });
+    }
+
     private class TestEditApplicationModel : IEditApplicationModel
     {
         public int Id { get; set; }
