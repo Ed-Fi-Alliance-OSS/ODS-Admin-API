@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
@@ -69,7 +70,9 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
                 OdsInstanceIds = [1, 2]
             };
 
-            Assert.Throws<InvalidOperationException>(() => command.Execute(newApiClient, _options));
+            // ADMINAPI-1514: AddApiClientCommand now throws the typed NotFoundException that
+            // EditApplicationCommand already used, instead of a bare InvalidOperationException.
+            Assert.Throws<NotFoundException<int>>(() => command.Execute(newApiClient, _options));
         });
     }
 

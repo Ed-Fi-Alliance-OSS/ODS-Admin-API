@@ -129,14 +129,18 @@ revisiting callers. The symptom depends only on which LINQ operator was used:
 
   **Deliberately deferred past release 2.4**, on this basis:
 
-  * The endpoint ships **disabled**. `AppSettings.EnableApplicationResetEndpoint`
-    has no initialiser, so it defaults to `false`
-    (`EdFi.Ods.AdminApi.Common/Settings/AppSettings.cs:25` — contrast
-    `EnableDataStoreManagement`, which is `= true`), and the shipped
-    `appsettings.json` of both v2 and V3 sets it to `false` explicitly.
-    `ResetApplicationCredentials.HandleResetCredentials` rejects the request
-    before reaching any data when the flag is off. The path is unreachable in a
-    default install.
+  * **Corrected 2026-09-10 after PR review:** an earlier version of this
+    section claimed the path was "unreachable in a default install". **That is
+    wrong for Docker deployments.** `AppSettings.EnableApplicationResetEndpoint`
+    does default to `false` in C# and in the shipped `appsettings.json` of both
+    v2 and V3 — but **every v2 and v3 compose file overrides it to `true`**:
+    `AppSettings__EnableApplicationResetEndpoint: ${ENABLE_APPLICATION_RESET_ENDPOINT:-true}`,
+    and `env.example` ships `ENABLE_APPLICATION_RESET_ENDPOINT=true`. Only V1's
+    compose files hardcode `false`. So in the primary distribution path the
+    endpoint is **enabled**, and this defect is reachable. Combined with the
+    AC-616 counter-consideration below, that materially raises its priority —
+    tracked as ADMINAPI-1518, which needs re-triage. Check the compose layer,
+    not just `appsettings.json`, before concluding a flag is off.
   * ADMINAPI-1514 neither worsened it nor made it newly reachable — unlike the
     `dataStoreIds` case above, whose exposure the 500 was masking. It behaves
     identically before and after that fix.

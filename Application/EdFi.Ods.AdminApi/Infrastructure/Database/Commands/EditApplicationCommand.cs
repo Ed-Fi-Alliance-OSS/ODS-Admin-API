@@ -50,12 +50,18 @@ public class EditApplicationCommand : IEditApplicationCommand
         var apiClients = application.ApiClients.ToList();
         var apiClientIds = apiClients.Select(c => c.ApiClientId).ToList();
 
-        foreach (var client in apiClients)
+        // ADMINAPI-1514: enabled state is Application-level, so when the caller supplies it
+        // it applies to every credential. When it is omitted, per-credential state is left
+        // untouched - an edit that only renames the Application must not re-approve
+        // credentials an administrator deliberately disabled.
+        // Name is deliberately never assigned: a credential's name belongs to the
+        // credential and must survive an Application edit.
+        if (model.Enabled.HasValue)
         {
-            // ADMINAPI-1514: enabled state is Application-level, so it applies to every
-            // credential. Name is deliberately not assigned - a credential's name belongs
-            // to the credential and must survive an Application edit.
-            client.IsApproved = model.Enabled ?? true;
+            foreach (var client in apiClients)
+            {
+                client.IsApproved = model.Enabled.Value;
+            }
         }
 
         _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => apiClientIds.Contains(o.ApiClient.ApiClientId)));
@@ -100,6 +106,11 @@ public class EditApplicationCommand : IEditApplicationCommand
             }
         }
 
+        // ADMINAPI-1514 / ADMINAPI-1515: a data-store grant is stored only as an
+        // ApiClientOdsInstance row, which hangs off a credential. An Application with no
+        // credentials therefore has nowhere to record OdsInstanceIds, and the submitted
+        // values are discarded here even though the validator requires them. Giving the
+        // Application its own data-store association is ADMINAPI-1515.
         if (newOdsInstances != null)
         {
             foreach (var newOdsInstance in newOdsInstances.ToList())

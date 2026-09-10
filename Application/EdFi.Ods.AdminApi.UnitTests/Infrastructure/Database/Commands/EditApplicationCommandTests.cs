@@ -272,6 +272,109 @@ public class EditApplicationCommandTests
         rows.ShouldAllBe(r => r.OdsInstance.OdsInstanceId != stale.OdsInstanceId);
     }
 
+
+    [Test]
+    public void Execute_WithEnabledOmitted_LeavesEveryCredentialsApprovalUntouched()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app, IsApproved = true });
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app, IsApproved = false });
+        ctx.SaveChanges();
+
+        // Enabled deliberately not set: a rename must not re-approve a disabled credential.
+        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
+        {
+            Id = app.ApplicationId, ApplicationName = "NewName", VendorId = vendor.VendorId, ClaimSetName = "CS"
+        });
+
+        ctx.ApiClients.Single(c => c.Name == "cred-a").IsApproved.ShouldBeTrue();
+        ctx.ApiClients.Single(c => c.Name == "cred-b").IsApproved.ShouldBeFalse();
+    }
+
+    [Test]
+    public void Execute_WithEnabledTrue_ApprovesEveryCredential()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app, IsApproved = false });
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app, IsApproved = false });
+        ctx.SaveChanges();
+
+        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
+        {
+            Id = app.ApplicationId, ApplicationName = "NewName", VendorId = vendor.VendorId, ClaimSetName = "CS", Enabled = true
+        });
+
+        ctx.ApiClients.ShouldAllBe(c => c.IsApproved);
+    }
+
+    [Test]
+    public void Execute_WithThreeApiClients_AttachesEveryCredentialToEveryEducationOrganization()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app });
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app });
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-c", Application = app });
+        ctx.SaveChanges();
+
+        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
+        {
+            Id = app.ApplicationId,
+            ApplicationName = "NewName",
+            VendorId = vendor.VendorId,
+            ClaimSetName = "CS",
+            EducationOrganizationIds = new List<long> { 255901, 255902 }
+        });
+
+        var edOrgs = ctx.ApplicationEducationOrganizations.ToList();
+        edOrgs.Count.ShouldBe(2);
+        // Each row must own a distinct three-element list, not a shared instance.
+        edOrgs.ShouldAllBe(aeo => aeo.ApiClients.Count == 3);
+        edOrgs.Select(aeo => aeo.ApiClients).Distinct().Count().ShouldBe(2);
+        ctx.ApiClients.Select(c => c.Name).OrderBy(n => n).ShouldBe(new[] { "cred-a", "cred-b", "cred-c" });
+    }
+
+    [Test]
+    public void Execute_WithDuplicateDataStoreIds_CreatesOneRowPerCredentialAndDataStore()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app });
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app });
+        var ds1 = new OdsInstance { Name = "DS1", InstanceType = "type", ConnectionString = "cs" };
+        var ds2 = new OdsInstance { Name = "DS2", InstanceType = "type", ConnectionString = "cs" };
+        ctx.OdsInstances.Add(ds1);
+        ctx.OdsInstances.Add(ds2);
+        ctx.SaveChanges();
+
+        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
+        {
+            Id = app.ApplicationId,
+            ApplicationName = "NewName",
+            VendorId = vendor.VendorId,
+            ClaimSetName = "CS",
+            OdsInstanceIds = new List<int> { ds1.OdsInstanceId, ds2.OdsInstanceId, ds1.OdsInstanceId, ds2.OdsInstanceId }
+        });
+
+        // Duplicate ids resolve through a set query over OdsInstances, so each data store
+        // is matched once and no dedup of the submitted list is required.
+        ctx.ApiClientOdsInstances.Count().ShouldBe(4);
+    }
+
     private class EditApplicationModelStub : IEditApplicationModel
     {
         public int Id { get; init; }

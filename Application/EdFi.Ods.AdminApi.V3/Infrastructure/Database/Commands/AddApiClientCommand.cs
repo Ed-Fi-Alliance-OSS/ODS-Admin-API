@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -26,7 +27,8 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             .Include(a => a.Vendor)
                 .ThenInclude(v => v.Users)
             .Include(a => a.ApplicationEducationOrganizations)
-            .Single(a => a.ApplicationId == apiClientModel.ApplicationId);
+            .SingleOrDefault(a => a.ApplicationId == apiClientModel.ApplicationId)
+                ?? throw new NotFoundException<int>("application", apiClientModel.ApplicationId);
 
         var dataStores = apiClientModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => apiClientModel.DataStoreIds.Contains(o.OdsInstanceId))

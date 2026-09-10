@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -146,6 +147,40 @@ public class AddApiClientCommandTests
             .Include(o => o.OdsInstance)
             .Count(o => o.ApiClient.ApiClientId == result.Id && o.OdsInstance.OdsInstanceId == odsInstance.OdsInstanceId)
             .ShouldBe(1);
+    }
+
+
+    [Test]
+    public void Execute_WhenApplicationNotFound_ThrowsNotFoundException()
+    {
+        using var ctx = CreateContext();
+        ctx.SaveChanges();
+
+        Should.Throw<NotFoundException<int>>(() =>
+            new AddApiClientCommand(ctx).Execute(
+                new AddApiClientModelStub { Name = "cred-x", IsApproved = true, ApplicationId = 9999 },
+                DefaultOptions()));
+    }
+
+    [Test]
+    public void Execute_WhenApplicationHasNoEducationOrganizations_CreatesApiClientWithNone()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.SaveChanges();
+        ctx.ChangeTracker.Clear();
+
+        var result = new AddApiClientCommand(ctx).Execute(
+            new AddApiClientModelStub { Name = "cred-b", IsApproved = true, ApplicationId = app.ApplicationId },
+            DefaultOptions());
+
+        ctx.ChangeTracker.Clear();
+        var created = ctx.ApiClients.Include(c => c.ApplicationEducationOrganizations).Single(c => c.ApiClientId == result.Id);
+        created.ApplicationEducationOrganizations.ShouldBeEmpty();
+        ctx.ApplicationEducationOrganizations.Count().ShouldBe(0);
     }
 
     private class AddApiClientModelStub : IAddApiClientModel
