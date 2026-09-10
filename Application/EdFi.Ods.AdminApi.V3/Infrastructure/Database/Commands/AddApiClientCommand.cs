@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -24,13 +25,14 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
     {
         var application = _usersContext.Applications
             .Include(a => a.Vendor)
-            .Single(a => a.ApplicationId == apiClientModel.ApplicationId);
+                .ThenInclude(v => v.Users)
+            .Include(a => a.ApplicationEducationOrganizations)
+            .SingleOrDefault(a => a.ApplicationId == apiClientModel.ApplicationId)
+                ?? throw new NotFoundException<int>("application", apiClientModel.ApplicationId);
 
         var dataStores = apiClientModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => apiClientModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
-
-        var applicationEdOrgs = application.EducationOrganizationIds();
 
         var apiClient = new ApiClient(true)
         {
@@ -40,11 +42,9 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             UseSandbox = false,
             KeyStatus = "Active",
             User = application.Vendor.Users.FirstOrDefault(),
-            ApplicationEducationOrganizations = applicationEdOrgs?.Select(eu => new ApplicationEducationOrganization
-            {
-                EducationOrganizationId = eu,
-                Application = application,
-            }).ToList(),
+            // ADMINAPI-1514: attach to the Application's existing education-organization
+            // rows rather than creating parallel copies of them.
+            ApplicationEducationOrganizations = application.ApplicationEducationOrganizations.ToList(),
         };
 
         _usersContext.ApiClients.Add(apiClient);
