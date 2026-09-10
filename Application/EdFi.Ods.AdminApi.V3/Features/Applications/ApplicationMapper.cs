@@ -41,7 +41,7 @@ public static class ApplicationMapper
             EducationOrganizationIds = source.EducationOrganizationIds(),
             VendorId = source.VendorId(),
             ProfileIds = source.Profiles(),
-            Enabled = source.ApiClients.All(a => a.IsApproved),
+            Enabled = source.ApiClients.Count != 0 && source.ApiClients.All(a => a.IsApproved),
             DataStoreIds = dataStoreIds
         };
     }

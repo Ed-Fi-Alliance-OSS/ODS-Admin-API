@@ -340,7 +340,57 @@ public class ApplicationMapperTests
 
         models.ShouldBeEmpty();
     }
+
+    // -----------------------------------------------------------------------
+    // ToModel - Enabled reflects ApiClient approval (ADMINAPI-1514)
+    // -----------------------------------------------------------------------
+
+    [Test]
+    public void ToModel_WithNoApiClients_ReportsNotEnabled()
+    {
+        var source = new Application
+        {
+            ApplicationId = 7,
+            ApplicationName = "No Credentials",
+            ClaimSetName = "CS"
+        };
+
+        var result = ApplicationMapper.ToModel(source, new List<int>());
+
+        result.Enabled.ShouldBeFalse();
+    }
+
+    [Test]
+    public void ToModel_WithAllApiClientsApproved_ReportsEnabled()
+    {
+        var source = new Application
+        {
+            ApplicationId = 8,
+            ApplicationName = "Two Approved",
+            ClaimSetName = "CS"
+        };
+        source.ApiClients.Add(new ApiClient { IsApproved = true });
+        source.ApiClients.Add(new ApiClient { IsApproved = true });
+
+        var result = ApplicationMapper.ToModel(source, new List<int>());
+
+        result.Enabled.ShouldBeTrue();
+    }
+
+    [Test]
+    public void ToModel_WithOneApiClientNotApproved_ReportsNotEnabled()
+    {
+        var source = new Application
+        {
+            ApplicationId = 9,
+            ApplicationName = "One Unapproved",
+            ClaimSetName = "CS"
+        };
+        source.ApiClients.Add(new ApiClient { IsApproved = true });
+        source.ApiClients.Add(new ApiClient { IsApproved = false });
+
+        var result = ApplicationMapper.ToModel(source, new List<int>());
+
+        result.Enabled.ShouldBeFalse();
+    }
 }
-
-
-
