@@ -47,12 +47,18 @@ public class EditApplicationCommand : IEditApplicationCommand
             ? _context.OdsInstances.Where(p => model.OdsInstanceIds.Contains(p.OdsInstanceId))
             : null;
 
-        var apiClient = application.ApiClients.Single();
-        var currentApiClientId = apiClient.ApiClientId;
-        apiClient.Name = model.ApplicationName;
-        apiClient.IsApproved = model.Enabled ?? true;
+        var apiClients = application.ApiClients.ToList();
+        var apiClientIds = apiClients.Select(c => c.ApiClientId).ToList();
 
-        _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => o.ApiClient.ApiClientId == currentApiClientId));
+        foreach (var client in apiClients)
+        {
+            // ADMINAPI-1514: enabled state is Application-level, so it applies to every
+            // credential. Name is deliberately not assigned - a credential's name belongs
+            // to the credential and must survive an Application edit.
+            client.IsApproved = model.Enabled ?? true;
+        }
+
+        _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => apiClientIds.Contains(o.ApiClient.ApiClientId)));
         _context.ApplicationEducationOrganizations.RemoveRange(_context.ApplicationEducationOrganizations.Where(aeo => aeo.Application.ApplicationId == application.ApplicationId));
 
         var currentProfiles = application.Profiles.ToList();
@@ -68,9 +74,11 @@ public class EditApplicationCommand : IEditApplicationCommand
 
         var newApplicationEdOrgs = model.EducationOrganizationIds == null
             ? []
-            : model.EducationOrganizationIds.Select(id => new ApplicationEducationOrganization
+            : model.EducationOrganizationIds.Distinct().Select(id => new ApplicationEducationOrganization
             {
-                ApiClients = new List<ApiClient> { apiClient },
+                // ADMINAPI-1514: education-organization scope is Application-level, so every
+                // credential of the Application holds it. Each row gets its own list instance.
+                ApiClients = apiClients.ToList(),
                 EducationOrganizationId = id,
                 Application = application,
             });
@@ -94,9 +102,12 @@ public class EditApplicationCommand : IEditApplicationCommand
 
         if (newOdsInstances != null)
         {
-            foreach (var newOdsInstance in newOdsInstances)
+            foreach (var newOdsInstance in newOdsInstances.ToList())
             {
-                _context.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = apiClient, OdsInstance = newOdsInstance });
+                foreach (var client in apiClients)
+                {
+                    _context.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = client, OdsInstance = newOdsInstance });
+                }
             }
         }
 

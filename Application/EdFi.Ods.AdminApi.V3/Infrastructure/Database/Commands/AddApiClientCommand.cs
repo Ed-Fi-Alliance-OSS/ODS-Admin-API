@@ -24,13 +24,13 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
     {
         var application = _usersContext.Applications
             .Include(a => a.Vendor)
+                .ThenInclude(v => v.Users)
+            .Include(a => a.ApplicationEducationOrganizations)
             .Single(a => a.ApplicationId == apiClientModel.ApplicationId);
 
         var dataStores = apiClientModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => apiClientModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
-
-        var applicationEdOrgs = application.EducationOrganizationIds();
 
         var apiClient = new ApiClient(true)
         {
@@ -40,11 +40,9 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             UseSandbox = false,
             KeyStatus = "Active",
             User = application.Vendor.Users.FirstOrDefault(),
-            ApplicationEducationOrganizations = applicationEdOrgs?.Select(eu => new ApplicationEducationOrganization
-            {
-                EducationOrganizationId = eu,
-                Application = application,
-            }).ToList(),
+            // ADMINAPI-1514: attach to the Application's existing education-organization
+            // rows rather than creating parallel copies of them.
+            ApplicationEducationOrganizations = application.ApplicationEducationOrganizations.ToList(),
         };
 
         _usersContext.ApiClients.Add(apiClient);

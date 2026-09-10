@@ -133,7 +133,10 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             persistedApplication.ApplicationName.ShouldBe("Test Application");
             persistedApplication.ClaimSetName.ShouldBe("FakeClaimSet");
             persistedApplication.ApiClients.Count.ShouldBe(1);
-            persistedApplication.ApiClients.First().Name.ShouldBe("Test Application");
+            // ADMINAPI-1514: an Application edit must not rename its credentials.
+            // The fixture names the credential "Integration Test" while the Application
+            // is "Test Application", so the preserved value is the credential's own name.
+            persistedApplication.ApiClients.First().Name.ShouldBe("Integration Test");
             persistedApplication.ApiClients.First().ApplicationEducationOrganizations.ShouldAllBe(aeo => persistedApplication.ApplicationEducationOrganizations.Contains(aeo));
             persistedApplication.ApplicationEducationOrganizations.Count.ShouldBe(2);
             persistedApplication.ApplicationEducationOrganizations.ShouldAllBe(aeo => aeo.EducationOrganizationId == 12345 || aeo.EducationOrganizationId == 67890);
@@ -172,7 +175,10 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             persistedApplication.ApplicationName.ShouldBe("New Application Name");
             persistedApplication.ClaimSetName.ShouldBe("DifferentFakeClaimSet");
             persistedApplication.ApiClients.Count.ShouldBe(1);
-            persistedApplication.ApiClients.First().Name.ShouldBe("New Application Name");
+            // ADMINAPI-1514: an Application edit must not rename its credentials.
+            // The fixture names the credential "Integration Test" while the Application
+            // is "Test Application", so the preserved value is the credential's own name.
+            persistedApplication.ApiClients.First().Name.ShouldBe("Integration Test");
             persistedApplication.ApiClients.First().ApplicationEducationOrganizations.ShouldAllBe(aeo => persistedApplication.ApplicationEducationOrganizations.Contains(aeo));
             persistedApplication.Profiles.Count.ShouldBe(1);
             persistedApplication.Profiles.First().ProfileName.ShouldBe("Other Test Profile");
