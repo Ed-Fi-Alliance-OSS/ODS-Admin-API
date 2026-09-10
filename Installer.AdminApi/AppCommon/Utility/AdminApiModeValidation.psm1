@@ -161,6 +161,21 @@ function Get-CarriedForwardAppSetting {
     return $CurrentValue
 }
 
+function Get-SupportedStandardVersions {
+    <#
+    .SYNOPSIS
+        Returns the Data Standard versions this repo's installer supports.
+    .DESCRIPTION
+        Exposes $script:SupportedStandardVersions.Keys so other modules (e.g.
+        ToolsHelper.psm1's Invoke-DbDeploy) can validate against the single
+        source of truth instead of keeping their own hardcoded list.
+    #>
+    [CmdletBinding()]
+    param ()
+
+    return $script:SupportedStandardVersions.Keys
+}
+
 function Get-DbDeployVersionForStandardVersion {
     <#
     .SYNOPSIS

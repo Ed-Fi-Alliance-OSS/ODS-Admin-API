@@ -130,6 +130,12 @@ Describe 'Get-CarriedForwardAppSetting' {
     }
 }
 
+Describe 'Get-SupportedStandardVersions' {
+    It 'returns the same keys Assert-AdminApiModeCompatibility and Get-DbDeployVersionForStandardVersion validate against' {
+        Get-SupportedStandardVersions | Should -Be @('4.0.0', '5.2.0', '6.0.0', '6.1.0')
+    }
+}
+
 Describe 'Get-DbDeployVersionForStandardVersion' {
     It 'returns 4.3.2 for StandardVersion 4.0.0' {
         Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' | Should -Be '4.3.2'
