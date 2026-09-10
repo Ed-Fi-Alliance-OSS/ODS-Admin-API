@@ -787,7 +787,7 @@
         "type": "Project",
         "dependencies": {
           "Dapper": "[2.1.72, )",
-          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "Microsoft.Data.SqlClient": "[6.1.1, )"
         }
       },
@@ -799,7 +799,7 @@
           "AspNetCore.HealthChecks.SqlServer": "[9.0.0, )",
           "Autofac.Extras.DynamicProxy": "[7.1.0, )",
           "EFCore.NamingConventions": "[10.0.1, )",
-          "EdFi.Ods.AdminApi.Common": "[0.1.0.1, )",
+          "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "EdFi.Suite3.Common": "[7.4.296, )",
           "FluentValidation": "[11.11.0, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
