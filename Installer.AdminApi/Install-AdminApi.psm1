@@ -29,8 +29,6 @@ Import-Module -Force "$appCommonDirectory/Application/Install.psm1" -Scope Globa
 Import-Module -Force "$appCommonDirectory/Application/Uninstall.psm1" -Scope Global
 Import-Module -Force "$appCommonDirectory/Application/Configuration.psm1" -Scope Global
 
-$DbDeployVersion = "3.0.1"
-
 function Install-EdFiOdsAdminApi {
     <#
     .SYNOPSIS
@@ -932,7 +930,7 @@ function Get-DbDeploy {
     )
     Invoke-Task -Name ($MyInvocation.MyCommand.Name) -Task {
         $parameters = @{
-            toolVersion = $DbDeployVersion
+            toolVersion = Get-DbDeployVersionForStandardVersion -StandardVersion $Config.StandardVersion
             toolsPath = $Config.ToolsPath
         }
         Install-ToolDbDeploy @parameters

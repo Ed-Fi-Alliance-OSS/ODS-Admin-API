@@ -175,7 +175,7 @@ $supportedApiVersions7x = @(
         OdsVersion     = "7.3.10536"
         Prerelease     = $false
         StandardVersion = "5.2.0"
-        DbDeployVersion = "4.1.52"
+        DbDeployVersion = "4.3.2"
     }
 )
 $supportedApiVersions6x = @(
@@ -183,8 +183,10 @@ $supportedApiVersions6x = @(
         OdsPackageName = "EdFi.Suite3.RestApi.Databases"
         OdsVersion     = "6.2.3630"
         Prerelease     = $false
-        StandardVersion = "4.0.0"           # v6.2 uses Db.Deploy 3.2.27, version 4.1.52 is for ODS 7.x.
-        DbDeployVersion = "3.2.27"
+        StandardVersion = "4.0.0"           # v6.2's package predates the multi-standard artifact folder layout,
+        DbDeployVersion = "3.2.27"           # so it must stay on a DbDeploy build old enough to omit --standardVersion
+                                             # entirely (see eng/database-manager.psm1's Invoke-DbDeploy: it special-cases
+                                             # DbDeployVersion "3.2.27" to skip the flag). Do not bump this one.
     }
 )
 $maintainers = "Ed-Fi Alliance, LLC and contributors"

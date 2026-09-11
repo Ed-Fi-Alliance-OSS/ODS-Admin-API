@@ -66,6 +66,14 @@ Describe 'Assert-AdminApiModeCompatibility' {
         { Assert-AdminApiModeCompatibility -AdminApiMode 'v3' -StandardVersion '5.2.0' -EncryptionKey $script:validKey } | Should -Not -Throw
     }
 
+    It 'does not throw for v2 mode with StandardVersion 6.0.0 and a valid EncryptionKey' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '6.0.0' -EncryptionKey $script:validKey } | Should -Not -Throw
+    }
+
+    It 'does not throw for v2 mode with StandardVersion 6.1.0 and a valid EncryptionKey' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '6.1.0' -EncryptionKey $script:validKey } | Should -Not -Throw
+    }
+
     It 'throws when v2 mode is given a malformed (non-base64) EncryptionKey' {
         { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '5.2.0' -EncryptionKey 'not-base64!!!' } | Should -Throw '*valid base64-encoded string*'
     }
@@ -119,5 +127,82 @@ Describe 'Get-CarriedForwardAppSetting' {
 
     It 'returns null when both OldValue and CurrentValue are null' {
         Get-CarriedForwardAppSetting -OldValue $null -CurrentValue $null | Should -Be $null
+    }
+}
+
+Describe 'Get-SupportedStandardVersions' {
+    It 'returns the same keys Assert-AdminApiModeCompatibility and Get-DbDeployVersionForStandardVersion validate against' {
+        Get-SupportedStandardVersions | Should -Be @('4.0.0', '5.2.0', '6.0.0', '6.1.0')
+    }
+}
+
+Describe 'Get-DbDeployVersionForStandardVersion' {
+    It 'returns 4.3.2 for StandardVersion 4.0.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' | Should -Be '4.3.2'
+    }
+
+    It 'returns 4.3.2 for StandardVersion 5.2.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '5.2.0' | Should -Be '4.3.2'
+    }
+
+    It 'returns 4.3.2 for StandardVersion 6.0.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '6.0.0' | Should -Be '4.3.2'
+    }
+
+    It 'returns 4.3.2 for StandardVersion 6.1.0' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '6.1.0' | Should -Be '4.3.2'
+    }
+
+    It 'defaults to the 5.2.0 mapping when StandardVersion is empty (e.g. the upgrade path)' {
+        Get-DbDeployVersionForStandardVersion -StandardVersion '' | Should -Be '4.3.2'
+    }
+
+    It 'defaults to the 5.2.0 mapping when StandardVersion is not supplied' {
+        Get-DbDeployVersionForStandardVersion | Should -Be '4.3.2'
+    }
+
+    It 'throws for an unsupported StandardVersion' {
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '7.0.0' } | Should -Throw '*No known EdFi.Db.Deploy version*'
+    }
+}
+
+Describe 'StandardVersion validation and DbDeploy mapping cannot drift apart' {
+    <#
+        Assert-AdminApiModeCompatibility and Get-DbDeployVersionForStandardVersion
+        both read $script:SupportedStandardVersions instead of keeping their own
+        separate lists. These tests exercise that guarantee behaviorally: for
+        every version below, either both functions accept it or both reject it
+        -- never one accepting what the other rejects, which is exactly the bug
+        class that caused the original "Option 's' is unknown" failure (the
+        installer built a DbDeploy call with a StandardVersion the downloaded
+        tool version didn't support).
+    #>
+    BeforeAll {
+        $script:validKeyForSync = [Convert]::ToBase64String((New-Object byte[] 32))
+    }
+
+    It 'accepts 4.0.0 in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v1' -StandardVersion '4.0.0' } | Should -Not -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '4.0.0' } | Should -Not -Throw
+    }
+
+    It 'accepts 5.2.0 in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '5.2.0' -EncryptionKey $script:validKeyForSync } | Should -Not -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '5.2.0' } | Should -Not -Throw
+    }
+
+    It 'accepts 6.0.0 in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '6.0.0' -EncryptionKey $script:validKeyForSync } | Should -Not -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '6.0.0' } | Should -Not -Throw
+    }
+
+    It 'accepts 6.1.0 in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '6.1.0' -EncryptionKey $script:validKeyForSync } | Should -Not -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '6.1.0' } | Should -Not -Throw
+    }
+
+    It 'rejects an unsupported StandardVersion (e.g. 7.0.0) in both validation and mapping' {
+        { Assert-AdminApiModeCompatibility -AdminApiMode 'v2' -StandardVersion '7.0.0' -EncryptionKey $script:validKeyForSync } | Should -Throw
+        { Get-DbDeployVersionForStandardVersion -StandardVersion '7.0.0' } | Should -Throw
     }
 }

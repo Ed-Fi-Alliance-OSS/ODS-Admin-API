@@ -161,7 +161,7 @@ Import-Module -Name "$PSScriptRoot/database-manager.psm1" -Force
 # version (see build.ps1's $supportedApiVersions7x). run-dbup-migrations.ps1
 # does not currently pass these through to Install-AdminApiTables, which
 # requires them — so this script calls Install-AdminApiTables directly.
-$dbDeployVersion = "4.1.52"
+$dbDeployVersion = "4.3.2"
 $standardVersion = "5.2.0"
 $nugetFeed = "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_packaging/EdFi/nuget/v3/index.json"
 
