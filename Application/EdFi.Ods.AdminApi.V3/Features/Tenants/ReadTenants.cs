@@ -30,7 +30,9 @@ public class ReadTenants : IFeature
             .WithRouteOptions(b => b
                 .WithResponse<TenantDetailsResponse>(200)
                 .WithResponseCode(400, "Tenant header and URL tenant name do not match")
-                .WithResponseCode(404, $"Not found: TenantName with ID {{tenantName}}. It may have been recently deleted."))
+                .WithResponseCode(404, $"Not found: TenantName with ID {{tenantName}}. It may have been recently deleted.")
+                .WithResponseCode(404, $"Not found: TenantName with ID {{tenantName}}. It may have been recently deleted.")
+                .WithResponseCode(503, "Service Unavailable. MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings."))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
