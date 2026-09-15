@@ -1046,8 +1046,10 @@ function Invoke-TransformConnectionStrings {
         $adminconnString = New-ConnectionString -ConnectionInfo $Config.AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
         $securityConnString = New-ConnectionString -ConnectionInfo $Config.SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-        if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+        if ($Config.AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.AdminDbConnectionInfo.UnEncryptedConnection) {
             $adminconnString += ";Encrypt=false"
+        }
+        if ($Config.SecurityDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.SecurityDbConnectionInfo.UnEncryptedConnection) {
             $securityConnString += ";Encrypt=false"
         }
 
@@ -1097,8 +1099,10 @@ function Invoke-TransformMultiTenantConnectionStrings {
             $adminconnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
             $securityConnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-            if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+            if ($Config.Tenants[$tenantKey].AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.Tenants[$tenantKey].AdminDbConnectionInfo.UnEncryptedConnection) {
                 $adminconnString += ";Encrypt=false"
+            }
+            if ($Config.Tenants[$tenantKey].SecurityDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.Tenants[$tenantKey].SecurityDbConnectionInfo.UnEncryptedConnection) {
                 $securityConnString += ";Encrypt=false"
             }
 
@@ -1180,7 +1184,7 @@ function Invoke-DbUpScripts {
             foreach ($tenantKey in $Config.Tenants.Keys) {
 
                 $adminConnectionString = Get-AdminInstallConnectionString  $Config.Tenants[$tenantKey].AdminDbConnectionInfo
-                if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+                if ($Config.Tenants[$tenantKey].AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.Tenants[$tenantKey].AdminDbConnectionInfo.UnEncryptedConnection) {
                     $adminConnectionString += ";Encrypt=false"
                 }
                 $params["ConnectionString"] = $adminConnectionString
@@ -1190,7 +1194,7 @@ function Invoke-DbUpScripts {
         else
         {
             $adminConnectionString = Get-AdminInstallConnectionString $Config.AdminDbConnectionInfo
-            if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+            if ($Config.AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.AdminDbConnectionInfo.UnEncryptedConnection) {
                 $adminConnectionString += ";Encrypt=false"
             }
             $params["ConnectionString"] = $adminConnectionString

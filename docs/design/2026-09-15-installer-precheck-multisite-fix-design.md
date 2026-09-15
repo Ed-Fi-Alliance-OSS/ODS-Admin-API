@@ -168,12 +168,79 @@ Changes made to `Installer.AdminApi/Install-AdminApi.psm1`:
    try/catch as defense-in-depth, so any other unexpected path shape
    surfaces a readable error naming the offending path instead of the
    raw `NotSupportedException`.
-4. **Messaging fix**: the pre-check's "preexisting installation found"
-   messages no longer suggest running "the included upgrade script."
-   They now state that Admin Api does not support in-place upgrades
-   and that a fresh install is required, matching
-   docs.ed-fi.org — and note that appsettings/connection string values
-   must be copied forward manually if the customer chooses to proceed.
+4. **Block the in-place overwrite instead of prompting to continue.**
+   A GitHub Copilot review of the PR flagged that the initial version
+   of this fix contradicted itself: the pre-check's "preexisting
+   installation found" message stated that Admin Api does not support
+   in-place upgrades, but the `'y'`-continue path directly below it
+   still installed into the same `WebApplicationPath`, and
+   `Install-EdFiApplicationIntoIIS` → `Copy-ArchiveOrDirectory`
+   (`AppCommon/Environment/FolderAdmin.psm1`) copies the new package
+   over the existing directory with `Copy-Item -Recurse -Force` and no
+   cleanup — an in-place overwrite that can leave stale files from the
+   old version behind.
+
+   Tracing `IsVersionHigherThanOther` (strict `-gt` comparison)
+   confirmed that this branch only executes when installing a version
+   newer than the one already present — i.e., its entire purpose was
+   to let the operator in-place-upgrade by answering `y`. That is
+   exactly the behavior docs.ed-fi.org says is unsupported, not a
+   separate, legitimate "reconfigure the same version" feature worth
+   preserving (a same-version reinstall does not reach this branch at
+   all — it falls into the sibling "downgrade" branch instead).
+
+   The branch was rewritten to match the other two branches in the
+   same `if`/`elseif`/`else` (dead-elseif and downgrade): it now
+   `Write-Warning`s that Admin Api does not support in-place upgrades,
+   directs the operator to install a fresh copy targeting a different
+   `WebsiteName`/`WebApplicationName`/`WebSitePath`, or to fully
+   uninstall the existing installation first, and `exit`s. The
+   `Request-Information` confirmation prompt was removed, along with
+   the `$appSettings = Get-Content $appsettingsFile | ...` read that
+   used to run on the `'y'` path — that variable was never consumed by
+   anything downstream (the "your encryption key is being copied
+   forward" message next to it was aspirational, not real), so
+   removing it changes no behavior.
+5. **`UnEncryptedConnection` fixed to actually apply outside the
+   default install mode.** A separate commit on this branch
+   (`f067d687`, made before this Copilot review) had ported
+   `UnEncryptedConnection` from a top-level `-UnEncryptedConnection`
+   switch (applied unconditionally via `$Config.UnEncryptedConnection`)
+   to a property nested under each database connection-info object
+   (`$Config.DbConnectionInfo.UnEncryptedConnection`), gated on
+   `$Config.DbConnectionInfo.Engine -ieq "SqlServer"`, across four call
+   sites: `Invoke-TransformConnectionStrings`,
+   `Invoke-TransformMultiTenantConnectionStrings`, and both branches of
+   `Invoke-DbUpScripts`. Copilot flagged that `$Config.DbConnectionInfo`
+   is only populated for the `SharedCredentials` parameter set (and for
+   `MultiTenant` installs using shared credentials) — it is `$null` for
+   the `SeparateCredentials` parameter set and for multi-tenant
+   installs using per-tenant credentials, so the condition was always
+   false there and `Encrypt=false` silently stopped being applied. This
+   was a regression versus the pre-`f067d687` top-level switch, which
+   worked across all parameter sets.
+
+   Fixed all four call sites to read `Engine`/`UnEncryptedConnection`
+   from the connection-info object actually used to build each
+   connection string, instead of always from `$Config.DbConnectionInfo`:
+   `$Config.AdminDbConnectionInfo` / `$Config.SecurityDbConnectionInfo`
+   for the single-tenant paths (`Invoke-TransformConnectionStrings`,
+   the non-multi-tenant branch of `Invoke-DbUpScripts`), and
+   `$Config.Tenants[$tenantKey].AdminDbConnectionInfo` /
+   `$Config.Tenants[$tenantKey].SecurityDbConnectionInfo` for the
+   multi-tenant paths (`Invoke-TransformMultiTenantConnectionStrings`,
+   the multi-tenant branch of `Invoke-DbUpScripts`). These objects are
+   guaranteed populated by the time each site runs — either supplied
+   directly by the caller, or cloned from `$Config.DbConnectionInfo`
+   earlier in the same function when `$Config.usingSharedCredentials`
+   is true — so the fix covers the shared-credentials case exactly as
+   before and now also covers `SeparateCredentials` and per-tenant
+   credentials.
+6. **Messaging fix**: the pre-check's "preexisting installation found"
+   message no longer suggests running "the included upgrade script."
+   It now states that Admin Api does not support in-place upgrades and
+   that a fresh install is required, matching docs.ed-fi.org (see
+   item 4 above for the full rewrite of this branch).
 
 Explicitly out of scope / left unchanged:
 
