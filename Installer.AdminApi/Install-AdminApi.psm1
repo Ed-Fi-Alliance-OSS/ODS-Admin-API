@@ -231,11 +231,6 @@ function Install-EdFiOdsAdminApi {
         [Parameter(Mandatory=$true, ParameterSetName="MultiTenant")]
         $Tenants,
 
-        # Set Encrypt=false for all connection strings
-        # Not recomended for production environment.
-        [switch]
-        $UnEncryptedConnection,
-
         # Admin Api mode selector. Determines which Admin Api routes and behavior are active.
         # v1 requires StandardVersion 4.0.0. v2 and v3 require EncryptionKey.
         [Parameter(Mandatory=$true)]
@@ -293,7 +288,6 @@ function Install-EdFiOdsAdminApi {
         NoDuration = $NoDuration
         IsMultiTenant = $IsMultiTenant.IsPresent
         Tenants = $Tenants
-        UnEncryptedConnection = $UnEncryptedConnection
         AdminApiMode = $AdminApiMode
         StandardVersion = $StandardVersion
         EncryptionKey = $EncryptionKey
@@ -570,7 +564,12 @@ function Invoke-InstallationPreCheck{
     Invoke-Task -Name ($MyInvocation.MyCommand.Name) -Task {
         $existingWebSiteName = $Config.WebsiteName
         $webSite = Get-Website | Where-Object { $_.name -eq $existingWebSiteName }
-        $existingAdminApiApplication = get-webapplication $Config.WebApplicationName
+        $existingAdminApiApplication = Get-WebApplication -Site $existingWebSiteName -Name $Config.WebApplicationName
+
+        if($existingAdminApiApplication -is [array] -and $existingAdminApiApplication.Count -gt 1)
+        {
+            throw "Multiple existing '$($Config.WebApplicationName)' IIS applications were found under site '$existingWebSiteName'. Please remove the stale application(s) before continuing, then retry installation."
+        }
 
         if($webSite -AND $existingAdminApiApplication)
         {
@@ -580,22 +579,8 @@ function Invoke-InstallationPreCheck{
             $targetIsNewer = IsVersionHigherThanOther $installVersionString $versionString
 
             if($targetIsNewer) {
-                Write-Host "We found a preexisting Admin Api package version $versionString installation. If you are seeking to upgrade to the new version, consider using the included upgrade script instead." -ForegroundColor Green
-                Write-Host "Note: Using the upgrade script, all the appsettings and database connection string values would be copied forward from the existing installation, so only continue if you are you seeking to change the configuration." -ForegroundColor Yellow
-
-                $confirmation = Request-Information -DefaultValue 'y' -Prompt "Please enter 'y' to continue the installation process, or enter 'n' to cancel the installation so that you can instead run the upgrade script"
-
-                if(-not ($confirmation -ieq 'y')) {
-                    Write-Host "Exiting."
-                    exit
-                }else {
-                    $appsettingsFile =  Join-Path $existingApplicationPath "appsettings.json"
-                    if(Test-Path -Path $appsettingsFile)
-                    {
-                        Write-Host "To ensure your existing ODS / API Key and Secret values will continue to work, your existing encryption key is being copied forward from the appsettings.json file at $appsettingsFile"
-                        $appSettings = Get-Content $appsettingsFile | ConvertFrom-Json | ConvertTo-Hashtable
-                    }
-                }
+                Write-Warning "We found a preexisting Admin Api package version $versionString installation at '$existingApplicationPath'. Admin Api does not support in-place upgrades from prior versions. Please install a fresh copy of Admin Api to upgrade from a prior version, targeting a different WebsiteName, WebApplicationName, or WebSitePath, or fully uninstall the existing Admin Api first. Exiting."
+                exit
             }elseif ($targetIsNewer) {
                 Write-Warning "We found a preexisting Admin Api package version $versionString installation. That version cannot be automatically upgraded in-place by this script. Please refer to https://techdocs.ed-fi.org/display/ADMIN/Upgrading+Admin+App+from+1.x+Line for setting up the newer version of AdminApi. Exiting."
                 exit
@@ -703,7 +688,12 @@ function GetExistingAppVersion($webSitePath,  $existingAdminApi) {
         $existingApplicationPath = "$webSitePath\$appPath"
     }
 
-    $versionString = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$existingApplicationPath\EdFi.Ods.AdminApi.dll").FileVersion
+    try {
+        $versionString = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$existingApplicationPath\EdFi.Ods.AdminApi.dll").FileVersion
+    }
+    catch {
+        throw "Unable to determine the version of the existing Admin Api installation at '$existingApplicationPath'. $($_.Exception.Message)"
+    }
 
     return $existingApplicationPath, $versionString
 }
@@ -1056,8 +1046,10 @@ function Invoke-TransformConnectionStrings {
         $adminconnString = New-ConnectionString -ConnectionInfo $Config.AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
         $securityConnString = New-ConnectionString -ConnectionInfo $Config.SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-        if ($Config.UnEncryptedConnection) {
+        if ($Config.AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.AdminDbConnectionInfo.UnEncryptedConnection) {
             $adminconnString += ";Encrypt=false"
+        }
+        if ($Config.SecurityDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.SecurityDbConnectionInfo.UnEncryptedConnection) {
             $securityConnString += ";Encrypt=false"
         }
 
@@ -1107,8 +1099,10 @@ function Invoke-TransformMultiTenantConnectionStrings {
             $adminconnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
             $securityConnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-            if ($Config.UnEncryptedConnection) {
+            if ($Config.Tenants[$tenantKey].AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.Tenants[$tenantKey].AdminDbConnectionInfo.UnEncryptedConnection) {
                 $adminconnString += ";Encrypt=false"
+            }
+            if ($Config.Tenants[$tenantKey].SecurityDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.Tenants[$tenantKey].SecurityDbConnectionInfo.UnEncryptedConnection) {
                 $securityConnString += ";Encrypt=false"
             }
 
@@ -1190,6 +1184,9 @@ function Invoke-DbUpScripts {
             foreach ($tenantKey in $Config.Tenants.Keys) {
 
                 $adminConnectionString = Get-AdminInstallConnectionString  $Config.Tenants[$tenantKey].AdminDbConnectionInfo
+                if ($Config.Tenants[$tenantKey].AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.Tenants[$tenantKey].AdminDbConnectionInfo.UnEncryptedConnection) {
+                    $adminConnectionString += ";Encrypt=false"
+                }
                 $params["ConnectionString"] = $adminConnectionString
                 Invoke-DbDeploy @params
             }
@@ -1197,6 +1194,9 @@ function Invoke-DbUpScripts {
         else
         {
             $adminConnectionString = Get-AdminInstallConnectionString $Config.AdminDbConnectionInfo
+            if ($Config.AdminDbConnectionInfo.Engine -ieq "SqlServer" -and $Config.AdminDbConnectionInfo.UnEncryptedConnection) {
+                $adminConnectionString += ";Encrypt=false"
+            }
             $params["ConnectionString"] = $adminConnectionString
             Invoke-DbDeploy @params
         }

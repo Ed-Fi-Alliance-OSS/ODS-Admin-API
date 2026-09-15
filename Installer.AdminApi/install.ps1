@@ -17,6 +17,7 @@ Installs and connects the applications to the database using SQL Authentication
         UseIntegratedSecurity = $false
         Username = "exampleAdmin"
         Password = "examplePassword"
+        UnEncryptedConnection = $true # Optional. Set Encrypt=false for all connection strings. Not recommended for production environment.
     }
 
 Installs and connects the applications to the database using PostgreSQL Authentication
