@@ -247,7 +247,12 @@ function Compile {
 function GenerateOpenAPI {
     param(
         [string]
-        $DocVersion
+        $DocVersion,
+
+        # The Swagger document id registered by AdminApiVersions.cs (e.g. "2.4.0"),
+        # which no longer matches the "v2"/"v3" route-path style $DocVersion.
+        [string]
+        $SwaggerDocName
     )
 
     Invoke-Execute {
@@ -256,7 +261,7 @@ function GenerateOpenAPI {
         $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$DocVersion-$APIVersion.yaml"
 
         try {
-            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath $DocVersion
+            dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath $SwaggerDocName
         }
         finally {
             Pop-Location
@@ -432,10 +437,17 @@ function Invoke-GenerateOpenAPI {
     Invoke-Step { DotNetClean }
     Invoke-Step { Restore }
 
+    # Swagger doc ids registered in AdminApiVersions.cs no longer match the "v2"/"v3"
+    # route-path labels used here for output file naming (ADMINAPI-1495).
+    $swaggerDocNamesByVersion = @{
+        v2 = "2.4.0"
+        v3 = "3.0.0"
+    }
+
     foreach ($docVersion in @("v2", "v3")) {
         Invoke-Step { UpdateAppSettingsForAdminApi -AdminApiMode $docVersion }
         Invoke-Step { Compile }
-        Invoke-Step { GenerateOpenAPI -DocVersion $docVersion }
+        Invoke-Step { GenerateOpenAPI -DocVersion $docVersion -SwaggerDocName $swaggerDocNamesByVersion[$docVersion] }
     }
 }
 
