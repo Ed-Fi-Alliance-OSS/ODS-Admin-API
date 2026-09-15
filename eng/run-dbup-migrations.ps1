@@ -17,7 +17,7 @@ Param(
         "useIntegratedSecurity" = $true
         "adminDatabaseName" = "EdFi_Admin"
         "securityDatabaseName" = "EdFi_Security"
-        "dbDeployVersion" = "4.1.52"
+        "dbDeployVersion" = "4.3.2"
         "standardVersion" = "5.2.0"
     }
 )

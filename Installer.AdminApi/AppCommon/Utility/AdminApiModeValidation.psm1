@@ -3,6 +3,25 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
+# Single source of truth for which Ed-Fi Data Standard versions this repo's
+# installer supports, and which EdFi.Db.Deploy tool version to use for each.
+# This is NOT a technical constraint of the -s/--standardVersion CLI flag
+# itself: EdFi.Db.Deploy ships no embedded per-standard SQL and its -s flag
+# takes any string (confirmed against the cached 4.3.2 tool -- '--help' shows
+# no ValidateSet, just a free-text default of '5.1.0'), so a single tool build
+# can run any Data Standard version whose migration scripts exist at the
+# --filePaths it's given. 4.3.2 (.NET 10, matching this repo's own TargetFramework)
+# is confirmed to work for 4.0.0, 5.2.0, 6.0.0, and 6.1.0, so all four map to it
+# here. The table stays keyed by StandardVersion (rather than collapsing to one
+# constant) so a future Data Standard version can be added with whatever
+# DbDeployVersion it actually needs, without disturbing the existing entries.
+$script:SupportedStandardVersions = [ordered]@{
+    '4.0.0' = '4.3.2'
+    '5.2.0' = '4.3.2'
+    '6.0.0' = '4.3.2'
+    '6.1.0' = '4.3.2'
+}
+
 function Test-EncryptionKeyFormat {
     <#
     .SYNOPSIS
@@ -66,8 +85,8 @@ function Assert-AdminApiModeCompatibility {
         throw "AdminApiMode must be one of: v1, v2, v3. Received: $AdminApiMode."
     }
 
-    if ($StandardVersion -notin @('4.0.0', '5.2.0')) {
-        throw "StandardVersion must be one of: 4.0.0, 5.2.0. Received: $StandardVersion."
+    if ($StandardVersion -notin $script:SupportedStandardVersions.Keys) {
+        throw "StandardVersion must be one of: $($script:SupportedStandardVersions.Keys -join ', '). Received: $StandardVersion."
     }
 
     if ($AdminApiMode -eq 'v1' -and $StandardVersion -ne '4.0.0') {
@@ -140,4 +159,51 @@ function Get-CarriedForwardAppSetting {
     }
 
     return $CurrentValue
+}
+
+function Get-SupportedStandardVersions {
+    <#
+    .SYNOPSIS
+        Returns the Data Standard versions this repo's installer supports.
+    .DESCRIPTION
+        Exposes $script:SupportedStandardVersions.Keys so other modules (e.g.
+        ToolsHelper.psm1's Invoke-DbDeploy) can validate against the single
+        source of truth instead of keeping their own hardcoded list.
+    #>
+    [CmdletBinding()]
+    param ()
+
+    return $script:SupportedStandardVersions.Keys
+}
+
+function Get-DbDeployVersionForStandardVersion {
+    <#
+    .SYNOPSIS
+        Maps a Data Standard version to the known-good EdFi.Db.Deploy tool
+        version this repo tests it against.
+    .DESCRIPTION
+        Looks up $script:SupportedStandardVersions — the same table
+        Assert-AdminApiModeCompatibility validates against — so the installer
+        downloads the DbDeploy build this repo pairs with the install's
+        StandardVersion, which Invoke-DbUpScripts then passes through to
+        Invoke-DbDeploy's -s flag (AppCommon/Utility/ToolsHelper.psm1). An
+        empty/unset StandardVersion (e.g. the upgrade path, which does not
+        track it) defaults to 5.2.0's mapping, matching Invoke-DbDeploy's own
+        default.
+    #>
+    [CmdletBinding()]
+    param (
+        [string]
+        $StandardVersion
+    )
+
+    if ([string]::IsNullOrWhiteSpace($StandardVersion)) {
+        $StandardVersion = '5.2.0'
+    }
+
+    if (-not $script:SupportedStandardVersions.Contains($StandardVersion)) {
+        throw "No known EdFi.Db.Deploy version for StandardVersion: $StandardVersion."
+    }
+
+    return $script:SupportedStandardVersions[$StandardVersion]
 }

@@ -6,6 +6,8 @@
 #requires -version 5
 $ErrorActionPreference = 'Stop'
 
+Import-Module -Force "$PSScriptRoot/AdminApiModeValidation.psm1"
+
 function Get-DotNetTool {
     <#
     .description
@@ -237,10 +239,13 @@ function Invoke-DbDeploy {
 
         [Int] $DatabaseTimeoutInSeconds,
 
-        [ValidateSet('4.0.0', '5.2.0', '6.0.0')]
         [String] $StandardVersion = '5.2.0'
 
     )
+
+    if ($StandardVersion -notin (Get-SupportedStandardVersions)) {
+        throw "StandardVersion must be one of: $((Get-SupportedStandardVersions) -join ', '). Received: $StandardVersion."
+    }
 
     $databaseIdLookup = @{
         "Admin" = "Admin"
