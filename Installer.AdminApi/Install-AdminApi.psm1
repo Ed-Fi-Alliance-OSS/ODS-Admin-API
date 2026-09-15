@@ -570,7 +570,12 @@ function Invoke-InstallationPreCheck{
     Invoke-Task -Name ($MyInvocation.MyCommand.Name) -Task {
         $existingWebSiteName = $Config.WebsiteName
         $webSite = Get-Website | Where-Object { $_.name -eq $existingWebSiteName }
-        $existingAdminApiApplication = get-webapplication $Config.WebApplicationName
+        $existingAdminApiApplication = Get-WebApplication -Site $existingWebSiteName -Name $Config.WebApplicationName
+
+        if($existingAdminApiApplication -is [array] -and $existingAdminApiApplication.Count -gt 1)
+        {
+            throw "Multiple existing '$($Config.WebApplicationName)' IIS applications were found under site '$existingWebSiteName'. Please remove the stale application(s) before continuing, then retry installation."
+        }
 
         if($webSite -AND $existingAdminApiApplication)
         {
@@ -580,10 +585,10 @@ function Invoke-InstallationPreCheck{
             $targetIsNewer = IsVersionHigherThanOther $installVersionString $versionString
 
             if($targetIsNewer) {
-                Write-Host "We found a preexisting Admin Api package version $versionString installation. If you are seeking to upgrade to the new version, consider using the included upgrade script instead." -ForegroundColor Green
-                Write-Host "Note: Using the upgrade script, all the appsettings and database connection string values would be copied forward from the existing installation, so only continue if you are you seeking to change the configuration." -ForegroundColor Yellow
+                Write-Host "We found a preexisting Admin Api package version $versionString installation. Admin Api does not support in-place upgrades from prior versions; you must install a fresh copy of Admin Api to upgrade from a prior version." -ForegroundColor Green
+                Write-Host "Note: If you continue, this installation will proceed alongside/over the existing one. To keep your existing appsettings and database connection string values, copy them forward manually into the new installation's appsettings.json." -ForegroundColor Yellow
 
-                $confirmation = Request-Information -DefaultValue 'y' -Prompt "Please enter 'y' to continue the installation process, or enter 'n' to cancel the installation so that you can instead run the upgrade script"
+                $confirmation = Request-Information -DefaultValue 'y' -Prompt "Please enter 'y' to continue the installation process, or enter 'n' to cancel the installation"
 
                 if(-not ($confirmation -ieq 'y')) {
                     Write-Host "Exiting."
@@ -703,7 +708,12 @@ function GetExistingAppVersion($webSitePath,  $existingAdminApi) {
         $existingApplicationPath = "$webSitePath\$appPath"
     }
 
-    $versionString = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$existingApplicationPath\EdFi.Ods.AdminApi.dll").FileVersion
+    try {
+        $versionString = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$existingApplicationPath\EdFi.Ods.AdminApi.dll").FileVersion
+    }
+    catch {
+        throw "Unable to determine the version of the existing Admin Api installation at '$existingApplicationPath'. $($_.Exception.Message)"
+    }
 
     return $existingApplicationPath, $versionString
 }
