@@ -231,11 +231,6 @@ function Install-EdFiOdsAdminApi {
         [Parameter(Mandatory=$true, ParameterSetName="MultiTenant")]
         $Tenants,
 
-        # Set Encrypt=false for all connection strings
-        # Not recomended for production environment.
-        [switch]
-        $UnEncryptedConnection,
-
         # Admin Api mode selector. Determines which Admin Api routes and behavior are active.
         # v1 requires StandardVersion 4.0.0. v2 and v3 require EncryptionKey.
         [Parameter(Mandatory=$true)]
@@ -293,7 +288,6 @@ function Install-EdFiOdsAdminApi {
         NoDuration = $NoDuration
         IsMultiTenant = $IsMultiTenant.IsPresent
         Tenants = $Tenants
-        UnEncryptedConnection = $UnEncryptedConnection
         AdminApiMode = $AdminApiMode
         StandardVersion = $StandardVersion
         EncryptionKey = $EncryptionKey
@@ -1066,7 +1060,7 @@ function Invoke-TransformConnectionStrings {
         $adminconnString = New-ConnectionString -ConnectionInfo $Config.AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
         $securityConnString = New-ConnectionString -ConnectionInfo $Config.SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-        if ($Config.UnEncryptedConnection) {
+        if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
             $adminconnString += ";Encrypt=false"
             $securityConnString += ";Encrypt=false"
         }
@@ -1117,7 +1111,7 @@ function Invoke-TransformMultiTenantConnectionStrings {
             $adminconnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].AdminDbConnectionInfo -SspiUsername $Config.WebApplicationName
             $securityConnString = New-ConnectionString -ConnectionInfo $Config.Tenants[$tenantKey].SecurityDbConnectionInfo -SspiUsername $Config.WebApplicationName
 
-            if ($Config.UnEncryptedConnection) {
+            if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
                 $adminconnString += ";Encrypt=false"
                 $securityConnString += ";Encrypt=false"
             }
@@ -1200,6 +1194,9 @@ function Invoke-DbUpScripts {
             foreach ($tenantKey in $Config.Tenants.Keys) {
 
                 $adminConnectionString = Get-AdminInstallConnectionString  $Config.Tenants[$tenantKey].AdminDbConnectionInfo
+                if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+                    $adminConnectionString += ";Encrypt=false"
+                }
                 $params["ConnectionString"] = $adminConnectionString
                 Invoke-DbDeploy @params
             }
@@ -1207,6 +1204,9 @@ function Invoke-DbUpScripts {
         else
         {
             $adminConnectionString = Get-AdminInstallConnectionString $Config.AdminDbConnectionInfo
+            if ($Config.DbConnectionInfo.Engine -ieq "SqlServer" -and $Config.DbConnectionInfo.UnEncryptedConnection) {
+                $adminConnectionString += ";Encrypt=false"
+            }
             $params["ConnectionString"] = $adminConnectionString
             Invoke-DbDeploy @params
         }
