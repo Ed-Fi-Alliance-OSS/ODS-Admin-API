@@ -579,22 +579,8 @@ function Invoke-InstallationPreCheck{
             $targetIsNewer = IsVersionHigherThanOther $installVersionString $versionString
 
             if($targetIsNewer) {
-                Write-Host "We found a preexisting Admin Api package version $versionString installation. Admin Api does not support in-place upgrades from prior versions; you must install a fresh copy of Admin Api to upgrade from a prior version." -ForegroundColor Green
-                Write-Host "Note: If you continue, this installation will proceed alongside/over the existing one. To keep your existing appsettings and database connection string values, copy them forward manually into the new installation's appsettings.json." -ForegroundColor Yellow
-
-                $confirmation = Request-Information -DefaultValue 'y' -Prompt "Please enter 'y' to continue the installation process, or enter 'n' to cancel the installation"
-
-                if(-not ($confirmation -ieq 'y')) {
-                    Write-Host "Exiting."
-                    exit
-                }else {
-                    $appsettingsFile =  Join-Path $existingApplicationPath "appsettings.json"
-                    if(Test-Path -Path $appsettingsFile)
-                    {
-                        Write-Host "To ensure your existing ODS / API Key and Secret values will continue to work, your existing encryption key is being copied forward from the appsettings.json file at $appsettingsFile"
-                        $appSettings = Get-Content $appsettingsFile | ConvertFrom-Json | ConvertTo-Hashtable
-                    }
-                }
+                Write-Warning "We found a preexisting Admin Api package version $versionString installation at '$existingApplicationPath'. Admin Api does not support in-place upgrades from prior versions. Please install a fresh copy of Admin Api to upgrade from a prior version, targeting a different WebsiteName, WebApplicationName, or WebSitePath, or fully uninstall the existing Admin Api first. Exiting."
+                exit
             }elseif ($targetIsNewer) {
                 Write-Warning "We found a preexisting Admin Api package version $versionString installation. That version cannot be automatically upgraded in-place by this script. Please refer to https://techdocs.ed-fi.org/display/ADMIN/Upgrading+Admin+App+from+1.x+Line for setting up the newer version of AdminApi. Exiting."
                 exit
