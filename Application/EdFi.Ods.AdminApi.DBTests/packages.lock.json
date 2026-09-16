@@ -724,8 +724,11 @@
       },
       "Swashbuckle.AspNetCore.Filters.Abstractions": {
         "type": "Transitive",
-        "resolved": "8.0.2",
-        "contentHash": "RgQ1RbxmofrkBSrLkA/34DWwzz4rKHRwC4vHOvevru2CNqymUPn3kRhbIX29g4yvj2sCff1glf19djnyM9kuUQ=="
+        "resolved": "10.0.1",
+        "contentHash": "YTOZBnL/STbpkSGldDnvhtW0ci4h3deRXn7zfhN3dA+Xck/jdteIGxthiRfnEfNtTICPkBxRRzd9U6KKSPmNpA==",
+        "dependencies": {
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.0.0"
+        }
       },
       "Swashbuckle.AspNetCore.Swagger": {
         "type": "Transitive",
@@ -834,7 +837,7 @@
           "Quartz.Extensions.Hosting": "[3.15.1, )",
           "Swashbuckle.AspNetCore": "[10.2.3, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.2.3, )",
-          "Swashbuckle.AspNetCore.Filters": "[8.0.2, )"
+          "Swashbuckle.AspNetCore.Filters": "[10.0.1, )"
         }
       },
       "edfi.ods.adminapi.common": {
@@ -939,7 +942,7 @@
           "Quartz.Extensions.Hosting": "[3.15.1, )",
           "Swashbuckle.AspNetCore": "[10.2.3, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.2.3, )",
-          "Swashbuckle.AspNetCore.Filters": "[8.0.2, )"
+          "Swashbuckle.AspNetCore.Filters": "[10.0.1, )"
         }
       },
       "Asp.Versioning.Http": {
@@ -1236,15 +1239,13 @@
       },
       "Swashbuckle.AspNetCore.Filters": {
         "type": "CentralTransitive",
-        "requested": "[8.0.2, )",
-        "resolved": "8.0.2",
-        "contentHash": "S4pR+265NwY9saAhK+3Jn2oL2Wfy0qvy9871b0KiEPW/iLPRgg2HrkrdMwC1wpjNkRXWGDFRRj+LkUD4lyuAaQ==",
+        "requested": "[10.0.1, )",
+        "resolved": "10.0.1",
+        "contentHash": "Bbmg6UelUTrCHmheejcuiGyYrJ+mO5GyV4pG7ZEhrX9P+gc0UppUQTVb+6HyEBsFsXDrBWvOXp/oqnTTz8wCEA==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "2.1.0",
-          "Microsoft.OpenApi": "1.3.1",
           "Scrutor": "3.3.0",
-          "Swashbuckle.AspNetCore.Filters.Abstractions": "8.0.2",
-          "Swashbuckle.AspNetCore.SwaggerGen": "5.0.0"
+          "Swashbuckle.AspNetCore.Filters.Abstractions": "10.0.1",
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.0.0"
         }
       }
     }
