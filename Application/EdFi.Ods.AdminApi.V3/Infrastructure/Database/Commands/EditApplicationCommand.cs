@@ -43,28 +43,14 @@ public class EditApplicationCommand : IEditApplicationCommand
         var newProfiles = model.ProfileIds != null
             ? _context.Profiles.Where(p => model.ProfileIds.Contains(p.ProfileId))
             : null;
-        var newOdsInstances = model.DataStoreIds != null
-            ? _context.OdsInstances.Where(p => model.DataStoreIds.Contains(p.OdsInstanceId))
-            : null;
 
+        // ADMINAPI-1484: enabled and data-store assignment are per-ApiClient concerns.
+        // PUT /v3/applications/{id} does not read or apply either one - use
+        // PUT /v3/apiClients/{id} to change an individual credential's approval state or
+        // data-store assignment. Name is likewise never assigned: a credential's name
+        // belongs to the credential and must survive an Application edit.
         var apiClients = application.ApiClients.ToList();
-        var apiClientIds = apiClients.Select(c => c.ApiClientId).ToList();
 
-        // ADMINAPI-1514: enabled state is Application-level, so when the caller supplies it
-        // it applies to every credential. When it is omitted, per-credential state is left
-        // untouched - an edit that only renames the Application must not re-approve
-        // credentials an administrator deliberately disabled.
-        // Name is deliberately never assigned: a credential's name belongs to the
-        // credential and must survive an Application edit.
-        if (model.Enabled.HasValue)
-        {
-            foreach (var client in apiClients)
-            {
-                client.IsApproved = model.Enabled.Value;
-            }
-        }
-
-        _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => apiClientIds.Contains(o.ApiClient.ApiClientId)));
         _context.ApplicationEducationOrganizations.RemoveRange(_context.ApplicationEducationOrganizations.Where(aeo => aeo.Application.ApplicationId == application.ApplicationId));
 
         var currentProfiles = application.Profiles.ToList();
@@ -106,22 +92,6 @@ public class EditApplicationCommand : IEditApplicationCommand
             }
         }
 
-        // ADMINAPI-1514 / ADMINAPI-1515: a data-store grant is stored only as an
-        // ApiClientOdsInstance row, which hangs off a credential. An Application with no
-        // credentials therefore has nowhere to record DataStoreIds, and the submitted
-        // values are discarded here even though the validator requires them. Giving the
-        // Application its own data-store association is ADMINAPI-1515.
-        if (newOdsInstances != null)
-        {
-            foreach (var newOdsInstance in newOdsInstances.ToList())
-            {
-                foreach (var client in apiClients)
-                {
-                    _context.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = client, OdsInstance = newOdsInstance });
-                }
-            }
-        }
-
         _context.SaveChanges();
         return application;
     }
@@ -135,8 +105,6 @@ public interface IEditApplicationModel
     string? ClaimSetName { get; }
     IEnumerable<int>? ProfileIds { get; }
     IEnumerable<long>? EducationOrganizationIds { get; }
-    IEnumerable<int>? DataStoreIds { get; }
-    bool? Enabled { get; }
 }
 
 

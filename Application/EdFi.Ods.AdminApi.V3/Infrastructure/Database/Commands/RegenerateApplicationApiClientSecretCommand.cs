@@ -3,9 +3,11 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Net;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.V3.Features;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -29,7 +31,15 @@ public class RegenerateApplicationApiClientSecretCommand
             throw new NotFoundException<int>("application", applicationId);
         }
 
-        var apiClient = application.ApiClients.First();
+        if (application.ApiClients.Count != 1)
+        {
+            throw new AdminApiException(FeatureConstants.ApplicationResetCredentialMultiClientConflictMessage)
+            {
+                StatusCode = HttpStatusCode.Conflict
+            };
+        }
+
+        var apiClient = application.ApiClients.Single();
 
         apiClient.GenerateSecret();
         apiClient.SecretIsHashed = false;

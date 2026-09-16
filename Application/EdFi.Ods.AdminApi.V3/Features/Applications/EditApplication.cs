@@ -44,19 +44,12 @@ public class EditApplication : IFeature
             throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
 
         ValidateProfileIds(request, db);
-        ValidateDataStoreIds(request, db);
     }
 
     private static void ValidateProfileIds(EditApplicationRequest request, IUsersContext db)
     {
         var allProfileIds = new HashSet<int>(db.Profiles.Select(p => p.ProfileId));
         EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
-    }
-
-    private static void ValidateDataStoreIds(EditApplicationRequest request, IUsersContext db)
-    {
-        var allOdsInstanceIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
-        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allOdsInstanceIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "EditApplicationRequest")]
@@ -80,13 +73,6 @@ public class EditApplication : IFeature
 
         [SwaggerSchema(Description = FeatureConstants.EducationOrganizationIdsDescription, Nullable = false)]
         public IEnumerable<long>? EducationOrganizationIds { get; set; }
-
-        [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
-        public IEnumerable<int>? DataStoreIds { get; set; }
-
-        [SwaggerOptional]
-        [SwaggerSchema(Description = FeatureConstants.Enable)]
-        public bool? Enabled { get; set; }
     }
 
     public class Validator : AbstractValidator<IEditApplicationModel>
@@ -110,10 +96,6 @@ public class EditApplication : IFeature
             RuleFor(m => m.EducationOrganizationIds)
                 .NotEmpty()
                 .WithMessage(FeatureConstants.EdOrgIdsValidationMessage);
-
-            RuleFor(m => m.DataStoreIds)
-                .NotEmpty()
-                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
             RuleFor(m => m.VendorId).Must(id => id > 0).WithMessage(FeatureConstants.VendorIdValidationMessage);
 

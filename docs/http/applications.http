@@ -2,8 +2,16 @@
 # local ODS/API instance. Update the vendorId/claimSetName/dataStoreIds
 # values below to match IDs that exist in your environment - use the GET
 # requests to look them up.
+#
+# ADMINAPI-1484: PUT /v3/applications/{id} no longer accepts or applies
+# "enabled" or "dataStoreIds" - both are per-ApiClient concerns now. Use
+# PUT /v3/apiClients/{id} to change an individual credential's approval
+# state or data-store assignment. PUT /v3/applications/{id}/reset-credential
+# now returns 409 Conflict once an Application has more than one ApiClient;
+# use PUT /v3/apiClients/{id}/reset-credential for a specific credential
+# instead.
 
-@adminapi_url=https://localhost:7214
+@adminapi_url=https://localhost/adminapi
 @adminapi_client=adminapi_client
 @adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
 
@@ -30,18 +38,38 @@ GET {{adminapi_url}}/v3/vendors
 Content-Type: application/json
 Authorization: bearer {{token}}
 
+### Create vendor without namespace
+POST {{adminapi_url}}/v3/vendors
+Content-Type: application/json
+Authorization: bearer {{token}}
+Tenant: tenant2
+
+{
+  "company": "vendor1",
+  "contactName": "David Jiménez",
+  "contactEmailAddress": "david.jimenez@example.com"
+}
 
 ### Get data stores (grab a dataStoreId to use below)
 GET {{adminapi_url}}/v3/dataStores
 Content-Type: application/json
 Authorization: bearer {{token}}
 
-
 ### Get claim sets (grab a claimSetName to use below)
 GET {{adminapi_url}}/v3/claimSets
 Content-Type: application/json
 Authorization: bearer {{token}}
 
+### Make a copy of a claimset
+# @name copyClaimSet
+POST {{adminapi_url}}/v3/claimSets/copy
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "originalId": 2,
+  "name": "EdFiSandboxCopy"
+}
 
 ### Create an Application - send twice to test duplicate (VendorId, ApplicationName) rejection (ADMINAPI-1483: second call should return 400, "already exists for this vendor")
 # @name createApplication
@@ -50,21 +78,24 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 
 {
-  "applicationName": "Application Duplicate Test",
-  "vendorId": 992,
-  "claimSetName": "Bootstrap Descriptors and EdOrgs",
+  "applicationName": "Application1",
+  "vendorId": 1,
+  "claimSetName": "EdFiSandboxCopy",
   "educationOrganizationIds": [1],
   "dataStoreIds": [
-    2224
+    1
   ]
 }
 
+### Get Applications
+GET {{adminapi_url}}/v3/applications
+Content-Type: application/json
+Authorization: bearer {{token}}
 
 ### Get application
 GET {{createApplication.response.headers.Location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
-
 
 ### Update Application
 PUT {{createApplication.response.headers.Location}}
@@ -72,21 +103,51 @@ Content-Type: application/json
 Authorization: bearer {{token}}
 
 {
-  "applicationName": "Application Duplicate Test - updated",
-  "vendorId": 992,
-  "claimSetName": "Bootstrap Descriptors and EdOrgs",
-  "educationOrganizationIds": [1],
-  "dataStoreIds": [
-    2224
-  ]
+  "id": {{createApplication.response.body.id}},
+  "applicationName": "Application1 - updated",
+  "vendorId": 1,
+  "claimSetName": "EdFiSandboxCopy",
+  "educationOrganizationIds": [1]
 }
 
 
-### Reset application secret
+### Get application - confirm enabled/dataStoreIds were not changed by the request above
+GET {{createApplication.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Get ApiClients
+GET {{adminapi_url}}/v3/apiClients
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Add a second ApiClient to the Application, so the Application has more than one credential -
+### this is what makes the "Reset application secret" request below return 409 Conflict.
+# @name addApiClient
+POST {{adminapi_url}}/v3/apiClients
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "Second Credential",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [
+    1
+  ]
+}
+
+### Reset application secret - ADMINAPI-1484: now returns 409 Conflict because the Application
+### has more than one ApiClient. Use PUT /v3/apiClients/{id}/reset-credential (below) instead.
 PUT {{createApplication.response.headers.Location}}/reset-credential
 Content-Type: application/json
 Authorization: bearer {{token}}
 
+### Reset the second ApiClient's secret directly - this is the per-credential path the 409 above
+### points to, and it still works exactly as before regardless of how many credentials exist.
+PUT {{addApiClient.response.headers.Location}}/reset-credential
+Content-Type: application/json
+Authorization: bearer {{token}}
 
 ### Delete application
 DELETE {{createApplication.response.headers.Location}}

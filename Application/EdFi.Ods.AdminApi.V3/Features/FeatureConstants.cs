@@ -75,5 +75,6 @@ public static class FeatureConstants
     public const string VendorAlreadyExistsMessage = "A Vendor with this name already exists in the database. Please enter a unique name.";
     public const string ApplicationCombinedKeyMustBeUnique = "An Application with this name already exists for this vendor. Please enter a unique name.";
     public const string ApiClientCombinedKeyMustBeUnique = "An ApiClient with this name already exists for this application. Please enter a unique name.";
+    public const string ApplicationResetCredentialMultiClientConflictMessage = "This Application has more than one ApiClient. Use PUT /v3/apiClients/{id}/reset-credential to reset an individual credential.";
 }
 

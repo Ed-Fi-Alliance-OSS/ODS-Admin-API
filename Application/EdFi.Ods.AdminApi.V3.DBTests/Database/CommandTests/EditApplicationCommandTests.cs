@@ -113,8 +113,7 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             ClaimSetName = _application.ClaimSetName,
             EducationOrganizationIds = new List<long> { 12345, 67890 },
             ProfileIds = null,
-            VendorId = _vendor.VendorId,
-            DataStoreIds = new List<int> { _odsInstance.OdsInstanceId }
+            VendorId = _vendor.VendorId
         };
 
         Transaction(usersContext =>
@@ -156,8 +155,7 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             ClaimSetName = "DifferentFakeClaimSet",
             EducationOrganizationIds = new List<long> { 23456, 78901, 5000000005 },
             ProfileIds = new List<int>() { _otherProfile.ProfileId },
-            VendorId = _otherVendor.VendorId,
-            DataStoreIds = new List<int> { _odsInstance.OdsInstanceId }
+            VendorId = _otherVendor.VendorId
         };
 
         Transaction(usersContext =>
@@ -185,24 +183,6 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             persistedApplication.ApplicationEducationOrganizations.Count.ShouldBe(3);
             persistedApplication.ApplicationEducationOrganizations.ShouldAllBe(aeo => aeo.EducationOrganizationId == 23456 || aeo.EducationOrganizationId == 78901 || aeo.EducationOrganizationId == 5000000005);
         });
-
-        Transaction(usersContext =>
-        {
-            var persistedApplication = usersContext.Applications
-            .Include(a => a.ApiClients)
-            .Include(a => a.Profiles)
-            .Include(a => a.ApplicationEducationOrganizations).Single(a => a.ApplicationId == _application.ApplicationId); 
-            var apiClient = persistedApplication.ApiClients.First();
-            var odsInstanceId = _odsInstance.OdsInstanceId;
-            var apiClientOdsInstance = usersContext.ApiClientOdsInstances
-            .Include(a => a.OdsInstance)
-            .Include(a => a.ApiClient)
-            .FirstOrDefault(o => o.OdsInstance.OdsInstanceId == odsInstanceId && o.ApiClient.ApiClientId == apiClient.ApiClientId);
-            apiClientOdsInstance.ApiClient.ApiClientId.ShouldBe(apiClient.ApiClientId);
-            apiClientOdsInstance.OdsInstance.OdsInstanceId.ShouldBe(_odsInstance.OdsInstanceId);
-        });
-
-
     }
 
 
@@ -212,7 +192,9 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
         SetupTestEntities();
 
         // Give the Application a second credential with its own name, so this exercises
-        // the ADMINAPI-1514 crash fix against a real database engine.
+        // the ADMINAPI-1514 crash fix against a real database engine. Also give the first
+        // credential a pre-existing data-store assignment, to prove the ADMINAPI-1484 edit
+        // leaves it untouched.
         Transaction(usersContext =>
         {
             var application = usersContext.Applications
@@ -224,6 +206,13 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
                 Name = "Second Integration Test",
                 UseSandbox = false
             });
+
+            var odsInstance = usersContext.OdsInstances.Single(o => o.OdsInstanceId == _odsInstance.OdsInstanceId);
+            usersContext.ApiClientOdsInstances.Add(new ApiClientOdsInstance
+            {
+                ApiClient = application.ApiClients.Single(c => c.Name == "Integration Test"),
+                OdsInstance = odsInstance
+            });
         });
 
         var editModel = new TestEditApplicationModel
@@ -233,8 +222,7 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
             ClaimSetName = _application.ClaimSetName,
             EducationOrganizationIds = new List<long> { 12345, 67890 },
             ProfileIds = null,
-            VendorId = _vendor.VendorId,
-            DataStoreIds = new List<int> { _odsInstance.OdsInstanceId }
+            VendorId = _vendor.VendorId
         };
 
         // Before ADMINAPI-1514 this threw InvalidOperationException from ApiClients.Single().
@@ -289,7 +277,8 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
                     .ShouldBe(applicationEdOrgIds);
             }
 
-            // And each credential got a data-store row for the submitted data store.
+            // The pre-existing data-store assignment on the first credential was left
+            // untouched by the edit, and the second credential still has none.
             var apiClientIds = apiClients.Select(c => c.ApiClientId).ToList();
             var dataStoreRows = usersContext.ApiClientOdsInstances
                 .Include(o => o.ApiClient)
@@ -297,8 +286,9 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
                 .Where(o => apiClientIds.Contains(o.ApiClient.ApiClientId))
                 .ToList();
 
-            dataStoreRows.Count.ShouldBe(2);
-            dataStoreRows.ShouldAllBe(o => o.OdsInstance.OdsInstanceId == _odsInstance.OdsInstanceId);
+            dataStoreRows.Count.ShouldBe(1);
+            dataStoreRows.Single().ApiClient.Name.ShouldBe("Integration Test");
+            dataStoreRows.Single().OdsInstance.OdsInstanceId.ShouldBe(_odsInstance.OdsInstanceId);
         });
     }
 
@@ -310,8 +300,6 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
         public string ClaimSetName { get; set; }
         public IEnumerable<int> ProfileIds { get; set; }
         public IEnumerable<long> EducationOrganizationIds { get; set; }
-        public IEnumerable<int> DataStoreIds { get; set; }
-        public bool? Enabled { get; set; }
     }
 }
 
