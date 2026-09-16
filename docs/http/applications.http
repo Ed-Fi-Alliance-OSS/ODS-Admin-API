@@ -3,13 +3,15 @@
 # values below to match IDs that exist in your environment - use the GET
 # requests to look them up.
 #
-# ADMINAPI-1484: PUT /v3/applications/{id} no longer accepts or applies
-# "enabled" or "dataStoreIds" - both are per-ApiClient concerns now. Use
-# PUT /v3/apiClients/{id} to change an individual credential's approval
-# state or data-store assignment. PUT /v3/applications/{id}/reset-credential
-# now returns 409 Conflict once an Application has more than one ApiClient;
-# use PUT /v3/apiClients/{id}/reset-credential for a specific credential
-# instead.
+# ADMINAPI-1484: PUT /v3/applications/{id} no longer accepts "enabled" or
+# "dataStoreIds" - both are per-ApiClient concerns now, and the request body
+# rejects them with a 400 rather than silently ignoring them (the request
+# schema declares additionalProperties:false, and this endpoint now actually
+# enforces it). Use PUT /v3/apiClients/{id} to change an individual
+# credential's approval state or data-store assignment.
+# PUT /v3/applications/{id}/reset-credential now returns 409 Conflict once an
+# Application has more than one ApiClient (or none at all); use
+# PUT /v3/apiClients/{id}/reset-credential for a specific credential instead.
 
 @adminapi_url=https://localhost/adminapi
 @adminapi_client=adminapi_client
@@ -115,6 +117,23 @@ Authorization: bearer {{token}}
 GET {{createApplication.response.headers.Location}}
 Content-Type: application/json
 Authorization: bearer {{token}}
+
+### Update Application with enabled/dataStoreIds - ADMINAPI-1484: these fields are not part of
+### this contract (additionalProperties:false), so this returns 400 instead of applying or
+### ignoring them.
+PUT {{createApplication.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createApplication.response.body.id}},
+  "applicationName": "Application1 - updated",
+  "vendorId": 1,
+  "claimSetName": "EdFiSandboxCopy",
+  "educationOrganizationIds": [1],
+  "enabled": false,
+  "dataStoreIds": [1]
+}
 
 ### Get ApiClients
 GET {{adminapi_url}}/v3/apiClients

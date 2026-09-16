@@ -1,5 +1,5 @@
 meta {
-  name: Applications - Enabled And DataStore Ignored
+  name: Applications - Invalid Unexpected Fields
   type: http
   seq: 20
 }
@@ -13,7 +13,7 @@ put {
 body:json {
   {
     "id": {{CreatedApplicationId}},
-    "applicationName": "Updated Application Name",
+    "applicationName": "Should Not Be Applied",
     "vendorId": {{OtherApplicationVendorId}},
     "claimSetName": "{{UpdatedApplicationClaimSetName}}",
     "profileIds": [],
@@ -25,12 +25,23 @@ body:json {
 }
 
 script:post-response {
-  // ADMINAPI-1484: enabled and dataStoreIds are per-ApiClient concerns now, so
-  // PUT /v3/applications/{id} no longer reads or validates either one - even a
-  // non-existent dataStoreId (9999) no longer causes a validation error, and
-  // this succeeds instead of the 400 it used to return.
-  test("PUT Application Enabled/DataStore Ignored: Status code is No Content", function () {
-      expect(res.getStatus()).to.equal(204);
+  // ADMINAPI-1484: enabled and dataStoreIds are per-ApiClient concerns, and the
+  // generated schema for this request marks additionalProperties:false - so
+  // EditApplicationRequest now rejects them at the JSON level
+  // (JsonUnmappedMemberHandling.Disallow) instead of silently ignoring them.
+  test("PUT Application Invalid Unexpected Fields: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  test("PUT Application Invalid Unexpected Fields: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("detail");
+  });
+
+  test("PUT Application Invalid Unexpected Fields: type URN is correct", function () {
+      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:data");
   });
 
   const axios = require('axios');
@@ -57,16 +68,18 @@ script:post-response {
     const applicationResponse = await axios.get(`${API_URL}/v3/applications/${applicationId}`, axiosConfig);
 
     if (applicationResponse.status === 200) {
-      test("PUT Application Enabled/DataStore Ignored: enabled/dataStoreIds remain unchanged", function () {
+      test("PUT Application Invalid Unexpected Fields: rejected request did not change the application", function () {
           expect(applicationResponse.data.enabled).to.equal(true);
           expect(applicationResponse.data.dataStoreIds.length).to.equal(1);
           expect(applicationResponse.data.dataStoreIds).to.not.include(9999);
+          expect(applicationResponse.data.applicationName).to.not.equal("Should Not Be Applied");
       });
     } else {
       throw new Error(`Failed to get application - Status: ${applicationResponse.status}, Data: ${JSON.stringify(applicationResponse.data)}`);
     }
   } catch (error) {
     console.log("Error in post-request verification:", error.message);
+    throw error;
   }
 }
 

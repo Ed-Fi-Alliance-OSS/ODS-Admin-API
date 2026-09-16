@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System.Text.Json.Serialization;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
@@ -52,6 +53,10 @@ public class EditApplication : IFeature
         EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
     }
 
+    // ADMINAPI-1484: enabled/dataStoreIds are per-ApiClient concerns and no longer part of
+    // this contract (the generated schema already marks it additionalProperties:false) - a
+    // caller still sending either one gets a 400, not a silently-ignored 204.
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     [SwaggerSchema(Title = "EditApplicationRequest")]
     public class EditApplicationRequest : IEditApplicationModel
     {

@@ -31,7 +31,15 @@ public class RegenerateApplicationApiClientSecretCommand
             throw new NotFoundException<int>("application", applicationId);
         }
 
-        if (application.ApiClients.Count != 1)
+        if (application.ApiClients.Count == 0)
+        {
+            throw new AdminApiException(FeatureConstants.ApplicationResetCredentialNoApiClientsConflictMessage)
+            {
+                StatusCode = HttpStatusCode.Conflict
+            };
+        }
+
+        if (application.ApiClients.Count > 1)
         {
             throw new AdminApiException(FeatureConstants.ApplicationResetCredentialMultiClientConflictMessage)
             {

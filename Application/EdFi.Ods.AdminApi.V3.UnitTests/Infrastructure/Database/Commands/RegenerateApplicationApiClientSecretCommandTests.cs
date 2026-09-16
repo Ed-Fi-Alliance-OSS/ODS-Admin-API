@@ -64,6 +64,23 @@ public class RegenerateApplicationApiClientSecretCommandTests
     }
 
     [Test]
+    public void Execute_WithZeroApiClients_ThrowsConflictWithNoClientsMessage()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.SaveChanges();
+
+        var exception = Should.Throw<AdminApiException>(() =>
+            new RegenerateApplicationApiClientSecretCommand(ctx).Execute(app.ApplicationId));
+
+        exception.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        exception.Message.ShouldBe(FeatureConstants.ApplicationResetCredentialNoApiClientsConflictMessage);
+    }
+
+    [Test]
     public void Execute_WithOneApiClient_RegeneratesItsSecret()
     {
         using var ctx = CreateContext();

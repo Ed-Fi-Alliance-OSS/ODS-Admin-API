@@ -35,7 +35,7 @@ public class RegenerateApplicationApiClientSecretCommandTests : PlatformUsersCon
     }
 
     [Test]
-    public void ShouldReturnConflictIfApiClientDoesNotExist()
+    public void ShouldReturnConflictWithNoClientsMessageIfApiClientDoesNotExist()
     {
         var application = new Application
         {
@@ -50,6 +50,7 @@ public class RegenerateApplicationApiClientSecretCommandTests : PlatformUsersCon
             var command = new RegenerateApplicationApiClientSecretCommand(usersContext);
             var exception = Assert.Throws<AdminApiException>(() => command.Execute(application.ApplicationId));
             exception.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+            exception.Message.ShouldBe(FeatureConstants.ApplicationResetCredentialNoApiClientsConflictMessage);
         });
     }
 
