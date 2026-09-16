@@ -935,7 +935,7 @@
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[10.0.2, )",
           "OpenIddict.EntityFrameworkCore": "[7.6.1, )",
-          "Quartz": "[3.15.1, )",
+          "Quartz": "[3.21.0, )",
           "Swashbuckle.AspNetCore": "[7.1.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )",
           "log4net": "[3.4.0, )"
@@ -1001,7 +1001,7 @@
           "Npgsql": "[10.0.2, )",
           "OpenIddict.AspNetCore": "[7.6.1, )",
           "OpenIddict.EntityFrameworkCore": "[7.6.1, )",
-          "Quartz": "[3.15.1, )",
+          "Quartz": "[3.21.0, )",
           "Quartz.Extensions.Hosting": "[3.15.1, )",
           "Swashbuckle.AspNetCore": "[7.1.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[7.1.0, )",
@@ -1305,9 +1305,9 @@
       },
       "Quartz": {
         "type": "CentralTransitive",
-        "requested": "[3.15.1, )",
-        "resolved": "3.15.1",
-        "contentHash": "XIbhzUAKSm3xdl1ORLPnK7mc5XANP3cuvYQhCtuX/8888IN41e9OXJak4R9OlmAGRnyAMqHE40yojVa89NS1wg==",
+        "requested": "[3.21.0, )",
+        "resolved": "3.21.0",
+        "contentHash": "CmJsq4pQRuaEmiNksCsrV0T2D2fzlA9QcpjEPLKoLoCC6Xx3ghx1mbSUi5rywZ0koTxoCTwGDqREKILocKR1jw==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "2.1.1"
         }
