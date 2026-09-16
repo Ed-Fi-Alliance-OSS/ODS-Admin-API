@@ -17,11 +17,9 @@ body:json {
     "vendorId": {{OtherApplicationVendorId}},
     "claimSetName": "{{UpdatedApplicationClaimSetName}}",
     "profileIds": [],
-    "educationOrganizationIds": [1234],
-    "dataStoreIds": [ {{DataStoreId}} ],
-    "enabled": false
+    "educationOrganizationIds": [1234]
   }
-  
+
 }
 
 script:pre-request {
@@ -122,8 +120,15 @@ script:post-response {
           expect(applicationResponse.data.claimSetName).to.equal(bru.getVar("UpdatedApplicationClaimSetName"));
           expect(applicationResponse.data.educationOrganizationIds.length).to.equal(1);
           expect(applicationResponse.data.profileIds.length).to.equal(0);
+      });
+
+      // ADMINAPI-1484: enabled/dataStoreIds are per-ApiClient concerns, so PUT
+      // /v3/applications/{id} no longer accepts or applies either one - they must still
+      // reflect what POST - Applications set (enabled: true, one data store), unchanged
+      // by this edit.
+      test("PUT Application: enabled/dataStoreIds are unchanged by the Application edit", function () {
+          expect(applicationResponse.data.enabled).to.equal(true);
           expect(applicationResponse.data.dataStoreIds.length).to.equal(1);
-          expect(applicationResponse.data.enabled).to.equal(false);
       });
       test("PUT Application: Response result does not include application key and secret", function () {
           expect(applicationResponse.data).to.not.have.property("key");
