@@ -15,3 +15,19 @@ updates:
       semver-minor-days: 7
       semver-major-days: 14
       default-days: 7
+    groups:
+      dotnet-runtime:
+        patterns:
+          - "Microsoft.EntityFrameworkCore*"
+          - "Microsoft.AspNetCore.Authentication.JwtBearer"
+          - "Microsoft.Extensions.Caching.Memory"
+          - "Microsoft.Extensions.Logging.Log4Net.AspNetCore"
+      openiddict:
+        patterns:
+          - "OpenIddict*"
+      swashbuckle:
+        patterns:
+          - "Swashbuckle.AspNetCore*"
+      nunit:
+        patterns:
+          - "NUnit*"
