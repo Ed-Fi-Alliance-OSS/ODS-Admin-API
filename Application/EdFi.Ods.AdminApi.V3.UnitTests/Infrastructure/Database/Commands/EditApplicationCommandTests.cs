@@ -116,7 +116,7 @@ public class EditApplicationCommandTests
     }
 
     [Test]
-    public void Execute_WithTwoApiClients_AppliesEnabledToEveryCredential()
+    public void Execute_LeavesEveryCredentialsApprovalUntouched()
     {
         using var ctx = CreateContext();
         var vendor = new Vendor { VendorName = "V1" };
@@ -124,15 +124,18 @@ public class EditApplicationCommandTests
         var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
         ctx.Applications.Add(app);
         ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app, IsApproved = true });
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app, IsApproved = true });
+        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app, IsApproved = false });
         ctx.SaveChanges();
 
+        // ADMINAPI-1484: enabled is per-ApiClient only. PUT /v3/applications/{id} has no way
+        // to read or apply it - use PUT /v3/apiClients/{id} to change a credential's approval.
         new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
         {
-            Id = app.ApplicationId, ApplicationName = "NewName", VendorId = vendor.VendorId, ClaimSetName = "CS", Enabled = false
+            Id = app.ApplicationId, ApplicationName = "NewName", VendorId = vendor.VendorId, ClaimSetName = "CS"
         });
 
-        ctx.ApiClients.ShouldAllBe(c => !c.IsApproved);
+        ctx.ApiClients.Single(c => c.Name == "cred-a").IsApproved.ShouldBeTrue();
+        ctx.ApiClients.Single(c => c.Name == "cred-b").IsApproved.ShouldBeFalse();
     }
 
     [Test]
@@ -231,7 +234,7 @@ public class EditApplicationCommandTests
 
 
     [Test]
-    public void Execute_WithTwoApiClients_RebuildsDataStoreRowsForEveryCredential()
+    public void Execute_LeavesExistingDataStoreAssignmentsUntouched()
     {
         using var ctx = CreateContext();
         var vendor = new Vendor { VendorName = "V1" };
@@ -242,78 +245,29 @@ public class EditApplicationCommandTests
         var clientB = new ApiClient(true) { Name = "cred-b", Application = app };
         ctx.ApiClients.Add(clientA);
         ctx.ApiClients.Add(clientB);
-        var target1 = new OdsInstance { Name = "DS1", InstanceType = "type", ConnectionString = "cs" };
-        var target2 = new OdsInstance { Name = "DS2", InstanceType = "type", ConnectionString = "cs" };
-        var stale = new OdsInstance { Name = "DS-stale", InstanceType = "type", ConnectionString = "cs" };
-        ctx.OdsInstances.Add(target1);
-        ctx.OdsInstances.Add(target2);
-        ctx.OdsInstances.Add(stale);
+        var assigned = new OdsInstance { Name = "DS-assigned", InstanceType = "type", ConnectionString = "cs" };
+        ctx.OdsInstances.Add(assigned);
         ctx.SaveChanges();
-        ctx.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = clientA, OdsInstance = stale });
+        ctx.ApiClientOdsInstances.Add(new ApiClientOdsInstance { ApiClient = clientA, OdsInstance = assigned });
         ctx.SaveChanges();
 
+        // ADMINAPI-1484: dataStoreIds is per-ApiClient only. PUT /v3/applications/{id} has no
+        // way to read or apply it - use PUT /v3/apiClients/{id} to change a credential's
+        // data-store assignment. clientB stays unassigned.
         new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
         {
             Id = app.ApplicationId,
             ApplicationName = "NewName",
             VendorId = vendor.VendorId,
-            ClaimSetName = "CS",
-            DataStoreIds = new List<int> { target1.OdsInstanceId, target2.OdsInstanceId }
+            ClaimSetName = "CS"
         });
 
-        var expected = new List<int> { target1.OdsInstanceId, target2.OdsInstanceId }.OrderBy(id => id).ToList();
         var rows = ctx.ApiClientOdsInstances.ToList();
-
-        rows.Count.ShouldBe(4);
-        rows.Where(r => r.ApiClient.ApiClientId == clientA.ApiClientId)
-            .Select(r => r.OdsInstance.OdsInstanceId).OrderBy(id => id).ToList().ShouldBe(expected);
-        rows.Where(r => r.ApiClient.ApiClientId == clientB.ApiClientId)
-            .Select(r => r.OdsInstance.OdsInstanceId).OrderBy(id => id).ToList().ShouldBe(expected);
-        rows.ShouldAllBe(r => r.OdsInstance.OdsInstanceId != stale.OdsInstanceId);
+        rows.Count.ShouldBe(1);
+        rows.Single().ApiClient.ApiClientId.ShouldBe(clientA.ApiClientId);
+        rows.Single().OdsInstance.OdsInstanceId.ShouldBe(assigned.OdsInstanceId);
     }
 
-
-    [Test]
-    public void Execute_WithEnabledOmitted_LeavesEveryCredentialsApprovalUntouched()
-    {
-        using var ctx = CreateContext();
-        var vendor = new Vendor { VendorName = "V1" };
-        ctx.Vendors.Add(vendor);
-        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
-        ctx.Applications.Add(app);
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app, IsApproved = true });
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app, IsApproved = false });
-        ctx.SaveChanges();
-
-        // Enabled deliberately not set: a rename must not re-approve a disabled credential.
-        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
-        {
-            Id = app.ApplicationId, ApplicationName = "NewName", VendorId = vendor.VendorId, ClaimSetName = "CS"
-        });
-
-        ctx.ApiClients.Single(c => c.Name == "cred-a").IsApproved.ShouldBeTrue();
-        ctx.ApiClients.Single(c => c.Name == "cred-b").IsApproved.ShouldBeFalse();
-    }
-
-    [Test]
-    public void Execute_WithEnabledTrue_ApprovesEveryCredential()
-    {
-        using var ctx = CreateContext();
-        var vendor = new Vendor { VendorName = "V1" };
-        ctx.Vendors.Add(vendor);
-        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
-        ctx.Applications.Add(app);
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app, IsApproved = false });
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app, IsApproved = false });
-        ctx.SaveChanges();
-
-        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
-        {
-            Id = app.ApplicationId, ApplicationName = "NewName", VendorId = vendor.VendorId, ClaimSetName = "CS", Enabled = true
-        });
-
-        ctx.ApiClients.ShouldAllBe(c => c.IsApproved);
-    }
 
     [Test]
     public void Execute_WithThreeApiClients_AttachesEveryCredentialToEveryEducationOrganization()
@@ -345,36 +299,6 @@ public class EditApplicationCommandTests
         ctx.ApiClients.Select(c => c.Name).OrderBy(n => n).ShouldBe(new[] { "cred-a", "cred-b", "cred-c" });
     }
 
-    [Test]
-    public void Execute_WithDuplicateDataStoreIds_CreatesOneRowPerCredentialAndDataStore()
-    {
-        using var ctx = CreateContext();
-        var vendor = new Vendor { VendorName = "V1" };
-        ctx.Vendors.Add(vendor);
-        var app = new Application { ApplicationName = "OldName", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
-        ctx.Applications.Add(app);
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-a", Application = app });
-        ctx.ApiClients.Add(new ApiClient(true) { Name = "cred-b", Application = app });
-        var ds1 = new OdsInstance { Name = "DS1", InstanceType = "type", ConnectionString = "cs" };
-        var ds2 = new OdsInstance { Name = "DS2", InstanceType = "type", ConnectionString = "cs" };
-        ctx.OdsInstances.Add(ds1);
-        ctx.OdsInstances.Add(ds2);
-        ctx.SaveChanges();
-
-        new EditApplicationCommand(ctx).Execute(new EditApplicationModelStub
-        {
-            Id = app.ApplicationId,
-            ApplicationName = "NewName",
-            VendorId = vendor.VendorId,
-            ClaimSetName = "CS",
-            DataStoreIds = new List<int> { ds1.OdsInstanceId, ds2.OdsInstanceId, ds1.OdsInstanceId, ds2.OdsInstanceId }
-        });
-
-        // Duplicate ids resolve through a set query over OdsInstances, so each data store
-        // is matched once and no dedup of the submitted list is required.
-        ctx.ApiClientOdsInstances.Count().ShouldBe(4);
-    }
-
     private class EditApplicationModelStub : IEditApplicationModel
     {
         public int Id { get; init; }
@@ -383,7 +307,5 @@ public class EditApplicationCommandTests
         public string ClaimSetName { get; init; } = string.Empty;
         public IEnumerable<int> ProfileIds { get; init; } = [];
         public IEnumerable<long> EducationOrganizationIds { get; init; } = [];
-        public IEnumerable<int> DataStoreIds { get; init; } = [];
-        public bool? Enabled { get; init; }
     }
 }

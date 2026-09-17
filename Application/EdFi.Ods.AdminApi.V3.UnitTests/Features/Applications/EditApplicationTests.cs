@@ -24,8 +24,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
                 ApplicationName = "Test Application",
                 VendorId = 1,
                 ClaimSetName = "TestClaimSet",
-                EducationOrganizationIds = new long[] { 1L },
-                DataStoreIds = new[] { 1 }
+                EducationOrganizationIds = new long[] { 1L }
             };
 
             var exception = Should.Throw<ValidationException>(() => EditApplication.Handle(null!, null!, null!, request, 1).GetAwaiter().GetResult());

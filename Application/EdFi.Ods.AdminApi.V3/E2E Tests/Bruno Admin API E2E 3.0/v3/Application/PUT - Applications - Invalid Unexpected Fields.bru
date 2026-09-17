@@ -1,0 +1,88 @@
+meta {
+  name: Applications - Invalid Unexpected Fields
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{API_URL}}/v3/applications/{{CreatedApplicationId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": {{CreatedApplicationId}},
+    "applicationName": "Should Not Be Applied",
+    "vendorId": {{OtherApplicationVendorId}},
+    "claimSetName": "{{UpdatedApplicationClaimSetName}}",
+    "profileIds": [],
+    "educationOrganizationIds": [1234],
+    "enabled": false,
+    "dataStoreIds": [ 9999 ]
+  }
+
+}
+
+script:post-response {
+  // ADMINAPI-1484: enabled and dataStoreIds are per-ApiClient concerns, and the
+  // generated schema for this request marks additionalProperties:false - so
+  // EditApplicationRequest now rejects them at the JSON level
+  // (JsonUnmappedMemberHandling.Disallow) instead of silently ignoring them.
+  test("PUT Application Invalid Unexpected Fields: Status code is Bad Request", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+
+  const response = res.getBody();
+
+  test("PUT Application Invalid Unexpected Fields: Response matches error format", function () {
+      expect(response).to.have.property("title");
+      expect(response).to.have.property("detail");
+  });
+
+  test("PUT Application Invalid Unexpected Fields: type URN is correct", function () {
+      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:data");
+  });
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const TOKEN = bru.getEnvVar("TOKEN");
+
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TOKEN}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+  try {
+    const applicationId = bru.getVar("CreatedApplicationId");
+    const applicationResponse = await axios.get(`${API_URL}/v3/applications/${applicationId}`, axiosConfig);
+
+    if (applicationResponse.status === 200) {
+      test("PUT Application Invalid Unexpected Fields: rejected request did not change the application", function () {
+          expect(applicationResponse.data.enabled).to.equal(true);
+          expect(applicationResponse.data.dataStoreIds.length).to.equal(1);
+          expect(applicationResponse.data.dataStoreIds).to.not.include(9999);
+          expect(applicationResponse.data.applicationName).to.not.equal("Should Not Be Applied");
+      });
+    } else {
+      throw new Error(`Failed to get application - Status: ${applicationResponse.status}, Data: ${JSON.stringify(applicationResponse.data)}`);
+    }
+  } catch (error) {
+    console.log("Error in post-request verification:", error.message);
+    throw error;
+  }
+}
+
+settings {
+  encodeUrl: true
+}

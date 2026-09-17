@@ -7,13 +7,14 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.DBTestsShared;
+using EdFi.Ods.AdminApi.V3.Features;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using NUnit.Framework;
 using Shouldly;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using VendorUser = EdFi.Admin.DataAccess.Models.User;
 
 namespace EdFi.Ods.AdminApi.V3.DBTests.Database.CommandTests;
@@ -34,7 +35,7 @@ public class RegenerateApplicationApiClientSecretCommandTests : PlatformUsersCon
     }
 
     [Test]
-    public void ShouldReportFailureIfApiClientDoesNotExist()
+    public void ShouldReturnConflictWithNoClientsMessageIfApiClientDoesNotExist()
     {
         var application = new Application
         {
@@ -47,7 +48,43 @@ public class RegenerateApplicationApiClientSecretCommandTests : PlatformUsersCon
         Transaction(usersContext =>
         {
             var command = new RegenerateApplicationApiClientSecretCommand(usersContext);
-            Assert.Throws<InvalidOperationException>(() => command.Execute(application.ApplicationId));
+            var exception = Assert.Throws<AdminApiException>(() => command.Execute(application.ApplicationId));
+            exception.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+            exception.Message.ShouldBe(FeatureConstants.ApplicationResetCredentialNoApiClientsConflictMessage);
+        });
+    }
+
+    [Test]
+    public void ShouldReturnConflictForMultiClientApplication()
+    {
+        var vendor = new Vendor
+        {
+            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
+            VendorName = "Integration Tests"
+        };
+
+        var application = new Application
+        {
+            ApplicationName = "Multi Client Test Application",
+            ClaimSetName = "FakeClaimSet",
+            ApiClients = new List<ApiClient>
+            {
+                new ApiClient(true) { Name = "cred-a" },
+                new ApiClient(true) { Name = "cred-b" }
+            },
+            Vendor = vendor,
+            Profiles = new List<Profile>(),
+            OperationalContextUri = OperationalContext.DefaultOperationalContextUri
+        };
+
+        Save(vendor, application);
+
+        Transaction(usersContext =>
+        {
+            var command = new RegenerateApplicationApiClientSecretCommand(usersContext);
+            var exception = Assert.Throws<AdminApiException>(() => command.Execute(application.ApplicationId));
+            exception.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+            exception.Message.ShouldBe(FeatureConstants.ApplicationResetCredentialMultiClientConflictMessage);
         });
     }
 

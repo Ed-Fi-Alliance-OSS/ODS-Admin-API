@@ -126,14 +126,15 @@ script:pre-request {
     }
 
      let applicationId = bru.getVar("OtherApplicationId");
+     // ADMINAPI-1484: dataStoreIds is no longer part of PUT /v3/applications/{id} - the
+     // request body rejects unrecognized fields with a 400 instead of ignoring them.
      const applicationUpdatedResponse = await axios.put(`${API_URL}/v3/applications/${applicationId}`, {
            "id": parseInt(applicationId, 10),
             "applicationName": "ClaimSet Test Vendor Application",
             "vendorId": bru.getVar("OtherApplicationVendorId"),
             "claimSetName": `OtherTestClaimSet-${bru.getVar("OtherClaimSetGUID")}`,
             "profileIds": [],
-            "educationOrganizationIds": [255901],
-            "dataStoreIds": [bru.getVar("dataStoreId")]
+            "educationOrganizationIds": [255901]
     }, axiosConfig);
 
     if (applicationUpdatedResponse.status === 204) {
@@ -144,9 +145,10 @@ script:pre-request {
       console.log("Response data:", JSON.stringify(applicationUpdatedResponse.data, null, 2));
       throw new Error(`Failed to update application - Status: ${applicationUpdatedResponse.status}, Data: ${JSON.stringify(applicationUpdatedResponse.data)}`);
     }
-    
+
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);
+    throw error;
   }
 
 }

@@ -60,8 +60,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Applications
                 ApplicationName = "Test Application",
                 VendorId = 1,
                 ClaimSetName = "TestClaimSet",
-                EducationOrganizationIds = new long[] { 1L },
-                DataStoreIds = new[] { 1 }
+                EducationOrganizationIds = new long[] { 1L }
             };
         }
     }
