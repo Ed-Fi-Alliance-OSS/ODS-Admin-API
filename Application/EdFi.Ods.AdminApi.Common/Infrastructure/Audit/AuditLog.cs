@@ -15,4 +15,5 @@ public class AuditLog
     public string? HttpVerb { get; set; }
     public string? HttpUrl { get; set; }
     public int? StatusCode { get; set; }
+    public string? DeletedObjectSnapshot { get; set; }
 }

@@ -35,7 +35,8 @@ public class AdminApiAuditLogWriter(IConfiguration configuration) : IAuditLogWri
             SourceIpAddress = auditEvent.SourceIpAddress,
             HttpVerb = auditEvent.HttpVerb,
             HttpUrl = auditEvent.HttpUrl,
-            StatusCode = auditEvent.StatusCode
+            StatusCode = auditEvent.StatusCode,
+            DeletedObjectSnapshot = auditEvent.DeletedObjectSnapshot
         });
         await context.SaveChangesAsync(cancellationToken);
     }

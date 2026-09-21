@@ -15,4 +15,5 @@ public class AuditEvent
     public string? HttpVerb { get; init; }
     public string? HttpUrl { get; init; }
     public int? StatusCode { get; init; }
+    public string? DeletedObjectSnapshot { get; init; }
 }
