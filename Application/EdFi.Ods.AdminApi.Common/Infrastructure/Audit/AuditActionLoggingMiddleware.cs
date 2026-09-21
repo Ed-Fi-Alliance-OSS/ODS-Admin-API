@@ -15,7 +15,7 @@ public class AuditActionLoggingMiddleware(RequestDelegate next, IAuditEventRecor
         "POST", "PUT", "PATCH", "DELETE"
     };
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, IDeletedEntityAuditCapture capture)
     {
         if (!_mutatingVerbs.Contains(context.Request.Method))
         {
@@ -46,7 +46,8 @@ public class AuditActionLoggingMiddleware(RequestDelegate next, IAuditEventRecor
                 httpVerb,
                 httpUrl,
                 StatusCodes.Status500InternalServerError,
-                GetTenant(context));
+                GetTenant(context),
+                capture.CapturedJson);
             throw;
         }
 
@@ -57,7 +58,8 @@ public class AuditActionLoggingMiddleware(RequestDelegate next, IAuditEventRecor
             httpVerb,
             httpUrl,
             context.Response.StatusCode,
-            GetTenant(context));
+            GetTenant(context),
+            capture.CapturedJson);
     }
 
     private static TenantConfiguration? GetTenant(HttpContext context) =>

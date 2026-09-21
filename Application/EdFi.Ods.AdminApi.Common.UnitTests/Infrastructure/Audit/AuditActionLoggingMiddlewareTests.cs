@@ -33,13 +33,15 @@ public class AuditActionLoggingMiddlewareTests
     public async Task InvokeAsync_ForPostRequest_RecordsActionEvent()
     {
         var recorder = A.Fake<IAuditEventRecorder>();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
         var middleware = new AuditActionLoggingMiddleware(_ => Task.CompletedTask, recorder);
         var context = BuildContext("POST", "/v3/apiClients", "client-1", 201);
 
-        await middleware.InvokeAsync(context);
+        await middleware.InvokeAsync(context, capture);
 
         A.CallTo(() => recorder.Record(
-            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", 201))
+            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", 201,
+            A<EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy.TenantConfiguration?>._, A<string?>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -47,10 +49,11 @@ public class AuditActionLoggingMiddlewareTests
     public async Task InvokeAsync_ForGetRequest_DoesNotRecordEvent()
     {
         var recorder = A.Fake<IAuditEventRecorder>();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
         var middleware = new AuditActionLoggingMiddleware(_ => Task.CompletedTask, recorder);
         var context = BuildContext("GET", "/v3/apiClients", "client-1", 200);
 
-        await middleware.InvokeAsync(context);
+        await middleware.InvokeAsync(context, capture);
 
         A.CallTo(() => recorder.Record(
             A<AuditEventType>._, A<string?>._, A<string?>._, A<string?>._, A<string?>._, A<int?>._))
@@ -61,13 +64,15 @@ public class AuditActionLoggingMiddlewareTests
     public async Task InvokeAsync_WhenNoClientIdClaim_RecordsNullClientId()
     {
         var recorder = A.Fake<IAuditEventRecorder>();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
         var middleware = new AuditActionLoggingMiddleware(_ => Task.CompletedTask, recorder);
         var context = BuildContext("DELETE", "/v3/apiClients/1", null, 204);
 
-        await middleware.InvokeAsync(context);
+        await middleware.InvokeAsync(context, capture);
 
         A.CallTo(() => recorder.Record(
-            AuditEventType.Action, null, A<string?>._, "DELETE", "/v3/apiClients/1", 204))
+            AuditEventType.Action, null, A<string?>._, "DELETE", "/v3/apiClients/1", 204,
+            A<EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy.TenantConfiguration?>._, A<string?>._))
             .MustHaveHappenedOnceExactly();
     }
 
@@ -75,14 +80,34 @@ public class AuditActionLoggingMiddlewareTests
     public void InvokeAsync_WhenNextThrows_StillRecordsActionEventAndPropagatesException()
     {
         var recorder = A.Fake<IAuditEventRecorder>();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
         var middleware = new AuditActionLoggingMiddleware(
             _ => throw new InvalidOperationException("downstream failure"), recorder);
         var context = BuildContext("POST", "/v3/apiClients", "client-1", 200);
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context));
+        Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context, capture));
 
         A.CallTo(() => recorder.Record(
-            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", StatusCodes.Status500InternalServerError))
+            AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", StatusCodes.Status500InternalServerError,
+            A<EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy.TenantConfiguration?>._, A<string?>._))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public async Task InvokeAsync_ForDeleteRequestWithCapturedSnapshot_RecordsSnapshot()
+    {
+        var recorder = A.Fake<IAuditEventRecorder>();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+        A.CallTo(() => capture.CapturedJson).Returns("{\"Key\":\"client-1\"}");
+        var middleware = new AuditActionLoggingMiddleware(_ => Task.CompletedTask, recorder);
+        var context = BuildContext("DELETE", "/v3/apiClients/1", "client-1", 204);
+
+        await middleware.InvokeAsync(context, capture);
+
+        A.CallTo(() => recorder.Record(
+            AuditEventType.Action, "client-1", A<string?>._, "DELETE", "/v3/apiClients/1", 204,
+            A<EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy.TenantConfiguration?>._,
+            "{\"Key\":\"client-1\"}"))
             .MustHaveHappenedOnceExactly();
     }
 }
