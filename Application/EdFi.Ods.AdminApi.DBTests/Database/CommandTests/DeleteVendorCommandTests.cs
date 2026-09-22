@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
@@ -29,7 +30,7 @@ public class DeleteVendorCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, null);
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, null, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteVendorCommand.Execute(vendorId);
         });
 
@@ -49,8 +50,8 @@ public class DeleteVendorCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteVendorCommand.Execute(vendorId);
         });
 
@@ -72,7 +73,7 @@ public class DeleteVendorCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, null);
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, null, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteVendorCommand.Execute(vendorId);
         });
 

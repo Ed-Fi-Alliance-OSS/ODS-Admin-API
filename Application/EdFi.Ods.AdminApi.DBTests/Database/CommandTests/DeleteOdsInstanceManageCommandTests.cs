@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
@@ -36,7 +37,7 @@ public class DeleteOdsInstanceManageCommandTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var command = new DeleteOdsInstanceManageCommand(context);
+            var command = new DeleteOdsInstanceManageCommand(context, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             command.Execute(instance.Id);
         });
 
@@ -62,7 +63,7 @@ public class DeleteOdsInstanceManageCommandTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var command = new DeleteOdsInstanceManageCommand(context);
+            var command = new DeleteOdsInstanceManageCommand(context, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             command.Execute(instance.Id);
         });
 
@@ -88,7 +89,7 @@ public class DeleteOdsInstanceManageCommandTests : AdminApiDbContextTestBase
 
         Transaction(context =>
         {
-            var command = new DeleteOdsInstanceManageCommand(context);
+            var command = new DeleteOdsInstanceManageCommand(context, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             command.Execute(instance.Id);
         });
 

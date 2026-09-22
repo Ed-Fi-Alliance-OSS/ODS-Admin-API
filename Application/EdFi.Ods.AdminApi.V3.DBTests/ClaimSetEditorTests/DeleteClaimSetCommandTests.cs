@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using Moq;
 using NUnit.Framework;
@@ -36,7 +37,7 @@ public class DeleteClaimSetCommandTests : SecurityDataTestBase
         deleteModel.Setup(x => x.Id).Returns(testClaimSetToDelete.ClaimSetId);
 
         using var securityContext = TestContext;
-        var command = new DeleteClaimSetCommand(securityContext);
+        var command = new DeleteClaimSetCommand(securityContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
         command.Execute(deleteModel.Object);
         var deletedClaimSet = securityContext.ClaimSets.SingleOrDefault(x => x.ClaimSetId == testClaimSetToDelete.ClaimSetId);
         deletedClaimSet.ShouldBeNull();
@@ -79,7 +80,7 @@ public class DeleteClaimSetCommandTests : SecurityDataTestBase
         using var securityContext = TestContext;
         var exception = Assert.Throws<AdminApiException>(() =>
         {
-            var command = new DeleteClaimSetCommand(securityContext);
+            var command = new DeleteClaimSetCommand(securityContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             command.Execute(deleteModel.Object);
         });
         exception.ShouldNotBeNull();

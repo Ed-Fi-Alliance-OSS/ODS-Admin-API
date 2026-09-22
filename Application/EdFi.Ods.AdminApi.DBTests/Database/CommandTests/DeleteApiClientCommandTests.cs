@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using NUnit.Framework;
@@ -46,7 +47,7 @@ internal class DeleteApiClientCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApiClientCommand(usersContext);
+            var deleteApplicationCommand = new DeleteApiClientCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteApplicationCommand.Execute(apiClient.ApiClientId);
         });
 
@@ -93,7 +94,7 @@ internal class DeleteApiClientCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApiClientCommand(usersContext);
+            var deleteApplicationCommand = new DeleteApiClientCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteApplicationCommand.Execute(apiClient.ApiClientId);
         });
 
