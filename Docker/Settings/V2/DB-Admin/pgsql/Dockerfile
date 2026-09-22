@@ -6,7 +6,7 @@
 ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:2a65f96da464f30cc07fa4edd7fe5b6fbfbe314149fc55651de3a2d84dc5faf8
 FROM edfialliance/ods-api-db-admin:7.3.2@sha256:3e248e1a11b352c8ffc00a71cc80e9b9e1dd4a3b3018acabe8e918e56d8a085e AS legacy_assets
 
-FROM alpine:3.22@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce AS prep
+FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS prep
 
 ARG ADMIN_API_VERSION
 ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
@@ -17,7 +17,7 @@ COPY --from=legacy_assets /docker-entrypoint-initdb.d/1-init-database.sh /tmp/1-
 COPY --from=legacy_assets /tmp/EdFi_Admin.sql /tmp/EdFi_Admin.sql
 COPY --from=legacy_assets /tmp/EdFi_Security.sql /tmp/EdFi_Security.sql
 
-RUN apk add --no-cache dos2unix=7.5.2-r0 unzip=6.0-r15 wget=1.25.0-r1 && \
+RUN apk add --no-cache dos2unix=7.5.5-r0 unzip=6.0-r16 wget=1.25.0-r3 && \
     wget -nv -O /tmp/EdFi_AdminApi_Scripts.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed-Fi-Alliance-OSS/_apis/packaging/feeds/EdFi/nuget/packages/EdFi.Suite3.ODS.AdminApi/versions/${VERSION}/content" && \
     # Admin
     mkdir -p /tmp/AdminApiScripts/Admin/ && \
