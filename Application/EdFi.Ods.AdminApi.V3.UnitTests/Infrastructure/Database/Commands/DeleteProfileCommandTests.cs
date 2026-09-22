@@ -44,4 +44,20 @@ public class DeleteProfileCommandTests
         var capture = A.Fake<IDeletedEntityAuditCapture>();
         Should.Throw<NotFoundException<int>>(() => new DeleteProfileCommand(ctx, capture).Execute(9999));
     }
+
+    [Test]
+    public void Execute_RecordsDeletedProfileForAuditCapture()
+    {
+        using var ctx = CreateContext();
+        var profile = new EdFi.Admin.DataAccess.Models.Profile { ProfileName = "P1", ProfileDefinition = "<Profile/>" };
+        ctx.Profiles.Add(profile);
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteProfileCommand(ctx, capture).Execute(profile.ProfileId);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o => ((EdFi.Admin.DataAccess.Models.Profile)o).ProfileId == profile.ProfileId)))
+            .MustHaveHappenedOnceExactly();
+    }
 }
