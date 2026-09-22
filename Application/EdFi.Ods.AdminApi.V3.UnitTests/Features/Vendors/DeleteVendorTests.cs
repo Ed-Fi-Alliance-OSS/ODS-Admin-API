@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Features.Vendors;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -41,7 +42,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
             usersContext.SaveChanges();
 
             var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
             var result = await DeleteVendor.Handle(deleteVendorCommand, vendor.VendorId);
 
@@ -59,7 +60,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
             using var usersContext = new SqlServerUsersContext(contextOptions);
 
             var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+            var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
             Should.Throw<NotFoundException<int>>(() => DeleteVendor.Handle(deleteVendorCommand, 999).GetAwaiter().GetResult());
         }
