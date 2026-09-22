@@ -178,4 +178,35 @@ public class DeleteVendorCommandTests
 
         capture.CapturedJson.ShouldBe("{\"VendorName\":\"Acme Vendor\"}");
     }
+
+    [Test]
+    public void Execute_WithVendorHavingApplications_RealCascadeStillRecordsOnlyTheVendor()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor { VendorName = "Acme Vendor" };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var application = new Application
+        {
+            ApplicationName = "TestApp",
+            ClaimSetName = "CS",
+            OperationalContextUri = string.Empty,
+            Vendor = vendor
+        };
+        usersContext.Applications.Add(application);
+        usersContext.SaveChanges();
+
+        var capture = new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry());
+        var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, capture);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, capture);
+
+        command.Execute(vendor.VendorId);
+
+        capture.CapturedJson.ShouldBe("{\"VendorName\":\"Acme Vendor\"}");
+    }
 }
