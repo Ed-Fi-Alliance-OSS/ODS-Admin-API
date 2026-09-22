@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -16,15 +17,18 @@ public interface IDeleteDataStoreDerivativeCommand
 public class DeleteDataStoreDerivativeCommand : IDeleteDataStoreDerivativeCommand
 {
     private readonly IUsersContext _context;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteDataStoreDerivativeCommand(IUsersContext context)
+    public DeleteDataStoreDerivativeCommand(IUsersContext context, IDeletedEntityAuditCapture capture)
     {
         _context = context;
+        _capture = capture;
     }
 
     public void Execute(int id)
     {
         var odsInstanceDerivative = _context.OdsInstanceDerivatives.SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("DataStoreDerivative", id);
+        _capture.Record(odsInstanceDerivative);
         _context.OdsInstanceDerivatives.Remove(odsInstanceDerivative);
         _context.SaveChanges();
     }
