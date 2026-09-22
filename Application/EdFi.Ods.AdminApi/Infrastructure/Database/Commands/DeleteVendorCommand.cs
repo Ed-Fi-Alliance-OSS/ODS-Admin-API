@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,16 @@ public class DeleteVendorCommand
 {
     private readonly IUsersContext _context;
     private readonly IDeleteApplicationCommand _deleteApplicationCommand;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteVendorCommand(IUsersContext context, IDeleteApplicationCommand deleteApplicationCommand)
+    public DeleteVendorCommand(
+        IUsersContext context,
+        IDeleteApplicationCommand deleteApplicationCommand,
+        IDeletedEntityAuditCapture capture)
     {
         _context = context;
         _deleteApplicationCommand = deleteApplicationCommand;
+        _capture = capture;
     }
 
     public void Execute(int id)
@@ -28,6 +34,8 @@ public class DeleteVendorCommand
             .Include(v => v.VendorNamespacePrefixes)
             .Include(v => v.Users)
             .SingleOrDefault(v => v.VendorId == id) ?? throw new NotFoundException<int>("vendor", id);
+
+        _capture.Record(vendor);
 
         if (vendor.IsSystemReservedVendor())
         {
