@@ -21,7 +21,8 @@ env:
   DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
   REF: ${{ github.ref_name }}
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   pack:

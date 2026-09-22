@@ -15,7 +15,8 @@ on:
         required: true
         type: string
 
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   ARTIFACTS_API_KEY: ${{ secrets.AZURE_ARTIFACTS_PERSONAL_ACCESS_TOKEN }}
