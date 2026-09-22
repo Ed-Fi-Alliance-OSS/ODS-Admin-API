@@ -11,7 +11,7 @@
 FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS assets
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine3.24@sha256:3cc3bbbbf93d82104892f42aa9106b6be4d120346dea0649643a97c801525256 AS build
-RUN apk add --no-cache musl=1.2.5-r12 && \
+RUN apk add --no-cache musl=1.2.6-r2 && \
     rm -rf /var/cache/apk/*
 
 ARG ASPNETCORE_ENVIRONMENT=Production
