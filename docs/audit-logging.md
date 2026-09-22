@@ -67,6 +67,7 @@ entity in `Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/AuditLog.cs
 | `HttpVerb` | `NVARCHAR(10)` | Yes | Populated only for `Action` events (e.g. `POST`, `PUT`, `PATCH`, `DELETE`). Always `null` for both authentication event paths (`/connect/token` and the `OnChallenge` 401 path). |
 | `HttpUrl` | `NVARCHAR(2048)` | Yes | Populated only for `Action` events (the request path). Always `null` for authentication events. |
 | `StatusCode` | `INT` | Yes | Populated for `Action` events (the actual response status code — including 401/403/404/etc. produced by downstream error-handling middleware, or `500` as a last-resort fallback if an exception escapes the entire pipeline unhandled) and for the `OnChallenge` 401 path (always `401`). Always `null` for the `/connect/token` `ApplyTokenResponseContext` handler, since that handler runs before the final HTTP status is finalized. |
+| `DeletedObjectSnapshot` | `NVARCHAR(MAX)` | Yes | Populated only for `Action` events where the HTTP method is `DELETE` and the deleted entity's type is registered in `DeletedEntitySnapshotRegistry`. A JSON object containing only that entity's allowlisted, non-sensitive fields (e.g. `ApiClient.Key`, `Vendor.VendorName`) — never a full/raw dump, and never navigation properties or credential fields (`Secret`, connection strings, etc.). `null` when the entity's type has no registered selector, or when no delete command reached the point of calling `IDeletedEntityAuditCapture.Record`. |
 
 Indexes exist on `Timestamp` and `ClientId` to support the most common
 lookups (recent events, and events for a given client).
@@ -143,13 +144,23 @@ exposes `AuditLogs` data. The only way to read audit records is direct
 database access (e.g. `SELECT * FROM adminapi.AuditLogs`) against the
 relevant `EdFi_Admin` database.
 
+## Deleted-object natural key capture
+
+For `DELETE` requests, `AuditActionLoggingMiddleware` also captures a redacted JSON snapshot of the entity being removed — its `client_id`, name, or other natural key — beyond what `HttpUrl`'s synthetic/database ID already shows.
+
+**Mechanism.** `IDeletedEntitySnapshotRegistry` (`Application/EdFi.Ods.AdminApi.Common/Infrastructure/Audit/DeletedEntitySnapshotRegistry.cs`) holds one typed selector lambda per covered entity type, each returning an anonymous object of only that type's safe fields. This is a typed-selector allowlist rather than a `[SomeAttribute]` on the entity classes themselves, because the real entity types (`ApiClient`, `Vendor`, `Application`, `OdsInstance`, `Profile`, `ClaimSet`, etc.) come from the external `EdFi.Suite3.Admin.DataAccess` / `EdFi.Suite3.Security.DataAccess` NuGet packages — their source isn't part of this repository, so their properties can't be attribute-tagged. An entity type with no registered selector produces no snapshot at all (fail closed).
+
+Every `Delete*Command`, in **both V2 (`EdFi.Ods.AdminApi`) and V3 (`EdFi.Ods.AdminApi.V3`)** — these are independently-implemented command classes per version, both wired individually — takes a scoped `IDeletedEntityAuditCapture` and calls `Record(entity)` immediately after loading the entity it's about to remove. `AuditActionLoggingMiddleware` reads `IDeletedEntityAuditCapture.CapturedJson` after `next()` completes and passes it into `IAuditEventRecorder.Record(...)`.
+
+**Cascading deletes.** `IDeletedEntityAuditCapture.Record` is first-call-wins within a request: the first non-null `Record()` call locks in that entity's snapshot, and every later call in the same request is a no-op. Because a command like `DeleteVendorCommand` calls `Record(vendor)` before cascading into `DeleteApplicationCommand` (and removing the vendor's users/API clients), only the Vendor's snapshot is ever captured for that audit row — the cascaded Application's own `Record()` call is silently skipped. This means only the entity the `DELETE` URL actually targeted is captured, never its cascade-deleted children.
+
+**V1 mode.** Not covered — `AuditActionLoggingMiddleware` isn't registered when `AdminApiMode.V1` is active (see "Audit trail logging is only supported in V2/V3" in `WebApplicationBuilderExtensions.cs`), and V1's delete commands operate on a separate, repo-local model rather than the shared package types the registry covers.
+
 ## Out of scope (current version)
 
 The following are intentionally not part of this feature and may be
 addressed in a future iteration:
 
-* Recording a deleted object's natural key (e.g. an `ApiClient`'s
-  `client_id`) beyond what the `Action` event's `HttpUrl` already captures.
 * Any retention, rotation, purging, or archival policy for audit records —
   rows accumulate indefinitely unless removed by an operator.
 * Any admin UI, reporting dashboard, export tooling, or query API for
