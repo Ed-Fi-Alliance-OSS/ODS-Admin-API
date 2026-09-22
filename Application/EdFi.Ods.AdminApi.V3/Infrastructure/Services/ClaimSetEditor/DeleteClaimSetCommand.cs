@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Security.DataAccess.Contexts;
 
@@ -16,15 +17,20 @@ public interface IDeleteClaimSetCommand
 public class DeleteClaimSetCommand : IDeleteClaimSetCommand
 {
     private readonly ISecurityContext _context;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteClaimSetCommand(ISecurityContext context)
+    public DeleteClaimSetCommand(ISecurityContext context, IDeletedEntityAuditCapture capture)
     {
         _context = context;
+        _capture = capture;
     }
 
     public void Execute(IDeleteClaimSetModel claimSet)
     {
         var claimSetToDelete = _context.ClaimSets.Single(x => x.ClaimSetId == claimSet.Id);
+
+        _capture.Record(claimSetToDelete);
+
         if (claimSetToDelete.ForApplicationUseOnly || claimSetToDelete.IsEdfiPreset)
         {
             throw new AdminApiException($"Claim set({claimSetToDelete.ClaimSetName}) is system reserved. Can not be deleted.");
