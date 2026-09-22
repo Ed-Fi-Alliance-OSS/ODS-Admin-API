@@ -6,8 +6,10 @@ using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -29,7 +31,8 @@ public class DeleteDataStoreCommandTests
         var ods = new OdsInstance { Name = "DS1", InstanceType = "type", ConnectionString = "cs" };
         ctx.OdsInstances.Add(ods);
         ctx.SaveChanges();
-        new DeleteDataStoreCommand(ctx).Execute(ods.OdsInstanceId);
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+        new DeleteDataStoreCommand(ctx, capture).Execute(ods.OdsInstanceId);
         ctx.OdsInstances.Count().ShouldBe(0);
     }
 
@@ -37,6 +40,23 @@ public class DeleteDataStoreCommandTests
     public void Execute_WhenNotFound_ThrowsNotFoundException()
     {
         using var ctx = CreateContext();
-        Should.Throw<NotFoundException<int>>(() => new DeleteDataStoreCommand(ctx).Execute(9999));
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+        Should.Throw<NotFoundException<int>>(() => new DeleteDataStoreCommand(ctx, capture).Execute(9999));
+    }
+
+    [Test]
+    public void Execute_RecordsDeletedDataStoreForAuditCapture()
+    {
+        using var ctx = CreateContext();
+        var instance = new OdsInstance { Name = "ODS1", InstanceType = "Ods", ConnectionString = "cs" };
+        ctx.OdsInstances.Add(instance);
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteDataStoreCommand(ctx, capture).Execute(instance.OdsInstanceId);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o => ((OdsInstance)o).OdsInstanceId == instance.OdsInstanceId)))
+            .MustHaveHappenedOnceExactly();
     }
 }
