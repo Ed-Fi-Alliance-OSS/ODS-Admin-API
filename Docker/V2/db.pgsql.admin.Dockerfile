@@ -4,7 +4,7 @@
 # See the LICENSE and NOTICES files in the project root for more information.
 
 ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:6a16c62599f5f6d560685d56a733496b0c8451c8afb9255e31fefdd32c7d6d52
-FROM edfialliance/ods-api-db-admin:7.3.1@sha256:acc254de6cf385c23c9e6149c0cdc730ca414c7d04435df4cd78fc5540d4b176 AS legacy_assets
+FROM edfialliance/ods-api-db-admin:7.3.2@sha256:3e248e1a11b352c8ffc00a71cc80e9b9e1dd4a3b3018acabe8e918e56d8a085e AS legacy_assets
 
 FROM alpine:3.22@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce AS prep
 
