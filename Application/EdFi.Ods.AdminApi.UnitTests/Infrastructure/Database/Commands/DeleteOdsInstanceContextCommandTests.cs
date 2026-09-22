@@ -6,8 +6,10 @@ using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -31,7 +33,7 @@ public class DeleteOdsInstanceContextCommandTests
         var oic = new OdsInstanceContext { OdsInstance = ods, ContextKey = "k", ContextValue = "v" };
         ctx.OdsInstanceContexts.Add(oic);
         ctx.SaveChanges();
-        new DeleteOdsInstanceContextCommand(ctx).Execute(oic.OdsInstanceContextId);
+        new DeleteOdsInstanceContextCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(oic.OdsInstanceContextId);
         ctx.OdsInstanceContexts.Count().ShouldBe(0);
     }
 
@@ -39,6 +41,24 @@ public class DeleteOdsInstanceContextCommandTests
     public void Execute_WhenNotFound_ThrowsNotFoundException()
     {
         using var ctx = CreateContext();
-        Should.Throw<NotFoundException<int>>(() => new DeleteOdsInstanceContextCommand(ctx).Execute(9999));
+        Should.Throw<NotFoundException<int>>(() => new DeleteOdsInstanceContextCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(9999));
+    }
+
+    [Test]
+    public void Execute_RecordsDeletedOdsInstanceContextForAuditCapture()
+    {
+        using var ctx = CreateContext();
+        var instance = new OdsInstance { Name = "ODS1", InstanceType = "Ods", ConnectionString = "cs" };
+        ctx.OdsInstances.Add(instance);
+        var context = new OdsInstanceContext { OdsInstance = instance, ContextKey = "ContextKey1", ContextValue = "ContextValue1" };
+        ctx.OdsInstanceContexts.Add(context);
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteOdsInstanceContextCommand(ctx, capture).Execute(context.OdsInstanceContextId);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o => ((OdsInstanceContext)o).OdsInstanceContextId == context.OdsInstanceContextId)))
+            .MustHaveHappenedOnceExactly();
     }
 }
