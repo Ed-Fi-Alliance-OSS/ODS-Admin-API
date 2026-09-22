@@ -7,10 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
@@ -50,7 +52,7 @@ public class DeleteOdsInstanceManageCommandTests
         context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteOdsInstanceManageCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context, A.Fake<IDeletedEntityAuditCapture>());
         command.Execute(instance.Id);
 
         var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
@@ -72,7 +74,7 @@ public class DeleteOdsInstanceManageCommandTests
         context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteOdsInstanceManageCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context, A.Fake<IDeletedEntityAuditCapture>());
         command.Execute(instance.Id);
 
         var updated = context.OdsInstanceManages.Single(d => d.Id == instance.Id);
@@ -84,7 +86,7 @@ public class DeleteOdsInstanceManageCommandTests
     public void Execute_WithNonExistentId_ThrowsNotFoundException()
     {
         using var context = CreateContext();
-        var command = new DeleteOdsInstanceManageCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context, A.Fake<IDeletedEntityAuditCapture>());
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(9999));
     }
@@ -103,9 +105,30 @@ public class DeleteOdsInstanceManageCommandTests
         context.OdsInstanceManages.Add(instance);
         context.SaveChanges();
 
-        var command = new DeleteOdsInstanceManageCommand(context);
+        var command = new DeleteOdsInstanceManageCommand(context, A.Fake<IDeletedEntityAuditCapture>());
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(instance.Id));
+    }
+
+    [Test]
+    public void Execute_RecordsOdsInstanceManageForAuditCapture()
+    {
+        using var ctx = CreateContext();
+        var manage = new OdsInstanceManage
+        {
+            Name = "Instance1",
+            Status = OdsInstanceManageStatus.Created.ToString(),
+            DatabaseTemplate = "Template1"
+        };
+        ctx.OdsInstanceManages.Add(manage);
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteOdsInstanceManageCommand(ctx, capture).Execute(manage.Id);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o => ((OdsInstanceManage)o).Id == manage.Id)))
+            .MustHaveHappenedOnceExactly();
     }
 }
 
