@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -29,7 +30,7 @@ public class DeleteVendorCommandTests
         using var usersContext = new SqlServerUsersContext(contextOptions);
 
         var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
         Should.Throw<NotFoundException<int>>(() => command.Execute(999));
     }
@@ -54,7 +55,7 @@ public class DeleteVendorCommandTests
         usersContext.SaveChanges();
 
         var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
         command.Execute(vendor.VendorId);
 
@@ -78,7 +79,7 @@ public class DeleteVendorCommandTests
         usersContext.SaveChanges();
 
         var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
         Should.Throw<ArgumentException>(() => command.Execute(vendor.VendorId));
         usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeTrue();
@@ -109,7 +110,7 @@ public class DeleteVendorCommandTests
         usersContext.SaveChanges();
 
         var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
         command.Execute(vendor.VendorId);
 
@@ -139,12 +140,73 @@ public class DeleteVendorCommandTests
         usersContext.SaveChanges();
 
         var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
-        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
 
         command.Execute(vendor.VendorId);
 
         usersContext.Vendors.Any(v => v.VendorId == vendor.VendorId).ShouldBeFalse();
         usersContext.ApiClients.Any(c => c.ApiClientId == apiClient.ApiClientId).ShouldBeFalse();
         usersContext.Users.Any().ShouldBeFalse();
+    }
+
+    [Test]
+    public void Execute_WithVendorHavingApplications_RecordsOnlyTheVendorNotTheCascadedApplication()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor { VendorName = "Acme Vendor" };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var application = new Application
+        {
+            ApplicationName = "TestApp",
+            OperationalContextUri = string.Empty,
+            Vendor = vendor
+        };
+        usersContext.Applications.Add(application);
+        usersContext.SaveChanges();
+
+        var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
+        var capture = new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry());
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, capture);
+
+        command.Execute(vendor.VendorId);
+
+        capture.CapturedJson.ShouldBe("{\"VendorName\":\"Acme Vendor\"}");
+    }
+
+    [Test]
+    public void Execute_WithVendorHavingApplications_RealCascadeStillRecordsOnlyTheVendor()
+    {
+        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
+            .Options;
+        using var usersContext = new SqlServerUsersContext(contextOptions);
+
+        var vendor = new Vendor { VendorName = "Acme Vendor" };
+        usersContext.Vendors.Add(vendor);
+        usersContext.SaveChanges();
+
+        var application = new Application
+        {
+            ApplicationName = "TestApp",
+            ClaimSetName = "CS",
+            OperationalContextUri = string.Empty,
+            Vendor = vendor
+        };
+        usersContext.Applications.Add(application);
+        usersContext.SaveChanges();
+
+        var capture = new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry());
+        var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, capture);
+        var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, capture);
+
+        command.Execute(vendor.VendorId);
+
+        capture.CapturedJson.ShouldBe("{\"VendorName\":\"Acme Vendor\"}");
     }
 }

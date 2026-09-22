@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using NUnit.Framework;
@@ -33,7 +34,7 @@ public class DeleteOdsInstanceCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteOdsInstanceCommand = new DeleteOdsInstanceCommand(usersContext);
+            var deleteOdsInstanceCommand = new DeleteOdsInstanceCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteOdsInstanceCommand.Execute(odsInstanceId);
         });
 

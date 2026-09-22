@@ -30,7 +30,8 @@ public class AuditEventRecorder(
         string? httpVerb,
         string? httpUrl,
         int? statusCode,
-        TenantConfiguration? tenant = null)
+        TenantConfiguration? tenant = null,
+        string? deletedObjectSnapshot = null)
     {
         if (!settings.Value.Enabled)
         {
@@ -57,7 +58,8 @@ public class AuditEventRecorder(
                 SourceIpAddress = sourceIpAddress,
                 HttpVerb = httpVerb,
                 HttpUrl = httpUrl,
-                StatusCode = statusCode
+                StatusCode = statusCode,
+                DeletedObjectSnapshot = deletedObjectSnapshot
             };
 
             if (!channel.Writer.TryWrite(auditEvent))

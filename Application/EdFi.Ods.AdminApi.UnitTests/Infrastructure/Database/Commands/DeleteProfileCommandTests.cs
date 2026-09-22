@@ -6,8 +6,10 @@ using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -29,7 +31,7 @@ public class DeleteProfileCommandTests
         var profile = new Profile { ProfileName = "P1" };
         ctx.Profiles.Add(profile);
         ctx.SaveChanges();
-        new DeleteProfileCommand(ctx).Execute(profile.ProfileId);
+        new DeleteProfileCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(profile.ProfileId);
         ctx.Profiles.Count().ShouldBe(0);
     }
 
@@ -37,6 +39,22 @@ public class DeleteProfileCommandTests
     public void Execute_WhenNotFound_ThrowsNotFoundException()
     {
         using var ctx = CreateContext();
-        Should.Throw<NotFoundException<int>>(() => new DeleteProfileCommand(ctx).Execute(9999));
+        Should.Throw<NotFoundException<int>>(() => new DeleteProfileCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(9999));
+    }
+
+    [Test]
+    public void Execute_RecordsDeletedProfileForAuditCapture()
+    {
+        using var ctx = CreateContext();
+        var profile = new Profile { ProfileName = "P1", ProfileDefinition = "<Profile/>" };
+        ctx.Profiles.Add(profile);
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteProfileCommand(ctx, capture).Execute(profile.ProfileId);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o => ((Profile)o).ProfileId == profile.ProfileId)))
+            .MustHaveHappenedOnceExactly();
     }
 }

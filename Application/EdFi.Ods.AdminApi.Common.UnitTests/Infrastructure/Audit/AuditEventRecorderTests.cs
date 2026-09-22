@@ -99,4 +99,23 @@ public class AuditEventRecorderTests
 
         channel.Reader.TryRead(out _).ShouldBeFalse();
     }
+
+    [Test]
+    public void Record_WhenDeletedObjectSnapshotProvided_EnqueuesEventWithSnapshot()
+    {
+        var channel = new AuditLogChannel();
+        var tenantContext = new ContextProvider<TenantConfiguration>(new AsyncLocalContextStorage());
+        var recorder = new AuditEventRecorder(
+            channel,
+            Options.Create(new AuditLoggingSettings { Enabled = true }),
+            tenantContext,
+            BuildConfiguration());
+
+        recorder.Record(
+            AuditEventType.Action, "client-1", "127.0.0.1", "DELETE", "/v3/apiClients/1", 204,
+            deletedObjectSnapshot: "{\"Key\":\"client-1\"}");
+
+        channel.Reader.TryRead(out var auditEvent).ShouldBeTrue();
+        auditEvent!.DeletedObjectSnapshot.ShouldBe("{\"Key\":\"client-1\"}");
+    }
 }

@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using NUnit.Framework;
 using Shouldly;
 using System.Linq;
@@ -24,7 +25,7 @@ public class DeleteResourceClaimOnClaimSetCommandTests : SecurityDataTestBase
         var testResources = SetupClaimSetResourceClaimActions(testClaimSet, parentRcNames, UniqueNameList("ChildRc", 1));
 
         using var securityContext = TestContext;
-        var command = new DeleteResouceClaimOnClaimSetCommand(securityContext);
+        var command = new DeleteResouceClaimOnClaimSetCommand(securityContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
         command.Execute(testClaimSet.ClaimSetId, testResources.First().ResourceClaimId);
 
         var resourceClaimsForClaimSet = ResourceClaimsForClaimSet(testClaimSet.ClaimSetId);

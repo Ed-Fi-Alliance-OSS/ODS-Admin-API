@@ -6,8 +6,10 @@ using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
+using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -31,7 +33,7 @@ public class DeleteOdsInstanceDerivativeCommandTests
         var d = new OdsInstanceDerivative { OdsInstance = ods, DerivativeType = "replica", ConnectionString = "cs2" };
         ctx.OdsInstanceDerivatives.Add(d);
         ctx.SaveChanges();
-        new DeleteOdsInstanceDerivativeCommand(ctx).Execute(d.OdsInstanceDerivativeId);
+        new DeleteOdsInstanceDerivativeCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(d.OdsInstanceDerivativeId);
         ctx.OdsInstanceDerivatives.Count().ShouldBe(0);
     }
 
@@ -39,6 +41,24 @@ public class DeleteOdsInstanceDerivativeCommandTests
     public void Execute_WhenNotFound_ThrowsNotFoundException()
     {
         using var ctx = CreateContext();
-        Should.Throw<NotFoundException<int>>(() => new DeleteOdsInstanceDerivativeCommand(ctx).Execute(9999));
+        Should.Throw<NotFoundException<int>>(() => new DeleteOdsInstanceDerivativeCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(9999));
+    }
+
+    [Test]
+    public void Execute_RecordsDeletedOdsInstanceDerivativeForAuditCapture()
+    {
+        using var ctx = CreateContext();
+        var instance = new OdsInstance { Name = "ODS1", InstanceType = "Ods", ConnectionString = "cs" };
+        ctx.OdsInstances.Add(instance);
+        var derivative = new OdsInstanceDerivative { OdsInstance = instance, DerivativeType = "ReadReplica", ConnectionString = "cs2" };
+        ctx.OdsInstanceDerivatives.Add(derivative);
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteOdsInstanceDerivativeCommand(ctx, capture).Execute(derivative.OdsInstanceDerivativeId);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o => ((OdsInstanceDerivative)o).OdsInstanceDerivativeId == derivative.OdsInstanceDerivativeId)))
+            .MustHaveHappenedOnceExactly();
     }
 }

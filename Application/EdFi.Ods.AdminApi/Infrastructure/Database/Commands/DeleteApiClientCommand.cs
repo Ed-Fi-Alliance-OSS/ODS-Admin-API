@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
@@ -16,16 +17,20 @@ public interface IDeleteApiClientCommand
 public class DeleteApiClientCommand : IDeleteApiClientCommand
 {
     private readonly IUsersContext _context;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteApiClientCommand(IUsersContext context)
+    public DeleteApiClientCommand(IUsersContext context, IDeletedEntityAuditCapture capture)
     {
         _context = context;
+        _capture = capture;
     }
 
     public void Execute(int id)
     {
         var apiClient = _context.ApiClients
             .SingleOrDefault(a => a.ApiClientId == id) ?? throw new NotFoundException<int>("apiclient", id);
+
+        _capture.Record(apiClient);
 
         var currentClientAccessTokens = _context.ClientAccessTokens.Where(o => apiClient.ApiClientId.Equals(o.ApiClient.ApiClientId));
 

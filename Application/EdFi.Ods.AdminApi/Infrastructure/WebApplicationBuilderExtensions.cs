@@ -72,6 +72,8 @@ public static class WebApplicationBuilderExtensions
         webApplicationBuilder.Services.Configure<AuditLoggingSettings>(config.GetSection("AuditLogging"));
         webApplicationBuilder.Services.AddSingleton<AuditLogChannel>();
         webApplicationBuilder.Services.AddSingleton<IAuditEventRecorder, AuditEventRecorder>();
+        webApplicationBuilder.Services.AddSingleton<IDeletedEntitySnapshotRegistry, DeletedEntitySnapshotRegistry>();
+        webApplicationBuilder.Services.AddScoped<IDeletedEntityAuditCapture, DeletedEntityAuditCapture>();
         EnableMultiTenancySupport(webApplicationBuilder);
 
         var adminApiMode = config.GetValue<AdminApiMode>("AppSettings:AdminApiMode", AdminApiMode.V2);

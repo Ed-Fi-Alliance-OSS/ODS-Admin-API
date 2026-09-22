@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
-using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
 using EdFi.Security.DataAccess.Contexts;
 using SecurityClaimSet = EdFi.Security.DataAccess.Models.ClaimSet;
 using FakeItEasy;
@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
 
-namespace EdFi.Ods.AdminApi.UnitTests.Infrastructure.ClaimSetEditor;
+namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.ClaimSetEditor;
 
 [TestFixture]
 public class DeleteClaimSetCommandTests
@@ -32,7 +32,8 @@ public class DeleteClaimSetCommandTests
         var cs = new SecurityClaimSet { ClaimSetName = "CS1", IsEdfiPreset = false, ForApplicationUseOnly = false };
         ctx.ClaimSets.Add(cs);
         ctx.SaveChanges();
-        new DeleteClaimSetCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(new DeleteClaimSetModelStub { Id = cs.ClaimSetId, Name = "CS1" });
+        new DeleteClaimSetCommand(ctx, A.Fake<IDeletedEntityAuditCapture>())
+            .Execute(new DeleteClaimSetModelStub { Id = cs.ClaimSetId, Name = "CS1" });
         ctx.ClaimSets.Count().ShouldBe(0);
     }
 
@@ -43,7 +44,8 @@ public class DeleteClaimSetCommandTests
         var cs = new SecurityClaimSet { ClaimSetName = "SystemCS", IsEdfiPreset = true, ForApplicationUseOnly = false };
         ctx.ClaimSets.Add(cs);
         ctx.SaveChanges();
-        Should.Throw<AdminApiException>(() => new DeleteClaimSetCommand(ctx, A.Fake<IDeletedEntityAuditCapture>()).Execute(new DeleteClaimSetModelStub { Id = cs.ClaimSetId, Name = "SystemCS" }));
+        Should.Throw<AdminApiException>(() => new DeleteClaimSetCommand(ctx, A.Fake<IDeletedEntityAuditCapture>())
+            .Execute(new DeleteClaimSetModelStub { Id = cs.ClaimSetId, Name = "SystemCS" }));
     }
 
     [Test]

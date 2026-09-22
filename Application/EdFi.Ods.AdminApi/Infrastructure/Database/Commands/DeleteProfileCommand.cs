@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
@@ -16,15 +17,18 @@ public interface IDeleteProfileCommand
 public class DeleteProfileCommand : IDeleteProfileCommand
 {
     private readonly IUsersContext _context;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteProfileCommand(IUsersContext context)
+    public DeleteProfileCommand(IUsersContext context, IDeletedEntityAuditCapture capture)
     {
         _context = context;
+        _capture = capture;
     }
 
     public void Execute(int id)
     {
         var profile = _context.Profiles.SingleOrDefault(v => v.ProfileId == id) ?? throw new NotFoundException<int>("profile", id);
+        _capture.Record(profile);
         _context.Profiles.Remove(profile);
         _context.SaveChanges();
     }

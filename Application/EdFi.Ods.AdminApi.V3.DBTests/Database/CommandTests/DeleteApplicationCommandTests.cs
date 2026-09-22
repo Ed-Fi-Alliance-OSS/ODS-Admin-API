@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -30,7 +31,7 @@ public class DeleteApplicationCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteApplicationCommand.Execute(applicationId);
         });
 
@@ -93,7 +94,7 @@ public class DeleteApplicationCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteApplicationCommand.Execute(applicationId);
         });
 
@@ -139,7 +140,7 @@ public class DeleteApplicationCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteApplicationCommand.Execute(applicationId);
         });
 
@@ -164,7 +165,7 @@ public class DeleteApplicationCommandTests : PlatformUsersContextTestBase
 
         Transaction(usersContext =>
         {
-            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext);
+            var deleteApplicationCommand = new DeleteApplicationCommand(usersContext, new DeletedEntityAuditCapture(new DeletedEntitySnapshotRegistry()));
             deleteApplicationCommand.Execute(applicationId);
         });
 

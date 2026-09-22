@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +19,12 @@ public interface IDeleteApplicationCommand
 public class DeleteApplicationCommand : IDeleteApplicationCommand
 {
     private readonly IUsersContext _context;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteApplicationCommand(IUsersContext context)
+    public DeleteApplicationCommand(IUsersContext context, IDeletedEntityAuditCapture capture)
     {
         _context = context;
+        _capture = capture;
     }
 
     public void Execute(int id)
@@ -30,7 +33,10 @@ public class DeleteApplicationCommand : IDeleteApplicationCommand
             .Include(a => a.ApiClients)
             .Include(a => a.ApplicationEducationOrganizations)
             .Include(a => a.Profiles)
+            .Include(a => a.Vendor)
             .SingleOrDefault(a => a.ApplicationId == id) ?? throw new NotFoundException<int>("application", id);
+
+        _capture.Record(application);
 
         if (application != null && application.Vendor.IsSystemReservedVendor())
         {

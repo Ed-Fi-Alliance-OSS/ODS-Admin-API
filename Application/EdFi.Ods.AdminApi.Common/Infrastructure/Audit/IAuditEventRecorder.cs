@@ -16,5 +16,6 @@ public interface IAuditEventRecorder
         string? httpVerb,
         string? httpUrl,
         int? statusCode,
-        TenantConfiguration? tenant = null);
+        TenantConfiguration? tenant = null,
+        string? deletedObjectSnapshot = null);
 }

@@ -5,6 +5,7 @@
 
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -17,10 +18,12 @@ public interface IDeleteDataStoreManageCommand
 public class DeleteDataStoreManageCommand : IDeleteDataStoreManageCommand
 {
     private readonly AdminApiDbContext _context;
+    private readonly IDeletedEntityAuditCapture _capture;
 
-    public DeleteDataStoreManageCommand(AdminApiDbContext context)
+    public DeleteDataStoreManageCommand(AdminApiDbContext context, IDeletedEntityAuditCapture capture)
     {
         _context = context;
+        _capture = capture;
     }
 
     public void Execute(int id)
@@ -28,6 +31,8 @@ public class DeleteDataStoreManageCommand : IDeleteDataStoreManageCommand
         var odsInstanceManage =
             _context.OdsInstanceManages.Find(id)
             ?? throw new NotFoundException<int>("dataStoreManage", id);
+
+        _capture.Record(odsInstanceManage);
 
         if (odsInstanceManage.Status == OdsInstanceManageStatus.Deleted.ToString())
             throw new NotFoundException<int>("dataStoreManage", id);
