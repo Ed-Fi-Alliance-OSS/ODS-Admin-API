@@ -29,7 +29,18 @@ public class DeleteResouceClaimOnClaimSetCommand : IDeleteResouceClaimOnClaimSet
         var resourceClaimsForClaimSetId =
                   _context.ClaimSetResourceClaimActions.Where(x => x.ClaimSetId == claimSetId && x.ResourceClaimId == resourceClaimId).ToList();
 
-        _capture.Record(resourceClaimsForClaimSetId.FirstOrDefault());
+        if (resourceClaimsForClaimSetId.Count > 0)
+        {
+            // The URL already carries ClaimSetId/ResourceClaimId; what's missing from the
+            // audit trail is their natural names plus the full set of action rows this
+            // request removes (not just one representative row's ActionId).
+            var claimSet = _context.ClaimSets.SingleOrDefault(cs => cs.ClaimSetId == claimSetId);
+            var resourceClaim = _context.ResourceClaims.SingleOrDefault(rc => rc.ResourceClaimId == resourceClaimId);
+            _capture.Record(new DeletedClaimSetResourceClaimAssociation(
+                claimSet?.ClaimSetName,
+                resourceClaim?.ResourceName,
+                resourceClaimsForClaimSetId.Select(x => x.ActionId).ToList()));
+        }
 
         foreach (var resourceClaimAction in resourceClaimsForClaimSetId)
         {

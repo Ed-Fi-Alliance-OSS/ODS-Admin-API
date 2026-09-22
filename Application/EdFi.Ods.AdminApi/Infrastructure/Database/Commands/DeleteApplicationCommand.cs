@@ -33,6 +33,7 @@ public class DeleteApplicationCommand : IDeleteApplicationCommand
             .Include(a => a.ApiClients)
             .Include(a => a.ApplicationEducationOrganizations)
             .Include(a => a.Profiles)
+            .Include(a => a.Vendor)
             .SingleOrDefault(a => a.ApplicationId == id) ?? throw new NotFoundException<int>("application", id);
 
         _capture.Record(application);

@@ -49,7 +49,7 @@ public class DeleteResouceClaimOnClaimSetCommandTests
     }
 
     [Test]
-    public void Execute_RecordsFirstMatchingRowForAuditCapture()
+    public void Execute_RecordsClaimSetAndResourceClaimNamesForAuditCapture()
     {
         using var ctx = CreateContext();
         var claimSet = new ClaimSet { ClaimSetName = "CS1" };
@@ -71,8 +71,33 @@ public class DeleteResouceClaimOnClaimSetCommandTests
 
         A.CallTo(() => capture.Record(
             A<object>.That.Matches(o =>
-                ((ClaimSetResourceClaimAction)o).ClaimSetId == claimSet.ClaimSetId
-                && ((ClaimSetResourceClaimAction)o).ResourceClaimId == resourceClaim.ResourceClaimId)))
+                ((DeletedClaimSetResourceClaimAssociation)o).ClaimSetName == claimSet.ClaimSetName
+                && ((DeletedClaimSetResourceClaimAssociation)o).ResourceClaimName == resourceClaim.ResourceName)))
+            .MustHaveHappenedOnceExactly();
+    }
+
+    [Test]
+    public void Execute_WithMultipleActionRows_RecordsTheCompleteActionSet()
+    {
+        using var ctx = CreateContext();
+        var claimSet = new ClaimSet { ClaimSetName = "CS1" };
+        var resourceClaim = new ResourceClaim { ResourceName = "Resource1", ClaimName = "Claim1" };
+        ctx.ClaimSets.Add(claimSet);
+        ctx.ResourceClaims.Add(resourceClaim);
+        ctx.SaveChanges();
+        ctx.ClaimSetResourceClaimActions.AddRange(
+            new ClaimSetResourceClaimAction { ClaimSetId = claimSet.ClaimSetId, ResourceClaimId = resourceClaim.ResourceClaimId, ActionId = 1 },
+            new ClaimSetResourceClaimAction { ClaimSetId = claimSet.ClaimSetId, ResourceClaimId = resourceClaim.ResourceClaimId, ActionId = 2 },
+            new ClaimSetResourceClaimAction { ClaimSetId = claimSet.ClaimSetId, ResourceClaimId = resourceClaim.ResourceClaimId, ActionId = 3 });
+        ctx.SaveChanges();
+        var capture = A.Fake<IDeletedEntityAuditCapture>();
+
+        new DeleteResouceClaimOnClaimSetCommand(ctx, capture)
+            .Execute(claimSet.ClaimSetId, resourceClaim.ResourceClaimId);
+
+        A.CallTo(() => capture.Record(
+            A<object>.That.Matches(o =>
+                ((DeletedClaimSetResourceClaimAssociation)o).ActionIds.OrderBy(id => id).SequenceEqual(new[] { 1, 2, 3 }))))
             .MustHaveHappenedOnceExactly();
     }
 }

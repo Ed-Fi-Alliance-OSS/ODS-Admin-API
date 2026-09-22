@@ -6,6 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
@@ -27,7 +28,9 @@ public class DeleteDataStoreContextCommand : IDeleteDataStoreContextCommand
 
     public void Execute(int id)
     {
-        var odsInstanceContext = _context.OdsInstanceContexts.SingleOrDefault(v => v.OdsInstanceContextId == id) ?? throw new NotFoundException<int>("DataStoreContext", id);
+        var odsInstanceContext = _context.OdsInstanceContexts
+            .Include(c => c.OdsInstance)
+            .SingleOrDefault(v => v.OdsInstanceContextId == id) ?? throw new NotFoundException<int>("DataStoreContext", id);
         _capture.Record(odsInstanceContext);
         _context.OdsInstanceContexts.Remove(odsInstanceContext);
         _context.SaveChanges();

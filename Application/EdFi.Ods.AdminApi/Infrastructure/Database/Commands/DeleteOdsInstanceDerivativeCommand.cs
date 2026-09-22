@@ -6,6 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 
@@ -27,7 +28,9 @@ public class DeleteOdsInstanceDerivativeCommand : IDeleteOdsInstanceDerivativeCo
 
     public void Execute(int id)
     {
-        var odsInstanceDerivative = _context.OdsInstanceDerivatives.SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("odsInstanceDerivative", id);
+        var odsInstanceDerivative = _context.OdsInstanceDerivatives
+            .Include(d => d.OdsInstance)
+            .SingleOrDefault(v => v.OdsInstanceDerivativeId == id) ?? throw new NotFoundException<int>("odsInstanceDerivative", id);
         _capture.Record(odsInstanceDerivative);
         _context.OdsInstanceDerivatives.Remove(odsInstanceDerivative);
         _context.SaveChanges();

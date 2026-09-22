@@ -25,8 +25,12 @@ public class DeletedEntitySnapshotRegistry : IDeletedEntitySnapshotRegistry
         },
         [typeof(Application)] = o =>
         {
+            // ApplicationName is only unique within a vendor (see AddApplicationCommand's
+            // VendorId+ApplicationName uniqueness check), so the vendor name is required to
+            // make this snapshot's key actually identify the deleted object. Requires the
+            // caller to have loaded Vendor (see DeleteApplicationCommand's .Include(a => a.Vendor)).
             var a = (Application)o;
-            return new { a.ApplicationName, a.ClaimSetName, a.OperationalContextUri };
+            return new { a.ApplicationName, a.ClaimSetName, a.OperationalContextUri, VendorName = a.Vendor.VendorName };
         },
         [typeof(OdsInstance)] = o =>
         {
@@ -35,13 +39,19 @@ public class DeletedEntitySnapshotRegistry : IDeletedEntitySnapshotRegistry
         },
         [typeof(OdsInstanceDerivative)] = o =>
         {
+            // DerivativeType is only unique within an OdsInstance (see AddOdsInstanceDerivative's
+            // OdsInstanceId+DerivativeType uniqueness check). Requires the caller to have loaded
+            // OdsInstance (see DeleteOdsInstanceDerivativeCommand's .Include(d => d.OdsInstance)).
             var d = (OdsInstanceDerivative)o;
-            return new { d.DerivativeType };
+            return new { d.DerivativeType, OdsInstanceName = d.OdsInstance.Name };
         },
         [typeof(OdsInstanceContext)] = o =>
         {
+            // ContextKey is only unique within an OdsInstance (see AddOdsInstanceContext's
+            // OdsInstanceId+ContextKey uniqueness check). Requires the caller to have loaded
+            // OdsInstance (see DeleteOdsInstanceContextCommand's .Include(c => c.OdsInstance)).
             var c = (OdsInstanceContext)o;
-            return new { c.ContextKey, c.ContextValue };
+            return new { c.ContextKey, c.ContextValue, OdsInstanceName = c.OdsInstance.Name };
         },
         [typeof(Profile)] = o =>
         {
@@ -58,10 +68,16 @@ public class DeletedEntitySnapshotRegistry : IDeletedEntitySnapshotRegistry
             var c = (ClaimSet)o;
             return new { c.ClaimSetName, c.IsEdfiPreset, c.ForApplicationUseOnly };
         },
-        [typeof(ClaimSetResourceClaimAction)] = o =>
+        [typeof(DeletedClaimSetResourceClaimAssociation)] = o =>
         {
-            var a = (ClaimSetResourceClaimAction)o;
-            return new { a.ClaimSetId, a.ResourceClaimId, a.ActionId };
+            // Unlike the other entries, this isn't a raw EF entity: the caller builds this
+            // small DTO explicitly (see DeleteResouceClaimOnClaimSetCommand) because the
+            // command removes potentially several ClaimSetResourceClaimAction rows sharing
+            // one ClaimSetId/ResourceClaimId, and the URL already carries those two IDs -
+            // what's missing from the audit trail is the claim set/resource claim's natural
+            // names and the full set of deleted action IDs, not another representative row.
+            var a = (DeletedClaimSetResourceClaimAssociation)o;
+            return new { a.ClaimSetName, a.ResourceClaimName, a.ActionIds };
         }
     };
 
