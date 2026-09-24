@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Security;
@@ -21,24 +21,25 @@ public class TokenEndpointBodyDescriptionFilter : IOperationFilter
         if (descriptor?.ControllerName != "Connect" || descriptor.ActionName != "Token")
             return;
 
-        operation.RequestBody ??= new OpenApiRequestBody();
-        operation.RequestBody.Content = new Dictionary<string, OpenApiMediaType>
+        var requestBody = operation.RequestBody as OpenApiRequestBody ?? new OpenApiRequestBody();
+        requestBody.Content = new Dictionary<string, OpenApiMediaType>
         {
             { "application/x-www-form-urlencoded", BuildTokenRequestBodyDescription() }
         };
+        operation.RequestBody = requestBody;
     }
 
     private static OpenApiMediaType BuildTokenRequestBodyDescription() => new()
     {
         Schema = new OpenApiSchema
         {
-            Type = "object",
-            Properties = new Dictionary<string, OpenApiSchema>
+            Type = JsonSchemaType.Object,
+            Properties = new Dictionary<string, IOpenApiSchema>
             {
-                { "client_id", new OpenApiSchema { Type = "string"} },
-                { "client_secret", new OpenApiSchema { Type = "string"} },
-                { "grant_type", new OpenApiSchema { Type = "string"} },
-                { "scope", new OpenApiSchema { Type = "string"} },
+                { "client_id", new OpenApiSchema { Type = JsonSchemaType.String } },
+                { "client_secret", new OpenApiSchema { Type = JsonSchemaType.String } },
+                { "grant_type", new OpenApiSchema { Type = JsonSchemaType.String } },
+                { "scope", new OpenApiSchema { Type = JsonSchemaType.String } },
             }
         }
     };

@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using EdFi.Ods.AdminApi.Common.Infrastructure;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Documentation;
@@ -21,22 +21,23 @@ public class LocationHeaderOperationFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        var statusCode = LocationHeaderStatusCodes.FirstOrDefault(operation.Responses.ContainsKey);
-        if (statusCode is null)
+        if (operation.Responses is null)
             return;
 
-        var response = operation.Responses[statusCode];
+        var statusCode = LocationHeaderStatusCodes.FirstOrDefault(operation.Responses.ContainsKey);
+        if (statusCode is null || operation.Responses[statusCode] is not OpenApiResponse response)
+            return;
 
         var descriptionOverride = context.ApiDescription.ActionDescriptor.EndpointMetadata
             .OfType<LocationHeaderDescriptionMetadata>()
             .FirstOrDefault()
             ?.Description;
 
-        response.Headers ??= new Dictionary<string, OpenApiHeader>();
+        response.Headers ??= new Dictionary<string, IOpenApiHeader>();
         response.Headers["Location"] = new OpenApiHeader
         {
             Description = descriptionOverride ?? DefaultDescription,
-            Schema = new OpenApiSchema { Type = "string", Format = "uri" }
+            Schema = new OpenApiSchema { Type = JsonSchemaType.String, Format = "uri" }
         };
     }
 }
