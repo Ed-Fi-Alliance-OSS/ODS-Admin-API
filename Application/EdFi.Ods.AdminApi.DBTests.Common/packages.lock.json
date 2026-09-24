@@ -527,7 +527,7 @@
       },
       "Azure.Identity": {
         "type": "CentralTransitive",
-        "requested": "[1.14.2, )",
+        "requested": "[1.17.1, )",
         "resolved": "1.17.1",
         "contentHash": "MSZkBrctcpiGxs9Cvr2VKKoN6qFLZlP3I6xuCWJ9iTgitI5Rgxtk5gfOSpXPZE3+CJmZ/mnqpQyGyjawFn5Vvg==",
         "dependencies": {
@@ -677,7 +677,7 @@
       },
       "Microsoft.Identity.Client": {
         "type": "CentralTransitive",
-        "requested": "[4.73.1, )",
+        "requested": "[4.84.2, )",
         "resolved": "4.84.2",
         "contentHash": "Va9FjmABSgj/lcUfHH0pBNQkmS7SNyepz2ERV7Yynp6QgEYpFdSqR6Vzy1WWipN8GS5pBHuXoZbqaDWuARCrHQ==",
         "dependencies": {

@@ -13,7 +13,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
 
     <!-- Azure -->
-    <PackageVersion Include="Azure.Identity" Version="1.14.2" />
+    <PackageVersion Include="Azure.Identity" Version="1.17.1" />
     <!-- Testing -->
     <PackageVersion Include="Dapper" Version="2.1.72" />
     <PackageVersion Include="coverlet.collector" Version="8.0.1" />
@@ -45,7 +45,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="10.0.0" />
     <!-- Microsoft Core -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.6" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.73.1" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.84.2" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="170.11.0" />
     <!-- Code Analysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
