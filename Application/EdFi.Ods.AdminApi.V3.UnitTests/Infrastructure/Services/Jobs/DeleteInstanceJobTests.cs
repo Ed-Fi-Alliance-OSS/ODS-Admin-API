@@ -88,7 +88,7 @@ public class DeleteInstanceJobTests
 
         if (!string.IsNullOrWhiteSpace(tenantName))
         {
-            jobDataMap.Put(JobConstants.TenantNameKey, tenantName);
+            jobDataMap[JobConstants.TenantNameKey] = tenantName;
         }
 
         A.CallTo(() => jobDetail.Key).Returns(new JobKey(JobConstants.DeleteInstanceJobName));
