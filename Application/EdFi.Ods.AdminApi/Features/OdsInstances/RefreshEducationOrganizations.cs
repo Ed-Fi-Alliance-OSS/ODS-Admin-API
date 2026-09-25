@@ -64,10 +64,10 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var response = new
+        var response = new JobQueuedResult
         {
-            jobId,
-            message = "Education organizations refresh has been queued for all instances"
+            JobId = jobId,
+            Message = "Education organizations refresh has been queued for all instances"
         };
         var locationUri = $"/v2/jobs/{jobId}";
 
@@ -106,10 +106,10 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var response = new
+        var response = new JobQueuedResult
         {
-            jobId,
-            message = "Education organizations refresh has been queued for the specified instance"
+            JobId = jobId,
+            Message = "Education organizations refresh has been queued for the specified instance"
         };
         var locationUri = $"/v2/jobs/{jobId}";
 

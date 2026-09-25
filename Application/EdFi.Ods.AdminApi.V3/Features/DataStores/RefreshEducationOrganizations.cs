@@ -18,12 +18,6 @@ namespace EdFi.Ods.AdminApi.V3.Features.DataStores;
 
 public class RefreshEducationOrganizations : IFeature
 {
-    public class JobQueuedResult
-    {
-        public string JobId { get; set; } = null!;
-        public string Message { get; set; } = null!;
-    }
-
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
         AdminApiEndpointBuilder

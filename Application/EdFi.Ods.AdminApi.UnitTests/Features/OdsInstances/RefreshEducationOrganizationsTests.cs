@@ -8,11 +8,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Features.OdsInstances;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
 using FakeItEasy;
+using Microsoft.AspNetCore.Http.HttpResults;
 using NUnit.Framework;
 using Quartz;
 using Shouldly;
@@ -36,6 +39,7 @@ public class RefreshEducationOrganizationsTests
         _schedulerFactory = new TestSchedulerFactory(_scheduler);
     }
 
+#nullable enable
     [Test]
     public async Task RefreshAllEducationOrganizations_ReturnsAcceptedResult()
     {
@@ -43,6 +47,10 @@ public class RefreshEducationOrganizationsTests
         var tenantConfiguration = new TenantConfiguration { TenantIdentifier = "EdFi_Admin" };
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfiguration);
         A.CallTo(() => _scheduler.SchedulerInstanceId).Returns("QuartzWorkerPool:localhost.localdomain1-1234567890");
+        IJobDetail? scheduledJob = null;
+        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
+            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
 
         // Act
         var result = await RefreshEducationOrganizations.RefreshAllEducationOrganizations(
@@ -50,10 +58,12 @@ public class RefreshEducationOrganizationsTests
             _tenantConfigurationProvider);
 
         // Assert
-        result.ShouldNotBeNull();
-        // Verify the handler was called and returned something
-        var resultType = result.GetType().Name;
-        resultType.ShouldContain("Accepted");
+        var accepted = result.ShouldBeOfType<Accepted<JobQueuedResult>>();
+        var response = accepted.Value.ShouldNotBeNull();
+        response.JobId.ShouldNotBeNullOrWhiteSpace();
+        response.Message.ShouldBe("Education organizations refresh has been queued for all instances");
+        scheduledJob.ShouldNotBeNull();
+        scheduledJob!.JobDataMap.GetString(JobConstants.RunIdKey).ShouldBe(response.JobId);
     }
 
     [Test]
@@ -67,6 +77,10 @@ public class RefreshEducationOrganizationsTests
         var tenantConfiguration = new TenantConfiguration { TenantIdentifier = "EdFi_Admin" };
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfiguration);
         A.CallTo(() => _scheduler.SchedulerInstanceId).Returns("QuartzWorkerPool:localhost.localdomain1-1234567890");
+        IJobDetail? scheduledJob = null;
+        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
+            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
 
         // Act
         var result = await RefreshEducationOrganizations.RefreshEducationOrganizationsByInstance(
@@ -76,11 +90,14 @@ public class RefreshEducationOrganizationsTests
             instanceId);
 
         // Assert
-        result.ShouldNotBeNull();
-        // Verify the handler was called and returned something
-        var resultType = result.GetType().Name;
-        resultType.ShouldContain("Accepted");
+        var accepted = result.ShouldBeOfType<Accepted<JobQueuedResult>>();
+        var response = accepted.Value.ShouldNotBeNull();
+        response.JobId.ShouldNotBeNullOrWhiteSpace();
+        response.Message.ShouldBe("Education organizations refresh has been queued for the specified instance");
+        scheduledJob.ShouldNotBeNull();
+        scheduledJob!.JobDataMap.GetString(JobConstants.RunIdKey).ShouldBe(response.JobId);
     }
+#nullable restore
 
     private class TestSchedulerFactory : ISchedulerFactory
     {
