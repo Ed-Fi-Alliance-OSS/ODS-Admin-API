@@ -9,8 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -38,15 +40,18 @@ public class DeleteOdsInstanceManageTests
     private ISchedulerFactory _schedulerFactory = null!;
     private IContextProvider<TenantConfiguration> _tenantConfigurationProvider = null!;
     private IOptions<AppSettings> _options = null!;
+    private IJobDetail? _scheduledJob;
 
     [SetUp]
     public void SetUp()
     {
         _getOdsInstanceManageByIdQuery = A.Fake<IGetOdsInstanceManageByIdQuery>();
         _deleteOdsInstanceManageCommand = A.Fake<IDeleteOdsInstanceManageCommand>();
+        _scheduledJob = null;
 
         var scheduler = A.Fake<IScheduler>();
         A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => _scheduledJob = job)
             .Returns(Task.FromResult(DateTimeOffset.UtcNow));
 
         _schedulerFactory = A.Fake<ISchedulerFactory>();
@@ -90,8 +95,13 @@ public class DeleteOdsInstanceManageTests
 
         var result = await Handle(1);
 
-        result.ShouldBeOfType<NoContent>();
+        var accepted = result.ShouldBeOfType<Accepted<JobQueuedResult>>();
+        var response = accepted.Value.ShouldNotBeNull();
+        response.JobId.ShouldNotBeNullOrWhiteSpace();
+        response.Message.ShouldBe("The ODS Instance has been queued to be deleted.");
         A.CallTo(() => _deleteOdsInstanceManageCommand.Execute(1)).MustHaveHappenedOnceExactly();
+        _scheduledJob.ShouldNotBeNull();
+        _scheduledJob!.JobDataMap.GetString(JobConstants.RunIdKey).ShouldBe(response.JobId);
     }
 
     [Test]

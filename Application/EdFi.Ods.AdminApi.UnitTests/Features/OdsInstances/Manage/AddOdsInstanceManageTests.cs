@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
@@ -105,7 +106,10 @@ public class AddOdsInstanceManageTests
 
         var result = await AddOdsInstanceManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request);
 
-        result.ShouldBeOfType<Accepted>();
+        var accepted = result.ShouldBeOfType<Accepted<JobQueuedResult>>();
+        var response = accepted.Value.ShouldNotBeNull();
+        response.JobId.ShouldNotBeNullOrWhiteSpace();
+        response.Message.ShouldBe("The ODS Instance has been queued to be created.");
     }
 
     [Test]
@@ -151,13 +155,16 @@ public class AddOdsInstanceManageTests
             DatabaseTemplate = "Minimal"
         };
 
-        await AddOdsInstanceManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request);
+        var result = await AddOdsInstanceManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request);
 
         var odsInstanceManage = context.OdsInstanceManages.Single();
 
         scheduledJob.ShouldNotBeNull();
         scheduledJob!.Key.Name.ShouldBe($"{JobConstants.CreateInstanceJobName}-{odsInstanceManage.Id}");
         scheduledJob.JobDataMap.GetInt(JobConstants.OdsInstanceManageIdKey).ShouldBe(odsInstanceManage.Id);
+
+        var response = result.ShouldBeOfType<Accepted<JobQueuedResult>>().Value.ShouldNotBeNull();
+        scheduledJob.JobDataMap.GetString(JobConstants.RunIdKey).ShouldBe(response.JobId);
     }
 
     [Test]
@@ -266,7 +273,8 @@ public class AddOdsInstanceManageTests
 
         var result = await AddOdsInstanceManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request);
 
-        result.ShouldBeOfType<Accepted>();
+        var accepted = result.ShouldBeOfType<Accepted<JobQueuedResult>>();
+        accepted.Value.ShouldNotBeNull();
     }
 
     [Test]

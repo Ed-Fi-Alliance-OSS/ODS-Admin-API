@@ -44,7 +44,7 @@ public class AddOdsInstanceManage : IFeature
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/odsInstances/manage", Handle)
             .WithSummaryAndDescription("Asynchronously creates an ODS instance based on the supplied values", "Asynchronously creates an ODS instance based on the supplied values. The request is accepted and the creation process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponseCode(202, "Accepted. The ODS instance record has been created and provisioning has been queued; the database is not yet available. The response has no body. Poll the resource identified by the Location header and read its status property, which progresses PendingCreate, CreateInProgress, then Created or CreateFailed.", "Absolute URL of the created ODS instance, of the form {scheme}://{host}/v3/odsInstances/manage/{id}."))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The ODS instance record has been created and provisioning has been queued; the database is not yet available. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}. Poll the resource identified by the Location header and read its status property, which progresses PendingCreate, CreateInProgress, then Created or CreateFailed.", "Absolute URL of the created ODS instance, of the form {scheme}://{host}/v3/odsInstances/manage/{id}."))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
@@ -67,9 +67,12 @@ public class AddOdsInstanceManage : IFeature
             ? tenantConfigurationProvider.Get()?.TenantIdentifier
             : null;
 
+        var jobId = $"{CreateInstanceJob.BuildJobIdentity(added.Id, tenantIdentifier)}_{Guid.NewGuid():N}";
+
         var jobBuilder = JobBuilder.Create<CreateInstanceJob>()
             .WithIdentity(CreateInstanceJob.CreateJobKey(added.Id, tenantIdentifier))
-            .UsingJobData(JobConstants.OdsInstanceManageIdKey, added.Id);
+            .UsingJobData(JobConstants.OdsInstanceManageIdKey, added.Id)
+            .UsingJobData(JobConstants.RunIdKey, jobId);
 
         if (!string.IsNullOrWhiteSpace(tenantIdentifier))
         {
@@ -93,7 +96,13 @@ public class AddOdsInstanceManage : IFeature
             // scheduling as success — the job is already queued and will process the OdsInstanceManage.
         }
 
-        return Results.Accepted($"/odsinstances/manage/{added.Id}", null);
+        var response = new JobQueuedResult
+        {
+            JobId = jobId,
+            Message = "The ODS Instance has been queued to be created."
+        };
+
+        return Results.Accepted($"/odsinstances/manage/{added.Id}", response);
     }
 
     [SwaggerSchema(Title = "AddOdsInstanceManageRequest")]
