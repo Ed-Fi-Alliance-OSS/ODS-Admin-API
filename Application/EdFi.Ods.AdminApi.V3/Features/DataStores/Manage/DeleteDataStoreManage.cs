@@ -30,7 +30,7 @@ public class DeleteDataStoreManage : IFeature
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/dataStores/manage/{id}", Handle)
             .WithSummaryAndDescription("Asynchronously deletes a data store based on the supplied values", "Asynchronously deletes a data store. The request is accepted and the deletion process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponseCode(204))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The dataStore deletion has been queued for processing. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}."))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -62,9 +62,11 @@ public class DeleteDataStoreManage : IFeature
         var tenantName = options.Value.MultiTenancy
             ? tenantConfigurationProvider.Get()?.TenantIdentifier
             : null;
+        var jobId = $"{DeleteInstanceJob.BuildJobIdentity(id, tenantName)}_{Guid.NewGuid():N}";
         var jobData = new Dictionary<string, object>
         {
-            [JobConstants.OdsInstanceManageIdKey] = id
+            [JobConstants.OdsInstanceManageIdKey] = id,
+            [JobConstants.RunIdKey] = jobId
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))
@@ -88,7 +90,13 @@ public class DeleteDataStoreManage : IFeature
             // Treat duplicate scheduling as success — the job is already queued.
         }
 
-        return Results.NoContent();
+        var response = new JobQueuedResult
+        {
+            JobId = jobId,
+            Message = "The Data Store has been queued to be deleted."
+        };
+
+        return Results.Accepted((string?)null, response);
     }
 
     private static string? GetBlockingStatusMessage(string status)
