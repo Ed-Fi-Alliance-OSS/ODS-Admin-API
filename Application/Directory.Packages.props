@@ -60,8 +60,8 @@
     <!-- NuGet -->
     <PackageVersion Include="NuGet.Protocol" Version="6.10.2" />
     <!-- OpenIddict -->
-    <PackageVersion Include="OpenIddict.AspNetCore" Version="7.6.1" />
-    <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.6.1" />
+    <PackageVersion Include="OpenIddict.AspNetCore" Version="7.7.1" />
+    <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.7.1" />
     <!-- Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.1.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="7.1.0" />
