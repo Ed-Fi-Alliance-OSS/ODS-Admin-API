@@ -3,8 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -38,9 +38,10 @@ public class ProfileRequestExampleFilter : IOperationFilter
 
         foreach (var schema in context.SchemaRepository.Schemas)
         {
-            if (schema.Key.ToLower().Contains("addprofilerequest") || schema.Key.ToLower().Contains("editprofilerequest"))
+            if ((schema.Key.ToLower().Contains("addprofilerequest") || schema.Key.ToLower().Contains("editprofilerequest"))
+                && schema.Value is OpenApiSchema profileRequestSchema)
             {
-                schema.Value.Example = new OpenApiString(JsonConvert.SerializeObject(profileRequest, Formatting.Indented), true);
+                profileRequestSchema.Example = JsonValue.Create(JsonConvert.SerializeObject(profileRequest, Formatting.Indented));
             }
         }
     }

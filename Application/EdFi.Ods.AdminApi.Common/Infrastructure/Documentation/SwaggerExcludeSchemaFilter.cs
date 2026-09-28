@@ -3,7 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 
@@ -16,7 +16,7 @@ public class SwaggerExcludeAttribute : Attribute
 
 public class SwaggerExcludeSchemaFilter : ISchemaFilter
 {
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
         var properties = context.Type.GetProperties();
 
@@ -27,7 +27,7 @@ public class SwaggerExcludeSchemaFilter : ISchemaFilter
 
             if (attribute != null)
             {
-                schema.Properties.Remove(propertyNameInCamelCasing);
+                schema.Properties?.Remove(propertyNameInCamelCasing);
             }
         }
     }

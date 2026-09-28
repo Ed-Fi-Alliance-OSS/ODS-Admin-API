@@ -5,7 +5,7 @@
 
 using System.Text.RegularExpressions;
 using EdFi.Ods.AdminApi.V1.Infrastructure.Extensions;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Documentation;
@@ -24,6 +24,6 @@ public class TagByResourceUrlFilter : IOperationFilter
             ? urlParts[1] : urlParts[0];
 
         if (!string.IsNullOrWhiteSpace(resourceName))
-            operation.Tags = new List<OpenApiTag> { new() { Name = resourceName.Trim('/').ToTitleCase() } };
+            operation.Tags = new HashSet<OpenApiTagReference> { new(resourceName.Trim('/').ToTitleCase(), context.Document) };
     }
 }

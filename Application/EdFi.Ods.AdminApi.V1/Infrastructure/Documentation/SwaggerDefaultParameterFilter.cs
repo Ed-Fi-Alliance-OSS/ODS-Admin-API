@@ -6,8 +6,8 @@
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V1.Features;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EdFi.Ods.AdminApi.V1.Infrastructure.Documentation;
@@ -23,17 +23,21 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        foreach (var parameter in operation.Parameters)
+        foreach (var parameter in operation.Parameters ?? [])
         {
-            if (parameter.Name.ToLower().Equals("offset"))
+            var schema = parameter.Schema as OpenApiSchema;
+
+            if (parameter.Name?.ToLower() == "offset")
             {
                 parameter.Description = "Indicates how many items should be skipped before returning results.";
-                parameter.Schema.Default = new OpenApiString(_settings.Value.DefaultPageSizeOffset.ToString());
+                if (schema is not null)
+                    schema.Default = JsonValue.Create(_settings.Value.DefaultPageSizeOffset.ToString());
             }
-            else if (parameter.Name.ToLower().Equals("limit"))
+            else if (parameter.Name?.ToLower() == "limit")
             {
                 parameter.Description = "Indicates the maximum number of items that should be returned in the results.";
-                parameter.Schema.Default = new OpenApiString(_settings.Value.DefaultPageSizeLimit.ToString());
+                if (schema is not null)
+                    schema.Default = JsonValue.Create(_settings.Value.DefaultPageSizeLimit.ToString());
             }
         }
 
@@ -41,25 +45,25 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
         {
             case "GetVendors":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.VendorIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("company"))
+                        else if (parameter.Name?.ToLower() == "company")
                         {
                             parameter.Description = FeatureConstants.VendorNameDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("namespaceprefixes"))
+                        else if (parameter.Name?.ToLower() == "namespaceprefixes")
                         {
                             parameter.Description = FeatureConstants.VendorNamespaceDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("contactname"))
+                        else if (parameter.Name?.ToLower() == "contactname")
                         {
                             parameter.Description = FeatureConstants.VendorContactDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("contactemailaddress"))
+                        else if (parameter.Name?.ToLower() == "contactemailaddress")
                         {
                             parameter.Description = FeatureConstants.VendorContactEmailDescription;
                         }
@@ -68,13 +72,13 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetClaimSets":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ClaimSetIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("name"))
+                        else if (parameter.Name?.ToLower() == "name")
                         {
                             parameter.Description = FeatureConstants.ClaimSetNameDescription;
                         }
@@ -83,17 +87,17 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetApplications":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ApplicationIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("applicationname"))
+                        else if (parameter.Name?.ToLower() == "applicationname")
                         {
                             parameter.Description = FeatureConstants.ApplicationNameDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("claimsetname"))
+                        else if (parameter.Name?.ToLower() == "claimsetname")
                         {
                             parameter.Description = FeatureConstants.ClaimSetNameDescription;
                         }

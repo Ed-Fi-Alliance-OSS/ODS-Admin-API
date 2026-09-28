@@ -4,7 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Documentation;
@@ -20,11 +20,14 @@ public class ProblemDetailsResponseOperationFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
+        if (operation.Responses is null)
+            return;
+
         var schema = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository);
 
-        foreach (var (statusCode, response) in operation.Responses)
+        foreach (var (statusCode, openApiResponse) in operation.Responses)
         {
-            if (!IsErrorStatusCode(statusCode))
+            if (!IsErrorStatusCode(statusCode) || openApiResponse is not OpenApiResponse response)
                 continue;
 
             if (response.Content is { Count: > 0 })

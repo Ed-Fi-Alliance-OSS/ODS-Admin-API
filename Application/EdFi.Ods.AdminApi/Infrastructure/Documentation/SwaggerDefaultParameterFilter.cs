@@ -7,8 +7,8 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EdFi.Ods.AdminApi.Infrastructure.Documentation;
@@ -24,30 +24,38 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        foreach (var parameter in operation.Parameters)
+        foreach (var parameter in operation.Parameters ?? [])
         {
-            if (parameter.Name.ToLower().Equals("offset"))
+            var schema = parameter.Schema as OpenApiSchema;
+
+            if (parameter.Name?.ToLower() == "offset")
             {
                 parameter.Description = "Indicates how many items should be skipped before returning results.";
-                parameter.Schema.Default = new OpenApiString(_settings.Value.DefaultPageSizeOffset.ToString());
+                if (schema is not null)
+                    schema.Default = JsonValue.Create(_settings.Value.DefaultPageSizeOffset.ToString());
             }
-            else if (parameter.Name.ToLower().Equals("limit"))
+            else if (parameter.Name?.ToLower() == "limit")
             {
                 parameter.Description = "Indicates the maximum number of items that should be returned in the results.";
-                parameter.Schema.Default = new OpenApiString(_settings.Value.DefaultPageSizeLimit.ToString());
+                if (schema is not null)
+                    schema.Default = JsonValue.Create(_settings.Value.DefaultPageSizeLimit.ToString());
             }
-            else if (parameter.Name.ToLower().Equals("orderby"))
+            else if (parameter.Name?.ToLower() == "orderby")
             {
                 parameter.Description = "Indicates the property name by which the results will be sorted.";
-                parameter.Schema.Default = new OpenApiString(string.Empty);
+                if (schema is not null)
+                    schema.Default = JsonValue.Create(string.Empty);
             }
-            else if (parameter.Name.ToLower().Equals("direction"))
+            else if (parameter.Name?.ToLower() == "direction")
             {
                 var description = "Indicates whether the result should be sorted in descending order (DESC) or ascending order (ASC).";
-                parameter.Schema.Title = description;
                 parameter.Description = description;
-                parameter.Schema.Enum = new List<IOpenApiAny> { new OpenApiString(SortingDirectionHelper.Direction.Ascending.ToString()), new OpenApiString(SortingDirectionHelper.Direction.Descending.ToString()) };
-                parameter.Schema.Default = new OpenApiString(SortingDirectionHelper.Direction.Descending.ToString());
+                if (schema is not null)
+                {
+                    schema.Title = description;
+                    schema.Enum = new List<JsonNode> { JsonValue.Create(SortingDirectionHelper.Direction.Ascending.ToString()), JsonValue.Create(SortingDirectionHelper.Direction.Descending.ToString()) };
+                    schema.Default = JsonValue.Create(SortingDirectionHelper.Direction.Descending.ToString());
+                }
             }
         }
 
@@ -55,13 +63,13 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
         {
             case "GetProfiles":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ProfileIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("name"))
+                        else if (parameter.Name?.ToLower() == "name")
                         {
                             parameter.Description = FeatureConstants.ProfileName;
                         }
@@ -70,13 +78,13 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetResourceClaims":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ResourceClaimIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("name"))
+                        else if (parameter.Name?.ToLower() == "name")
                         {
                             parameter.Description = FeatureConstants.ResourceClaimNameDescription;
                         }
@@ -85,25 +93,25 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetVendors":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.VendorIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("company"))
+                        else if (parameter.Name?.ToLower() == "company")
                         {
                             parameter.Description = FeatureConstants.VendorNameDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("namespaceprefixes"))
+                        else if (parameter.Name?.ToLower() == "namespaceprefixes")
                         {
                             parameter.Description = FeatureConstants.VendorNamespaceDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("contactname"))
+                        else if (parameter.Name?.ToLower() == "contactname")
                         {
                             parameter.Description = FeatureConstants.VendorContactDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("contactemailaddress"))
+                        else if (parameter.Name?.ToLower() == "contactemailaddress")
                         {
                             parameter.Description = FeatureConstants.VendorContactEmailDescription;
                         }
@@ -112,13 +120,13 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetOdsInstances":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.OdsInstanceIdsDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("name"))
+                        else if (parameter.Name?.ToLower() == "name")
                         {
                             parameter.Description = FeatureConstants.OdsInstanceName;
                         }
@@ -127,13 +135,13 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetClaimSets":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ClaimSetIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("name"))
+                        else if (parameter.Name?.ToLower() == "name")
                         {
                             parameter.Description = FeatureConstants.ClaimSetNameDescription;
                         }
@@ -142,17 +150,17 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetApplications":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ApplicationIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("applicationname"))
+                        else if (parameter.Name?.ToLower() == "applicationname")
                         {
                             parameter.Description = FeatureConstants.ApplicationNameDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("claimsetname"))
+                        else if (parameter.Name?.ToLower() == "claimsetname")
                         {
                             parameter.Description = FeatureConstants.ClaimSetNameDescription;
                         }
@@ -161,13 +169,13 @@ public class SwaggerDefaultParameterFilter : IOperationFilter
                 }
             case "GetActions":
                 {
-                    foreach (var parameter in operation.Parameters)
+                    foreach (var parameter in operation.Parameters ?? [])
                     {
-                        if (parameter.Name.ToLower().Equals("id"))
+                        if (parameter.Name?.ToLower() == "id")
                         {
                             parameter.Description = FeatureConstants.ActionIdDescription;
                         }
-                        else if (parameter.Name.ToLower().Equals("name"))
+                        else if (parameter.Name?.ToLower() == "name")
                         {
                             parameter.Description = FeatureConstants.ActionNameDescription;
                         }
