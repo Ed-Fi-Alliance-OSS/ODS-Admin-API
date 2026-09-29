@@ -102,7 +102,8 @@ public class DeletePendingOdsInstanceManagesDispatcherJob(
     {
         var jobData = new Dictionary<string, object>
         {
-            [JobConstants.OdsInstanceManageIdKey] = odsInstanceManageId
+            [JobConstants.OdsInstanceManageIdKey] = odsInstanceManageId,
+            [JobConstants.RunIdKey] = $"{DeleteInstanceJob.BuildJobIdentity(odsInstanceManageId, tenantName)}_{Guid.NewGuid():N}"
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))

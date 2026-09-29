@@ -168,6 +168,45 @@ public class AddOdsInstanceManageTests
     }
 
     [Test]
+    public async Task Handle_WhenJobAlreadyScheduledByDispatcher_ReturnsExistingJobIdAndDoesNotScheduleANewJob()
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddOdsInstanceManage.Validator(context, usersContext);
+        var command = new AddOdsInstanceManageCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out var scheduler);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+
+        const string existingRunId = "CreateInstanceJob-1_existing-run-id";
+        var existingJob = JobBuilder.Create<CreateInstanceJob>()
+            .WithIdentity(new JobKey($"{JobConstants.CreateInstanceJobName}-1"))
+            .UsingJobData(JobConstants.RunIdKey, existingRunId)
+            .Build();
+        var activeTrigger = A.Fake<ITrigger>();
+        A.CallTo(() => activeTrigger.Key).Returns(new TriggerKey("dispatcher-trigger"));
+
+        A.CallTo(() => scheduler.GetJobDetail(A<JobKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult<IJobDetail?>(existingJob));
+        A.CallTo(() => scheduler.GetTriggersOfJob(A<JobKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult<IReadOnlyCollection<ITrigger>>([activeTrigger]));
+        A.CallTo(() => scheduler.GetTriggerState(A<TriggerKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(TriggerState.Normal));
+
+        var request = new AddOdsInstanceManage.AddOdsInstanceManageRequest
+        {
+            Name = "My DB Instance",
+            DatabaseTemplate = "Minimal"
+        };
+
+        var result = await AddOdsInstanceManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request);
+
+        var response = result.ShouldBeOfType<Accepted<JobQueuedResult>>().Value.ShouldNotBeNull();
+        response.JobId.ShouldBe(existingRunId);
+        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._)).MustNotHaveHappened();
+    }
+
+    [Test]
     public async Task Handle_WithMultiTenancyEnabled_SchedulesTenantAwareCreateInstanceJob()
     {
         using var context = CreateContext();
