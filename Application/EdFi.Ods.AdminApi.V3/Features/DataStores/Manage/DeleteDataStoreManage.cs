@@ -75,19 +75,29 @@ public class DeleteDataStoreManage : IFeature
         }
 
         var scheduler = await schedulerFactory.GetScheduler();
+        var jobKey = DeleteInstanceJob.CreateJobKey(id, tenantName);
 
         try
         {
-            await QuartzJobScheduler.ScheduleJob<DeleteInstanceJob>(
+            // The DeletePendingDataStoreManagesDispatcherJob may have already scheduled this job.
+            // QuartzJobScheduler reports the job that actually won, which may carry a different
+            // RunIdKey than the one generated above.
+            var scheduledJob = await QuartzJobScheduler.ScheduleJob<DeleteInstanceJob>(
                 scheduler,
-                DeleteInstanceJob.CreateJobKey(id, tenantName),
+                jobKey,
                 jobData,
                 startImmediately: true);
+            jobId = scheduledJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;
         }
         catch (ObjectAlreadyExistsException)
         {
-            // The DeletePendingDataStoreManagesDispatcherJob may have already scheduled this job.
-            // Treat duplicate scheduling as success — the job is already queued.
+            // Rarer TOCTOU: the dispatcher scheduled the job between QuartzJobScheduler's own
+            // existence check and its ScheduleJob call. Best-effort: read back whichever job won.
+            var existingJob = await scheduler.GetJobDetail(jobKey);
+            if (existingJob is not null)
+            {
+                jobId = existingJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;
+            }
         }
 
         var response = new JobQueuedResult

@@ -18,6 +18,7 @@ using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Features.DataStores.Manage;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Services.Jobs;
 using FakeItEasy;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -176,6 +177,46 @@ public class AddDataStoreManageTests
 
         var response = result.ShouldBeOfType<Accepted<JobQueuedResult>>().Value.ShouldNotBeNull();
         scheduledJob.JobDataMap.GetString(JobConstants.RunIdKey).ShouldBe(response.JobId);
+    }
+
+    [Test]
+    public async Task Handle_WhenJobAlreadyScheduledByDispatcher_ReturnsExistingJobIdAndDoesNotScheduleANewJob()
+    {
+        using var context = CreateContext();
+        using var usersContext = CreateUsersContext();
+        var validator = new AddDataStoreManage.Validator(context, usersContext);
+        var command = new AddDataStoreManageCommand(context);
+        var schedulerFactory = CreateSchedulerFactory(out var scheduler);
+        var tenantProvider = CreateTenantConfigurationProvider();
+        var options = CreateOptions();
+        var httpContext = CreateHttpContext();
+
+        const string existingRunId = "CreateInstanceJob-1_existing-run-id";
+        var existingJob = JobBuilder.Create<CreateInstanceJob>()
+            .WithIdentity(new JobKey($"{JobConstants.CreateInstanceJobName}-1"))
+            .UsingJobData(JobConstants.RunIdKey, existingRunId)
+            .Build();
+        var activeTrigger = A.Fake<ITrigger>();
+        A.CallTo(() => activeTrigger.Key).Returns(new TriggerKey("dispatcher-trigger"));
+
+        A.CallTo(() => scheduler.GetJobDetail(A<JobKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult<IJobDetail?>(existingJob));
+        A.CallTo(() => scheduler.GetTriggersOfJob(A<JobKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult<IReadOnlyCollection<ITrigger>>([activeTrigger]));
+        A.CallTo(() => scheduler.GetTriggerState(A<TriggerKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(TriggerState.Normal));
+
+        var request = new AddDataStoreManage.AddDataStoreManageRequest
+        {
+            Name = "My DB Instance",
+            DatabaseTemplate = "Minimal"
+        };
+
+        var result = await AddDataStoreManage.Handle(validator, command, schedulerFactory, tenantProvider, options, request, httpContext);
+
+        var response = result.ShouldBeOfType<Accepted<JobQueuedResult>>().Value.ShouldNotBeNull();
+        response.JobId.ShouldBe(existingRunId);
+        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Test]
