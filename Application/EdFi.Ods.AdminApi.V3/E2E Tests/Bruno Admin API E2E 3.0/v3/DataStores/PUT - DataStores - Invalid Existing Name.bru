@@ -38,6 +38,7 @@ script:post-response {
   test("PUT DataStore Invalid Existing DataStore: Response errors include messages by property", function () {
       expect(response.errors.Name.length).to.equal(1);
       expect(response.errors.Name[0]).to.contain("already exists");
+      expect(response.errors.Name[0]).to.contain("data store");
   });
   
   test("PUT DataStore Invalid Existing DataStore: type URN is correct", function () {
