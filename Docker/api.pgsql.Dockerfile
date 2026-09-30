@@ -6,7 +6,7 @@
 #tag 10.0-alpine
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine3.24@sha256:f62a272ac1b46e83f56b8ed0416572f31cd1128e2c4a5e63eb34d348e4a36095 AS base
 RUN apk upgrade --no-cache && \
-    apk add --no-cache bash=~5 dos2unix=~7 gettext=~1 icu=~78.1-r0 jq=~1 krb5-libs=~1 musl=1.2.6-r2 openssl=3.5.8-r0 postgresql16-client=~16 unzip=~6 && \
+    apk add --no-cache bash=~5 dos2unix=~7 gettext=~1 icu=~78.1-r0 jq=~1 krb5-libs=~1 musl=1.2.6-r2 openssl=3.5.9-r0 postgresql16-client=~16 unzip=~6 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
 

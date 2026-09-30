@@ -78,7 +78,7 @@ public class EditDataStore : IFeature
             RuleFor(m => m.Name)
                 .NotEmpty()
                 .Must(BeAUniqueName)
-                .WithMessage(FeatureConstants.ClaimSetAlreadyExistsMessage)
+                .WithMessage(FeatureConstants.DataStoreAlreadyExistsMessage)
                 .When(m => BeAnExistingDataStore(m.Id) && NameIsChanged(m));
 
             RuleFor(m => m.DataStoreType)
