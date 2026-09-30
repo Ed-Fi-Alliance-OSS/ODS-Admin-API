@@ -24,6 +24,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" />
     <PackageReference Include="Autofac.Extras.DynamicProxy" />
+    <PackageReference Include="Azure.Identity" />
     <PackageReference Include="EdFi.Suite3.Common" />
     <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="FluentValidation" />
