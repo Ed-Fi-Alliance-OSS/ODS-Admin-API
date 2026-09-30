@@ -133,7 +133,7 @@ script:post-response {
   // DISABLED: See script:pre-request comment.
   return;
 
-  const expectedStatus = 204;
+  const expectedStatus = 202;
   const responseStatus = res.getStatus();
 
   if (responseStatus !== expectedStatus) {
@@ -144,8 +144,20 @@ script:post-response {
     console.log("Response body:", JSON.stringify(res.getBody(), null, 2));
   }
 
-  test("DELETE DataStore Manage Success: Status code is No Content", function () {
+  test("DELETE DataStore Manage Success: Status code is Accepted", function () {
     expect(responseStatus).to.equal(expectedStatus);
+  });
+
+  test("DELETE DataStore Manage Success: Response has jobId", function () {
+    const body = res.getBody();
+    expect(body).to.have.property("jobId");
+    expect(body.jobId).to.be.a("string");
+  });
+
+  test("DELETE DataStore Manage Success: Response has message", function () {
+    const body = res.getBody();
+    expect(body).to.have.property("message");
+    expect(body.message).to.be.a("string");
   });
 
   bru.deleteVar("FreshPendingDataStoreManageId");

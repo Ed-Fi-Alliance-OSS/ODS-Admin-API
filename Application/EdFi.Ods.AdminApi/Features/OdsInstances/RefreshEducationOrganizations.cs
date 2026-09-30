@@ -26,7 +26,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
             )
-            .WithRouteOptions(b => b.WithResponseCode(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v3/jobs/{jobId}."))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v2/jobs/{jobId}."))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
@@ -36,7 +36,7 @@ public class RefreshEducationOrganizations : IFeature
                 "Triggers a refresh of education organization data for the specified ODS instance"
             )
             .WithRouteOptions(b => b
-                .WithResponseCode(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v3/jobs/{jobId}.")
+                .WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v2/jobs/{jobId}.")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V2);
     }
@@ -64,10 +64,10 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var response = new
+        var response = new JobQueuedResult
         {
-            jobId,
-            message = "Education organizations refresh has been queued for all instances"
+            JobId = jobId,
+            Message = "Education organizations refresh has been queued for all instances"
         };
         var locationUri = $"/v2/jobs/{jobId}";
 
@@ -106,10 +106,10 @@ public class RefreshEducationOrganizations : IFeature
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.ScheduleJob(job, trigger);
 
-        var response = new
+        var response = new JobQueuedResult
         {
-            jobId,
-            message = "Education organizations refresh has been queued for the specified instance"
+            JobId = jobId,
+            Message = "Education organizations refresh has been queued for the specified instance"
         };
         var locationUri = $"/v2/jobs/{jobId}";
 

@@ -30,7 +30,7 @@ public class DeleteOdsInstanceManage : IFeature
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/odsInstances/manage/{id}", Handle)
             .WithSummaryAndDescription("Asynchronously deletes an ODS instance based on the supplied values", "Asynchronously deletes an ODS instance. The request is accepted and the deletion process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponseCode(204))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The ODS instance deletion has been queued for processing. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}."))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
@@ -62,9 +62,11 @@ public class DeleteOdsInstanceManage : IFeature
         var tenantName = options.Value.MultiTenancy
             ? tenantConfigurationProvider.Get()?.TenantIdentifier
             : null;
+        var jobId = $"{DeleteInstanceJob.BuildJobIdentity(id, tenantName)}_{Guid.NewGuid():N}";
         var jobData = new Dictionary<string, object>
         {
-            [JobConstants.OdsInstanceManageIdKey] = id
+            [JobConstants.OdsInstanceManageIdKey] = id,
+            [JobConstants.RunIdKey] = jobId
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))
@@ -73,22 +75,38 @@ public class DeleteOdsInstanceManage : IFeature
         }
 
         var scheduler = await schedulerFactory.GetScheduler();
+        var jobKey = DeleteInstanceJob.CreateJobKey(id, tenantName);
 
         try
         {
-            await QuartzJobScheduler.ScheduleJob<DeleteInstanceJob>(
+            // The DeletePendingOdsInstanceManagesDispatcherJob may have already scheduled this job.
+            // QuartzJobScheduler reports the job that actually won, which may carry a different
+            // RunIdKey than the one generated above.
+            var scheduledJob = await QuartzJobScheduler.ScheduleJob<DeleteInstanceJob>(
                 scheduler,
-                DeleteInstanceJob.CreateJobKey(id, tenantName),
+                jobKey,
                 jobData,
                 startImmediately: true);
+            jobId = scheduledJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;
         }
         catch (ObjectAlreadyExistsException)
         {
-            // The DeletePendingOdsInstanceManagesDispatcherJob may have already scheduled this job.
-            // Treat duplicate scheduling as success — the job is already queued.
+            // Rarer TOCTOU: the dispatcher scheduled the job between QuartzJobScheduler's own
+            // existence check and its ScheduleJob call. Best-effort: read back whichever job won.
+            var existingJob = await scheduler.GetJobDetail(jobKey);
+            if (existingJob is not null)
+            {
+                jobId = existingJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;
+            }
         }
 
-        return Results.NoContent();
+        var response = new JobQueuedResult
+        {
+            JobId = jobId,
+            Message = "The ODS Instance has been queued to be deleted."
+        };
+
+        return Results.Accepted((string?)null, response);
     }
 
     private static string? GetBlockingStatusMessage(string status)
