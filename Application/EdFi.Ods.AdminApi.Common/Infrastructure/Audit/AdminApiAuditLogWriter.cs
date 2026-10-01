@@ -14,12 +14,13 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 public class AdminApiAuditLogWriter(IConfiguration configuration) : IAuditLogWriter
 {
     // AdminApiAuditLogWriter is registered as a singleton, so this cache lives for the app's
-    // lifetime. Each entry wraps a pooled NpgsqlDataSource/SqlServer connection pool for one
-    // connection string (one per tenant), built once and reused rather than rebuilt on every
-    // audit write. Building a fresh (unpooled) data source per write is what caused Npgsql's
-    // NpgsqlConnectionStringBuilder to race with other concurrent DB activity in the process.
-    // Reusing the pool is safe across restarts/outages: the pool - not this cache - detects and
-    // recycles dead connections, so there is nothing here that needs to expire.
+    // lifetime. Each entry caches the immutable EF provider configuration (connection string +
+    // provider/retry setup) for one connection string (one per tenant), built once instead of
+    // on every audit write. Rebuilding a DbContextOptionsBuilder/connection string fresh per
+    // write is what caused Npgsql's NpgsqlConnectionStringBuilder to race with other concurrent
+    // DB activity in the process. Connection pooling/recovery is handled independently by the
+    // ADO.NET provider (SqlClient/Npgsql) based on the connection string, not by this cache, so
+    // there is nothing here that needs to expire.
     private readonly ConcurrentDictionary<string, DbContextOptions<AdminApiDbContext>> _optionsCache = new();
 
     public async Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken)

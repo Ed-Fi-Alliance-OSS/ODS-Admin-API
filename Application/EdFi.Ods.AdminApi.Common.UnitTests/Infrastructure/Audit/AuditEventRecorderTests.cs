@@ -107,6 +107,24 @@ public class AuditEventRecorderTests
     }
 
     [Test]
+    public void Record_WhenMultiTenantAndTenantResolvedWithoutAdminConnectionString_DoesNotEnqueueEvent()
+    {
+        var channel = new AuditLogChannel();
+        var tenantContext = new ContextProvider<TenantConfiguration>(new AsyncLocalContextStorage());
+        tenantContext.Set(new TenantConfiguration { TenantIdentifier = "tenant1", AdminConnectionString = null });
+        var recorder = new AuditEventRecorder(
+            channel,
+            Options.Create(new AuditLoggingSettings { Enabled = true }),
+            tenantContext,
+            BuildConfiguration(),
+            BuildAppSettings(multiTenancy: true));
+
+        recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v1/claimSets/import", 400);
+
+        channel.Reader.TryRead(out _).ShouldBeFalse();
+    }
+
+    [Test]
     public void Record_WhenConnectionStringResolutionThrows_DoesNotThrowAndDoesNotEnqueueEvent()
     {
         var channel = new AuditLogChannel();
