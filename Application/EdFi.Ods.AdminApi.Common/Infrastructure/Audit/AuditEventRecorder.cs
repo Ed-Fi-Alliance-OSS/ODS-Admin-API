@@ -6,6 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Settings;
 using log4net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,8 @@ public class AuditEventRecorder(
     AuditLogChannel channel,
     IOptions<AuditLoggingSettings> settings,
     IContextProvider<TenantConfiguration> tenantContextProvider,
-    IConfiguration configuration) : IAuditEventRecorder
+    IConfiguration configuration,
+    IOptions<AppSettings> appSettings) : IAuditEventRecorder
 {
     private static readonly ILog _logger = LogManager.GetLogger(typeof(AuditEventRecorder));
     private static readonly TimeSpan _dropLogInterval = TimeSpan.FromSeconds(30);
@@ -45,6 +47,19 @@ public class AuditEventRecorder(
             // caller positioned outside it (AuditActionLoggingMiddleware, recording after
             // next() completes) must resolve the tenant itself and pass it in explicitly.
             tenant ??= tenantContextProvider.Get();
+
+            // In multi-tenant mode, a null tenant here means tenant resolution itself failed
+            // (e.g. TenantResolverMiddleware rejected the request for a missing/invalid Tenant
+            // header, before it could set the tenant on the context). There is no per-tenant
+            // connection string to fall back to, and the base "EdFi_Admin" connection string is
+            // not a real, correctly-configured database in multi-tenant deployments - writing to
+            // it would silently try the wrong server/engine. Log directly instead.
+            if (tenant is null && appSettings.Value.MultiTenancy)
+            {
+                LogUnresolvedTenant(eventType, clientId, sourceIpAddress, httpVerb, httpUrl, statusCode);
+                return;
+            }
+
             var adminConnectionString = !string.IsNullOrEmpty(tenant?.AdminConnectionString)
                 ? tenant.AdminConnectionString
                 : configuration.GetConnectionStringByName("EdFi_Admin");
@@ -73,6 +88,20 @@ public class AuditEventRecorder(
             // Any failure resolving the connection string or constructing the event is
             // swallowed here.
         }
+    }
+
+    private static void LogUnresolvedTenant(
+        AuditEventType eventType,
+        string? clientId,
+        string? sourceIpAddress,
+        string? httpVerb,
+        string? httpUrl,
+        int? statusCode)
+    {
+        _logger.Error(
+            "Audit event not persisted: no tenant could be resolved for this request in multi-tenant mode. " +
+            $"EventType={eventType}, ClientId={clientId}, SourceIpAddress={sourceIpAddress}, " +
+            $"HttpVerb={httpVerb}, HttpUrl={httpUrl}, StatusCode={statusCode}, Timestamp={DateTime.UtcNow:O}");
     }
 
     private static void LogDropped(AuditEvent auditEvent)
