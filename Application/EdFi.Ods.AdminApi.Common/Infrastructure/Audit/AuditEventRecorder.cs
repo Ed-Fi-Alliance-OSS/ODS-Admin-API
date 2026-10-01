@@ -59,7 +59,7 @@ public class AuditEventRecorder(
             // it would silently try the wrong server/engine. Log directly instead.
             if (appSettings.Value.MultiTenancy && string.IsNullOrEmpty(tenant?.AdminConnectionString))
             {
-                LogUnresolvedTenant(eventType, clientId, sourceIpAddress, httpVerb, httpUrl, statusCode);
+                LogUnresolvedTenant(tenant, eventType, clientId, sourceIpAddress, httpVerb, httpUrl, statusCode);
                 return;
             }
 
@@ -93,6 +93,7 @@ public class AuditEventRecorder(
     }
 
     private static void LogUnresolvedTenant(
+        TenantConfiguration? tenant,
         AuditEventType eventType,
         string? clientId,
         string? sourceIpAddress,
@@ -117,8 +118,15 @@ public class AuditEventRecorder(
             ? $" ({suppressed} additional unresolved-tenant audit events suppressed in the last {_unresolvedTenantLogInterval.TotalSeconds}s.)"
             : string.Empty;
 
+        // Distinguish "no tenant at all" (resolution failed) from "tenant resolved but
+        // misconfigured" (resolved fine, but its EdFi_Admin connection string is missing) -
+        // these have different causes and the message should point at the right one.
+        var reason = tenant is null
+            ? "no tenant could be resolved for this request"
+            : $"tenant '{tenant.TenantIdentifier}' has no EdFi_Admin connection string configured";
+
         _logger.Error(
-            $"Audit event not persisted: no tenant could be resolved for this request in multi-tenant mode.{suppressedNote} " +
+            $"Audit event not persisted: {reason} in multi-tenant mode.{suppressedNote} " +
             $"EventType={eventType}, ClientId={clientId}, SourceIpAddress={sourceIpAddress}, " +
             $"HttpVerb={httpVerb}, HttpUrl={httpUrl}, StatusCode={statusCode}, Timestamp={DateTime.UtcNow:O}");
     }
