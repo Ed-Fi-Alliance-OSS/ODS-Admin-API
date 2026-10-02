@@ -25,6 +25,7 @@ public class ReadActions : IFeature
 
     internal static Task<IResult> GetActions(IGetAllActionsQuery getAllActionsQuery, int? offset, int? limit, string? orderBy, string? direction, int? id, string? name)
     {
+        // Validate the orderBy and direction parameters
         var actions = ActionMapper.ToModelList(
             getAllActionsQuery.Execute(
                 new CommonQueryParams(offset, limit, orderBy, direction),
