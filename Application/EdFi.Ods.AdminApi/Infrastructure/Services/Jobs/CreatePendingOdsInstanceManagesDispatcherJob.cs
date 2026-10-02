@@ -102,7 +102,8 @@ public class CreatePendingOdsInstanceManagesDispatcherJob(
     {
         var jobData = new Dictionary<string, object>
         {
-            [JobConstants.OdsInstanceManageIdKey] = odsInstanceManageId
+            [JobConstants.OdsInstanceManageIdKey] = odsInstanceManageId,
+            [JobConstants.RunIdKey] = $"{CreateInstanceJob.BuildJobIdentity(odsInstanceManageId, tenantName)}_{Guid.NewGuid():N}"
         };
 
         if (!string.IsNullOrWhiteSpace(tenantName))

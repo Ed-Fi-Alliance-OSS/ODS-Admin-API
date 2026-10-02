@@ -9,7 +9,13 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 
 public static class QuartzJobScheduler
 {
-    public static async Task ScheduleJob<TJob>(
+    /// <summary>
+    /// Schedules the job, or returns the already-scheduled/running job of the same identity
+    /// unchanged. Callers that embed a caller-generated id (e.g. RunIdKey) in <paramref name="jobData"/>
+    /// must read it back from the returned <see cref="IJobDetail"/>'s JobDataMap rather than assuming
+    /// their own value was used — it wasn't, when an existing job wins the race.
+    /// </summary>
+    public static async Task<IJobDetail> ScheduleJob<TJob>(
         IScheduler scheduler,
         JobKey jobKey,
         IDictionary<string, object> jobData,
@@ -31,8 +37,8 @@ public static class QuartzJobScheduler
             var states = await Task.WhenAll(triggers.Select(t => scheduler.GetTriggerState(t.Key)));
             if (states.Any(state => state == TriggerState.Normal || state == TriggerState.Blocked))
             {
-                // Job is already scheduled or running
-                return;
+                // Job is already scheduled or running - report the existing job, not the new one.
+                return existingJob;
             }
         }
 
@@ -54,5 +60,6 @@ public static class QuartzJobScheduler
         }
 
         await scheduler.ScheduleJob(job, trigger);
+        return job;
     }
 }

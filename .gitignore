@@ -5,6 +5,11 @@ rcf/
 [Oo]bj
 publish/
 
+#Generated OpenAPI specs (build.ps1 -Command GenerateOpenAPI). Published specs live in
+#https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-API-Specifications/tree/main/api-specifications/management
+#Ignored so local runs aren't committed; the openapi-md.yml workflow still uploads them as a run artifact.
+/docs/api-specifications/
+
 #User-specific files
 *.suo
 *.csproj.user

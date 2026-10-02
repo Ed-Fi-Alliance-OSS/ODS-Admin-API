@@ -261,6 +261,7 @@ function GenerateOpenAPI {
         Push-Location $solutionRoot/EdFi.Ods.AdminApi/
         $dllPath = "./bin/Release/net10.0/EdFi.Ods.AdminApi.dll"
         $outputOpenAPI = "../../docs/api-specifications/openapi-yaml/admin-api-$DocVersion-$APIVersion.yaml"
+        New-Item -ItemType Directory -Force -Path (Split-Path $outputOpenAPI) | Out-Null
 
         try {
             dotnet tool run swagger tofile --output $outputOpenAPI --yaml $dllPath $SwaggerDocName

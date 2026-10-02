@@ -17,6 +17,7 @@ For more information, see:
 
 * [Docker testing notes](docs/docker.md)
 * [Developer notes](docs/developer.md)
+* [Admin API (Management API) specifications](https://github.com/Ed-Fi-Alliance-OSS/Ed-Fi-API-Specifications/tree/main/api-specifications/management)
 
 ## Contributing
 
