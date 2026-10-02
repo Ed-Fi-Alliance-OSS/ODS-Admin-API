@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Providers.Interfaces;
+using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Features.OdsInstances;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
@@ -60,5 +61,24 @@ public class EditOdsInstanceTests
         var validator = new EditOdsInstance.Validator(fakeGetInstances, fakeGetInstance, Options());
         var result = await validator.ValidateAsync(new EditOdsInstance.EditOdsInstanceRequest { Name = "", Id = 1 });
         result.IsValid.ShouldBeFalse();
+    }
+
+    [Test]
+    public async Task Validator_WithDuplicateName_FailsWithOdsInstanceMessage()
+    {
+        var fakeGetInstances = A.Fake<IGetOdsInstancesQuery>();
+        A.CallTo(() => fakeGetInstances.Execute()).Returns(new List<OdsInstance>
+        {
+            new() { OdsInstanceId = 1, Name = "ODS1", InstanceType = "type", ConnectionString = "cs" },
+            new() { OdsInstanceId = 2, Name = "ODS2", InstanceType = "type", ConnectionString = "cs" }
+        });
+        var fakeGetInstance = A.Fake<IGetOdsInstanceQuery>();
+        A.CallTo(() => fakeGetInstance.Execute(1)).Returns(new OdsInstance { OdsInstanceId = 1, Name = "ODS1", InstanceType = "type", ConnectionString = "cs" });
+
+        var validator = new EditOdsInstance.Validator(fakeGetInstances, fakeGetInstance, Options());
+        var result = await validator.ValidateAsync(new EditOdsInstance.EditOdsInstanceRequest { Name = "ODS2", InstanceType = "type", Id = 1 });
+
+        result.IsValid.ShouldBeFalse();
+        result.Errors.ShouldContain(error => error.ErrorMessage == FeatureConstants.OdsInstanceAlreadyExistsMessage);
     }
 }

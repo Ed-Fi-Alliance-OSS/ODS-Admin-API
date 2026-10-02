@@ -77,7 +77,7 @@ public class EditOdsInstance : IFeature
             RuleFor(m => m.Name)
                 .NotEmpty()
                 .Must(BeAUniqueName)
-                .WithMessage(FeatureConstants.ClaimSetAlreadyExistsMessage)
+                .WithMessage(FeatureConstants.OdsInstanceAlreadyExistsMessage)
                 .When(m => BeAnExistingOdsInstance(m.Id) && NameIsChanged(m));
 
             RuleFor(m => m.InstanceType)

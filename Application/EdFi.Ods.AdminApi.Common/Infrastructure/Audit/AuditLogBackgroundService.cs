@@ -11,7 +11,7 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 public class AuditLogBackgroundService(AuditLogChannel channel, IAuditLogWriter writer) : BackgroundService
 {
     private static readonly ILog _logger = LogManager.GetLogger(typeof(AuditLogBackgroundService));
-    private static readonly TimeSpan[] _retryDelays = [TimeSpan.FromMilliseconds(200), TimeSpan.FromMilliseconds(500)];
+    private static readonly TimeSpan[] _retryDelays = [TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3)];
     private static readonly TimeSpan _fallbackLogInterval = TimeSpan.FromSeconds(30);
     private static long _lastFallbackLogTicks;
     private static int _suppressedFallbackCount;

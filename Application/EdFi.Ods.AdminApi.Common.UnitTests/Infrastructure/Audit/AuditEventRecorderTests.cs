@@ -6,6 +6,7 @@
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
+using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -24,6 +25,9 @@ public class AuditEventRecorderTests
             })
             .Build();
 
+    private static IOptions<AppSettings> BuildAppSettings(bool multiTenancy = false) =>
+        Options.Create(new AppSettings { MultiTenancy = multiTenancy });
+
     [Test]
     public void Record_WhenAuditLoggingDisabled_DoesNotEnqueueEvent()
     {
@@ -33,7 +37,8 @@ public class AuditEventRecorderTests
             channel,
             Options.Create(new AuditLoggingSettings { Enabled = false }),
             tenantContext,
-            BuildConfiguration());
+            BuildConfiguration(),
+            BuildAppSettings());
 
         recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v3/apiClients", 201);
 
@@ -49,7 +54,8 @@ public class AuditEventRecorderTests
             channel,
             Options.Create(new AuditLoggingSettings { Enabled = true }),
             tenantContext,
-            BuildConfiguration());
+            BuildConfiguration(),
+            BuildAppSettings());
 
         recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v3/apiClients", 201);
 
@@ -73,13 +79,49 @@ public class AuditEventRecorderTests
             channel,
             Options.Create(new AuditLoggingSettings { Enabled = true }),
             tenantContext,
-            BuildConfiguration());
+            BuildConfiguration(),
+            BuildAppSettings());
 
         recorder.Record(AuditEventType.AuthenticationFailure, null, "10.0.0.5", null, null, 401);
 
         channel.Reader.TryRead(out var auditEvent).ShouldBeTrue();
         auditEvent!.AdminConnectionString.ShouldBe("tenant-connection-string");
         auditEvent.ClientId.ShouldBeNull();
+    }
+
+    [Test]
+    public void Record_WhenMultiTenantAndNoTenantResolved_DoesNotEnqueueEvent()
+    {
+        var channel = new AuditLogChannel();
+        var tenantContext = new ContextProvider<TenantConfiguration>(new AsyncLocalContextStorage());
+        var recorder = new AuditEventRecorder(
+            channel,
+            Options.Create(new AuditLoggingSettings { Enabled = true }),
+            tenantContext,
+            BuildConfiguration(),
+            BuildAppSettings(multiTenancy: true));
+
+        recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v1/claimSets/import", 400);
+
+        channel.Reader.TryRead(out _).ShouldBeFalse();
+    }
+
+    [Test]
+    public void Record_WhenMultiTenantAndTenantResolvedWithoutAdminConnectionString_DoesNotEnqueueEvent()
+    {
+        var channel = new AuditLogChannel();
+        var tenantContext = new ContextProvider<TenantConfiguration>(new AsyncLocalContextStorage());
+        tenantContext.Set(new TenantConfiguration { TenantIdentifier = "tenant1", AdminConnectionString = null });
+        var recorder = new AuditEventRecorder(
+            channel,
+            Options.Create(new AuditLoggingSettings { Enabled = true }),
+            tenantContext,
+            BuildConfiguration(),
+            BuildAppSettings(multiTenancy: true));
+
+        recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v1/claimSets/import", 400);
+
+        channel.Reader.TryRead(out _).ShouldBeFalse();
     }
 
     [Test]
@@ -92,7 +134,8 @@ public class AuditEventRecorderTests
             channel,
             Options.Create(new AuditLoggingSettings { Enabled = true }),
             tenantContext,
-            configurationWithNoConnectionString);
+            configurationWithNoConnectionString,
+            BuildAppSettings());
 
         Should.NotThrow(() =>
             recorder.Record(AuditEventType.Action, "client-1", "127.0.0.1", "POST", "/v3/apiClients", 201));
@@ -109,7 +152,8 @@ public class AuditEventRecorderTests
             channel,
             Options.Create(new AuditLoggingSettings { Enabled = true }),
             tenantContext,
-            BuildConfiguration());
+            BuildConfiguration(),
+            BuildAppSettings());
 
         recorder.Record(
             AuditEventType.Action, "client-1", "127.0.0.1", "DELETE", "/v3/apiClients/1", 204,
