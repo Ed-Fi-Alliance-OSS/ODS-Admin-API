@@ -4,19 +4,23 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Constants;
+using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Jobs;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.OdsInstances.Manage;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
+using EdFi.Ods.AdminApi.Infrastructure.Services.Jobs;
 using FakeItEasy;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
@@ -38,20 +42,24 @@ public class DeleteOdsInstanceManageTests
     private ISchedulerFactory _schedulerFactory = null!;
     private IContextProvider<TenantConfiguration> _tenantConfigurationProvider = null!;
     private IOptions<AppSettings> _options = null!;
+    private IScheduler _scheduler = null!;
+    private IJobDetail? _scheduledJob;
 
     [SetUp]
     public void SetUp()
     {
         _getOdsInstanceManageByIdQuery = A.Fake<IGetOdsInstanceManageByIdQuery>();
         _deleteOdsInstanceManageCommand = A.Fake<IDeleteOdsInstanceManageCommand>();
+        _scheduledJob = null;
 
-        var scheduler = A.Fake<IScheduler>();
-        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
+        _scheduler = A.Fake<IScheduler>();
+        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => _scheduledJob = job)
             .Returns(Task.FromResult(DateTimeOffset.UtcNow));
 
         _schedulerFactory = A.Fake<ISchedulerFactory>();
         A.CallTo(() => _schedulerFactory.GetScheduler(A<CancellationToken>._))
-            .Returns(Task.FromResult(scheduler));
+            .Returns(Task.FromResult(_scheduler));
 
         _tenantConfigurationProvider = A.Fake<IContextProvider<TenantConfiguration>>();
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(null);
@@ -90,8 +98,47 @@ public class DeleteOdsInstanceManageTests
 
         var result = await Handle(1);
 
-        result.ShouldBeOfType<NoContent>();
+        var accepted = result.ShouldBeOfType<Accepted<JobQueuedResult>>();
+        var response = accepted.Value.ShouldNotBeNull();
+        response.JobId.ShouldNotBeNullOrWhiteSpace();
+        response.Message.ShouldBe("The ODS Instance has been queued to be deleted.");
         A.CallTo(() => _deleteOdsInstanceManageCommand.Execute(1)).MustHaveHappenedOnceExactly();
+        _scheduledJob.ShouldNotBeNull();
+        _scheduledJob!.JobDataMap.GetString(JobConstants.RunIdKey).ShouldBe(response.JobId);
+    }
+
+    [Test]
+    public async Task Handle_WhenJobAlreadyScheduledByDispatcher_ReturnsExistingJobIdAndDoesNotScheduleANewJob()
+    {
+        var odsInstanceManage = new OdsInstanceManage
+        {
+            Id = 1,
+            Name = "Test",
+            Status = OdsInstanceManageStatus.Created.ToString(),
+            DatabaseTemplate = "Minimal",
+        };
+        A.CallTo(() => _getOdsInstanceManageByIdQuery.Execute(1)).Returns(odsInstanceManage);
+
+        const string existingRunId = "DeleteInstanceJob-1_existing-run-id";
+        var existingJob = JobBuilder.Create<DeleteInstanceJob>()
+            .WithIdentity(new JobKey($"{JobConstants.DeleteInstanceJobName}-1"))
+            .UsingJobData(JobConstants.RunIdKey, existingRunId)
+            .Build();
+        var activeTrigger = A.Fake<ITrigger>();
+        A.CallTo(() => activeTrigger.Key).Returns(new TriggerKey("dispatcher-trigger"));
+
+        A.CallTo(() => _scheduler.GetJobDetail(A<JobKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult<IJobDetail?>(existingJob));
+        A.CallTo(() => _scheduler.GetTriggersOfJob(A<JobKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult<IReadOnlyCollection<ITrigger>>([activeTrigger]));
+        A.CallTo(() => _scheduler.GetTriggerState(A<TriggerKey>._, A<CancellationToken>._))
+            .Returns(Task.FromResult(TriggerState.Normal));
+
+        var result = await Handle(1);
+
+        var response = result.ShouldBeOfType<Accepted<JobQueuedResult>>().Value.ShouldNotBeNull();
+        response.JobId.ShouldBe(existingRunId);
+        _scheduledJob.ShouldBeNull();
     }
 
     [Test]

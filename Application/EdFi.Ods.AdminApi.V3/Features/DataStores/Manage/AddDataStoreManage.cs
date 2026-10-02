@@ -44,7 +44,7 @@ public class AddDataStoreManage : IFeature
         AdminApiEndpointBuilder
             .MapPost(endpoints, "/dataStores/manage", Handle)
             .WithSummaryAndDescription("Asynchronously creates a data store based on the supplied values", "Asynchronously creates a data store based on the supplied values. The request is accepted and the creation process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponseCode(202, "Accepted. The dataStore record has been created and provisioning has been queued; the database is not yet available. The response has no body. Poll the resource identified by the Location header and read its status property, which progresses PendingCreate, CreateInProgress, then Created or CreateFailed.", "Absolute URL of the created dataStore, of the form {scheme}://{host}/v3/dataStores/manage/{id}."))
+            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The dataStore record has been created and provisioning has been queued; the database is not yet available. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}. Poll the resource identified by the Location header and read its status property, which progresses PendingCreate, CreateInProgress, then Created or CreateFailed.", "Absolute URL of the created dataStore, of the form {scheme}://{host}/v3/dataStores/manage/{id}."))
             .BuildForVersions(AdminApiVersions.V3);
     }
 
@@ -68,34 +68,49 @@ public class AddDataStoreManage : IFeature
             ? tenantConfigurationProvider.Get()?.TenantIdentifier
             : null;
 
-        var jobBuilder = JobBuilder.Create<CreateInstanceJob>()
-            .WithIdentity(CreateInstanceJob.CreateJobKey(added.Id, tenantIdentifier))
-            .UsingJobData(JobConstants.OdsInstanceManageIdKey, added.Id);
+        var jobId = $"{CreateInstanceJob.BuildJobIdentity(added.Id, tenantIdentifier)}_{Guid.NewGuid():N}";
+
+        var jobData = new Dictionary<string, object>
+        {
+            [JobConstants.OdsInstanceManageIdKey] = added.Id,
+            [JobConstants.RunIdKey] = jobId
+        };
 
         if (!string.IsNullOrWhiteSpace(tenantIdentifier))
         {
-            jobBuilder = jobBuilder.UsingJobData(JobConstants.TenantNameKey, tenantIdentifier);
+            jobData[JobConstants.TenantNameKey] = tenantIdentifier;
         }
 
-        var trigger = TriggerBuilder.Create()
-            .StartNow()
-            .Build();
-
         var scheduler = await schedulerFactory.GetScheduler();
+        var jobKey = CreateInstanceJob.CreateJobKey(added.Id, tenantIdentifier);
 
         try
         {
-            await scheduler.ScheduleJob(jobBuilder.Build(), trigger);
+            // The CreatePendingDataStoreManagesDispatcherJob may have already scheduled this job
+            // (e.g. it fired between the DB insert and this call). QuartzJobScheduler reports the
+            // job that actually won, which may carry a different RunIdKey than the one generated above.
+            var scheduledJob = await QuartzJobScheduler.ScheduleJob<CreateInstanceJob>(scheduler, jobKey, jobData, startImmediately: true);
+            jobId = scheduledJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;
         }
         catch (ObjectAlreadyExistsException)
         {
-            // The CreatePendingDataStoreManagesDispatcherJob may have already scheduled this job
-            // (e.g. it fired between the DB insert and this ScheduleJob call). Treat duplicate
-            // scheduling as success — the job is already queued and will process the OdsInstanceManage.
+            // Rarer TOCTOU: the dispatcher scheduled the job between QuartzJobScheduler's own
+            // existence check and its ScheduleJob call. Best-effort: read back whichever job won.
+            var existingJob = await scheduler.GetJobDetail(jobKey);
+            if (existingJob is not null)
+            {
+                jobId = existingJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;
+            }
         }
 
         var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/dataStores/manage/{added.Id}");
-        return Results.Accepted(absoluteLocation, null);
+        var response = new JobQueuedResult
+        {
+            JobId = jobId,
+            Message = "The Data Store has been queued to be created."
+        };
+
+        return Results.Accepted(absoluteLocation, response);
     }
 
     [SwaggerSchema(Title = "AddDataStoreManageRequest")]
