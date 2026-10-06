@@ -23,7 +23,7 @@ jobs:
   update-lock-file:
     name: Regenerate packages.lock.json
     if: github.actor == 'dependabot[bot]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:

@@ -29,7 +29,7 @@ jobs:
   delete-pre-releases:
     name: Delete Unnecessary Pre-Releases
     if: github.event_name == 'release'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
@@ -68,7 +68,7 @@ jobs:
 
   promote-Azure-artifact:
     name: Promote Azure Artifact
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:

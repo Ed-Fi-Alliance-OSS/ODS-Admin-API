@@ -157,7 +157,7 @@ jobs:
 
   sbom-create:
     name: Create SBOM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: pack
     permissions:
       actions: read
@@ -211,7 +211,7 @@ jobs:
 
   sbom-attach:
     name: Attach SBOM file
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs:
       - sbom-create
       - pack
@@ -273,7 +273,7 @@ jobs:
   publish-package:
     name: Publish NuGet Package
     needs: pack
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     defaults:
       run:
         shell: pwsh
@@ -302,7 +302,7 @@ jobs:
 
   docker-publish:
     name: Publish to Docker Hub
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs:
       - publish-package
     steps:

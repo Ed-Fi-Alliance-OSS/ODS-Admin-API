@@ -20,7 +20,7 @@ permissions: read-all
 jobs:
   generate-openapi:
     name: Generate OpenAPI v2/v3 specs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     defaults:
       run:
         shell: pwsh
