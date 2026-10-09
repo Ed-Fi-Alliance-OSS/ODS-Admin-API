@@ -992,6 +992,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.12, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.12, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
+          "Microsoft.Identity.Client": "[4.90.1, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[10.0.2, )",
           "OpenIddict.EntityFrameworkCore": "[7.7.1, )",
@@ -1007,7 +1008,8 @@
           "Azure.Identity": "[1.21.0, )",
           "Dapper": "[2.1.89, )",
           "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
-          "Microsoft.Data.SqlClient": "[7.1.1, )"
+          "Microsoft.Data.SqlClient": "[7.1.1, )",
+          "Microsoft.Identity.Client": "[4.90.1, )"
         }
       },
       "edfi.ods.adminapi.v1": {
@@ -1031,6 +1033,7 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.12, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.12, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
+          "Microsoft.Identity.Client": "[4.90.1, )",
           "NJsonSchema": "[11.0.2, )",
           "Newtonsoft.Json": "[13.0.3, )",
           "Npgsql": "[10.0.2, )",
@@ -1058,7 +1061,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.12, )",
           "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.12, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
-          "Microsoft.Identity.Client": "[4.84.2, )",
+          "Microsoft.Identity.Client": "[4.90.1, )",
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[10.0.2, )",
           "OpenIddict.AspNetCore": "[7.7.1, )",
@@ -1301,9 +1304,9 @@
       },
       "Microsoft.Identity.Client": {
         "type": "CentralTransitive",
-        "requested": "[4.84.2, )",
-        "resolved": "4.84.2",
-        "contentHash": "Va9FjmABSgj/lcUfHH0pBNQkmS7SNyepz2ERV7Yynp6QgEYpFdSqR6Vzy1WWipN8GS5pBHuXoZbqaDWuARCrHQ==",
+        "requested": "[4.90.1, )",
+        "resolved": "4.90.1",
+        "contentHash": "GLsf4cfEfIZD4pBkmBc8kCjfE811PKsM29T9nMZQDS2px/buM/Ha8jVYiGPdiA7cqjYNIX+G5d0S12TtGZS6RA==",
         "dependencies": {
           "Microsoft.IdentityModel.Abstractions": "8.14.0"
         }
