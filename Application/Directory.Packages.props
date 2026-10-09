@@ -45,7 +45,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="10.0.0" />
     <!-- Microsoft Core -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.1" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.84.2" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.90.1" />
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.36.0" />
     <!-- Code Analysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
