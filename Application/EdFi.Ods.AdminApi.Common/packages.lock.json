@@ -196,6 +196,15 @@
           "log4net": "3.3.0"
         }
       },
+      "Microsoft.Identity.Client": {
+        "type": "Direct",
+        "requested": "[4.90.1, )",
+        "resolved": "4.90.1",
+        "contentHash": "GLsf4cfEfIZD4pBkmBc8kCjfE811PKsM29T9nMZQDS2px/buM/Ha8jVYiGPdiA7cqjYNIX+G5d0S12TtGZS6RA==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Abstractions": "8.14.0"
+        }
+      },
       "NJsonSchema": {
         "type": "Direct",
         "requested": "[11.0.2, )",
@@ -846,15 +855,6 @@
         "dependencies": {
           "Castle.Core": "5.1.1",
           "Microsoft.EntityFrameworkCore": "8.0.7"
-        }
-      },
-      "Microsoft.Identity.Client": {
-        "type": "CentralTransitive",
-        "requested": "[4.84.2, )",
-        "resolved": "4.83.1",
-        "contentHash": "jOLIrZ3cynoqHLLO1cXplFFabrhrMEYs/EuKHvmCyrOm1axqiVFT6nCSnHxk7w5+d2BeQfCdM12Yf/0X7OeS1g==",
-        "dependencies": {
-          "Microsoft.IdentityModel.Abstractions": "8.14.0"
         }
       },
       "Newtonsoft.Json": {
