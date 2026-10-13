@@ -502,7 +502,7 @@ public class EducationOrganizationServiceTests : PlatformUsersContextTestBase
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => (v.ToString() ?? string.Empty).Contains(error)),
+                    It.Is<It.IsAnyType>((v, t) => v != null && (v.ToString() ?? string.Empty).Contains(error)),
                     null,
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.AtLeastOnce);
