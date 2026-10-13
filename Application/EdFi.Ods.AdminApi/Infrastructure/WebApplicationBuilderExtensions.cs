@@ -157,7 +157,16 @@ public static class WebApplicationBuilderExtensions
             opt.OperationFilter<TagByResourceUrlFilter>();
             opt.OperationFilter<LocationHeaderOperationFilter>();
             opt.OperationFilter<AnonymousOperationSecurityFilter>();
-            opt.OperationFilter<ProblemDetailsResponseOperationFilter>();
+            // RFC 7807 problem details are V3 only; V2 keeps its legacy error bodies.
+            if (adminApiMode == AdminApiMode.V3)
+            {
+                opt.OperationFilter<ProblemDetailsResponseOperationFilter>();
+            }
+            else if (adminApiMode == AdminApiMode.V2)
+            {
+                opt.OperationFilter<V2ErrorResponseOperationFilter>();
+            }
+
             opt.AddSecurityDefinition(
                 "oauth",
                 new OpenApiSecurityScheme
@@ -200,6 +209,7 @@ public static class WebApplicationBuilderExtensions
             }
 
             opt.DocumentFilter<ListExplicitSchemaDocumentFilter>();
+            opt.DocumentFilter<RemoveDocumentTagsFilter>();
             opt.SchemaFilter<SwaggerOptionalSchemaFilter>();
             opt.SchemaFilter<SwaggerSchemaRemoveRequiredFilter>();
             opt.SchemaFilter<SwaggerExcludeSchemaFilter>();

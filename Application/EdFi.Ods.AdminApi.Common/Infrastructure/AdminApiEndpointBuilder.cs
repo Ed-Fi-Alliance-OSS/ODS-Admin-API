@@ -119,8 +119,12 @@ public class AdminApiEndpointBuilder
             }
 
             builder.WithGroupName(version.ToString());
-            builder.WithResponseCode(401, "Unauthorized. The request requires authentication");
-            builder.WithResponseCode(403, "Forbidden. The request is authenticated, but not authorized to access this resource");
+            if (!_allowAnonymous)
+            {
+                builder.WithResponseCode(401, "Unauthorized. The request requires authentication");
+                builder.WithResponseCode(403, "Forbidden. The request is authenticated, but not authorized to access this resource");
+            }
+
             if (display409)
                 builder.WithResponseCode(409, "Conflict. The request is authenticated, but it has a conflict with an existing element");
             builder.WithResponseCode(500, FeatureCommonConstants.InternalServerErrorResponseDescription);

@@ -20,7 +20,9 @@ public class ReadTenancy : IFeature
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenancy", GetTenancyAsync)
             .WithSummaryAndDescription("Retrieves the list of configured tenant names", "Returns the list of tenant names when multi-tenant mode is enabled; an empty list otherwise.")
-            .WithRouteOptions(b => b.WithResponse<TenancyResult>(200))
+            .WithRouteOptions(b => b
+                .WithResponse<TenancyResult>(200)
+                .WithResponseCode(503, "Service Unavailable. MultiTenancy is enabled but no tenants are configured. Check the Tenants section of appsettings."))
             .AllowAnonymous()
             .BuildForVersions(AdminApiVersions.V3);
     }
