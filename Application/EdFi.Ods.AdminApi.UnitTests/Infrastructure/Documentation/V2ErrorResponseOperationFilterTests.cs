@@ -60,11 +60,12 @@ public class V2ErrorResponseOperationFilterTests
     }
 
     [Test]
-    public void Should_document_token_400_as_oauth_error_for_both_content_types()
+    public void Should_document_token_400_as_oauth_error_or_validation_error_for_problem_json_and_oauth_error_for_json()
     {
         var operation = Apply("connect/token", "400");
 
-        Id(Schema(operation, "400", ProblemJson)).ShouldBe("oauthErrorResult");
+        var schema = Schema(operation, "400", ProblemJson).ShouldBeOfType<OpenApiSchema>();
+        schema.OneOf!.Select(Id).ShouldBe(["oauthErrorResult", "validationErrorResult"]);
         Id(Schema(operation, "400", "application/json")).ShouldBe("oauthErrorResult");
     }
 

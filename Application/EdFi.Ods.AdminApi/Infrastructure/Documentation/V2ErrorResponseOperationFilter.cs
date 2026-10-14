@@ -53,7 +53,15 @@ public class V2ErrorResponseOperationFilter : IOperationFilter
             "400" when route.Equals(TokenRoute, StringComparison.OrdinalIgnoreCase) =>
                 new Dictionary<string, OpenApiMediaType>
                 {
-                    [ProblemJsonContentType] = new() { Schema = Reference(OAuthErrorResultId) },
+                    // A missing or invalid tenant header fails validation before the token request is
+                    // handled, and is returned as a validation error rather than an OAuth error.
+                    [ProblemJsonContentType] = new()
+                    {
+                        Schema = new OpenApiSchema
+                        {
+                            OneOf = [Reference(OAuthErrorResultId), Reference(ValidationErrorResultId)]
+                        }
+                    },
                     [JsonContentType] = new() { Schema = Reference(OAuthErrorResultId) }
                 },
             "400" when route.Equals(RegisterRoute, StringComparison.OrdinalIgnoreCase) =>
@@ -143,7 +151,7 @@ public class V2ErrorResponseOperationFilter : IOperationFilter
                 Title = "OAuthError",
                 Type = JsonSchemaType.Object,
                 Description =
-                    "OAuth 2.0 error body (RFC 6749, section 5.2) returned by the token endpoint. An invalid_scope error is returned with a content type of application/problem+json and also includes title and status; other errors are returned as application/json.",
+                    "OAuth 2.0 error body (RFC 6749, section 5.2) returned by the token endpoint. An invalid_scope error is returned with a content type of application/problem+json and also includes title and status; other errors are returned as application/json. A missing or invalid tenant header in multi-tenant mode is returned as a validationErrorResult with a content type of application/problem+json.",
                 Required = new HashSet<string> { "error" },
                 Properties = new Dictionary<string, IOpenApiSchema>
                 {
