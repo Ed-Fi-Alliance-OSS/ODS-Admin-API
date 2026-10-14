@@ -27,6 +27,12 @@ public static class EndpointRouteBuilderExtensions
         return builder;
     }
 
+    public static RouteHandlerBuilder WithResponseExample(this RouteHandlerBuilder builder, int code, string exampleJson)
+    {
+        builder.WithMetadata(new ResponseExampleMetadata(code, exampleJson));
+        return builder;
+    }
+
     private static void AddLocationHeaderDescription(RouteHandlerBuilder builder, int code, string? locationDescription)
     {
         if ((code == 201 || code == 202) && locationDescription is not null)

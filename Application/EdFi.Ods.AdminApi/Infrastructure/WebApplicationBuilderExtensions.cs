@@ -156,6 +156,7 @@ public static class WebApplicationBuilderExtensions
             opt.OperationFilter<TokenEndpointBodyDescriptionFilter>();
             opt.OperationFilter<TagByResourceUrlFilter>();
             opt.OperationFilter<LocationHeaderOperationFilter>();
+            opt.OperationFilter<ResponseExampleOperationFilter>();
             opt.OperationFilter<AnonymousOperationSecurityFilter>();
             // RFC 7807 problem details are V3 only; V2 keeps its legacy error bodies.
             if (adminApiMode == AdminApiMode.V3)

@@ -21,8 +21,12 @@ public class LocationHeaderOperationFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        if (operation.Responses is null)
+        // A queued DELETE has no created resource, so there is no Location to document.
+        if (operation.Responses is null
+            || string.Equals(context.ApiDescription.HttpMethod, "DELETE", StringComparison.OrdinalIgnoreCase))
+        {
             return;
+        }
 
         var statusCode = LocationHeaderStatusCodes.FirstOrDefault(operation.Responses.ContainsKey);
         if (statusCode is null || operation.Responses[statusCode] is not OpenApiResponse response)
