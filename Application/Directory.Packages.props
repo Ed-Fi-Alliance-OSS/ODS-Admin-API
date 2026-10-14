@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Lets the System.Security.Cryptography.Pkcs pin below override the vulnerable transitive version -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <!-- Suppress package source mapping warnings for Central Package Management -->
     <!-- Also suppress version bound and security warnings that are treated as errors in Docker builds -->
     <NoWarn>$(NoWarn);NU1507;NU1604;NU1602;NU1603;NU1701;NU1902;NU1903</NoWarn>
@@ -51,7 +53,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.7.0.110445" />
     <!-- JSON -->
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="NJsonSchema" Version="11.0.2" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
     <!-- PostgreSQL -->
@@ -69,6 +71,8 @@
     <!-- System -->
     <PackageVersion Include="System.Drawing.Common" Version="8.0.0" />
     <PackageVersion Include="System.Formats.Asn1" Version="9.0.0" />
+    <!-- Patched version for GHSA-846f-f764-76mx and GHSA-2fmv-rv2c-59x7 (transitive via Microsoft.Data.SqlClient) -->
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
     <!-- log4net -->
     <PackageVersion Include="log4net" Version="3.4.0" />
     <!-- EdFi.Admin.DataAccess and EdFi.Security.DataAccess  -->
