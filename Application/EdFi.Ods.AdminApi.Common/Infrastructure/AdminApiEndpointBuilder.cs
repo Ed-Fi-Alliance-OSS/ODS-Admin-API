@@ -32,6 +32,7 @@ public class AdminApiEndpointBuilder
     private readonly List<Action<RouteHandlerBuilder>> _routeOptions = [];
     private readonly string _pluralResourceName;
     private bool _allowAnonymous = false;
+    private AdminApiVersions.AdminApiVersion? _currentVersion;
     private IEnumerable<string> _authorizationPolicies = [];
 
     public static AdminApiEndpointBuilder MapGet(IEndpointRouteBuilder endpoints, string route, Delegate handler)
@@ -139,6 +140,8 @@ public class AdminApiEndpointBuilder
                 builder.WithResponseCode(400, FeatureCommonConstants.BadRequestResponseDescription);
             }
 
+            _currentVersion = version;
+
             foreach (var action in _routeOptions)
             {
                 action(builder);
@@ -167,12 +170,21 @@ public class AdminApiEndpointBuilder
         {
             HttpVerb.GET => "This GET operation provides access to resources using the \"Get\" search pattern. The values of any properties of the resource that are specified will be used to return all matching results (if it exists).",
             HttpVerb.POST => "The POST operation is used to create a new resource. Clients should NOT include the resource \"id\" in the JSON body; doing so will result in an error. The web service will check whether a resource with matching natural key values already exists; if a match is found, the request is rejected with an error and no data is changed. Use PUT to update an existing resource by identifier instead.",
-            HttpVerb.PUT => "The PUT operation is used to update a resource by identifier. If the resource identifier (\"id\") is provided in the JSON body, it will be ignored. Additionally, this API resource is not configured for cascading natural key updates.",
             HttpVerb.DELETE => "The DELETE operation is used to delete an existing resource by identifier. If the resource doesn't exist, an error will result (the resource will not be found).",
-            _ => throw new ArgumentOutOfRangeException($"Unconfigured HTTP verb for default description {_verb}")
+            _ => string.Empty
         };
 
-        return WithSummaryAndDescription(summary, description);
+        // The description is resolved per version, since V3 words the PUT description differently.
+        _routeOptions.Add(rhb => rhb.WithMetadata(
+            new SwaggerOperationAttribute(summary, _verb == HttpVerb.PUT ? GetPutDescription(_currentVersion) : description)));
+        return this;
+    }
+
+    private static string GetPutDescription(AdminApiVersions.AdminApiVersion? version)
+    {
+        var identifier = version == AdminApiVersions.V3 ? "\"id\"" : "(\"id\")";
+
+        return $"The PUT operation is used to update a resource by identifier. If the resource identifier {identifier} is provided in the JSON body, it will be ignored. Additionally, this API resource is not configured for cascading natural key updates.";
     }
 
     public AdminApiEndpointBuilder WithSummary(string summary)

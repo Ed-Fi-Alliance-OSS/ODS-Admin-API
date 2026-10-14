@@ -259,6 +259,6 @@ public class OverrideAuthStrategyOnClaimSetModel
     [SwaggerSchema(Description = FeatureConstants.ResourceClaimIdDescription, Nullable = false)]
     public int ResourceClaimId { get; set; }
     public string? ActionName { get; set; }
-    [SwaggerSchema(Description = FeatureConstants.AuthorizationStrategyIdsDescription, Nullable = false)]
+    [SwaggerExclude]
     public List<int>? AuthStrategyIds { get; set; }
 }
