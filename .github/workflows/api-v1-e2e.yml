@@ -29,6 +29,10 @@ permissions: read-all
 
 jobs:
   run-e2e-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        dbEngine: [mssql, pgsql]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -38,85 +42,49 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Run mssql combo
-        id: combo-mssql
-        continue-on-error: true
+      - name: Run Bruno tests
         shell: pwsh
-        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 1 -DbEngine mssql -ReportSuffix mssql
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 1 -DbEngine ${{ matrix.dbEngine }} -ReportSuffix ${{ matrix.dbEngine }}
 
-      - name: Get Docker logs (mssql)
-        if: steps.combo-mssql.outcome == 'failure'
-        continue-on-error: true
+      - name: Get Docker logs
+        if: failure()
         run: |
-          mkdir -p docker-logs/mssql
-          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/mssql/adminapi.log
-          docker logs ed-fi-db-admin-adminapi > docker-logs/mssql/ed-fi-db-admin.log
-          docker logs ed-fi-gateway-adminapi > docker-logs/mssql/ed-fi-gateway.log
-
-      - name: Tear down mssql combo
-        if: always()
-        continue-on-error: true
-        run: |
-          docker compose \
-            -f 'Docker/V1/Compose/mssql/compose-build-dev.yml' \
-            --env-file 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/gh-action-setup/.automation.env' \
-            down -v --remove-orphans
-
-      - name: Run pgsql combo
-        id: combo-pgsql
-        continue-on-error: true
-        shell: pwsh
-        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 1 -DbEngine pgsql -ReportSuffix pgsql
-
-      - name: Get Docker logs (pgsql)
-        if: steps.combo-pgsql.outcome == 'failure'
-        continue-on-error: true
-        run: |
-          mkdir -p docker-logs/pgsql
-          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/pgsql/adminapi.log
-          docker logs ed-fi-db-admin-adminapi > docker-logs/pgsql/ed-fi-db-admin.log
-          docker logs ed-fi-gateway-adminapi > docker-logs/pgsql/ed-fi-gateway.log
-
-      - name: Tear down pgsql combo
-        if: always()
-        continue-on-error: true
-        run: |
-          docker compose \
-            -f 'Docker/V1/Compose/pgsql/compose-build-dev.yml' \
-            --env-file 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/gh-action-setup/.automation.env' \
-            down -v --remove-orphans
+          mkdir -p docker-logs
+          for container in adminapi ed-fi-db-admin-adminapi ed-fi-gateway-adminapi; do
+            if docker inspect "$container" >/dev/null 2>&1; then
+              docker logs "$container" > "docker-logs/$container.log" 2>&1 || true
+            fi
+          done
+          if docker inspect adminapi >/dev/null 2>&1; then
+            docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/adminapi-app.log || true
+          fi
 
       - name: Upload Docker logs
-        if: always() && (steps.combo-mssql.outcome == 'failure' || steps.combo-pgsql.outcome == 'failure')
+        if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: docker-logs
+          name: docker-logs-v1-${{ matrix.dbEngine }}
           path: docker-logs/
           retention-days: 10
+          if-no-files-found: ignore
 
       - name: Upload Html results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test-html-results
-          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/results-*.html
+          name: test-html-results-v1-${{ matrix.dbEngine }}
+          path: 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/results-${{ matrix.dbEngine }}.html'
           retention-days: 10
+          if-no-files-found: warn
 
       - name: Upload xml results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: test-results
-          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/report-*.xml
+          name: test-results-v1-${{ matrix.dbEngine }}
+          path: 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/report-${{ matrix.dbEngine }}.xml'
           retention-days: 10
-
-      - name: Fail job if any combo failed
-        if: always()
-        run: |
-          if [ "${{ steps.combo-mssql.outcome }}" = "failure" ] || [ "${{ steps.combo-pgsql.outcome }}" = "failure" ]; then
-            echo "One or more E2E combos failed"
-            exit 1
-          fi
+          if-no-files-found: error
 
   report:
     defaults:
@@ -131,9 +99,18 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: test-results-v1-*
+          path: test-results
+          merge-multiple: true
 
       - name: Inspect results for JIRA report
         run: |
+          $expectedReports = @('report-mssql.xml', 'report-pgsql.xml')
+          $missingReports = @($expectedReports | Where-Object { -not (Test-Path (Join-Path 'test-results' $_)) })
+          if ($missingReports.Count -gt 0) {
+            throw "Missing expected XML reports: $($missingReports -join ', ')"
+          }
           Get-ChildItem -Path 'test-results' -Recurse -Filter 'report-*.xml' | ForEach-Object {
             [xml]$xmlContent = Get-Content -Path $_.FullName
             $failed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property failures -Sum | Select-Object -ExpandProperty Sum)
@@ -141,4 +118,4 @@ jobs:
             if ($passed -lt 1) {
               Write-Output "No tests recorded in report ($($_.Name)). Uploading manually."
             }
-          }
+            }

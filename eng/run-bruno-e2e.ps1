@@ -393,6 +393,22 @@ if ($brunoRecursive) {
 
 Push-Location $brunoDir
 try {
+    $reportsToClear = @(
+        (Join-Path $brunoDir "results.html"),
+        (Join-Path $brunoDir "report.xml")
+    )
+    if ($ReportSuffix) {
+        $reportsToClear += @(
+            (Join-Path $brunoDir "results-$ReportSuffix.html"),
+            (Join-Path $brunoDir "report-$ReportSuffix.xml")
+        )
+    }
+    foreach ($reportPath in $reportsToClear) {
+        if (Test-Path -LiteralPath $reportPath) {
+            Remove-Item -LiteralPath $reportPath -Force
+        }
+    }
+
     if ($UseGlobalBru) {
         & bru @runArgs
     } else {
@@ -424,7 +440,7 @@ try {
     if ($TearDown) {
         Write-Host ""
         Write-Host "🧹 Tearing down containers..." -ForegroundColor Yellow
-        docker compose -f $composeFile --env-file $envFile down -v
+        docker compose -f $composeFile --env-file $envFile down -v --remove-orphans --rmi local
         if ($LASTEXITCODE -ne 0) {
             Write-Host "⚠️  docker compose down exited with $LASTEXITCODE" -ForegroundColor Yellow
         } else {
