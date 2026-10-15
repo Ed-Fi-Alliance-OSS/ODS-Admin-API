@@ -18,6 +18,8 @@
         <PackageReference Include="FluentValidation.AspNetCore" />
         <PackageReference Include="log4net" />
         <PackageReference Include="Microsoft.Data.SqlClient" />
+        <!-- Pin transitive dependency of Microsoft.Data.SqlClient to patch GHSA-846f-f764-76mx and GHSA-2fmv-rv2c-59x7 -->
+        <PackageReference Include="System.Security.Cryptography.Pkcs" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />

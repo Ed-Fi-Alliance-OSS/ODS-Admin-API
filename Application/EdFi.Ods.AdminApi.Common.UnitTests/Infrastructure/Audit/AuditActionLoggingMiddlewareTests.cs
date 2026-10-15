@@ -77,7 +77,7 @@ public class AuditActionLoggingMiddlewareTests
     }
 
     [Test]
-    public void InvokeAsync_WhenNextThrows_StillRecordsActionEventAndPropagatesException()
+    public async Task InvokeAsync_WhenNextThrows_StillRecordsActionEventAndPropagatesException()
     {
         var recorder = A.Fake<IAuditEventRecorder>();
         var capture = A.Fake<IDeletedEntityAuditCapture>();
@@ -85,7 +85,7 @@ public class AuditActionLoggingMiddlewareTests
             _ => throw new InvalidOperationException("downstream failure"), recorder);
         var context = BuildContext("POST", "/v3/apiClients", "client-1", 200);
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context, capture));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context, capture));
 
         A.CallTo(() => recorder.Record(
             AuditEventType.Action, "client-1", A<string?>._, "POST", "/v3/apiClients", StatusCodes.Status500InternalServerError,
