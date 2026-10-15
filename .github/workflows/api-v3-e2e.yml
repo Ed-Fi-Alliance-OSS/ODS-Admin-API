@@ -1,0 +1,200 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+name: Admin API V3 E2E Tests + ODS 7
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+env:
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+  JIRA_ACCESS_TOKEN: ${{ secrets.JIRA_ACCESS_TOKEN }}
+  ADMIN_API_VERSION: "2.2.0"
+  PROJECT_ID: "13401"
+  CYCLE_NAME: "Automation Cycle"
+  TASK_NAME: "API Automation Task"
+  FOLDER_NAME: "API Automation Run"
+  RESULTS_FILE: "test-xml-results"
+
+permissions: read-all
+
+jobs:
+  run-e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Log in to Docker Hub
+        continue-on-error: true
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_HUB_TOKEN }}
+
+      - name: Setup node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "20"
+
+      - name: Run mssql-singletenant combo
+        id: combo-mssql-single
+        continue-on-error: true
+        shell: pwsh
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode singletenant -DbEngine mssql -ReportSuffix mssql-singletenant
+
+      - name: Get Docker logs (mssql-singletenant)
+        if: steps.combo-mssql-single.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mkdir -p docker-logs/mssql-singletenant
+          docker logs ed-fi-db-admin-adminapi > docker-logs/mssql-singletenant/ed-fi-db-admin-adminapi.log
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/mssql-singletenant/adminapi.log
+
+      - name: Tear down mssql-singletenant combo
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose \
+            -f 'Docker/V3/Compose/mssql/SingleTenant/compose-build-dev.yml' \
+            --env-file 'Application/EdFi.Ods.AdminApi.V3/E2E Tests/gh-action-setup/.automation_mssql.env' \
+            down -v --remove-orphans
+
+      - name: Run mssql-multitenant combo
+        id: combo-mssql-multi
+        continue-on-error: true
+        shell: pwsh
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode multitenant -DbEngine mssql -ReportSuffix mssql-multitenant
+
+      - name: Get Docker logs (mssql-multitenant)
+        if: steps.combo-mssql-multi.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mkdir -p docker-logs/mssql-multitenant
+          docker logs ed-fi-db-admin-adminapi-tenant1 > docker-logs/mssql-multitenant/ed-fi-db-admin-adminapi-tenant1.log
+          docker logs ed-fi-db-admin-adminapi-tenant2 > docker-logs/mssql-multitenant/ed-fi-db-admin-adminapi-tenant2.log
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/mssql-multitenant/adminapi.log
+
+      - name: Tear down mssql-multitenant combo
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose \
+            -f 'Docker/V3/Compose/mssql/MultiTenant/compose-build-dev-multi-tenant.yml' \
+            --env-file 'Application/EdFi.Ods.AdminApi.V3/E2E Tests/gh-action-setup/.automation_mssql.env' \
+            down -v --remove-orphans
+
+      - name: Run pgsql-singletenant combo
+        id: combo-pgsql-single
+        continue-on-error: true
+        shell: pwsh
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode singletenant -DbEngine pgsql -ReportSuffix pgsql-singletenant
+
+      - name: Get Docker logs (pgsql-singletenant)
+        if: steps.combo-pgsql-single.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mkdir -p docker-logs/pgsql-singletenant
+          docker logs ed-fi-db-admin-adminapi > docker-logs/pgsql-singletenant/ed-fi-db-admin-adminapi.log
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/pgsql-singletenant/adminapi.log
+
+      - name: Tear down pgsql-singletenant combo
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose \
+            -f 'Docker/V3/Compose/pgsql/SingleTenant/compose-build-dev.yml' \
+            --env-file 'Application/EdFi.Ods.AdminApi.V3/E2E Tests/gh-action-setup/.automation_pgsql.env' \
+            down -v --remove-orphans
+
+      - name: Run pgsql-multitenant combo
+        id: combo-pgsql-multi
+        continue-on-error: true
+        shell: pwsh
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode multitenant -DbEngine pgsql -ReportSuffix pgsql-multitenant
+
+      - name: Get Docker logs (pgsql-multitenant)
+        if: steps.combo-pgsql-multi.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mkdir -p docker-logs/pgsql-multitenant
+          docker logs ed-fi-db-admin-adminapi-tenant1 > docker-logs/pgsql-multitenant/ed-fi-db-admin-adminapi-tenant1.log
+          docker logs ed-fi-db-admin-adminapi-tenant2 > docker-logs/pgsql-multitenant/ed-fi-db-admin-adminapi-tenant2.log
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/pgsql-multitenant/adminapi.log
+
+      - name: Tear down pgsql-multitenant combo
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose \
+            -f 'Docker/V3/Compose/pgsql/MultiTenant/compose-build-dev-multi-tenant.yml' \
+            --env-file 'Application/EdFi.Ods.AdminApi.V3/E2E Tests/gh-action-setup/.automation_pgsql.env' \
+            down -v --remove-orphans
+
+      - name: Upload Docker logs
+        if: always() && (steps.combo-mssql-single.outcome == 'failure' || steps.combo-mssql-multi.outcome == 'failure' || steps.combo-pgsql-single.outcome == 'failure' || steps.combo-pgsql-multi.outcome == 'failure')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docker-logs
+          path: docker-logs/
+          retention-days: 5
+
+      - name: Upload Html results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-html-results
+          path: Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/results-*.html
+          retention-days: 5
+
+      - name: Upload xml results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-xml-results
+          path: Application/EdFi.Ods.AdminApi.V3/E2E Tests/Bruno Admin API E2E 3.0/report-*.xml
+          retention-days: 5
+
+      - name: Fail job if any combo failed
+        if: always()
+        run: |
+          if [ "${{ steps.combo-mssql-single.outcome }}" = "failure" ] || \
+             [ "${{ steps.combo-mssql-multi.outcome }}" = "failure" ] || \
+             [ "${{ steps.combo-pgsql-single.outcome }}" = "failure" ] || \
+             [ "${{ steps.combo-pgsql-multi.outcome }}" = "failure" ]; then
+            echo "One or more E2E combos failed"
+            exit 1
+          fi
+
+  report:
+    defaults:
+      run:
+        shell: pwsh
+    if: success() || failure()
+    needs:
+      - run-e2e-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+
+      - name: Inspect results for JIRA report
+        run: |
+          Get-ChildItem -Path 'test-xml-results' -Recurse -Filter 'report-*.xml' | ForEach-Object {
+            [xml]$xmlContent = Get-Content -Path $_.FullName
+            $failed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property failures -Sum | Select-Object -ExpandProperty Sum)
+            $passed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property tests -Sum | Select-Object -ExpandProperty Sum) - $failed
+            if ($passed -lt 1) {
+              Write-Output "No tests recorded in report ($($_.Name)). Uploading manually."
+            }
+          }

@@ -48,6 +48,10 @@
     V2 default: "v2/"
     V3 default: "v3/"
 
+.PARAMETER ReportSuffix
+    When set, copies results.html/report.xml to results-<suffix>.html and
+    report-<suffix>.xml after the run, so sequential invocations keep every report.
+
 .EXAMPLE
     # Run V3 multi-tenant pgsql (same as CI)
     .\eng\run-bruno-e2e.ps1 -ApiVersion 3 -TenantMode multitenant
@@ -78,7 +82,9 @@ param(
     [switch]$SkipDockerBuild,
     [switch]$TearDown,
     [switch]$UseGlobalBru,
-    [string[]]$BrunoFilter = @()
+    [string[]]$BrunoFilter = @(),
+
+    [string]$ReportSuffix = ""
 )
 
 Set-StrictMode -Version Latest
@@ -400,6 +406,17 @@ try {
 } finally {
     Pop-Location
     $env:NODE_TLS_REJECT_UNAUTHORIZED = $null
+
+    if ($ReportSuffix) {
+        $htmlSrc = Join-Path $brunoDir "results.html"
+        $xmlSrc  = Join-Path $brunoDir "report.xml"
+        if (Test-Path $htmlSrc) {
+            Copy-Item -Path $htmlSrc -Destination (Join-Path $brunoDir "results-$ReportSuffix.html") -Force
+        }
+        if (Test-Path $xmlSrc) {
+            Copy-Item -Path $xmlSrc -Destination (Join-Path $brunoDir "report-$ReportSuffix.xml") -Force
+        }
+    }
 
     # ---------------------------------------------------------------------------
     # 7. Optional tear-down — runs whether tests passed or failed

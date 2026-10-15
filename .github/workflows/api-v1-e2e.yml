@@ -1,0 +1,144 @@
+# SPDX-License-Identifier: Apache-2.0
+# Licensed to the Ed-Fi Alliance under one or more agreements.
+# The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
+# See the LICENSE and NOTICES files in the project root for more information.
+
+name: Admin API V1 E2E Tests + ODS 6
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - "*-hotfix"
+
+env:
+  JIRA_ACCESS_TOKEN: ${{ secrets.JIRA_ACCESS_TOKEN }}
+  ADMIN_API_VERSION: "1.2"
+  PROJECT_ID: "13401"
+  CYCLE_NAME: "Automation Cycle"
+  TASK_NAME: "API Automation Task"
+  FOLDER_NAME: "API Automation Run"
+  RESULTS_FILE: "test-results"
+
+permissions: read-all
+
+jobs:
+  run-e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Setup node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "20"
+
+      - name: Run mssql combo
+        id: combo-mssql
+        continue-on-error: true
+        shell: pwsh
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 1 -DbEngine mssql -ReportSuffix mssql
+
+      - name: Get Docker logs (mssql)
+        if: steps.combo-mssql.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mkdir -p docker-logs/mssql
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/mssql/adminapi.log
+          docker logs ed-fi-db-admin-adminapi > docker-logs/mssql/ed-fi-db-admin.log
+          docker logs ed-fi-gateway-adminapi > docker-logs/mssql/ed-fi-gateway.log
+
+      - name: Tear down mssql combo
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose \
+            -f 'Docker/V1/Compose/mssql/compose-build-dev.yml' \
+            --env-file 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/gh-action-setup/.automation.env' \
+            down -v --remove-orphans
+
+      - name: Run pgsql combo
+        id: combo-pgsql
+        continue-on-error: true
+        shell: pwsh
+        run: ./eng/run-bruno-e2e.ps1 -ApiVersion 1 -DbEngine pgsql -ReportSuffix pgsql
+
+      - name: Get Docker logs (pgsql)
+        if: steps.combo-pgsql.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          mkdir -p docker-logs/pgsql
+          docker cp adminapi:/app/Ed-Fi-ODS-AdminAPI-Log.txt docker-logs/pgsql/adminapi.log
+          docker logs ed-fi-db-admin-adminapi > docker-logs/pgsql/ed-fi-db-admin.log
+          docker logs ed-fi-gateway-adminapi > docker-logs/pgsql/ed-fi-gateway.log
+
+      - name: Tear down pgsql combo
+        if: always()
+        continue-on-error: true
+        run: |
+          docker compose \
+            -f 'Docker/V1/Compose/pgsql/compose-build-dev.yml' \
+            --env-file 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/gh-action-setup/.automation.env' \
+            down -v --remove-orphans
+
+      - name: Upload Docker logs
+        if: always() && (steps.combo-mssql.outcome == 'failure' || steps.combo-pgsql.outcome == 'failure')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docker-logs
+          path: docker-logs/
+          retention-days: 10
+
+      - name: Upload Html results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-html-results
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/results-*.html
+          retention-days: 10
+
+      - name: Upload xml results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-results
+          path: Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/report-*.xml
+          retention-days: 10
+
+      - name: Fail job if any combo failed
+        if: always()
+        run: |
+          if [ "${{ steps.combo-mssql.outcome }}" = "failure" ] || [ "${{ steps.combo-pgsql.outcome }}" = "failure" ]; then
+            echo "One or more E2E combos failed"
+            exit 1
+          fi
+
+  report:
+    defaults:
+      run:
+        shell: pwsh
+    if: success() || failure()
+    needs:
+      - run-e2e-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+
+      - name: Inspect results for JIRA report
+        run: |
+          Get-ChildItem -Path 'test-results' -Recurse -Filter 'report-*.xml' | ForEach-Object {
+            [xml]$xmlContent = Get-Content -Path $_.FullName
+            $failed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property failures -Sum | Select-Object -ExpandProperty Sum)
+            $passed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property tests -Sum | Select-Object -ExpandProperty Sum) - $failed
+            if ($passed -lt 1) {
+              Write-Output "No tests recorded in report ($($_.Name)). Uploading manually."
+            }
+          }
