@@ -995,7 +995,7 @@
           "Swashbuckle.AspNetCore": "[10.3.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.3.0, )",
           "System.Security.Cryptography.Pkcs": "[10.0.13, )",
-          "log4net": "[3.4.0, )"
+          "log4net": "[3.5.0, )"
         }
       },
       "edfi.ods.adminapi.instancemanagement": {
@@ -1038,7 +1038,7 @@
           "OpenIddict.EntityFrameworkCore": "[7.7.1, )",
           "Swashbuckle.AspNetCore": "[10.3.0, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.3.0, )",
-          "log4net": "[3.4.0, )"
+          "log4net": "[3.5.0, )"
         }
       },
       "edfi.ods.adminapi.v3": {
@@ -1195,9 +1195,9 @@
       },
       "log4net": {
         "type": "CentralTransitive",
-        "requested": "[3.4.0, )",
-        "resolved": "3.4.0",
-        "contentHash": "IubYl1l3vs4pZ8hRJBWjfPOW8osR1gS/FAweVYpc2n7SZ0yrZ64uMGQYjjt1nna/Hpm10IHiw4D6HSh/JFbj9w==",
+        "requested": "[3.5.0, )",
+        "resolved": "3.5.0",
+        "contentHash": "JJJ1L3/WJZA8OAyaz0ghG8+DNo2t9qn0nbV3HzIBVMheO62R1Zdz+mvyizpYsYDu/+k35tg324r2P/LCvAtfKw==",
         "dependencies": {
           "System.Configuration.ConfigurationManager": "4.5.0"
         }
