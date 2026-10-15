@@ -26,7 +26,9 @@ public class RefreshEducationOrganizations : IFeature
                 "Refreshes education organizations for all ODS instances",
                 "Triggers a refresh of education organization data from all ODS instances"
             )
-            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v2/jobs/{jobId}."))
+            .WithRouteOptions(b => b
+                .WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v2/jobs/{jobId}.")
+                .WithResponseExample(202, """{"jobId":"RefreshEducationOrganizations-default-3f2504e0-4f89-11d3-9a0c-0305e82c3301_9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d","message":"Education organizations refresh has been queued for all instances"}"""))
             .BuildForVersions(AdminApiVersions.V2);
 
         AdminApiEndpointBuilder
@@ -37,6 +39,7 @@ public class RefreshEducationOrganizations : IFeature
             )
             .WithRouteOptions(b => b
                 .WithResponse<JobQueuedResult>(202, "Accepted. The refresh has been queued as a background job; it has not completed when this response is returned.", locationDescription: "Relative path of the job created for this request, in the form /v2/jobs/{jobId}.")
+                .WithResponseExample(202, """{"jobId":"RefreshEducationOrganizations-default-3f2504e0-4f89-11d3-9a0c-0305e82c3301_9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d","message":"Education organizations refresh has been queued for the specified instance"}""")
                 .WithResponseCode(404))
             .BuildForVersions(AdminApiVersions.V2);
     }

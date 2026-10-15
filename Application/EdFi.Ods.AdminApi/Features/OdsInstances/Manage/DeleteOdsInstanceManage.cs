@@ -30,7 +30,9 @@ public class DeleteOdsInstanceManage : IFeature
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/odsInstances/manage/{id}", Handle)
             .WithSummaryAndDescription("Asynchronously deletes an ODS instance based on the supplied values", "Asynchronously deletes an ODS instance. The request is accepted and the deletion process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The ODS instance deletion has been queued for processing. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}."))
+            .WithRouteOptions(b => b
+                .WithResponse<JobQueuedResult>(202, "Accepted. The ODS instance deletion has been queued for processing. The response body includes the jobId that can be used to check progress via GET /v2/jobs/{jobId}.")
+                .WithResponseExample(202, """{"jobId":"DeleteInstanceJob-1_9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d","message":"The ODS Instance has been queued to be deleted."}"""))
             .BuildForVersions(AdminApiVersions.V2);
     }
 

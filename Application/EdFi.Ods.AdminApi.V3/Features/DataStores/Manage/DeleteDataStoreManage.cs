@@ -29,8 +29,10 @@ public class DeleteDataStoreManage : IFeature
     {
         AdminApiEndpointBuilder
             .MapDelete(endpoints, "/dataStores/manage/{id}", Handle)
-            .WithSummaryAndDescription("Asynchronously deletes a data store based on the supplied values", "Asynchronously deletes a data store. The request is accepted and the deletion process is queued for processing.")
-            .WithRouteOptions(b => b.WithResponse<JobQueuedResult>(202, "Accepted. The dataStore deletion has been queued for processing. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}."))
+            .WithSummaryAndDescription("Asynchronously deletes a data store based on the supplied values.", "Asynchronously deletes a data store. The request is accepted and the deletion process is queued for processing.")
+            .WithRouteOptions(b => b
+                .WithResponse<JobQueuedResult>(202, "Accepted. The dataStore deletion has been queued for processing. The response body includes the jobId that can be used to check progress via GET /jobs/{jobId}.")
+                .WithResponseExample(202, """{"jobId":"DeleteInstanceJob-1_9b1deb4d3b7d4bad9bdd2b0d7b3dcb6d","message":"The Data Store has been queued to be deleted."}"""))
             .BuildForVersions(AdminApiVersions.V3);
     }
 

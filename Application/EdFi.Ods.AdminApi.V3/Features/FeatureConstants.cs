@@ -15,7 +15,6 @@ public static class FeatureConstants
     public const string ApplicationIdDescription = "Application id";
     public const string ApplicationNameDescription = "Application name";
     public const string ClaimSetIdDescription = "Claim set id";
-    public const string AuthorizationStrategyIdsDescription = "Authorization Strategy Ids";
     public const string ClaimSetNameDescription = "Claim set name";
     public const string ProfileIdDescription = "Profile id";
     public const string EducationOrganizationIdsDescription = "Education organization ids";

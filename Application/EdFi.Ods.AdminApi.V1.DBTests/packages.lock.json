@@ -1121,7 +1121,7 @@
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "Microsoft.Identity.Client": "[4.90.1, )",
           "NJsonSchema": "[11.0.2, )",
-          "Newtonsoft.Json": "[13.0.3, )",
+          "Newtonsoft.Json": "[13.0.4, )",
           "Npgsql": "[10.0.2, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.1, )",
           "OpenIddict.AspNetCore": "[7.7.1, )",
@@ -1359,9 +1359,9 @@
       },
       "Newtonsoft.Json": {
         "type": "CentralTransitive",
-        "requested": "[13.0.3, )",
-        "resolved": "13.0.3",
-        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+        "requested": "[13.0.4, )",
+        "resolved": "13.0.4",
+        "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
       },
       "NJsonSchema": {
         "type": "CentralTransitive",

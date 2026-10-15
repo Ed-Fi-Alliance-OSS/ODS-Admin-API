@@ -42,7 +42,10 @@ public class ReadTenants : IFeature
         AdminApiEndpointBuilder
             .MapGet(endpoints, "/tenants/{tenantName}/odsInstances/edOrgs", GetTenantEdOrgsByInstancesAsync)
             .WithSummaryAndDescription("Retrieves the ODS instances and their education organizations for a specific tenant", "Returns the tenant along with each of its ODS instances and the education organizations within them. In multi-tenant mode the tenant header must be supplied and must match the tenantName in the route. In single-tenant mode only the default tenant name is accepted.")
-            .WithRouteOptions(b => b.WithResponse<TenantDetailsResponse>(200))
+            .WithRouteOptions(b => b
+                .WithResponse<TenantDetailsResponse>(200)
+                .WithResponseCode(400, FeatureCommonConstants.BadRequestResponseDescription)
+                .WithResponseCode(404, "Not found. A resource with given identifier could not be found."))
             .BuildForVersions(AdminApiVersions.V2);
     }
 
