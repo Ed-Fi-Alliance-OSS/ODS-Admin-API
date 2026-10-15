@@ -765,6 +765,7 @@
           "Quartz": "[3.21.0, )",
           "Swashbuckle.AspNetCore": "[10.2.3, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.2.3, )",
+          "System.Security.Cryptography.Pkcs": "[10.0.13, )",
           "log4net": "[3.4.0, )"
         }
       },
