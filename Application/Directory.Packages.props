@@ -18,7 +18,7 @@
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <!-- Testing -->
     <PackageVersion Include="Dapper" Version="2.1.89" />
-    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="FakeItEasy" Version="9.0.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageVersion Include="Moq" Version="4.21.0" />
