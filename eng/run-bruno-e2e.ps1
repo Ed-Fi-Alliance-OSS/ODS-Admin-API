@@ -40,7 +40,7 @@
 
 .PARAMETER UseGlobalBru
     When set, invokes the globally installed 'bru' CLI instead of npx.
-    Useful if npx has local cache issues. Requires: npm install -g @usebruno/cli
+    Useful if npx has local cache issues. Requires: npm install -g @usebruno/cli@4.3.0 (the version pinned for the npx path)
 
 .PARAMETER BrunoFilter
     One or more sub-paths inside the Bruno collection to run.
@@ -415,7 +415,8 @@ try {
         # Disable strict mode temporarily — npx.ps1 references $MyInvocation.Statement
         # which is not available under Set-StrictMode -Version Latest
         Set-StrictMode -Off
-        npx --yes @usebruno/cli@latest @runArgs
+        # Pinned so third-party releases can't change test behavior; update deliberately.
+        npx --yes @usebruno/cli@4.3.0 @runArgs
         Set-StrictMode -Version Latest
     }
     $brunoExitCode = $LASTEXITCODE
