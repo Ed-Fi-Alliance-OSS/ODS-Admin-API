@@ -11,10 +11,10 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -42,8 +42,9 @@ public class AddApplication : IFeature
 
     private static void GuardAgainstInvalidEntityReferences(AddApplicationRequest request, IUsersContext db)
     {
-        if (null == db.Vendors.Find(request.VendorId))
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
+        UnresolvedReferenceGuard.EnsureExists(
+            db.Vendors.Find(request.VendorId) is not null,
+            $"Vendor with ID {request.VendorId} not found.");
 
         ValidateProfileIds(request, db);
         ValidateDataStoreIds(request, db);
@@ -52,13 +53,13 @@ public class AddApplication : IFeature
     private static void ValidateProfileIds(AddApplicationRequest request, IUsersContext db)
     {
         var allProfileIds = new HashSet<int>(db.Profiles.Select(p => p.ProfileId));
-        EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
+        UnresolvedReferenceGuard.EnsureIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
     }
 
     private static void ValidateDataStoreIds(AddApplicationRequest request, IUsersContext db)
     {
         var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
-        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
+        UnresolvedReferenceGuard.EnsureIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "AddApplicationRequest")]

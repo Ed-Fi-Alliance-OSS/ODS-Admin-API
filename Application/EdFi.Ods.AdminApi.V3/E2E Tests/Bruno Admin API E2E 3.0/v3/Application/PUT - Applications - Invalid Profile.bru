@@ -23,32 +23,28 @@ body:json {
 }
 
 script:post-response {
-  test("PUT Application Invalid Profile: Status code is Bad Request", function () {
-      expect(res.getStatus()).to.equal(400);
+  test("PUT Application Invalid Profile: Status code is Conflict", function () {
+      expect(res.getStatus()).to.equal(409);
   });
-  
+
   const response = res.getBody();
-  const errors = res.getBody().errors;
-  
+
   test("PUT Application Invalid Profile: Response matches error format", function () {
       expect(response).to.have.property("title");
-      expect(response).to.have.property("errors");
+      expect(response).to.have.property("detail");
   });
-  
+
   test("PUT Application Invalid Profile: Response title is helpful and accurate", function () {
-      expect(response.title.toLowerCase()).to.contain("validation");
+      expect(response.title.toLowerCase()).to.contain("conflict");
   });
-  
-  test("PUT Application Invalid Profile: Response errors include messages by property", function () {
-      expect(response.errors.ProfileIds.length).to.equal(1);
-      expect(response.errors.ProfileIds[0]).to.contain("not found");
+
+  test("PUT Application Invalid Profile: Response detail describes the conflict", function () {
+      expect(response.detail).to.contain("The following ProfileIds were not found in database");
   });
-  
+
   test("PUT Application Invalid Profile: type URN is correct", function () {
-      const response = res.getBody();
-      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:validation");
+      expect(response.type).to.equal("urn:ed-fi:management-api:conflict:unresolved-reference");
   });
-  
 }
 
 settings {
