@@ -34,7 +34,9 @@ public class GetApiClientsByApplicationIdQuery : IGetApiClientsByApplicationIdQu
     public bool ExistsByApplicationIdAndName(int applicationId, string? name)
     {
         return _context.ApiClients.Any(
-            c => c.Application.ApplicationId == applicationId && c.Name == name);
+            c => c.Application.ApplicationId == applicationId
+                && c.Name != null
+                && c.Name.Trim() == name);
     }
 }
 

@@ -241,6 +241,47 @@ public class EditApiClientCommandTests
         AssertScope(ctx, client.ApiClientId, true, 7, 8);
     }
 
+    [Test]
+    public void Execute_RenameWithSurroundingWhitespaceToExistingName_ThrowsConflict()
+    {
+        using var ctx = CreateContext();
+        var (app, _) = SeedApplication(ctx, "A", 1);
+        var client = SeedClient(ctx, app, "C", true, 1);
+        SeedClient(ctx, app, "Taken", true, 1);
+
+        var ex = Should.Throw<ConflictException>(
+            () => new EditApiClientCommand(ctx).Execute(Model(client, app, " Taken ")));
+        ex.ProblemType.ShouldBe(AdminApiProblemTypes.Conflict);
+    }
+
+    [Test]
+    public void Execute_RenameTwiceWithWhitespace_SecondThrowsConflict()
+    {
+        using var ctx = CreateContext();
+        var (app, _) = SeedApplication(ctx, "A", 1);
+        var clientA = SeedClient(ctx, app, "A", true, 1);
+        var clientB = SeedClient(ctx, app, "B", true, 1);
+
+        new EditApiClientCommand(ctx).Execute(Model(clientA, app, " Taken "));
+        LoadClient(ctx, clientA.ApiClientId).Name.ShouldBe("Taken");
+
+        var ex = Should.Throw<ConflictException>(
+            () => new EditApiClientCommand(ctx).Execute(Model(clientB, app, " Taken ")));
+        ex.ProblemType.ShouldBe(AdminApiProblemTypes.Conflict);
+    }
+
+    [Test]
+    public void Execute_SavesTrimmedName()
+    {
+        using var ctx = CreateContext();
+        var (app, _) = SeedApplication(ctx, "A", 1);
+        var client = SeedClient(ctx, app, "C", true, 1);
+
+        new EditApiClientCommand(ctx).Execute(Model(client, app, "  Renamed  "));
+
+        LoadClient(ctx, client.ApiClientId).Name.ShouldBe("Renamed");
+    }
+
     private static (Application App, User User) SeedApplication(
         AdminApiSqlServerUsersContext ctx, string name, params long[] edOrgIds)
     {

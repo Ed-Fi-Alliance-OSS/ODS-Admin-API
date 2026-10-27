@@ -55,7 +55,8 @@ public class EditApiClientCommand : IEditApiClientCommand
             var duplicateName = _context.ApiClients.Any(c =>
                 c.Application!.ApplicationId == target.ApplicationId
                 && c.ApiClientId != apiClient.ApiClientId
-                && c.Name == requestedName);
+                && c.Name != null
+                && c.Name.Trim() == requestedName);
 
             if (duplicateName)
             {
@@ -98,7 +99,7 @@ public class EditApiClientCommand : IEditApiClientCommand
             : null;
 
         var currentApiClientId = apiClient.ApiClientId;
-        apiClient.Name = model.Name;
+        apiClient.Name = requestedName;
         apiClient.IsApproved = model.IsApproved;
 
         _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => o.ApiClient.ApiClientId == currentApiClientId));
