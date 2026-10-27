@@ -7,6 +7,7 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.DBTestsShared;
+using EdFi.Ods.AdminApi.Features;
 using EdFi.Ods.AdminApi.Infrastructure;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using NUnit.Framework;
@@ -14,6 +15,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using VendorUser = EdFi.Admin.DataAccess.Models.User;
 
 namespace EdFi.Ods.AdminApi.DBTests.Database.CommandTests;
@@ -47,7 +49,9 @@ public class RegenerateApplicationApiClientSecretCommandTests : PlatformUsersCon
         Transaction(usersContext =>
         {
             var command = new RegenerateApplicationApiClientSecretCommand(usersContext);
-            Assert.Throws<InvalidOperationException>(() => command.Execute(application.ApplicationId));
+            var exception = Assert.Throws<AdminApiException>(() => command.Execute(application.ApplicationId));
+            exception.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+            exception.Message.ShouldBe(FeatureConstants.ApplicationResetCredentialNoApiClientsConflictMessage);
         });
     }
 
