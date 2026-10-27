@@ -76,5 +76,9 @@ public static class FeatureConstants
     public const string ApiClientCombinedKeyMustBeUnique = "An ApiClient with this name already exists for this application. Please enter a unique name.";
     public const string ApplicationResetCredentialMultiClientConflictMessage = "This Application has more than one ApiClient. Use PUT /v3/apiClients/{id}/reset-credential to reset an individual credential.";
     public const string ApplicationResetCredentialNoApiClientsConflictMessage = "This Application has no ApiClients to reset. Use POST /v3/apiClients to add one first.";
+    public const string ApiClientEdOrgIdsEmptyMessage = "educationOrganizationIds must contain at least one education organization id. To give the client its Application's education organizations, send inheritsApplicationEducationOrganizations: true instead.";
+    public const string ApiClientEdOrgIdsNotOnApplicationMessage = "The following educationOrganizationIds are not on the client's Application: {0}";
+    public const string ApiClientInheritsTrueListMismatchMessage = "inheritsApplicationEducationOrganizations is true, so educationOrganizationIds must be omitted or equal the Application's education organizations.";
+    public const string ApiClientInheritsFalseNoListMessage = "educationOrganizationIds is required when inheritsApplicationEducationOrganizations is false.";
+    public const string ApiClientMoveScopeConflictMessage = "The client is narrowed to education organizations that are not on the target Application: {0}. Send educationOrganizationIds or inheritsApplicationEducationOrganizations: true to move it.";
 }
-
