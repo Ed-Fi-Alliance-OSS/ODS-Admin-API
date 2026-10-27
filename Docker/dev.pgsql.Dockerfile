@@ -46,7 +46,7 @@ RUN apk add --no-cache \
         krb5-libs=~1 \
         musl=~1.2.6 \
         openssl=~3.5.9 \
-        postgresql16-client=16.15-r0 && \
+        postgresql16-client=~16 && \
     rm -rf /var/cache/apk/* && \
     addgroup -S edfi && adduser -S edfi -G edfi
 
