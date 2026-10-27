@@ -33,6 +33,7 @@ public class EditApplicationCommand : IEditApplicationCommand
             .Include(a => a.Profiles)
             .Include(a => a.Vendor)
             .Include(a => a.ApiClients)
+            .AsSplitQuery()
             .SingleOrDefault(a => a.ApplicationId == model.Id) ?? throw new NotFoundException<int>("application", model.Id);
 
         if (application.Vendor.IsSystemReservedVendor())
