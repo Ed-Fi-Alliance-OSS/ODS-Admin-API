@@ -3,7 +3,8 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 using System; using System.Collections.Generic; using System.Linq; using System.Threading.Tasks;
-using EdFi.Admin.DataAccess.Contexts; using EdFi.Admin.DataAccess.Models;
+using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database; using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.Features.Applications;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
@@ -11,8 +12,8 @@ using FakeItEasy; using Microsoft.EntityFrameworkCore; using Microsoft.Extension
 using NUnit.Framework; using Shouldly;
 namespace EdFi.Ods.AdminApi.UnitTests.Features.Applications;
 [TestFixture] public class ReadApplicationsByVendorTests {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"ReadAppsByVendor_{Guid.NewGuid()}").Options);
     private static IOptions<AppSettings> DefaultOptions() =>
         Options.Create(new AppSettings { DatabaseEngine = "Postgres", DefaultPageSizeLimit = 25 });

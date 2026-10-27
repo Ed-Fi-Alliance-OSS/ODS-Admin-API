@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -21,8 +22,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class AddApplicationCommandTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"AddAppCmdV3_{Guid.NewGuid()}")
             .Options);
     private static IOptions<AppSettings> Options() =>

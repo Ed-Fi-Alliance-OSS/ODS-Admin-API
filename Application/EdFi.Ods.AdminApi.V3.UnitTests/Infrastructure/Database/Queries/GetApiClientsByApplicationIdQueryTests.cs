@@ -5,6 +5,7 @@
 
 using System;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +17,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Queries;
 [TestFixture]
 public class GetApiClientsByApplicationIdQueryTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"GetApiClientsByAppV3_{Guid.NewGuid()}")
             .Options);
 

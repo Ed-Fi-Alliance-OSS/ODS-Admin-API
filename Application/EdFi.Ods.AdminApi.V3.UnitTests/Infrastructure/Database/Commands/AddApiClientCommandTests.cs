@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -21,8 +22,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class AddApiClientCommandTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"AddApiClientV3_{Guid.NewGuid()}")
             .Options);
     private static IOptions<AppSettings> DefaultOptions() =>

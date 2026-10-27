@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -19,8 +20,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class DeleteApiClientCommandTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteApiClientV3_{Guid.NewGuid()}")
             .Options);
 
