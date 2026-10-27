@@ -29,7 +29,7 @@ public class ProblemDetailsSchemaFilter : ISchemaFilter
         problemDetailsSchema.Description =
             "RFC 7807 problem details. Returned for all 4xx and 5xx responses with a content type of application/problem+json.";
 
-        DescribeIfPresent(problemDetailsSchema, "type", "A URI reference identifying the problem type. Known values are urn:ed-fi:management-api:bad-request, urn:ed-fi:management-api:bad-request:data, urn:ed-fi:management-api:bad-request:validation, urn:ed-fi:management-api:bad-request:version-mismatch, urn:ed-fi:management-api:not-found, and urn:ed-fi:management-api:internal-server-error.");
+        DescribeIfPresent(problemDetailsSchema, "type", "A URI reference identifying the problem type. Known values are urn:ed-fi:management-api:bad-request, urn:ed-fi:management-api:bad-request:data, urn:ed-fi:management-api:bad-request:validation, urn:ed-fi:management-api:bad-request:version-mismatch, urn:ed-fi:management-api:conflict, urn:ed-fi:management-api:conflict:unresolved-reference, urn:ed-fi:management-api:conflict:education-organization-scope, urn:ed-fi:management-api:not-found, and urn:ed-fi:management-api:internal-server-error.");
         DescribeIfPresent(problemDetailsSchema, "title", "A short, human-readable summary of the problem type.");
         DescribeIfPresent(problemDetailsSchema, "status", "The HTTP status code generated for this occurrence of the problem.");
         DescribeIfPresent(problemDetailsSchema, "detail", "A human-readable explanation specific to this occurrence of the problem.");
