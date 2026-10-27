@@ -33,11 +33,34 @@ public class AddApplication : IFeature
     public static async Task<IResult> Handle(Validator validator, IAddApplicationCommand addApplicationCommand, IUsersContext db, AddApplicationRequest request, IOptions<AppSettings> options, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
+        GuardAgainstFieldsNotAllowedWithoutDefaultCredentials(request);
         GuardAgainstInvalidEntityReferences(request, db);
         var addedApplicationResult = addApplicationCommand.Execute(request, options);
         var model = ApplicationMapper.ToResult(addedApplicationResult);
         var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/applications/{model.Id}");
         return Results.Created(absoluteLocation, model);
+    }
+
+    private static void GuardAgainstFieldsNotAllowedWithoutDefaultCredentials(AddApplicationRequest request)
+    {
+        if (request.CreateDefaultCredentials != false)
+        {
+            return;
+        }
+
+        if (request.DataStoreIds is not null)
+        {
+            throw new BadRequestDataException(
+                "dataStoreIds",
+                string.Format(FeatureConstants.CreateDefaultCredentialsFalseFieldNotAllowedMessage, "dataStoreIds"));
+        }
+
+        if (request.Enabled is not null)
+        {
+            throw new BadRequestDataException(
+                "enabled",
+                string.Format(FeatureConstants.CreateDefaultCredentialsFalseFieldNotAllowedMessage, "enabled"));
+        }
     }
 
     private static void GuardAgainstInvalidEntityReferences(AddApplicationRequest request, IUsersContext db)
@@ -47,7 +70,11 @@ public class AddApplication : IFeature
             $"Vendor with ID {request.VendorId} not found.");
 
         ValidateProfileIds(request, db);
-        ValidateDataStoreIds(request, db);
+
+        if (request.CreateDefaultCredentials != false)
+        {
+            ValidateDataStoreIds(request, db);
+        }
     }
 
     private static void ValidateProfileIds(AddApplicationRequest request, IUsersContext db)
@@ -87,6 +114,10 @@ public class AddApplication : IFeature
         [SwaggerOptional]
         [SwaggerSchema(Description = FeatureConstants.Enable)]
         public bool? Enabled { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.CreateDefaultCredentialsDescription)]
+        public bool? CreateDefaultCredentials { get; set; }
     }
 
     public class Validator : AbstractValidator<AddApplicationRequest>
@@ -119,7 +150,8 @@ public class AddApplication : IFeature
 
             RuleFor(m => m.DataStoreIds)
                 .NotEmpty()
-                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
+                .WithMessage(FeatureConstants.DataStoreIdsValidationMessage)
+                .When(m => m.CreateDefaultCredentials != false);
 
             RuleFor(m => m.VendorId).Must(id => id > 0).WithMessage(FeatureConstants.VendorIdValidationMessage);
 

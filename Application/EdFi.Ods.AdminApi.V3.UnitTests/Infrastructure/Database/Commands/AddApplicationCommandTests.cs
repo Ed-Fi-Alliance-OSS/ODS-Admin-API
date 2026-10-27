@@ -62,14 +62,67 @@ public class AddApplicationCommandTests
         ctx.Applications.Single(a => a.ApplicationId == result.ApplicationId).ApplicationName.ShouldBe("MyApp");
     }
 
+    [Test]
+    public void Execute_CreateDefaultCredentialsFalse_CreatesApplicationAndEdOrgsWithoutClient()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        var ods = new OdsInstance { Name = "DS1", InstanceType = "type", ConnectionString = "cs" };
+        ctx.Vendors.Add(vendor);
+        ctx.OdsInstances.Add(ods);
+        ctx.SaveChanges();
+
+        var result = new AddApplicationCommand(ctx).Execute(new AddApplicationModelStub
+        {
+            ApplicationName = "MyApp",
+            VendorId = vendor.VendorId,
+            ClaimSetName = "CS",
+            EducationOrganizationIds = new long[] { 1, 2 },
+            CreateDefaultCredentials = false
+        }, Options());
+
+        result.ApplicationId.ShouldBeGreaterThan(0);
+        result.Key.ShouldBeNull();
+        result.Secret.ShouldBeNull();
+        ctx.ApiClients.Count().ShouldBe(0);
+        ctx.ApiClientOdsInstances.Count().ShouldBe(0);
+        var application = ctx.Applications.Include(a => a.ApplicationEducationOrganizations)
+            .Single(a => a.ApplicationId == result.ApplicationId);
+        application.ApplicationEducationOrganizations.Select(e => e.EducationOrganizationId)
+            .OrderBy(i => i).ShouldBe(new long[] { 1, 2 });
+    }
+
+    [Test]
+    public void Execute_CreateDefaultCredentialsOmitted_DefaultClientInherits()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        ctx.SaveChanges();
+
+        var result = new AddApplicationCommand(ctx).Execute(new AddApplicationModelStub
+        {
+            ApplicationName = "MyApp",
+            VendorId = vendor.VendorId,
+            ClaimSetName = "CS",
+            EducationOrganizationIds = new long[] { 1, 2 }
+        }, Options());
+
+        var client = ctx.ApiClients.Include(c => c.ApplicationEducationOrganizations).Single();
+        ctx.GetInheritsApplicationEducationOrganizations(client).ShouldBeTrue();
+        client.ApplicationEducationOrganizations.Count.ShouldBe(2);
+        result.Key.ShouldNotBeNullOrEmpty();
+    }
+
     private class AddApplicationModelStub : IAddApplicationModel
     {
         public string? ApplicationName { get; init; }
         public int VendorId { get; init; }
         public string? ClaimSetName { get; init; }
-        public IEnumerable<int>? ProfileIds => null;
-        public IEnumerable<long>? EducationOrganizationIds => null;
-        public IEnumerable<int>? DataStoreIds => null;
-        public bool? Enabled => null;
+        public IEnumerable<int>? ProfileIds { get; init; }
+        public IEnumerable<long>? EducationOrganizationIds { get; init; }
+        public IEnumerable<int>? DataStoreIds { get; init; }
+        public bool? Enabled { get; init; }
+        public bool? CreateDefaultCredentials { get; init; }
     }
 }

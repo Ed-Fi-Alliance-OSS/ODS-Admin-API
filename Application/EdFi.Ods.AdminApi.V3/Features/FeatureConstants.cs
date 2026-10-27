@@ -35,6 +35,8 @@ public static class FeatureConstants
     public const string InvalidResourceClaimActions = "Please provide a valid resourceClaimActions object.";
     public const string ResourceClaimOneActionNotSet = "A resource must have at least one action associated with it to be added.";
     public const string DataStoreIdsDescription = "List of data store id";
+    public const string CreateDefaultCredentialsDescription = "When true (the default), a default API client is created that inherits all of the Application's education organizations, and its key and secret are returned. When false, no API client is created, key and secret are returned as null, and sending enabled or dataStoreIds returns 400 (type urn:ed-fi:management-api:bad-request:data, with the error on the field concerned). Add API clients afterwards with POST /v3/apiClients.";
+    public const string CreateDefaultCredentialsFalseFieldNotAllowedMessage = "{0} must not be sent when createDefaultCredentials is false.";
     public const string DataStoreIdsValidationMessage = "Please provide at least one data store id.";
     public const string DataStoreIdValidationMessage = "Please provide valid DataStore id. The id {DataStoreId} does not exist.";
     public const string ClaimSetIdToCopy = "ClaimSet id to copy";
