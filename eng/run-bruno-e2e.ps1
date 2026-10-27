@@ -40,7 +40,7 @@
 
 .PARAMETER UseGlobalBru
     When set, invokes the globally installed 'bru' CLI instead of npx.
-    Useful if npx has local cache issues. Requires: npm install -g @usebruno/cli@4.3.0 (the version pinned for the npx path)
+    Useful if npm ci has local cache issues. Requires: npm install -g @usebruno/cli@4.3.0 (the version pinned in eng/bruno/package.json)
 
 .PARAMETER BrunoFilter
     One or more sub-paths inside the Bruno collection to run.
@@ -108,6 +108,7 @@ $brunoRecursive  = $true
 $composeFile     = $null
 $envFile         = $null
 $brunoDir        = $null
+$brunoToolsDir   = Join-Path $PSScriptRoot "bruno"
 $projectsToCopy  = @()
 
 switch ($ApiVersion) {
@@ -415,8 +416,11 @@ try {
         # Disable strict mode temporarily — npx.ps1 references $MyInvocation.Statement
         # which is not available under Set-StrictMode -Version Latest
         Set-StrictMode -Off
-        # Pinned so third-party releases can't change test behavior; update deliberately.
-        npx --yes @usebruno/cli@4.3.0 @runArgs
+        # Bruno CLI is pinned (with integrity hashes) in eng/bruno/package-lock.json
+        npm ci --prefix $brunoToolsDir --ignore-scripts --no-audit --no-fund
+        if ($LASTEXITCODE -ne 0) { throw "npm ci failed (exit $LASTEXITCODE)" }
+        $env:PATH = (Join-Path $brunoToolsDir "node_modules" ".bin") + [IO.Path]::PathSeparator + $env:PATH
+        & bru @runArgs
         Set-StrictMode -Version Latest
     }
     $brunoExitCode = $LASTEXITCODE
