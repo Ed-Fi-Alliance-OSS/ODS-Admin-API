@@ -54,6 +54,7 @@ script:pre-request {
       throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
     }
     bru.setVar("EdOrgClaimSetName", claimSetName);
+    bru.setVar("EdOrgClaimSetId", String(claimSetResp.headers.location).split("/").pop());
 
     const dataStoreResp = await axios.get(`${API_URL}/v3/dataStores?offset=0&limit=1`, axiosConfig);
     if (dataStoreResp.status !== 200 || !dataStoreResp.data.length) {
@@ -62,6 +63,7 @@ script:pre-request {
     bru.setVar("EdOrgDataStoreId", dataStoreResp.data[0].id);
   } catch (error) {
     console.log("Error in pre-request setup:", error.message);
+    throw error;
   }
 }
 
