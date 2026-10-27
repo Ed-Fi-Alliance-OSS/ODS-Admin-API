@@ -45,14 +45,21 @@ public class EditApiClientCommand : IEditApiClientCommand
 
         var isMove = target.ApplicationId != apiClient.Application!.ApplicationId;
 
-        var duplicateName = _context.ApiClients.Any(c =>
-            c.Application!.ApplicationId == target.ApplicationId
-            && c.ApiClientId != apiClient.ApiClientId
-            && c.Name == model.Name);
+        // Legacy data may already hold duplicate names (v2 POST never checked), so only check when the
+        // client moves or its name changes. POST trims names, so compare the trimmed name.
+        var requestedName = model.Name.Trim();
 
-        if (duplicateName)
+        if (isMove || !string.Equals(apiClient.Name?.Trim(), requestedName, StringComparison.Ordinal))
         {
-            throw new ConflictException(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
+            var duplicateName = _context.ApiClients.Any(c =>
+                c.Application!.ApplicationId == target.ApplicationId
+                && c.ApiClientId != apiClient.ApiClientId
+                && c.Name == requestedName);
+
+            if (duplicateName)
+            {
+                throw new ConflictException(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
+            }
         }
 
         var current = new ClientEducationOrganizationScope(

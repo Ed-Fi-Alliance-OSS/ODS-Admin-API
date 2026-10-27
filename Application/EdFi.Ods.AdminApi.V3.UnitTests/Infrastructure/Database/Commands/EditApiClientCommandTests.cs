@@ -166,7 +166,40 @@ public class EditApiClientCommandTests
         var client = SeedClient(ctx, app, "C", true, 1);
         SeedClient(ctx, target, "Taken", true, 1);
 
-        Should.Throw<ConflictException>(() => new EditApiClientCommand(ctx).Execute(Model(client, target, "Taken")));
+        var ex = Should.Throw<ConflictException>(() => new EditApiClientCommand(ctx).Execute(Model(client, target, "Taken")));
+        ex.ProblemType.ShouldBe(AdminApiProblemTypes.Conflict);
+    }
+
+    [Test]
+    public void Execute_UnchangedNameWithLegacyDuplicate_DoesNotThrow()
+    {
+        using var ctx = CreateContext();
+        var (app, _) = SeedApplication(ctx, "A", 1);
+        var client = SeedClient(ctx, app, "Dup", true, 1);
+        SeedClient(ctx, app, "Dup", true, 1);
+
+        var model = new EditApiClientModelStub
+        {
+            Id = client.ApiClientId,
+            Name = "Dup",
+            IsApproved = false,
+            ApplicationId = app.ApplicationId,
+        };
+
+        Should.NotThrow(() => new EditApiClientCommand(ctx).Execute(model));
+        LoadClient(ctx, client.ApiClientId).IsApproved.ShouldBeFalse();
+    }
+
+    [Test]
+    public void Execute_RenameToExistingNameSameApplication_ThrowsConflict()
+    {
+        using var ctx = CreateContext();
+        var (app, _) = SeedApplication(ctx, "A", 1);
+        var client = SeedClient(ctx, app, "C", true, 1);
+        SeedClient(ctx, app, "Taken", true, 1);
+
+        var ex = Should.Throw<ConflictException>(() => new EditApiClientCommand(ctx).Execute(Model(client, app, "Taken")));
+        ex.ProblemType.ShouldBe(AdminApiProblemTypes.Conflict);
     }
 
     [Test]
