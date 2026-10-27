@@ -225,6 +225,22 @@ public class EditApiClientCommandTests
         ex.ProblemType.ShouldBe(AdminApiProblemTypes.ConflictUnresolvedReference);
     }
 
+    [Test]
+    public void Execute_ClientWithoutApplication_IsTreatedAsMove()
+    {
+        using var ctx = CreateContext();
+        var (target, _) = SeedApplication(ctx, "B", 7, 8);
+        var client = new ApiClient(true) { Name = "Orphan" };
+        ctx.ApiClients.Add(client);
+        ctx.SaveChanges();
+
+        new EditApiClientCommand(ctx).Execute(Model(client, target, "Orphan"));
+
+        var saved = LoadClient(ctx, client.ApiClientId);
+        saved.Application!.ApplicationId.ShouldBe(target.ApplicationId);
+        AssertScope(ctx, client.ApiClientId, true, 7, 8);
+    }
+
     private static (Application App, User User) SeedApplication(
         AdminApiSqlServerUsersContext ctx, string name, params long[] edOrgIds)
     {

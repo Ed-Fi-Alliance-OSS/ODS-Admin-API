@@ -43,7 +43,8 @@ public class EditApiClientCommand : IEditApiClientCommand
                     $"Application with ID {model.ApplicationId} not found.",
                     AdminApiProblemTypes.ConflictUnresolvedReference);
 
-        var isMove = target.ApplicationId != apiClient.Application!.ApplicationId;
+        // Legacy rows may have no Application (nullable column); treat that as a move.
+        var isMove = apiClient.Application is null || target.ApplicationId != apiClient.Application.ApplicationId;
 
         // Legacy data may already hold duplicate names (v2 POST never checked), so only check when the
         // client moves or its name changes. POST trims names, so compare the trimmed name.
