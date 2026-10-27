@@ -6,6 +6,9 @@
 -- Adds ApiClients.InheritsApplicationEducationOrganizations. Clients that are not linked to every education
 -- organization of their Application are backfilled to 0 (not inheriting). The backfill runs only when this
 -- script creates the column; if the column already exists its values are left untouched.
+-- Only clients with at least one link are backfilled: released versions created extra credentials with no links
+-- (repaired on the next Application edit), so clients with zero links stay 1 (inheriting) and that edit re-syncs them.
+-- Clients with a NULL Application have no Application education organizations and also keep 1.
 
 IF NOT EXISTS (
     SELECT 1 FROM [INFORMATION_SCHEMA].[COLUMNS]
@@ -22,6 +25,11 @@ UPDATE c
 SET c.InheritsApplicationEducationOrganizations = 0
 FROM dbo.ApiClients c
 WHERE EXISTS (
+    SELECT 1
+    FROM dbo.ApiClientApplicationEducationOrganizations anyLink
+    WHERE anyLink.ApiClient_ApiClientId = c.ApiClientId
+)
+AND EXISTS (
     SELECT 1
     FROM dbo.ApplicationEducationOrganizations aeo
     WHERE aeo.Application_ApplicationId = c.Application_ApplicationId

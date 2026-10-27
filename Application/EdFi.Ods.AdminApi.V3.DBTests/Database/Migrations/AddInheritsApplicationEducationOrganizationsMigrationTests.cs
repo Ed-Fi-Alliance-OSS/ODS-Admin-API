@@ -57,7 +57,7 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
     }
 
     [Test]
-    public void Script_WhenColumnMissing_BackfillsPartialClientsToFalse()
+    public void Script_WhenColumnMissing_BackfillsOnlyPartiallyLinkedClientsToFalse()
     {
         var (a, b, c) = SeedApplicationWithClients();
 
@@ -65,7 +65,8 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
 
         GetInherits(a).ShouldBeTrue();
         GetInherits(b).ShouldBeFalse();
-        GetInherits(c).ShouldBeFalse();
+        // Zero links: legacy credential created without links, stays inheriting so the next Application edit repairs it.
+        GetInherits(c).ShouldBeTrue();
     }
 
     [Test]
