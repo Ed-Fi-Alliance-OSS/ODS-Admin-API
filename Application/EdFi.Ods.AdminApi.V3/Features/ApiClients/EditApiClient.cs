@@ -69,6 +69,14 @@ public class EditApiClient : IFeature
 
         [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? DataStoreIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEducationOrganizationIdsDescription, Nullable = false)]
+        public IEnumerable<long>? EducationOrganizationIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientInheritsApplicationEducationOrganizationsDescription, Nullable = false)]
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 
     public class Validator : AbstractValidator<IEditApiClientModel>

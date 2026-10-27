@@ -22,6 +22,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
         public bool IsApproved { get; set; }
         public int ApplicationId { get; set; }
         public IEnumerable<int>? DataStoreIds { get; set; }
+        public IEnumerable<long>? EducationOrganizationIds { get; set; }
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 
     [TestFixture]
