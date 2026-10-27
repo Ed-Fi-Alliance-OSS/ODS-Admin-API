@@ -1,0 +1,96 @@
+meta {
+  name: PUT - ApiClient Move Narrowed Client Conflict
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{API_URL}}/v3/apiClients/{{EdOrgMoveClientId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": {{EdOrgMoveClientId}},
+    "name": "EdOrg Scope Client Move",
+    "isApproved": true,
+    "applicationId": {{EdOrgSecondApplicationId}},
+    "dataStoreIds": [{{EdOrgDataStoreId}}]
+  }
+}
+
+script:pre-request {
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${bru.getEnvVar("TOKEN")}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+
+  // 255901 was removed from the first Application in the previous request, so narrow a new client
+  // to 255903 (still on the first Application, not on the second one), then create the second Application.
+  try {
+    const clientResp = await axios.post(`${API_URL}/v3/apiClients`, {
+      "name": "EdOrg Scope Client Move",
+      "isApproved": true,
+      "applicationId": bru.getVar("EdOrgApplicationId"),
+      "dataStoreIds": [bru.getVar("EdOrgDataStoreId")],
+      "educationOrganizationIds": [255903]
+    }, axiosConfig);
+    if (clientResp.status !== 201) {
+      throw new Error(`Failed to create the client to move - Status: ${clientResp.status}, Data: ${JSON.stringify(clientResp.data)}`);
+    }
+    bru.setVar("EdOrgMoveClientId", String(clientResp.headers.location).split("/").pop());
+
+    const appResp = await axios.post(`${API_URL}/v3/applications`, {
+      "applicationName": "EdOrg Scope Second Application",
+      "vendorId": bru.getVar("EdOrgVendorId"),
+      "claimSetName": bru.getVar("EdOrgClaimSetName"),
+      "profileIds": [],
+      "educationOrganizationIds": [255902],
+      "createDefaultCredentials": false
+    }, axiosConfig);
+    if (appResp.status !== 201) {
+      throw new Error(`Failed to create the second Application - Status: ${appResp.status}, Data: ${JSON.stringify(appResp.data)}`);
+    }
+    bru.setVar("EdOrgSecondApplicationId", String(appResp.headers.location).split("/").pop());
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+    throw error;
+  }
+}
+
+script:post-response {
+  test("PUT ApiClient move narrowed client: Status code is Conflict", function () {
+      expect(res.getStatus()).to.equal(409);
+  });
+
+  const response = res.getBody();
+  test("PUT ApiClient move narrowed client: type URN is correct", function () {
+      expect(response.type).to.equal("urn:ed-fi:management-api:conflict:education-organization-scope");
+  });
+}
+
+settings {
+  encodeUrl: true
+}

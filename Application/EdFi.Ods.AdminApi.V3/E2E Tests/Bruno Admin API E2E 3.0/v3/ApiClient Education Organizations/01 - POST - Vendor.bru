@@ -1,0 +1,85 @@
+meta {
+  name: POST - Vendor
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{API_URL}}/v3/vendors
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "company": "EdOrg Scope Company {{$timestamp}}",
+    "namespacePrefixes": "uri://ed-fi.org",
+    "contactName": "EdOrg Scope User",
+    "contactEmailAddress": "edorg-scope@example.com"
+  }
+}
+
+script:pre-request {
+  try {
+    if (typeof process !== 'undefined' && process.env) {
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
+  } catch (e) {
+    // Ignore in UI environment
+  }
+
+  const axios = require('axios');
+  const API_URL = bru.getEnvVar("API_URL");
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${bru.getEnvVar("TOKEN")}`
+    },
+    validateStatus: function (status) {
+      return status < 500;
+    },
+    timeout: 30000
+  };
+
+  if (bru.getEnvVar("isMultitenant") == "true") {
+    axiosConfig.headers['Tenant'] = `${bru.getEnvVar("tenant1")}`;
+  }
+
+
+  // Also prepares a claim set and a data store for the requests that follow.
+  try {
+    const claimSetName = `EdOrgScopeClaimSet-${Date.now()}`;
+    const claimSetResp = await axios.post(`${API_URL}/v3/claimSets`, { "name": claimSetName }, axiosConfig);
+    if (claimSetResp.status !== 201) {
+      throw new Error(`Failed to create claimset - Status: ${claimSetResp.status}`);
+    }
+    bru.setVar("EdOrgClaimSetName", claimSetName);
+
+    const dataStoreResp = await axios.get(`${API_URL}/v3/dataStores?offset=0&limit=1`, axiosConfig);
+    if (dataStoreResp.status !== 200 || !dataStoreResp.data.length) {
+      throw new Error(`Failed to get a data store - Status: ${dataStoreResp.status}`);
+    }
+    bru.setVar("EdOrgDataStoreId", dataStoreResp.data[0].id);
+  } catch (error) {
+    console.log("Error in pre-request setup:", error.message);
+  }
+}
+
+script:post-response {
+  test("POST Vendor: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  const location = res.getHeaders().location;
+  test("POST Vendor: Response includes location in header", function () {
+      expect(location).to.be.a("string");
+  });
+
+  if (location) {
+      bru.setVar("EdOrgVendorId", String(location).split("/").pop());
+  }
+}
+
+settings {
+  encodeUrl: true
+}

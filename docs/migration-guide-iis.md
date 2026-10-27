@@ -4,6 +4,17 @@ To update the IIS site you must need the latest version of the binaries publishe
 
 You can find the preparation steps to publish the binaries in the following [Migration Guide](./migration-guide.md)
 
+## Upgrading to this release
+
+This release adds the column `ApiClients.InheritsApplicationEducationOrganizations` to the `EdFi_Admin` database (migration `00010`, `00010-AddInheritsApplicationEducationOrganizationsToApiClients.sql`, for both SQL Server and PostgreSQL). Fresh installs and new Docker volumes get it automatically. Existing databases do not.
+
+Before deploying the new binaries:
+
+1. Apply `00010` to **every** `EdFi_Admin` database. In a multi-tenant installation, that means each tenant's `EdFi_Admin` database. For example, run `eng/run-dbup-migrations.ps1` against each one, or run the script under `Application/EdFi.Ods.AdminApi/Artifacts/<MsSql|PgSql>/Structure/Admin/` yourself.
+2. Then deploy the new Admin API.
+
+Admin API does not detect or tolerate a missing column. Until the column exists, every API client and Application endpoint fails.
+
 ## Update AdminApi (IIS)
 
 Open Powershell as an Admin to update the files.
