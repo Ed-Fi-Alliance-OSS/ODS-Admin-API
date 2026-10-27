@@ -69,6 +69,8 @@ public static class FeatureConstants
     public const string ApiClientNameDescription = "Api client name";
     public const string ApiClientIsApprovedDescription = "Is approved";
     public const string ApiClientApplicationIdDescription = "Application id";
+    public const string ApiClientEducationOrganizationIdsDescription = "Education organizations the client is limited to. Each one must be on the client's Application. Sending a list without inheritsApplicationEducationOrganizations narrows the client to that list, even if it matches the Application's list. An empty list is rejected, and duplicate IDs are removed. See the operation description for the full rules.";
+    public const string ApiClientInheritsApplicationEducationOrganizationsDescription = "When true, the client inherits its Application's education organizations and follows future changes to them. When false, the client is narrowed to educationOrganizationIds, which is then required. If neither field is sent, the client inherits. See the operation description for the full rules.";
     public const string ApiClientNameLengthValidationMessage = "The Api Client Name {Name} would be too long for Admin App to set up necessary ApiClient records." +
                         " Consider shortening the name by {ExtraCharactersInName} character(s).";
     public const string VendorAlreadyExistsMessage = "A Vendor with this name already exists in the database. Please enter a unique name.";

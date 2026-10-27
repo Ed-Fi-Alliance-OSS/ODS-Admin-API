@@ -25,6 +25,7 @@ public class GetApiClientsByApplicationIdQuery : IGetApiClientsByApplicationIdQu
         var apiClients = _context.ApiClients
             .Include(ac => ac.Application)
             .Include(ac => ac.User)
+            .Include(ac => ac.ApplicationEducationOrganizations)
             .Where(app => applicationId == 0 || app.Application.ApplicationId == applicationId);
 
         return apiClients.ToReadOnlyList();

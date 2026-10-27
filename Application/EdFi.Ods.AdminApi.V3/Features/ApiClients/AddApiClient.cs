@@ -7,6 +7,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
@@ -74,6 +75,14 @@ public class AddApiClient : IFeature
 
         [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? DataStoreIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEducationOrganizationIdsDescription, Nullable = false)]
+        public IEnumerable<long>? EducationOrganizationIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientInheritsApplicationEducationOrganizationsDescription, Nullable = false)]
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 
     public class Validator : AbstractValidator<AddApiClientRequest>
