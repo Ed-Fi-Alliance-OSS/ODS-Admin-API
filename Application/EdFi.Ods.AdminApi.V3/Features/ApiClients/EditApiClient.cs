@@ -71,11 +71,11 @@ public class EditApiClient : IFeature
         public IEnumerable<int>? DataStoreIds { get; set; }
 
         [SwaggerOptional]
-        [SwaggerSchema(Description = FeatureConstants.ApiClientEducationOrganizationIdsDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEditEducationOrganizationIdsDescription, Nullable = false)]
         public IEnumerable<long>? EducationOrganizationIds { get; set; }
 
         [SwaggerOptional]
-        [SwaggerSchema(Description = FeatureConstants.ApiClientInheritsApplicationEducationOrganizationsDescription, Nullable = false)]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEditInheritsApplicationEducationOrganizationsDescription, Nullable = false)]
         public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 

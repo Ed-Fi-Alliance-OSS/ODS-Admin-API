@@ -16,7 +16,9 @@ public class ApiClientModel
     public bool IsApproved { get; set; } = true;
     public int ApplicationId { get; set; } = 0;
     public string KeyStatus { get; set; } = "Active";
+    [SwaggerSchema(Description = FeatureConstants.ApiClientModelInheritsApplicationEducationOrganizationsDescription)]
     public bool InheritsApplicationEducationOrganizations { get; set; }
+    [SwaggerSchema(Description = FeatureConstants.ApiClientModelEducationOrganizationIdsDescription)]
     public IList<long> EducationOrganizationIds { get; set; } = [];
     public IList<int>? DataStoreIds { get; set; }
 }
