@@ -1152,7 +1152,7 @@
           "EFCore.NamingConventions": "[10.0.1, )",
           "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "EdFi.Suite3.Common": "[7.4.296, )",
-          "FluentValidation": "[11.11.0, )",
+          "FluentValidation": "[12.2.0, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.13, )",
           "Microsoft.Data.SqlClient": "[7.1.1, )",
@@ -1303,9 +1303,9 @@
       },
       "FluentValidation": {
         "type": "CentralTransitive",
-        "requested": "[11.11.0, )",
-        "resolved": "11.11.0",
-        "contentHash": "cyIVdQBwSipxWG8MA3Rqox7iNbUNUTK5bfJi9tIdm4CAfH71Oo5ABLP4/QyrUwuakqpUEPGtE43BDddvEehuYw=="
+        "requested": "[12.2.0, )",
+        "resolved": "12.2.0",
+        "contentHash": "DR3lFbdnKucaaj1/8zMNOACMz/64igzox1yVZSFVsLxYB5mxAB+wFP1WZ8fjwrZnbU1KA1DoMzHKYKxUfuZ4wQ=="
       },
       "FluentValidation.AspNetCore": {
         "type": "CentralTransitive",
