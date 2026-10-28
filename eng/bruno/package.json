@@ -1,0 +1,9 @@
+{
+  "name": "admin-api-e2e-tools",
+  "private": true,
+  "description": "Pinned Bruno CLI used by eng/run-bruno-e2e.ps1. Versions are locked in package-lock.json.",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@usebruno/cli": "4.3.0"
+  }
+}
