@@ -81,16 +81,17 @@ A missing resource in the route (`/apiClients/{id}`) is still 404. The 502 and p
 
 - **Adds** `dbo.ApiClients.InheritsApplicationEducationOrganizations`: `BIT`/`boolean`, `NOT NULL`, default `1`/`true`.
 - **Checks first.** If the column already exists (for example, because Ed-Fi-ODS ships it later), the script creates nothing and doesn't touch values. Re-running it is harmless.
-- **Backfills only when it created the column.** A client becomes `false` (narrowed) only if it is linked to *some* of its Application's education organizations but not all of them. Every other client stays `true`, including clients with **no** links.
-  - **Why no-link clients stay inheriting:** before ADMINAPI-1514 (#468), credentials created through `POST /apiClients` got no links, and that fix promised a repair on the next Application edit. Marking them narrowed would have locked them at zero access permanently. As inheriting clients, the next Application edit re-links them.
+- **Backfills only when it created the column.** A client becomes `false` (narrowed) if it isn't linked to every education organization on its Application. Every other client stays `true`. That includes clients whose Application has no education organizations, and clients with no Application. No client's access changes on upgrade.
+  - **No-link clients are narrowed.** Before ADMINAPI-1514 (#468), credentials created through `POST /apiClients` got no links. Marking them inheriting would have given them the Application's full list on the next Application edit, a widening nobody chose for that client. Until that edit, GET would also have returned `true` with `[]`, which contradicts the spec. They now keep no access until someone sets them to inherit with `PUT /v3/apiClients/{id}`. The migration guides show how to find them. (Changed after PR review.)
   - **Known limitation:** a client deliberately narrowed to every current education organization is marked inheriting.
+- **Atomic.** On SQL Server, the column and the backfill run in one transaction (`SET XACT_ABORT ON`). The PostgreSQL `DO` block is atomic already. A failed backfill leaves no column, so a rerun starts over instead of skipping the backfill.
 - **Older writers keep working.** Admin App, older Admin API versions and v2 don't know the column; their inserts get the default (inheriting), which matches what they did before. ODS/API's token lookup doesn't read the column.
 
 ### Required upgrade step
 
 Fresh installs and new Docker volumes get `00010` automatically. **Existing databases don't:** Docker DB images run init scripts only on a new volume.
 
-Before deploying this release, apply `00010` to **every** `EdFi_Admin` (each tenant's, in multi-tenant installs), for example with `eng/run-dbup-migrations.ps1`. Until the column exists, every API client and Application endpoint fails; the code doesn't tolerate a missing column. The migration guides (`docs/migration-guide*.md`) describe this.
+Before deploying this release, apply `00010` to **every** `EdFi_Admin` (each tenant's, in multi-tenant installs), for example with `eng/run-dbup-migrations.ps1`. Until the column exists, every API client and Application endpoint fails; the code doesn't tolerate a missing column. The migration guides (`docs/migration-guide*.md`) describe this, and how to find and repair clients with no links.
 
 Ed-Fi-ODS should know about this column, so that a future `EdFi_Admin` script or `EdFi.Admin.DataAccess` property uses the same name, type and default.
 
@@ -146,7 +147,7 @@ These live in `EdFi.Ods.AdminApi.V3/Infrastructure/ErrorHandling/`:
 
 - **Unit tests:** the resolver (one test per rule), the error middleware, the shadow property and hook, the commands on InMemory contexts, the `createDefaultCredentials` validator and handler, and v2 reset.
 - **SQL Server DB tests:**
-  - migration `00010`: column shape, backfill (full, partial and no-link clients), skip when the column exists, and re-run;
+  - migration `00010`: column shape, backfill (full, partial and no-link clients, and an Application with no education organizations), skip when the column exists, re-run, and rollback when the backfill fails;
   - a narrowed client round-tripping `false`;
   - GET returning junction rows;
   - client moves;

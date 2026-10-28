@@ -57,7 +57,7 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
     }
 
     [Test]
-    public void Script_WhenColumnMissing_BackfillsOnlyPartiallyLinkedClientsToFalse()
+    public void Script_WhenColumnMissing_BackfillsClientsNotLinkedToEveryApplicationEducationOrganizationToFalse()
     {
         var (a, b, c) = SeedApplicationWithClients();
 
@@ -65,8 +65,42 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
 
         GetInherits(a).ShouldBeTrue();
         GetInherits(b).ShouldBeFalse();
-        // Zero links: legacy credential created without links, stays inheriting so the next Application edit repairs it.
-        GetInherits(c).ShouldBeTrue();
+        // Zero links: keeps no access instead of being widened to the Application's list on the next Application edit.
+        GetInherits(c).ShouldBeFalse();
+    }
+
+    [Test]
+    public void Script_WhenColumnMissing_KeepsClientsOfApplicationWithoutEducationOrganizationsInheriting()
+    {
+        var applicationId = InsertApplication("No EdOrgs App");
+        var apiClientId = InsertApiClient("NoEdOrgs", applicationId);
+
+        RunScript();
+
+        GetInherits(apiClientId).ShouldBeTrue();
+    }
+
+    [Test]
+    public void Script_WhenBackfillFails_RollsBackColumn()
+    {
+        SeedApplicationWithClients();
+        ExecuteNonQuery(
+            """
+            CREATE TRIGGER dbo.TR_ApiClients_FailUpdate ON dbo.ApiClients AFTER UPDATE
+            AS THROW 50000, 'Simulated backfill failure', 1;
+            """);
+
+        try
+        {
+            Should.Throw<SqlException>(RunScript);
+        }
+        finally
+        {
+            ExecuteNonQuery("DROP TRIGGER dbo.TR_ApiClients_FailUpdate");
+        }
+
+        ExecuteScalar("SELECT CASE WHEN COL_LENGTH('dbo.ApiClients', 'InheritsApplicationEducationOrganizations') IS NULL THEN 0 ELSE 1 END")
+            .ShouldBe(0);
     }
 
     [Test]
@@ -95,12 +129,7 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
 
     private (int A, int B, int C) SeedApplicationWithClients()
     {
-        var applicationId = ExecuteScalar(
-            """
-            INSERT INTO dbo.Applications (ApplicationName, ClaimSetName, OperationalContextUri)
-            VALUES ('Migration Test App', 'FakeClaimSet', 'http://test.com');
-            SELECT CAST(SCOPE_IDENTITY() AS INT);
-            """);
+        var applicationId = InsertApplication("Migration Test App");
         var edOrg1 = InsertApplicationEdOrg(applicationId, 1);
         var edOrg2 = InsertApplicationEdOrg(applicationId, 2);
 
@@ -114,6 +143,14 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
 
         return (a, b, c);
     }
+
+    private int InsertApplication(string name) =>
+        ExecuteScalar(
+            $"""
+            INSERT INTO dbo.Applications (ApplicationName, ClaimSetName, OperationalContextUri)
+            VALUES ('{name}', 'FakeClaimSet', 'http://test.com');
+            SELECT CAST(SCOPE_IDENTITY() AS INT);
+            """);
 
     private int InsertApplicationEdOrg(int applicationId, long educationOrganizationId) =>
         ExecuteScalar(

@@ -15,6 +15,26 @@ Before deploying the new binaries:
 
 Admin API does not detect or tolerate a missing column. Until the column exists, every API client and Application endpoint fails.
 
+### How `00010` sets existing clients
+
+The migration does not change any client's access. It marks a client as narrowed (`InheritsApplicationEducationOrganizations` = false) when the client is not linked to every education organization on its Application. All other clients inherit.
+
+This includes clients with **no** education organization links on an Application that has education organizations. Some released versions created extra credentials through `POST /apiClients` without any links (ADMINAPI-1514). Those clients have no education organization access today, and they keep none after the upgrade: later Application edits do not add education organizations to narrowed clients.
+
+To find these clients, run this against each `EdFi_Admin` database (use `0` instead of `false` on SQL Server):
+
+```sql
+SELECT c.ApiClientId, c.Name, c.Application_ApplicationId
+FROM dbo.ApiClients c
+WHERE c.InheritsApplicationEducationOrganizations = false
+  AND NOT EXISTS (
+      SELECT 1 FROM dbo.ApiClientApplicationEducationOrganizations l
+      WHERE l.ApiClient_ApiClientId = c.ApiClientId
+  );
+```
+
+To give one of them its Application's education organizations, send `PUT /v3/apiClients/{id}` with `"inheritsApplicationEducationOrganizations": true`, or with the `educationOrganizationIds` it should have. v2 has no equivalent.
+
 ## Update AdminApi (IIS)
 
 Open Powershell as an Admin to update the files.

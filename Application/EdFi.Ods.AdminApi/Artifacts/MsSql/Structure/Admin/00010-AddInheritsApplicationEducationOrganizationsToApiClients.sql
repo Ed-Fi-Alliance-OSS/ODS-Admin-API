@@ -4,11 +4,16 @@
 -- See the LICENSE and NOTICES files in the project root for more information.
 
 -- Adds ApiClients.InheritsApplicationEducationOrganizations. Clients that are not linked to every education
--- organization of their Application are backfilled to 0 (not inheriting). The backfill runs only when this
--- script creates the column; if the column already exists its values are left untouched.
--- Only clients with at least one link are backfilled: released versions created extra credentials with no links
--- (repaired on the next Application edit), so clients with zero links stay 1 (inheriting) and that edit re-syncs them.
--- Clients with a NULL Application have no Application education organizations and also keep 1.
+-- organization of their Application are backfilled to 0 (not inheriting), so no client's access changes on upgrade.
+-- That includes clients with no links at all (for example credentials created without links by released versions):
+-- they keep no access until they are explicitly set to inherit.
+-- Clients whose Application has no education organizations, or with a NULL Application, keep 1.
+-- The backfill runs only when this script creates the column; if the column already exists its values are left
+-- untouched. The column and the backfill are added in one transaction, so a failed backfill leaves no column and a
+-- rerun starts over.
+
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
 
 IF NOT EXISTS (
     SELECT 1 FROM [INFORMATION_SCHEMA].[COLUMNS]
@@ -26,11 +31,6 @@ SET c.InheritsApplicationEducationOrganizations = 0
 FROM dbo.ApiClients c
 WHERE EXISTS (
     SELECT 1
-    FROM dbo.ApiClientApplicationEducationOrganizations anyLink
-    WHERE anyLink.ApiClient_ApiClientId = c.ApiClientId
-)
-AND EXISTS (
-    SELECT 1
     FROM dbo.ApplicationEducationOrganizations aeo
     WHERE aeo.Application_ApplicationId = c.Application_ApplicationId
       AND NOT EXISTS (
@@ -41,3 +41,5 @@ AND EXISTS (
       )
 );';
 END
+
+COMMIT TRANSACTION;
