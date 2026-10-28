@@ -31,3 +31,11 @@ updates:
       nunit:
         patterns:
           - "NUnit*"
+      # Catch-all: must stay last, since a package joins the first group that matches.
+      # Major updates are excluded so they still arrive as separate PRs.
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
