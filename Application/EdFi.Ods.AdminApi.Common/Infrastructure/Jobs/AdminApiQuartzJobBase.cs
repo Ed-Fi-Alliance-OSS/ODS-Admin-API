@@ -13,7 +13,7 @@ namespace EdFi.Ods.AdminApi.Common.Infrastructure.Jobs
         private readonly ILogger _logger = logger;
         private readonly IJobStatusService _jobStatusService = jobStatusService;
 
-        public async Task Execute(IJobExecutionContext context)
+        public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
         {
             var jobId = context.JobDetail.Key.Name;
             var runId = context.MergedJobDataMap.ContainsKey(JobConstants.RunIdKey)

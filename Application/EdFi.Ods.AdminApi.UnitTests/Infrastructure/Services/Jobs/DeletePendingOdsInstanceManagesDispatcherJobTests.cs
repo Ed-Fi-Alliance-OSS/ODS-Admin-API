@@ -69,10 +69,10 @@ public class DeletePendingOdsInstanceManagesDispatcherJobTests
         var scheduler = A.Fake<IScheduler>();
 
         A.CallTo(() => scheduler.GetJobDetail(A<JobKey>._, A<CancellationToken>._))
-            .Returns(Task.FromResult((IJobDetail)null));
-        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
-            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => capturedScheduledJobs.Add(job))
-            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
+            .Returns(ValueTask.FromResult((IJobDetail)null));
+        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, ScheduleJobOptions _, CancellationToken _) => capturedScheduledJobs.Add(job))
+            .Returns(ValueTask.FromResult(DateTimeOffset.UtcNow));
 
         return scheduler;
     }

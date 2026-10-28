@@ -39,6 +39,12 @@ public class RefreshEducationOrganizationsTests
         _schedulerFactory = new TestSchedulerFactory(_scheduler);
     }
 
+    [TearDown]
+    public async Task TearDown()
+    {
+        await _scheduler.DisposeAsync();
+    }
+
 #nullable enable
     [Test]
     public async Task RefreshAllEducationOrganizations_ReturnsAcceptedResult()
@@ -48,9 +54,9 @@ public class RefreshEducationOrganizationsTests
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfiguration);
         A.CallTo(() => _scheduler.SchedulerInstanceId).Returns("QuartzWorkerPool:localhost.localdomain1-1234567890");
         IJobDetail? scheduledJob = null;
-        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
-            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
-            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
+        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, ScheduleJobOptions _, CancellationToken _) => scheduledJob = job)
+            .Returns(ValueTask.FromResult(DateTimeOffset.UtcNow));
 
         // Act
         var result = await RefreshEducationOrganizations.RefreshAllEducationOrganizations(
@@ -78,9 +84,9 @@ public class RefreshEducationOrganizationsTests
         A.CallTo(() => _tenantConfigurationProvider.Get()).Returns(tenantConfiguration);
         A.CallTo(() => _scheduler.SchedulerInstanceId).Returns("QuartzWorkerPool:localhost.localdomain1-1234567890");
         IJobDetail? scheduledJob = null;
-        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
-            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
-            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
+        A.CallTo(() => _scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, ScheduleJobOptions _, CancellationToken _) => scheduledJob = job)
+            .Returns(ValueTask.FromResult(DateTimeOffset.UtcNow));
 
         // Act
         var result = await RefreshEducationOrganizations.RefreshEducationOrganizationsByInstance(
@@ -108,39 +114,19 @@ public class RefreshEducationOrganizationsTests
             _scheduler = scheduler;
         }
 
-        public Task<IScheduler> GetScheduler()
+        public ValueTask<IScheduler> GetScheduler(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_scheduler);
+            return ValueTask.FromResult(_scheduler);
         }
 
-        public Task<IScheduler> GetScheduler(CancellationToken cancellationToken)
+        public ValueTask<IScheduler> LookupScheduler(string schedName, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_scheduler);
+            return ValueTask.FromResult(_scheduler);
         }
 
-        public Task<IScheduler> GetScheduler(string schedName)
+        public ValueTask<List<IScheduler>> GetAllSchedulers(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(_scheduler);
-        }
-
-        public Task<IScheduler> GetScheduler(string schedName, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(_scheduler);
-        }
-
-        public Task<IScheduler> GetScheduler(string schedName, string instId)
-        {
-            return Task.FromResult(_scheduler);
-        }
-
-        public Task<IReadOnlyList<IScheduler>> GetAllSchedulers()
-        {
-            return Task.FromResult<IReadOnlyList<IScheduler>>(new List<IScheduler> { _scheduler });
-        }
-
-        public Task<IReadOnlyList<IScheduler>> GetAllSchedulers(CancellationToken cancellationToken)
-        {
-            return Task.FromResult<IReadOnlyList<IScheduler>>(new List<IScheduler> { _scheduler });
+            return ValueTask.FromResult(new List<IScheduler> { _scheduler });
         }
     }
 }

@@ -172,18 +172,9 @@
       },
       "Quartz": {
         "type": "Direct",
-        "requested": "[3.21.0, )",
-        "resolved": "3.21.0",
-        "contentHash": "CmJsq4pQRuaEmiNksCsrV0T2D2fzlA9QcpjEPLKoLoCC6Xx3ghx1mbSUi5rywZ0koTxoCTwGDqREKILocKR1jw=="
-      },
-      "Quartz.Extensions.Hosting": {
-        "type": "Direct",
-        "requested": "[3.15.1, )",
-        "resolved": "3.15.1",
-        "contentHash": "svqLTEnVLb0VPUcNCd/khRqagwxM/yybUZ2sEOd7HFdPO+5dAOttL+ARtXSyBeaGWPWAaxY4VvU7pJTZzYhORw==",
-        "dependencies": {
-          "Quartz.Extensions.DependencyInjection": "3.15.1"
-        }
+        "requested": "[4.5.0, )",
+        "resolved": "4.5.0",
+        "contentHash": "BRRvuQy4LIEwUsS0IG1bZoRYwCxbeQxEze60xVape7XJEjCCBtvXe37km63sQ24A6vE1gRKQ3ppaWvG3mV8MyQ=="
       },
       "SonarAnalyzer.CSharp": {
         "type": "Direct",
@@ -725,14 +716,6 @@
           "Polly.Core": "8.4.2"
         }
       },
-      "Quartz.Extensions.DependencyInjection": {
-        "type": "Transitive",
-        "resolved": "3.15.1",
-        "contentHash": "LinB9z54aPn49C/DGM1v3OflX2nosrEo4zNz10vfYqcCndFJ8MNU9k++Ap9T7vxeZc355WStPDggpX60TYj1Lg==",
-        "dependencies": {
-          "Quartz": "3.15.1"
-        }
-      },
       "Scrutor": {
         "type": "Transitive",
         "resolved": "3.3.0",
@@ -879,7 +862,7 @@
           "NJsonSchema": "[11.0.2, )",
           "Npgsql": "[10.0.2, )",
           "OpenIddict.EntityFrameworkCore": "[7.7.2, )",
-          "Quartz": "[3.21.0, )",
+          "Quartz": "[4.5.0, )",
           "Swashbuckle.AspNetCore": "[10.3.1, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.3.1, )",
           "System.Security.Cryptography.Pkcs": "[10.0.13, )",
