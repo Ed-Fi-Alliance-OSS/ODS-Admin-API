@@ -25,7 +25,7 @@ public static class QuartzJobScheduler
     {
         var job = JobBuilder.Create<TJob>()
             .WithIdentity(jobKey)
-            .UsingJobData([.. jobData])
+            .UsingJobData(new JobDataMap(jobData!))
             .Build();
 
         // Check if job already exists or is running
@@ -33,9 +33,8 @@ public static class QuartzJobScheduler
         if (existingJob != null)
         {
             // Optionally, check if a trigger is currently running for this job
-            var triggers = await scheduler.GetTriggersOfJob(jobKey);
-            var states = await Task.WhenAll(triggers.Select(t => scheduler.GetTriggerState(t.Key)));
-            if (states.Any(state => state == TriggerState.Normal || state == TriggerState.Blocked))
+            var triggers = await scheduler.QueryTriggers(new TriggerQuery { Job = jobKey });
+            if (triggers.Items.Any(t => t.State == TriggerState.Normal || t.State == TriggerState.Blocked))
             {
                 // Job is already scheduled or running - report the existing job, not the new one.
                 return existingJob;

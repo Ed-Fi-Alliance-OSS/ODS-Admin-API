@@ -79,9 +79,9 @@ public class AddOdsInstanceManageTests
 
         var schedulerFactory = A.Fake<ISchedulerFactory>();
         A.CallTo(() => schedulerFactory.GetScheduler(A<CancellationToken>._))
-            .Returns(Task.FromResult(createdScheduler));
-        A.CallTo(() => createdScheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
-            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
+            .Returns(ValueTask.FromResult(createdScheduler));
+        A.CallTo(() => createdScheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._))
+            .Returns(ValueTask.FromResult(DateTimeOffset.UtcNow));
 
         scheduler = createdScheduler;
 
@@ -145,9 +145,9 @@ public class AddOdsInstanceManageTests
         var options = CreateOptions();
         IJobDetail? scheduledJob = null;
 
-        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
-            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
-            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
+        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, ScheduleJobOptions _, CancellationToken _) => scheduledJob = job)
+            .Returns(ValueTask.FromResult(DateTimeOffset.UtcNow));
 
         var request = new AddOdsInstanceManage.AddOdsInstanceManageRequest
         {
@@ -183,15 +183,14 @@ public class AddOdsInstanceManageTests
             .WithIdentity(new JobKey($"{JobConstants.CreateInstanceJobName}-1"))
             .UsingJobData(JobConstants.RunIdKey, existingRunId)
             .Build();
-        var activeTrigger = A.Fake<ITrigger>();
-        A.CallTo(() => activeTrigger.Key).Returns(new TriggerKey("dispatcher-trigger"));
+        var activeTrigger = new TriggerHeader(
+            new TriggerKey("dispatcher-trigger"), existingJob.Key, "", "", TriggerState.Normal,
+            DateTimeOffset.UtcNow, null, null, null, "", 5, "", "", 0);
 
         A.CallTo(() => scheduler.GetJobDetail(A<JobKey>._, A<CancellationToken>._))
-            .Returns(Task.FromResult<IJobDetail?>(existingJob));
-        A.CallTo(() => scheduler.GetTriggersOfJob(A<JobKey>._, A<CancellationToken>._))
-            .Returns(Task.FromResult<IReadOnlyCollection<ITrigger>>([activeTrigger]));
-        A.CallTo(() => scheduler.GetTriggerState(A<TriggerKey>._, A<CancellationToken>._))
-            .Returns(Task.FromResult(TriggerState.Normal));
+            .Returns(ValueTask.FromResult<IJobDetail?>(existingJob));
+        A.CallTo(() => scheduler.QueryTriggers(A<TriggerQuery>._, A<CancellationToken>._))
+            .Returns(ValueTask.FromResult(new PagedResult<TriggerHeader>([activeTrigger], false, null)));
 
         var request = new AddOdsInstanceManage.AddOdsInstanceManageRequest
         {
@@ -203,7 +202,7 @@ public class AddOdsInstanceManageTests
 
         var response = result.ShouldBeOfType<Accepted<JobQueuedResult>>().Value.ShouldNotBeNull();
         response.JobId.ShouldBe(existingRunId);
-        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._)).MustNotHaveHappened();
+        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._)).MustNotHaveHappened();
     }
 
     [Test]
@@ -218,9 +217,9 @@ public class AddOdsInstanceManageTests
         var options = CreateOptions(multiTenancy: true);
         IJobDetail? scheduledJob = null;
 
-        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<CancellationToken>._))
-            .Invokes((IJobDetail job, ITrigger _, CancellationToken _) => scheduledJob = job)
-            .Returns(Task.FromResult(DateTimeOffset.UtcNow));
+        A.CallTo(() => scheduler.ScheduleJob(A<IJobDetail>._, A<ITrigger>._, A<ScheduleJobOptions>._, A<CancellationToken>._))
+            .Invokes((IJobDetail job, ITrigger _, ScheduleJobOptions _, CancellationToken _) => scheduledJob = job)
+            .Returns(ValueTask.FromResult(DateTimeOffset.UtcNow));
 
         var request = new AddOdsInstanceManage.AddOdsInstanceManageRequest
         {
