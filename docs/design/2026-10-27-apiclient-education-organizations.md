@@ -73,7 +73,15 @@ v2 doesn't expose narrowing, but it no longer undoes it:
 | `AdminApiException` with status 409 (for example Application-level reset) | `type: …:bad-request` | `type: urn:ed-fi:management-api:conflict` |
 | Education organization rule violations, and `createDefaultCredentials` combinations | n/a | 400 `urn:ed-fi:management-api:bad-request:data`, with `validationErrors` keyed by the field |
 
-A missing resource in the route (`/apiClients/{id}`) is still 404. The 502 and partial-sync responses in the Management API spec apply only to the Configuration Service. Admin API has no identity provider to sync, because ODS/API reads client education organizations from `EdFi_Admin` when it issues a token.
+A missing resource in the route (`/apiClients/{id}`) is still 404.
+
+The Management API spec also lists responses that it marks as conditional: implementations that keep client credentials in an external identity provider, or that serialize changes per Application, "may return" them. Admin API has neither, because ODS/API reads client education organizations from `EdFi_Admin` when it issues a token. So Admin API doesn't return:
+
+- any `502` (`bad-gateway`, or `bad-gateway:partial-sync` with its `apiClientIds` member);
+- the `409` `conflict` for a concurrent change to the Application ("retry the request"), on `PUT /v3/applications/{id}`, `POST /v3/apiClients`, `PUT` and `DELETE /v3/apiClients/{id}`, and `PUT /v3/apiClients/{id}/reset-credential`;
+- the `409` `conflict` on `POST /v3/apiClients` for a generated key that's already in use, or an identity provider client already associated with another API client.
+
+Admin API still conforms to the spec without them.
 
 ## Database: migration `00010`
 
