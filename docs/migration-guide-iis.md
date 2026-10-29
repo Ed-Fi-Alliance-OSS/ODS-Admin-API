@@ -19,6 +19,8 @@ Admin API does not detect or tolerate a missing column. Until the column exists,
 
 The migration does not change any client's access. It marks a client as narrowed (`InheritsApplicationEducationOrganizations` = false) when the client is not linked to every education organization on its Application. All other clients inherit.
 
+It does this even when the column already exists, for example because the database was upgraded to an ODS/API version that adds the column (ODS-6912) before this release was deployed. Apply `00010` in that case too; otherwise clients that are already narrowed stay marked as inheriting, and the next Application edit gives them every education organization on the Application.
+
 This includes clients with **no** education organization links on an Application that has education organizations. Some released versions created extra credentials through `POST /apiClients` without any links (ADMINAPI-1514). Those clients have no education organization access today, and they keep none after the upgrade: later Application edits do not add education organizations to narrowed clients.
 
 To find these clients, run this against each `EdFi_Admin` database (use `0` instead of `false` on SQL Server):

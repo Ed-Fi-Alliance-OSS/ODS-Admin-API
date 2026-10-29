@@ -104,17 +104,36 @@ public class AddInheritsApplicationEducationOrganizationsMigrationTests : Platfo
     }
 
     [Test]
-    public void Script_WhenColumnExists_LeavesValuesUntouched()
+    public void Script_WhenColumnAlreadyAddedWithDefaults_BackfillsClients()
+    {
+        // ODS-6912: Ed-Fi-ODS may add the column before Admin API 3 is deployed, leaving every client at the default.
+        var (a, b, c) = SeedApplicationWithClients();
+        ExecuteNonQuery(
+            """
+            ALTER TABLE dbo.ApiClients
+                ADD InheritsApplicationEducationOrganizations BIT NOT NULL
+                CONSTRAINT DF_ApiClients_InheritsApplicationEducationOrganizations DEFAULT (1);
+            """);
+
+        RunScript();
+
+        GetInherits(a).ShouldBeTrue();
+        GetInherits(b).ShouldBeFalse();
+        GetInherits(c).ShouldBeFalse();
+    }
+
+    [Test]
+    public void Script_WhenRunAgain_NeverSetsFalseBackToTrue()
     {
         var (a, b, _) = SeedApplicationWithClients();
         RunScript();
+        // A client narrowed to exactly its Application's list is linked to every row but is not inheriting.
         ExecuteNonQuery($"UPDATE dbo.ApiClients SET InheritsApplicationEducationOrganizations = 0 WHERE ApiClientId = {a}");
-        var bBefore = GetInherits(b);
 
         RunScript();
 
         GetInherits(a).ShouldBeFalse();
-        GetInherits(b).ShouldBe(bBefore);
+        GetInherits(b).ShouldBeFalse();
     }
 
     [Test]

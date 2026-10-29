@@ -88,18 +88,20 @@ Admin API still conforms to the spec without them.
 `00010-AddInheritsApplicationEducationOrganizationsToApiClients.sql`, for SQL Server and PostgreSQL. It is in both `Application/EdFi.Ods.AdminApi/Artifacts/` and `Application/EdFi.Ods.AdminApi.V3/Artifacts/`, and the two copies are byte-identical.
 
 - **Adds** `dbo.ApiClients.InheritsApplicationEducationOrganizations`: `BIT`/`boolean`, `NOT NULL`, default `1`/`true`.
-- **Checks first.** If the column already exists (for example, because Ed-Fi-ODS ships it later), the script creates nothing and doesn't touch values. Re-running it is harmless.
-- **Backfills only when it created the column.** A client becomes `false` (narrowed) if it isn't linked to every education organization on its Application. Every other client stays `true`. That includes clients whose Application has no education organizations, and clients with no Application. No client's access changes on upgrade.
+- **Checks first.** If the column already exists (for example, because Ed-Fi-ODS added it, ODS-6912), the script doesn't create it.
+- **Always backfills.** Whether or not the script created the column, a client becomes `false` (narrowed) if it isn't linked to every education organization on its Application. Every other client keeps its value (`true` by default). That includes clients whose Application has no education organizations, and clients with no Application. No client's access changes on upgrade.
+  - **Why always.** If ODS adds the column without setting existing clients' values, every client sits at the default `true`. Skipping the backfill there would leave narrowed clients marked inheriting, and the next Application edit would re-link them to every education organization on the Application. `AdminApiDeployJournal` runs the script once per database. (Changed after PR review.)
+  - **Never widens.** The backfill only sets `false`, never `true`. Running it again by hand can't turn a narrowed client back into an inheriting one, so it's harmless.
   - **No-link clients are narrowed.** Before ADMINAPI-1514 (#468), credentials created through `POST /apiClients` got no links. Marking them inheriting would have given them the Application's full list on the next Application edit, a widening nobody chose for that client. Until that edit, GET would also have returned `true` with `[]`, which contradicts the spec. They now keep no access until someone sets them to inherit with `PUT /v3/apiClients/{id}`. The migration guides show how to find them. (Changed after PR review.)
   - **Known limitation:** a client deliberately narrowed to every current education organization is marked inheriting.
-- **Atomic.** On SQL Server, the column and the backfill run in one transaction (`SET XACT_ABORT ON`). The PostgreSQL `DO` block is atomic already. A failed backfill leaves no column, so a rerun starts over instead of skipping the backfill.
+- **Atomic.** On SQL Server, the column and the backfill run in one transaction (`SET XACT_ABORT ON`). The PostgreSQL `DO` block is atomic already. A failed backfill leaves the database as it was (no column, if the script was adding it), so a rerun starts over.
 - **Older writers keep working.** Admin App, older Admin API versions and v2 don't know the column; their inserts get the default (inheriting), which matches what they did before. ODS/API's token lookup doesn't read the column.
 
 ### Required upgrade step
 
 Fresh installs and new Docker volumes get `00010` automatically. **Existing databases don't:** Docker DB images run init scripts only on a new volume.
 
-Before deploying this release, apply `00010` to **every** `EdFi_Admin` (each tenant's, in multi-tenant installs), for example with `eng/run-dbup-migrations.ps1`. Until the column exists, every API client and Application endpoint fails; the code doesn't tolerate a missing column. The migration guides (`docs/migration-guide*.md`) describe this, and how to find and repair clients with no links.
+Before deploying this release, apply `00010` to **every** `EdFi_Admin` (each tenant's, in multi-tenant installs), for example with `eng/run-dbup-migrations.ps1`. That includes databases where ODS already added the column, so they get the backfill. Until the column exists, every API client and Application endpoint fails; the code doesn't tolerate a missing column. The migration guides (`docs/migration-guide*.md`) describe this, and how to find and repair clients with no links.
 
 Ed-Fi-ODS should know about this column, so that a future `EdFi_Admin` script or `EdFi.Admin.DataAccess` property uses the same name, type and default.
 
@@ -155,7 +157,7 @@ These live in `EdFi.Ods.AdminApi.V3/Infrastructure/ErrorHandling/`:
 
 - **Unit tests:** the resolver (one test per rule), the error middleware, the shadow property and hook, the commands on InMemory contexts, the `createDefaultCredentials` validator and handler, and v2 reset.
 - **SQL Server DB tests:**
-  - migration `00010`: column shape, backfill (full, partial and no-link clients, and an Application with no education organizations), skip when the column exists, re-run, and rollback when the backfill fails;
+  - migration `00010`: column shape, backfill (full, partial and no-link clients, and an Application with no education organizations), backfill when ODS already added the column, a re-run never setting `false` back to `true`, and rollback when the backfill fails;
   - a narrowed client round-tripping `false`;
   - GET returning junction rows;
   - client moves;

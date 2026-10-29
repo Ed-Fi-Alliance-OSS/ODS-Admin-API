@@ -8,8 +8,10 @@
 -- That includes clients with no links at all (for example credentials created without links by released versions):
 -- they keep no access until they are explicitly set to inherit.
 -- Clients whose Application has no education organizations, or with a NULL Application, keep true.
--- The backfill runs only when this script creates the column; if the column already exists its values are left
--- untouched. The DO block runs atomically, so a failed backfill leaves no column and a rerun starts over.
+-- The backfill runs whether or not this script creates the column, so a database where Ed-Fi-ODS (ODS-6912) already
+-- added the column with every client at the default is still backfilled. AdminApiDeployJournal runs this script once.
+-- The backfill only sets false, never true, so it can't widen a client's access, and running it again by hand is
+-- harmless. The DO block runs atomically, so a failed backfill leaves the database as it was and a rerun starts over.
 
 DO $$
 BEGIN
@@ -19,19 +21,19 @@ BEGIN
     )
     THEN
         ALTER TABLE dbo.ApiClients ADD COLUMN InheritsApplicationEducationOrganizations BOOLEAN NOT NULL DEFAULT TRUE;
-
-        UPDATE dbo.ApiClients c
-        SET InheritsApplicationEducationOrganizations = FALSE
-        WHERE EXISTS (
-            SELECT 1
-            FROM dbo.ApplicationEducationOrganizations aeo
-            WHERE aeo.Application_ApplicationId = c.Application_ApplicationId
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM dbo.ApiClientApplicationEducationOrganizations link
-                  WHERE link.ApiClient_ApiClientId = c.ApiClientId
-                    AND link.ApplicationEdOrg_ApplicationEdOrgId = aeo.ApplicationEducationOrganizationId
-              )
-        );
     END IF;
+
+    UPDATE dbo.ApiClients c
+    SET InheritsApplicationEducationOrganizations = FALSE
+    WHERE EXISTS (
+        SELECT 1
+        FROM dbo.ApplicationEducationOrganizations aeo
+        WHERE aeo.Application_ApplicationId = c.Application_ApplicationId
+          AND NOT EXISTS (
+              SELECT 1
+              FROM dbo.ApiClientApplicationEducationOrganizations link
+              WHERE link.ApiClient_ApiClientId = c.ApiClientId
+                AND link.ApplicationEdOrg_ApplicationEdOrgId = aeo.ApplicationEducationOrganizationId
+          )
+    );
 END $$;

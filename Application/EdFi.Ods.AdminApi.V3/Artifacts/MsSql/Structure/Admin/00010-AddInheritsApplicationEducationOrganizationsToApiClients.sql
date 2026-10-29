@@ -8,9 +8,11 @@
 -- That includes clients with no links at all (for example credentials created without links by released versions):
 -- they keep no access until they are explicitly set to inherit.
 -- Clients whose Application has no education organizations, or with a NULL Application, keep 1.
--- The backfill runs only when this script creates the column; if the column already exists its values are left
--- untouched. The column and the backfill are added in one transaction, so a failed backfill leaves no column and a
--- rerun starts over.
+-- The backfill runs whether or not this script creates the column, so a database where Ed-Fi-ODS (ODS-6912) already
+-- added the column with every client at the default is still backfilled. AdminApiDeployJournal runs this script once.
+-- The backfill only sets 0, never 1, so it can't widen a client's access, and running it again by hand is harmless.
+-- The column and the backfill run in one transaction, so a failed backfill leaves the database as it was and a rerun
+-- starts over.
 
 SET XACT_ABORT ON;
 BEGIN TRANSACTION;
@@ -23,8 +25,9 @@ BEGIN
 ALTER TABLE [dbo].[ApiClients]
     ADD [InheritsApplicationEducationOrganizations] BIT NOT NULL
     CONSTRAINT [DF_ApiClients_InheritsApplicationEducationOrganizations] DEFAULT (1);
+END
 
--- Dynamic SQL because the column does not exist when this batch is compiled.
+-- Dynamic SQL because the column may not exist when this batch is compiled.
 EXEC sp_executesql N'
 UPDATE c
 SET c.InheritsApplicationEducationOrganizations = 0
@@ -40,6 +43,5 @@ WHERE EXISTS (
             AND link.ApplicationEducationOrganization_ApplicationEducationOrganizationId = aeo.ApplicationEducationOrganizationId
       )
 );';
-END
 
 COMMIT TRANSACTION;
