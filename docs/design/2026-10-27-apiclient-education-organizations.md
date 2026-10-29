@@ -75,10 +75,10 @@ v2 doesn't expose narrowing, but it no longer undoes it:
 
 A missing resource in the route (`/apiClients/{id}`) is still 404.
 
-The Management API spec also lists responses that it marks as conditional: implementations that keep client credentials in an external identity provider, or that serialize changes per Application, "may return" them. Admin API has neither, because ODS/API reads client education organizations from `EdFi_Admin` when it issues a token. So Admin API doesn't return:
+The Management API spec also lists responses that it marks as conditional: implementations that keep client credentials in an external identity provider, or that process changes to an Application one at a time, "may return" them. Admin API does neither. It has no identity provider, because ODS/API reads client education organizations from `EdFi_Admin` when it issues a token, and it doesn't hold a per-Application lock. So Admin API doesn't return:
 
 - any `502` (`bad-gateway`, or `bad-gateway:partial-sync` with its `apiClientIds` member);
-- the `409` `conflict` for a concurrent change to the Application ("retry the request"), on `PUT /v3/applications/{id}`, `POST /v3/apiClients`, `PUT` and `DELETE /v3/apiClients/{id}`, and `PUT /v3/apiClients/{id}/reset-credential`;
+- the `409` `conflict` for a concurrent change to the Application ("retry the request"), on `PUT` and `DELETE /v3/applications/{id}`, `PUT /v3/applications/{id}/reset-credential`, `POST /v3/apiClients`, `PUT` and `DELETE /v3/apiClients/{id}`, and `PUT /v3/apiClients/{id}/reset-credential`. Admin API does return `409` on `PUT /v3/applications/{id}/reset-credential` when the Application has zero clients or more than one;
 - the `409` `conflict` on `POST /v3/apiClients` for a generated key that's already in use, or an identity provider client already associated with another API client.
 
 Admin API still conforms to the spec without them.
