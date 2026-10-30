@@ -302,6 +302,44 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
         });
     }
 
+    [Test]
+    public void V2Edit_KeepsNarrowedClientList()
+    {
+        SetupTestEntities();
+
+        // Narrow the client to the first row only, flag set directly via SQL.
+        Transaction(ctx =>
+        {
+            var secondRowId = ctx.ApplicationEducationOrganizations
+                .Single(r => r.Application.ApplicationId == _application.ApplicationId && r.EducationOrganizationId == 67890)
+                .ApplicationEducationOrganizationId;
+            ((DbContext)ctx).Database.ExecuteSql($"UPDATE dbo.ApiClients SET InheritsApplicationEducationOrganizations = 0 WHERE ApiClientId = {_apiClient.ApiClientId}");
+            ((DbContext)ctx).Database.ExecuteSql($"DELETE FROM dbo.ApiClientApplicationEducationOrganizations WHERE ApiClient_ApiClientId = {_apiClient.ApiClientId} AND ApplicationEducationOrganization_ApplicationEducationOrganizationId = {secondRowId}");
+        });
+
+        Transaction(usersContext =>
+        {
+            new EditApplicationCommand(usersContext).Execute(new TestEditApplicationModel
+            {
+                Id = _application.ApplicationId,
+                ApplicationName = _application.ApplicationName,
+                ClaimSetName = _application.ClaimSetName,
+                EducationOrganizationIds = new List<long> { 12345, 67890 },
+                ProfileIds = null,
+                VendorId = _vendor.VendorId
+            });
+        });
+
+        Transaction(usersContext =>
+        {
+            var client = usersContext.ApiClients
+                .Include(c => c.ApplicationEducationOrganizations)
+                .Single(c => c.ApiClientId == _apiClient.ApiClientId);
+            client.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId)
+                .ShouldBe(new long[] { 12345 });
+        });
+    }
+
     private class TestEditApplicationModel : IEditApplicationModel
     {
         public int Id { get; set; }

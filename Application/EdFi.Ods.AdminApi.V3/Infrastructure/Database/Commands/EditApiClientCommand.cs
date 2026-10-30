@@ -5,7 +5,11 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
+using EdFi.Ods.AdminApi.V3.Features;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
 
@@ -26,14 +30,76 @@ public class EditApiClientCommand : IEditApiClientCommand
     public ApiClient Execute(IEditApiClientModel model)
     {
         var apiClient = _context.ApiClients
+            .Include(c => c.Application)
+            .Include(c => c.ApplicationEducationOrganizations)
             .SingleOrDefault(a => a.ApiClientId == model.Id) ?? throw new NotFoundException<int>("apiclient", model.Id);
+
+        var target = _context.Applications
+            .Include(a => a.ApplicationEducationOrganizations)
+            .Include(a => a.Vendor)
+                .ThenInclude(v => v.Users)
+            .SingleOrDefault(a => a.ApplicationId == model.ApplicationId)
+                ?? throw new ConflictException(
+                    $"Application with ID {model.ApplicationId} not found.",
+                    AdminApiProblemTypes.ConflictUnresolvedReference);
+
+        // Legacy rows may have no Application (nullable column); treat that as a move.
+        var isMove = apiClient.Application is null || target.ApplicationId != apiClient.Application.ApplicationId;
+
+        // Legacy data may already hold duplicate names (v2 POST never checked), so only check when the
+        // client moves or its name changes. POST trims names, so compare the trimmed name.
+        var requestedName = model.Name.Trim();
+
+        if (isMove || !string.Equals(apiClient.Name?.Trim(), requestedName, StringComparison.Ordinal))
+        {
+            var duplicateName = _context.ApiClients.Any(c =>
+                c.Application!.ApplicationId == target.ApplicationId
+                && c.ApiClientId != apiClient.ApiClientId
+                && c.Name != null
+                && c.Name.Trim() == requestedName);
+
+            if (duplicateName)
+            {
+                throw new ConflictException(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
+            }
+        }
+
+        var current = new ClientEducationOrganizationScope(
+            _context.GetInheritsApplicationEducationOrganizations(apiClient),
+            apiClient.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).ToList());
+
+        // Resolve before mutating anything so a rejected request leaves nothing to save.
+        var scope = ClientEducationOrganizationScopeResolver.Resolve(
+            model.EducationOrganizationIds,
+            model.InheritsApplicationEducationOrganizations,
+            target.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).ToList(),
+            current,
+            isMove);
+
+        // Clearing the client's collection removes only the join rows, not the
+        // ApplicationEducationOrganization rows themselves.
+        apiClient.ApplicationEducationOrganizations.Clear();
+
+        if (isMove)
+        {
+            apiClient.Application = target;
+            apiClient.User = target.Vendor.Users.FirstOrDefault();
+        }
+
+        foreach (var row in target.ApplicationEducationOrganizations
+            .Where(r => scope.EducationOrganizationIds.Contains(r.EducationOrganizationId)))
+        {
+            apiClient.ApplicationEducationOrganizations.Add(row);
+        }
+
+        _context.SetInheritsApplicationEducationOrganizations(apiClient, scope.Inherits);
 
         var newOdsInstances = model.DataStoreIds != null
             ? _context.OdsInstances.Where(p => model.DataStoreIds.Contains(p.OdsInstanceId))
             : null;
 
         var currentApiClientId = apiClient.ApiClientId;
-        apiClient.Name = model.Name;
+        apiClient.Name = requestedName;
         apiClient.IsApproved = model.IsApproved;
 
         _context.ApiClientOdsInstances.RemoveRange(_context.ApiClientOdsInstances.Where(o => o.ApiClient.ApiClientId == currentApiClientId));
@@ -58,6 +124,8 @@ public interface IEditApiClientModel
     bool IsApproved { get; }
     int ApplicationId { get; }
     IEnumerable<int>? DataStoreIds { get; }
+    IEnumerable<long>? EducationOrganizationIds { get; }
+    bool? InheritsApplicationEducationOrganizations { get; }
 }
 
 

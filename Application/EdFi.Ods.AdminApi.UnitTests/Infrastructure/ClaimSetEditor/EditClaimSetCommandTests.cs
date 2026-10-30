@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
@@ -25,8 +26,8 @@ public class EditClaimSetCommandTests
         new(new DbContextOptionsBuilder<SqlServerSecurityContext>()
             .UseInMemoryDatabase(databaseName: $"EditClaimSet_sec_{Guid.NewGuid()}")
             .Options);
-    private static SqlServerUsersContext CreateUsersContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateUsersContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"EditClaimSet_usr_{Guid.NewGuid()}")
             .Options);
 

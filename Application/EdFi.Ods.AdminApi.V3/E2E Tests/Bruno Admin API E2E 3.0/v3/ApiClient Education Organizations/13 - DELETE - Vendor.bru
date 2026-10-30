@@ -1,0 +1,21 @@
+meta {
+  name: DELETE - Vendor
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{API_URL}}/v3/vendors/{{EdOrgVendorId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE - Vendor: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

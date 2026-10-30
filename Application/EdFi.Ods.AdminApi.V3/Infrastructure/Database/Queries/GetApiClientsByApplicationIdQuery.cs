@@ -25,6 +25,7 @@ public class GetApiClientsByApplicationIdQuery : IGetApiClientsByApplicationIdQu
         var apiClients = _context.ApiClients
             .Include(ac => ac.Application)
             .Include(ac => ac.User)
+            .Include(ac => ac.ApplicationEducationOrganizations)
             .Where(app => applicationId == 0 || app.Application.ApplicationId == applicationId);
 
         return apiClients.ToReadOnlyList();
@@ -33,7 +34,9 @@ public class GetApiClientsByApplicationIdQuery : IGetApiClientsByApplicationIdQu
     public bool ExistsByApplicationIdAndName(int applicationId, string? name)
     {
         return _context.ApiClients.Any(
-            c => c.Application.ApplicationId == applicationId && c.Name == name);
+            c => c.Application.ApplicationId == applicationId
+                && c.Name != null
+                && c.Name.Trim() == name);
     }
 }
 

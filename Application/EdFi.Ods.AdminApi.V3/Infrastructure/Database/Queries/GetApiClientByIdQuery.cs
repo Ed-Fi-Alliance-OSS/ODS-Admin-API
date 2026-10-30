@@ -23,6 +23,7 @@ public class GetApiClientByIdQuery : IGetApiClientByIdQuery
     {
         var apiClient = _context.ApiClients
             .Include(a => a.Application)
+            .Include(a => a.ApplicationEducationOrganizations)
             .SingleOrDefault(app => app.ApiClientId == apiClientId);
 
         if (apiClient == null)

@@ -1,0 +1,21 @@
+meta {
+  name: DELETE - ClaimSet
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{API_URL}}/v3/claimSets/{{EdOrgClaimSetId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE - ClaimSet: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

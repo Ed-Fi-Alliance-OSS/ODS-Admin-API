@@ -6,7 +6,9 @@
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
+using ApplicationMapper = EdFi.Ods.AdminApi.V3.Features.Applications.ApplicationMapper;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -264,8 +266,48 @@ public class AddApplicationCommandTests : PlatformUsersContextTestBase
         });
     }
 
+    [Test]
+    public void AddApplication_WithoutDefaultClient_GetShowsEnabledFalseAndNoDataStores()
+    {
+        var vendor = new Vendor
+        {
+            VendorNamespacePrefixes = new List<VendorNamespacePrefix> { new VendorNamespacePrefix { NamespacePrefix = "http://tests.com" } },
+            VendorName = "Integration Tests"
+        };
+        Save(vendor);
+
+        AddApplicationResult result = null;
+        Transaction(usersContext =>
+        {
+            result = new AddApplicationCommand(usersContext).Execute(new TestApplication
+            {
+                ApplicationName = "No Default Client",
+                ClaimSetName = "FakeClaimSet",
+                VendorId = vendor.VendorId,
+                EducationOrganizationIds = new List<long> { 12345, 67890 },
+                CreateDefaultCredentials = false
+            }, _options);
+        });
+
+        result.Key.ShouldBeNull();
+        result.Secret.ShouldBeNull();
+
+        Transaction(usersContext =>
+        {
+            var application = new GetApplicationByIdQuery(usersContext).Execute(result.ApplicationId);
+            var dataStoreIds = new GetDataStoreIdsByApplicationIdQuery(usersContext).Execute(result.ApplicationId);
+            var model = ApplicationMapper.ToModel(application, dataStoreIds);
+
+            model.Enabled.ShouldBeFalse();
+            model.DataStoreIds.ShouldBeEmpty();
+            model.EducationOrganizationIds.OrderBy(i => i).ToArray().ShouldBe(new long[] { 12345, 67890 });
+            usersContext.ApiClients.Count(c => c.Application.ApplicationId == result.ApplicationId).ShouldBe(0);
+        });
+    }
+
     private class TestApplication : IAddApplicationModel
     {
+        public bool? CreateDefaultCredentials { get; set; }
         public string ApplicationName { get; set; }
         public int VendorId { get; set; }
         public string ClaimSetName { get; set; }

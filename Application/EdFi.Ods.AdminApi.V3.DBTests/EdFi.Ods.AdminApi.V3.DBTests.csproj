@@ -36,6 +36,9 @@
     <None Update="testsappsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\EdFi.Ods.AdminApi\Artifacts\MsSql\Structure\Admin\00010-AddInheritsApplicationEducationOrganizationsToApiClients.sql" Link="Migrations\00010.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

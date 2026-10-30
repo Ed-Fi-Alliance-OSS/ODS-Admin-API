@@ -292,6 +292,39 @@ public class EditApplicationCommandTests : PlatformUsersContextTestBase
         });
     }
 
+    [Test]
+    public void V3Edit_RemovingEdOrg_RemovesJoinRows_OnSqlServer()
+    {
+        SetupTestEntities();
+
+        var removedRowId = Transaction(ctx => ctx.ApplicationEducationOrganizations
+            .Single(r => r.Application.ApplicationId == _application.ApplicationId && r.EducationOrganizationId == 67890)
+            .ApplicationEducationOrganizationId);
+
+        Transaction(usersContext =>
+        {
+            new EditApplicationCommand(usersContext).Execute(new TestEditApplicationModel
+            {
+                Id = _application.ApplicationId,
+                ApplicationName = _application.ApplicationName,
+                ClaimSetName = _application.ClaimSetName,
+                EducationOrganizationIds = new List<long> { 12345 },
+                ProfileIds = null,
+                VendorId = _vendor.VendorId
+            });
+        });
+
+        Transaction(usersContext =>
+        {
+            usersContext.ApplicationEducationOrganizations
+                .Count(r => r.ApplicationEducationOrganizationId == removedRowId).ShouldBe(0);
+            var joinRows = ((DbContext)usersContext).Database
+                .SqlQuery<int>($"SELECT COUNT(*) AS Value FROM dbo.ApiClientApplicationEducationOrganizations WHERE ApplicationEducationOrganization_ApplicationEducationOrganizationId = {removedRowId}")
+                .Single();
+            joinRows.ShouldBe(0);
+        });
+    }
+
     private class TestEditApplicationModel : IEditApplicationModel
     {
         public int Id { get; set; }

@@ -5,6 +5,7 @@
 
 using System;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -16,8 +17,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Queries;
 [TestFixture]
 public class GetApiClientsByApplicationIdQueryTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"GetApiClientsByAppV3_{Guid.NewGuid()}")
             .Options);
 
@@ -85,5 +86,19 @@ public class GetApiClientsByApplicationIdQueryTests
         ctx.SaveChanges();
 
         new GetApiClientsByApplicationIdQuery(ctx).ExistsByApplicationIdAndName(app.ApplicationId, "Nonexistent Client").ShouldBeFalse();
+    }
+
+    [Test]
+    public void ExistsByApplicationIdAndName_WhenStoredNameHasSurroundingWhitespace_ReturnsTrue()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.ApiClients.Add(new ApiClient(true) { Name = " Taken ", Application = app });
+        ctx.SaveChanges();
+
+        new GetApiClientsByApplicationIdQuery(ctx).ExistsByApplicationIdAndName(app.ApplicationId, "Taken").ShouldBeTrue();
     }
 }

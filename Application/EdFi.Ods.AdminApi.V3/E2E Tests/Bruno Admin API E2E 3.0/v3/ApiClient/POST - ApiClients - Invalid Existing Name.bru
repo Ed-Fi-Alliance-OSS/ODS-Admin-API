@@ -146,27 +146,27 @@ script:pre-request {
 }
 
 script:post-response {
-  test("POST ApiClients Invalid Existing Name: Status code is Bad Request", function () {
-      expect(res.getStatus()).to.equal(400);
+  test("POST ApiClients Invalid Existing Name: Status code is Conflict", function () {
+      expect(res.getStatus()).to.equal(409);
   });
 
   const response = res.getBody();
 
   test("POST ApiClients Invalid Existing Name: Response matches error format", function () {
       expect(response).to.have.property("title");
-      expect(response).to.have.property("errors");
+      expect(response).to.have.property("detail");
   });
 
   test("POST ApiClients Invalid Existing Name: Response title is helpful and accurate", function () {
-      expect(response.title.toLowerCase()).to.contain("validation");
+      expect(response.title.toLowerCase()).to.contain("conflict");
   });
 
-  test("POST ApiClients Invalid Existing Name: Response errors include combined-key message", function () {
-      expect(response.errors[""]).to.be.an("array").that.includes("An ApiClient with this name already exists for this application. Please enter a unique name.");
+  test("POST ApiClients Invalid Existing Name: Response detail describes the conflict", function () {
+      expect(response.detail).to.contain("An ApiClient with this name already exists for this application. Please enter a unique name.");
   });
 
   test("POST ApiClients Invalid Existing Name: type URN is correct", function () {
-      expect(response.type).to.equal("urn:ed-fi:management-api:bad-request:validation");
+      expect(response.type).to.equal("urn:ed-fi:management-api:conflict");
   });
 }
 

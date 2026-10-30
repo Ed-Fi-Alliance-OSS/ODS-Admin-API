@@ -5,7 +5,10 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Features.ApiClients;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
@@ -18,6 +21,29 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
     [TestFixture]
     public class ReadApiClientTests
     {
+        private static IUsersContext Ctx() =>
+            new AdminApiSqlServerUsersContext(
+                new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
+                    .UseInMemoryDatabase($"ReadApiClientV3_{System.Guid.NewGuid()}")
+                    .Options);
+
+        [Test]
+        public void ToModel_EducationOrganizationIdsNeverNull()
+        {
+            var apiClient = new ApiClient
+            {
+                ApiClientId = 1,
+                Name = "n",
+                Application = new Application { ApplicationId = 1 }
+            };
+
+            var model = ApiClientMapper.ToModel(apiClient, new List<int>(), true);
+
+            model.EducationOrganizationIds.ShouldNotBeNull();
+            model.EducationOrganizationIds.ShouldBeEmpty();
+            model.InheritsApplicationEducationOrganizations.ShouldBeTrue();
+        }
+
         [Test]
         public async Task GetApiClients_ReturnsOkWithMappedList()
         {
@@ -36,7 +62,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             A.CallTo(() => fakeOdsQuery.Execute(A<IEnumerable<int>>._)).Returns(new Dictionary<int, IList<int>>());
 
             // Act
-            var result = await ReadApiClient.GetApiClients(fakeQuery, fakeOdsQuery, appId);
+            var result = await ReadApiClient.GetApiClients(fakeQuery, fakeOdsQuery, Ctx(), appId);
 
             // Assert
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<List<ApiClientModel>>>();
@@ -63,7 +89,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             A.CallTo(() => fakeOdsQuery.Execute(id)).Returns(new List<int> { 10, 20 });
 
             // Act
-            var result = await ReadApiClient.GetApiClient(fakeQuery, fakeOdsQuery, id);
+            var result = await ReadApiClient.GetApiClient(fakeQuery, fakeOdsQuery, Ctx(), id);
 
             // Assert
             result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ApiClientModel>>();
@@ -82,7 +108,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             A.CallTo(() => fakeQuery.Execute(id)).Returns(null);
 
             // Act & Assert
-            Should.Throw<NotFoundException<int>>(() => ReadApiClient.GetApiClient(fakeQuery, fakeOdsQuery, id).GetAwaiter().GetResult());
+            Should.Throw<NotFoundException<int>>(() => ReadApiClient.GetApiClient(fakeQuery, fakeOdsQuery, Ctx(), id).GetAwaiter().GetResult());
         }
 
         [Test]
@@ -95,7 +121,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             A.CallTo(() => fakeQuery.Execute(appId)).Throws(new System.Exception("Query failed"));
 
             // Act & Assert
-            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClients(fakeQuery, fakeOdsQuery, appId));
+            Should.Throw<System.Exception>(async () => await ReadApiClient.GetApiClients(fakeQuery, fakeOdsQuery, Ctx(), appId));
         }
     }
 }

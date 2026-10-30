@@ -35,6 +35,8 @@ public static class FeatureConstants
     public const string InvalidResourceClaimActions = "Please provide a valid resourceClaimActions object.";
     public const string ResourceClaimOneActionNotSet = "A resource must have at least one action associated with it to be added.";
     public const string DataStoreIdsDescription = "List of data store id";
+    public const string CreateDefaultCredentialsDescription = "When true (the default), a default API client is created that inherits all of the Application's education organizations, and its key and secret are returned. When false, no API client is created, key and secret are returned as null, and sending enabled or dataStoreIds returns 400 (type urn:ed-fi:management-api:bad-request:data, with the error on the field concerned). Add API clients afterwards with POST /v3/apiClients.";
+    public const string CreateDefaultCredentialsFalseFieldNotAllowedMessage = "{0} must not be sent when createDefaultCredentials is false.";
     public const string DataStoreIdsValidationMessage = "Please provide at least one data store id.";
     public const string DataStoreIdValidationMessage = "Please provide valid DataStore id. The id {DataStoreId} does not exist.";
     public const string ClaimSetIdToCopy = "ClaimSet id to copy";
@@ -69,6 +71,12 @@ public static class FeatureConstants
     public const string ApiClientNameDescription = "Api client name";
     public const string ApiClientIsApprovedDescription = "Is approved";
     public const string ApiClientApplicationIdDescription = "Application id";
+    public const string ApiClientEducationOrganizationIdsDescription = "Education organizations the client is limited to. Each one must be on the client's Application. Sending a list without inheritsApplicationEducationOrganizations narrows the client to that list, even if it matches the Application's list. An empty list is rejected, and duplicate IDs are removed.";
+    public const string ApiClientInheritsApplicationEducationOrganizationsDescription = "When true, the client inherits its Application's education organizations and follows future changes to them. When false, the client is narrowed to educationOrganizationIds, which is then required. If neither field is sent, the client inherits.";
+    public const string ApiClientEditEducationOrganizationIdsDescription = "Education organizations the client is limited to. Each one must be on the client's Application (the new Application, when applicationId moves the client). Sending a list without inheritsApplicationEducationOrganizations narrows the client to that list, even if it matches the Application's list. An empty list is rejected, and duplicate IDs are removed. If neither this field nor inheritsApplicationEducationOrganizations is sent, the client keeps its current flag and list.";
+    public const string ApiClientEditInheritsApplicationEducationOrganizationsDescription = "When true, the client inherits its Application's education organizations and follows future changes to them; a narrowed client sent true switches back to inheriting. When false, the client is narrowed to educationOrganizationIds, which is then required. If neither field is sent, the client keeps its current flag and list.";
+    public const string ApiClientModelEducationOrganizationIdsDescription = "The client's effective education organizations: the Application's current list for an inheriting client, or the client's own list for a narrowed one. Never null. An empty list means the client has no education organization access; a narrowed client's list becomes empty when all of its education organizations are removed from the Application.";
+    public const string ApiClientModelInheritsApplicationEducationOrganizationsDescription = "True when the client inherits its Application's education organizations and follows future changes to them. False when the client is narrowed to its own list.";
     public const string ApiClientNameLengthValidationMessage = "The Api Client Name {Name} would be too long for Admin App to set up necessary ApiClient records." +
                         " Consider shortening the name by {ExtraCharactersInName} character(s).";
     public const string VendorAlreadyExistsMessage = "A Vendor with this name already exists in the database. Please enter a unique name.";
@@ -76,5 +84,9 @@ public static class FeatureConstants
     public const string ApiClientCombinedKeyMustBeUnique = "An ApiClient with this name already exists for this application. Please enter a unique name.";
     public const string ApplicationResetCredentialMultiClientConflictMessage = "This Application has more than one ApiClient. Use PUT /v3/apiClients/{id}/reset-credential to reset an individual credential.";
     public const string ApplicationResetCredentialNoApiClientsConflictMessage = "This Application has no ApiClients to reset. Use POST /v3/apiClients to add one first.";
+    public const string ApiClientEdOrgIdsEmptyMessage = "educationOrganizationIds must contain at least one education organization id. To give the client its Application's education organizations, send inheritsApplicationEducationOrganizations: true instead.";
+    public const string ApiClientEdOrgIdsNotOnApplicationMessage = "The following educationOrganizationIds are not on the client's Application: {0}";
+    public const string ApiClientInheritsTrueListMismatchMessage = "inheritsApplicationEducationOrganizations is true, so educationOrganizationIds must be omitted or equal the Application's education organizations.";
+    public const string ApiClientInheritsFalseNoListMessage = "educationOrganizationIds is required when inheritsApplicationEducationOrganizations is false.";
+    public const string ApiClientMoveScopeConflictMessage = "The client is narrowed to education organizations that are not on the target Application: {0}. Send educationOrganizationIds or inheritsApplicationEducationOrganizations: true to move it.";
 }
-
