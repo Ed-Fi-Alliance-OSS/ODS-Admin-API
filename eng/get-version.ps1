@@ -10,7 +10,7 @@ if ($currentReleaseTag)
 }
 
 # Provisional workaround for branches that do not have the latest tags
-# Check if we have a v2.x tag anywhere in the repo
+# Check if we have a v2.x tag anywhere in the repo test 
 $latestV2Tag = git tag -l "v2.*" --sort=-v:refname | Select-Object -First 1
           
 if ($latestV2Tag)
