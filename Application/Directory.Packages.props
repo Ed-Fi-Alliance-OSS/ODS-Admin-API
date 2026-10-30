@@ -20,14 +20,14 @@
     <PackageVersion Include="Dapper" Version="2.1.89" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="FakeItEasy" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="NUnit" Version="5.0.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.3.1" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.15.0" />
-    <PackageVersion Include="Quartz" Version="4.5.0" />
+    <PackageVersion Include="Quartz" Version="4.6.0" />
     <PackageVersion Include="Respawn" Version="4.0.0" />
-    <PackageVersion Include="Shouldly" Version="4.2.1" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
     <!-- Ed-Fi -->
     <PackageVersion Include="EdFi.Suite3.Admin.DataAccess" Version="7.3.67" />
     <PackageVersion Include="EdFi.Suite3.Security.DataAccess" Version="7.4.102" />
@@ -50,16 +50,16 @@
     <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.37.1" />
     <!-- Code Analysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.7.0.110445" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.35.0.4138" />
     <!-- JSON -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="NJsonSchema" Version="11.0.2" />
+    <PackageVersion Include="NJsonSchema" Version="11.6.1" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
     <!-- PostgreSQL -->
-    <PackageVersion Include="Npgsql" Version="10.0.2" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <!-- NuGet -->
-    <PackageVersion Include="NuGet.Protocol" Version="6.10.2" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.14.3" />
     <!-- OpenIddict -->
     <PackageVersion Include="OpenIddict.AspNetCore" Version="7.7.2" />
     <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.7.2" />
@@ -85,6 +85,6 @@
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.13" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.13" />
-    <PackageVersion Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
   </ItemGroup>
 </Project>
