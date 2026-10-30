@@ -1,5 +1,14 @@
 $apiPrefix = "v"
 
+$currentReleaseTag = git tag --points-at HEAD --list "v*" --sort=-v:refname |
+  Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } |
+  Select-Object -First 1
+
+if ($currentReleaseTag)
+{
+  return $currentReleaseTag
+}
+
 # Provisional workaround for branches that do not have the latest tags
 # Check if we have a v2.x tag anywhere in the repo
 $latestV2Tag = git tag -l "v2.*" --sort=-v:refname | Select-Object -First 1
