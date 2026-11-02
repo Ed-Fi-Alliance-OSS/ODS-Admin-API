@@ -257,6 +257,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }} # no checkout in this job, so gh cannot infer the repo
           TAG: ${{ github.ref_name }}
         run: |
           gh release upload "$TAG" release-assets/* --clobber
