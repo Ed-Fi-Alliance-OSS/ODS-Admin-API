@@ -29,7 +29,7 @@ jobs:
     name: Build, Pack, SBOM and Attest
     runs-on: ubuntu-latest
     permissions:
-      contents: write          # gh release upload
+      contents: read
       id-token: write          # Sigstore signing (actions/attest)
       attestations: write      # store the attestation in GitHub
       artifact-metadata: write # artifact storage record (actions/attest v4)
@@ -43,6 +43,8 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
+          # The build never pushes; keep the token out of .git/config for the build tooling.
+          persist-credentials: false
 
       - name: Set Version Numbers
         id: versions
@@ -148,9 +150,11 @@ jobs:
         run: ls -1 ./*.nupkg
 
       - name: Generate Software Bill of Materials (SBOM) - API
+        env:
+          ADMIN_API_VERSION: ${{ steps.versions.outputs.admin-api }}
         run: |
           $packageName = "${{ env.PACKAGE_NAME }}"
-          $version = "${{ steps.versions.outputs.admin-api }}"
+          $version = $env:ADMIN_API_VERSION
 
           Get-ChildItem -Include "EdFi.Suite3.ODS.$packageName.*.nupkg" -Recurse | ForEach-Object { $_.FullName } > buildfilelist.txt
 
@@ -175,20 +179,23 @@ jobs:
           subject-path: "./*.nupkg"
 
       - name: Attest SBOM
+        id: sbom
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: "./*.nupkg"
           sbom-path: ${{ env.MANIFEST_FILE }}
 
-      - name: Attach SBOM and provenance to the release
+      - name: Collect release assets
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-          BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+          PROVENANCE_BUNDLE: ${{ steps.provenance.outputs.bundle-path }}
+          SBOM_BUNDLE: ${{ steps.sbom.outputs.bundle-path }}
         run: |
-          cp "$BUNDLE" "${PACKAGE_NAME}.provenance.sigstore.json"
-          gh release upload "$TAG" "${PACKAGE_NAME}-SBOM.zip" "${PACKAGE_NAME}.provenance.sigstore.json" --clobber
+          mkdir -p release-assets
+          cp "${PACKAGE_NAME}-SBOM.zip" release-assets/
+          cp "$PROVENANCE_BUNDLE" "release-assets/${PACKAGE_NAME}.provenance.sigstore.json"
+          cp "$SBOM_BUNDLE" "release-assets/${PACKAGE_NAME}.sbom.sigstore.json"
+          ls -l release-assets
 
       - name: Self-verify attestations
         shell: bash
@@ -221,6 +228,38 @@ jobs:
           path: ./*.nupkg
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload release assets as Artifacts
+        if: success()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "${{ env.PACKAGE_NAME }}-ReleaseAssets"
+          path: release-assets/
+          if-no-files-found: error
+          retention-days: 30
+
+  # Only this job holds a write token. The bundles are offline copies of attestations
+  # already stored in GitHub, so verification does not depend on this handoff.
+  release-assets:
+    name: Attach SBOM and attestations to the release
+    needs: pack
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download release assets
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: "${{ env.PACKAGE_NAME }}-ReleaseAssets"
+          path: release-assets
+
+      - name: Upload to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release upload "$TAG" release-assets/* --clobber
 
   publish-package:
     name: Publish NuGet Package
