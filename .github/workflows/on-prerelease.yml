@@ -199,14 +199,18 @@ jobs:
           # The attestations API can take a few seconds to index a new attestation.
           verify() {
             for _ in 1 2 3; do
-              gh attestation verify "$@" && return 0
+              if gh attestation verify "$@"; then
+                echo "Verified: $*"
+                return 0
+              fi
               sleep 10
             done
             return 1
           }
+          # The SBOM predicate type follows the SPDX version sbom-tool emits (SPDX 2.2).
           for f in ./*.nupkg; do
             verify "$f" -R "$GITHUB_REPOSITORY"
-            verify "$f" -R "$GITHUB_REPOSITORY" --predicate-type https://spdx.dev/Document/v2.3
+            verify "$f" -R "$GITHUB_REPOSITORY" --predicate-type https://spdx.dev/Document/v2.2
           done
 
       - name: Upload Packages as Artifacts
