@@ -8,3 +8,4 @@ $version = $(minver -t $apiPrefix)
 $apiVersion = "$version"
 
 return $apiVersion
+# Dummy change
