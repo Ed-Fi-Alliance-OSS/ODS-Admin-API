@@ -170,7 +170,29 @@ jobs:
               -m ./ `
               -ps "Ed-Fi Alliance"
 
+          # pwsh does not stop on a native command failure and the step only
+          # reports the last command's exit code, so check sbom-tool explicitly.
+          if ($LASTEXITCODE -ne 0) { throw "sbom-tool failed with exit code $LASTEXITCODE" }
+
           Compress-Archive "${{ env.MANIFEST_FILE }}" -DestinationPath "$packageName-SBOM.zip"
+
+      # A green sbom-tool run can still produce a manifest with only the product in it
+      # (no project.assets.json in reach, wrong -bc path, ...). Fail before attesting it.
+      - name: Check SBOM content
+        shell: bash
+        env:
+          MANIFEST: ${{ env.MANIFEST_FILE }}
+          MIN_DEPENDENCIES: "10"
+        run: |
+          jq -e . "$MANIFEST" > /dev/null || { echo "::error::SBOM is not valid JSON: $MANIFEST"; exit 1; }
+          root=$(jq -r '.packages[] | select(.SPDXID == "SPDXRef-RootPackage") | .name' "$MANIFEST")
+          total=$(jq '.packages | length' "$MANIFEST")
+          deps=$(jq --arg r "$root" '[.packages[] | select(.name != $r)] | length' "$MANIFEST")
+          echo "SBOM: $total packages, $deps dependencies (root: $root)"
+          if [ "$deps" -lt "$MIN_DEPENDENCIES" ]; then
+            echo "::error::SBOM lists $deps dependencies (minimum $MIN_DEPENDENCIES). Was sbom-tool run without build output?"
+            exit 1
+          fi
 
       - name: Attest build provenance
         id: provenance
