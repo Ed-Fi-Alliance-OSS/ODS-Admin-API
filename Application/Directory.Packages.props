@@ -26,7 +26,7 @@
     <PackageVersion Include="NUnit3TestAdapter" Version="6.3.1" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.15.0" />
     <PackageVersion Include="Quartz" Version="4.5.0" />
-    <PackageVersion Include="Respawn" Version="4.0.0" />
+    <PackageVersion Include="Respawn" Version="7.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <!-- Ed-Fi -->
     <PackageVersion Include="EdFi.Suite3.Admin.DataAccess" Version="7.3.67" />

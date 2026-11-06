@@ -8,21 +8,16 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
+using Microsoft.Data.SqlClient;
 using Respawn;
+using Respawn.Graph;
 
 namespace EdFi.Ods.AdminApi.DBTestsShared;
 
 [TestFixture]
 public abstract class AdminApiDbContextTestBase
 {
-    private readonly Checkpoint _checkpoint = new()
-    {
-        TablesToIgnore =
-        [
-            "__MigrationHistory", "DeployJournal", "AdminApiDeployJournal"
-        ],
-        SchemasToExclude = []
-    };
+    private Respawner _respawner;
 
     protected abstract string AdminConnectionString { get; }
 
@@ -30,16 +25,35 @@ public abstract class AdminApiDbContextTestBase
 
     protected string ConnectionString => AdminConnectionString;
 
+    private async Task ResetDatabaseAsync()
+    {
+        await using var connection = new SqlConnection(ConnectionString);
+        await connection.OpenAsync();
+
+        _respawner ??= await Respawner.CreateAsync(
+            connection,
+            new RespawnerOptions
+            {
+                TablesToIgnore =
+                [
+                    new Table("__MigrationHistory"),
+                    new Table("DeployJournal"),
+                    new Table("AdminApiDeployJournal")
+                ]
+            });
+
+        await _respawner.ResetAsync(connection);
+    }
     [OneTimeTearDown]
     public async Task FixtureTearDown()
     {
-        await _checkpoint.Reset(ConnectionString);
+        await ResetDatabaseAsync();
     }
 
     [SetUp]
     public async Task SetUp()
     {
-        await _checkpoint.Reset(ConnectionString);
+        await ResetDatabaseAsync();
     }
 
     protected void Save(params object[] entities)
