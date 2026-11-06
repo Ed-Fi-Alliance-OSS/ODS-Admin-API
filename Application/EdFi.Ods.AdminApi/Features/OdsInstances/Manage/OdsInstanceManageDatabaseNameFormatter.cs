@@ -17,7 +17,8 @@ internal static class OdsInstanceManageDatabaseNameFormatter
 
     private static readonly Regex _leadingCanonicalPrefixPattern = new(
         @"^(?:(?:edfi_+ods)(?:_+|$))+",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+        TimeSpan.FromSeconds(1));
 
     internal static string Build(string instanceName, string databaseTemplate)
     {

@@ -83,7 +83,7 @@ public class DeleteInstanceJob(
             }
 
             odsInstanceManage = await adminApiDbContext.OdsInstanceManages
-                .FirstOrDefaultAsync(instance => instance.Id == odsInstanceManageId);
+                .FirstOrDefaultAsync(instance => instance.Id == odsInstanceManageId, context.CancellationToken);
 
             if (odsInstanceManage is null)
             {
@@ -100,7 +100,7 @@ public class DeleteInstanceJob(
             odsInstanceManage.Status = OdsInstanceManageStatus.DeleteInProgress.ToString();
             odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
             odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-            await adminApiDbContext.SaveChangesAsync();
+            await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
 
             if (!string.IsNullOrWhiteSpace(odsInstanceManage.DatabaseName))
             {
@@ -122,7 +122,7 @@ public class DeleteInstanceJob(
             odsInstanceManage.Status = OdsInstanceManageStatus.Deleted.ToString();
             odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
             odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-            await adminApiDbContext.SaveChangesAsync();
+            await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
         }
         catch
         {
@@ -131,7 +131,7 @@ public class DeleteInstanceJob(
                 odsInstanceManage.Status = OdsInstanceManageStatus.DeleteFailed.ToString();
                 odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                 odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                await adminApiDbContext.SaveChangesAsync();
+                await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
             }
 
             throw;

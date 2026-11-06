@@ -58,7 +58,7 @@ public class OverrideDefaultAuthorizationStrategyCommand
                 resourceClaimActionDefaultAuthorizationStrategy = parentResourceClaimDefaultAuthStrategy;
             }
 
-            if (!claimSetResourceClaimAction!.AuthorizationStrategyOverrides.Exists(rc => rc.ClaimSetResourceClaimAction.Action.ActionName.Equals(model.ActionName, StringComparison.CurrentCultureIgnoreCase)))
+            if (!claimSetResourceClaimAction.AuthorizationStrategyOverrides.Exists(rc => rc.ClaimSetResourceClaimAction.Action.ActionName.Equals(model.ActionName, StringComparison.CurrentCultureIgnoreCase)))
             {
                 if (model.AuthStrategyIds != null)
                     foreach (var id in model.AuthStrategyIds)
@@ -66,7 +66,7 @@ public class OverrideDefaultAuthorizationStrategyCommand
                         if (resourceClaimActionDefaultAuthorizationStrategy != null &&
                             resourceClaimActionDefaultAuthorizationStrategy.AuthorizationStrategyId != id)
                         {
-                            claimSetResourceClaimAction!.AuthorizationStrategyOverrides.Add(new ClaimSetResourceClaimActionAuthorizationStrategyOverrides()
+                            claimSetResourceClaimAction.AuthorizationStrategyOverrides.Add(new ClaimSetResourceClaimActionAuthorizationStrategyOverrides()
                             {
                                 AuthorizationStrategy = authorizationStrategiesDictionary[id]
                             });

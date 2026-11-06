@@ -38,7 +38,7 @@ public class EditAuthStrategy : IFeature
         request.ClaimSetId = claimSetId;
         request.ResourceClaimId = resourceClaimId;
         await validator.GuardAsync(request);
-                var authStrategyIds = getAuthStrategyIdsByNameQuery.Execute(request.AuthorizationStrategies?.Where(x => x is not null).Select(x => x!) ?? []);
+                var authStrategyIds = getAuthStrategyIdsByNameQuery.Execute(request.AuthorizationStrategies?.Where(x => x is not null) ?? []);
                 var model = ClaimSetMapper.ToOverrideAuthStrategyOnClaimSetModel(request, authStrategyIds);
         overrideDefaultAuthorizationStrategyCommand.ExecuteOnSpecificAction(model);
         return Results.Ok();
@@ -114,7 +114,7 @@ public class EditAuthStrategy : IFeature
                 foreach (var authStrategyName in overrideAuthStategyOnClaimSetRequest.AuthorizationStrategies!)
                 {
                     var validAuthStrategyName = authStrategies
-                      .FirstOrDefault(a => a.AuthStrategyName!.ToLower() == authStrategyName!.ToLower());
+                      .FirstOrDefault(a => a.AuthStrategyName!.ToLower() == authStrategyName.ToLower());
 
                     if (validAuthStrategyName == null)
                     {

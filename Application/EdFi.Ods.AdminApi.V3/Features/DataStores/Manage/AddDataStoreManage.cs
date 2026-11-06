@@ -37,7 +37,8 @@ public class AddDataStoreManage : IFeature
     private const int MaxDataStoreManageNameLength = 46;
     private static readonly Regex _validDataStoreManageNamePattern = new(
         "^[A-Za-z0-9 _]+$",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        RegexOptions.Compiled | RegexOptions.CultureInvariant,
+        TimeSpan.FromSeconds(1));
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
@@ -83,7 +84,7 @@ public class AddDataStoreManage : IFeature
             jobData[JobConstants.TenantNameKey] = tenantIdentifier;
         }
 
-        var scheduler = await schedulerFactory.GetScheduler();
+        var scheduler = await schedulerFactory.GetScheduler(httpContext.RequestAborted);
         var jobKey = CreateInstanceJob.CreateJobKey(added.Id, tenantIdentifier);
 
         try
@@ -98,7 +99,7 @@ public class AddDataStoreManage : IFeature
         {
             // Rarer TOCTOU: the dispatcher scheduled the job between QuartzJobScheduler's own
             // existence check and its ScheduleJob call. Best-effort: read back whichever job won.
-            var existingJob = await scheduler.GetJobDetail(jobKey);
+            var existingJob = await scheduler.GetJobDetail(jobKey, httpContext.RequestAborted);
             if (existingJob is not null)
             {
                 jobId = existingJob.JobDataMap.GetString(JobConstants.RunIdKey) ?? jobId;

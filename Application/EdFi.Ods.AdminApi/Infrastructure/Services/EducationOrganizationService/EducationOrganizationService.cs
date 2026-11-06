@@ -69,7 +69,7 @@ public class EducationOrganizationService(
                 logger.LogError("Tenant name must be provided when multi-tenancy is enabled.");
                 return;
             }
-            var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName!);
+            var tenantSpecificUsersContext = tenantSpecificDbContextProvider.GetUsersContext(tenantName);
             await ProcessOdsInstanceAsync(tenantName, tenantSpecificUsersContext, encryptionKey, databaseEngine, instanceId, maxDegreeOfParallelism);
         }
         else

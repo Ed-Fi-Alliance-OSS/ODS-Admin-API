@@ -172,13 +172,14 @@ public static class ResourceClaimValidator
                 {
                     context.AddFailure(propertyName, $"{duplicate} action is duplicated.");
                 }
-                foreach (var action in resourceClaimActions.Select(x => x.Name))
+                var invalidActions = resourceClaimActions
+                    .Select(x => x.Name)
+                    .Where(action => !dbActions.Exists(actionName => actionName != null &&
+                        actionName.Equals(action, StringComparison.InvariantCultureIgnoreCase)));
+
+                foreach (var action in invalidActions)
                 {
-                    if (!dbActions.Exists(actionName => actionName != null &&
-                        actionName.Equals(action, StringComparison.InvariantCultureIgnoreCase)))
-                    {
-                        context.AddFailure(propertyName, $"{action} is not a valid action.");
-                    }
+                    context.AddFailure(propertyName, $"{action} is not a valid action.");
                 }
             }
         }

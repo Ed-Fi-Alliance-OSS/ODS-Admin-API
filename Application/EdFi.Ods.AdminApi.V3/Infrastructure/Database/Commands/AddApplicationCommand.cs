@@ -32,7 +32,7 @@ public class AddApplicationCommand : IAddApplicationCommand
         var createDefaultCredentials = applicationModel.CreateDefaultCredentials != false;
 
         var profiles = applicationModel.ProfileIds != null
-           ? _usersContext.Profiles.Where(p => applicationModel.ProfileIds!.Contains(p.ProfileId))
+           ? _usersContext.Profiles.Where(p => applicationModel.ProfileIds.Contains(p.ProfileId))
            : null;
 
         var vendor = _usersContext.Vendors.Include(x => x.Users)
@@ -94,7 +94,7 @@ public class AddApplicationCommand : IAddApplicationCommand
             _usersContext.SetInheritsApplicationEducationOrganizations(apiClient, true);
         }
 
-        if (apiClient is not null && dataStores != null && dataStores.Count() > 0)
+        if (apiClient is not null && dataStores != null && dataStores.Any())
         {
             foreach (var dataStore in dataStores)
             {
