@@ -165,7 +165,7 @@ public class CreateInstanceJob(
             odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
             odsInstanceManage.LastRefreshed = DateTime.UtcNow;
 
-            await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
+            await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
         }
         catch
         {
@@ -174,7 +174,7 @@ public class CreateInstanceJob(
                 odsInstanceManage.Status = OdsInstanceManageStatus.CreateFailed.ToString();
                 odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                 odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
+                await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
             }
 
             throw;

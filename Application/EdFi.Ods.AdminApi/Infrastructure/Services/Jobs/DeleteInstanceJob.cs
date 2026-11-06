@@ -122,7 +122,7 @@ public class DeleteInstanceJob(
             odsInstanceManage.Status = OdsInstanceManageStatus.Deleted.ToString();
             odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
             odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-            await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
+            await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
         }
         catch
         {
@@ -131,7 +131,7 @@ public class DeleteInstanceJob(
                 odsInstanceManage.Status = OdsInstanceManageStatus.DeleteFailed.ToString();
                 odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                 odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
+                await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
             }
 
             throw;
