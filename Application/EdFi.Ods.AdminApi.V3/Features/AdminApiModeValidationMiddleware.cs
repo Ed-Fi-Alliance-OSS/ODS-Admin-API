@@ -48,7 +48,7 @@ public class AdminApiModeValidationMiddleware
 
             response.StatusCode = (int)HttpStatusCode.BadRequest;
             response.ContentType = "application/problem+json";
-            await response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+            await response.WriteAsync(JsonSerializer.Serialize(problemDetails), context.RequestAborted);
             return;
         }
 

@@ -38,7 +38,7 @@ public class AdminApiModeValidationMiddleware
         if (requestedVersion != _adminApiMode && !path.Contains("/swagger/"))
         {
             response.StatusCode = (int)HttpStatusCode.BadRequest;
-            await response.WriteAsync(JsonSerializer.Serialize(new { message = "Wrong API version for this instance mode." }));
+            await response.WriteAsync(JsonSerializer.Serialize(new { message = "Wrong API version for this instance mode." }), context.RequestAborted);
             return;
         }
 

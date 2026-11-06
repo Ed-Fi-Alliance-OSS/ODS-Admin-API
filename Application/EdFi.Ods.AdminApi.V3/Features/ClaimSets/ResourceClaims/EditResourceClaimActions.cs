@@ -118,7 +118,7 @@ public class EditResourceClaimActions : IFeature
 
                 if (resourceClaimOnClaimSetRequest.ResourceClaimActions != null)
                 {
-                    ResourceClaimValidator.Validate(resourceClaimsById, actions, resourceClaimOnClaimSetRequest, context, claimSet!.Name);
+                    ResourceClaimValidator.Validate(resourceClaimsById, actions, resourceClaimOnClaimSetRequest, context, claimSet.Name);
                 }
                 else
                 {

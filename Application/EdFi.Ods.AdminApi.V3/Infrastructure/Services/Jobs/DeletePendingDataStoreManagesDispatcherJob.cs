@@ -50,7 +50,7 @@ public class DeletePendingDataStoreManagesDispatcherJob(
                 .Where(instance => instance.Status == OdsInstanceManageStatus.PendingDelete.ToString()
                                 || instance.Status == OdsInstanceManageStatus.DeleteFailed.ToString())
                 .OrderBy(instance => instance.Id)
-                .ToListAsync();
+                .ToListAsync(context.CancellationToken);
 
             foreach (var odsInstanceManage in eligibleOdsInstanceManages)
             {
@@ -65,14 +65,14 @@ public class DeletePendingDataStoreManagesDispatcherJob(
                     odsInstanceManage.Status = OdsInstanceManageStatus.DeleteError.ToString();
                     odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                     odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                    await adminApiDbContext.SaveChangesAsync();
+                    await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
                     continue;
                 }
 
                 odsInstanceManage.Status = OdsInstanceManageStatus.PendingDelete.ToString();
                 odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                 odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                await adminApiDbContext.SaveChangesAsync();
+                await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
 
                 await ScheduleDeleteJobAsync(context, odsInstanceManage.Id, tenantName);
             }

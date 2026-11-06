@@ -105,7 +105,7 @@ public class CreateInstanceJob(
             }
 
             odsInstanceManage = await adminApiDbContext.OdsInstanceManages
-                .FirstOrDefaultAsync(instance => instance.Id == odsInstanceManageId);
+                .FirstOrDefaultAsync(instance => instance.Id == odsInstanceManageId, context.CancellationToken);
 
             if (odsInstanceManage is null)
             {
@@ -134,7 +134,7 @@ public class CreateInstanceJob(
 
             odsInstanceManage.LastModifiedDate = now;
             odsInstanceManage.LastRefreshed = now;
-            await adminApiDbContext.SaveChangesAsync();
+            await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
 
             await _sandboxProvisioner.AddSandboxAsync(
                 odsInstanceManage.DatabaseName,
@@ -165,7 +165,7 @@ public class CreateInstanceJob(
             odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
             odsInstanceManage.LastRefreshed = DateTime.UtcNow;
 
-            await adminApiDbContext.SaveChangesAsync();
+            await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
         }
         catch
         {
@@ -174,7 +174,7 @@ public class CreateInstanceJob(
                 odsInstanceManage.Status = OdsInstanceManageStatus.CreateFailed.ToString();
                 odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                 odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                await adminApiDbContext.SaveChangesAsync();
+                await adminApiDbContext.SaveChangesAsync(CancellationToken.None);
             }
 
             throw;

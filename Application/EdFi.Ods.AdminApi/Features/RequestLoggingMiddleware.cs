@@ -62,7 +62,7 @@ public class RequestLoggingMiddleware
                     if (context.Response.StatusCode == 400)
                     {
                         responseBody.Seek(0, SeekOrigin.Begin);
-                        var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
+                        var responseContent = await new StreamReader(responseBody).ReadToEndAsync(context.RequestAborted);
 
                         // Check if the response contains invalid_scope error
                         if (responseContent.Contains("\"error\": \"invalid_scope\""))
@@ -72,13 +72,13 @@ public class RequestLoggingMiddleware
 
                         // Write the response back to the original stream
                         responseBody.Seek(0, SeekOrigin.Begin);
-                        await responseBody.CopyToAsync(originalBodyStream);
+                        await responseBody.CopyToAsync(originalBodyStream, context.RequestAborted);
                     }
                     else
                     {
                         // For non-400 responses, just copy the response back
                         responseBody.Seek(0, SeekOrigin.Begin);
-                        await responseBody.CopyToAsync(originalBodyStream);
+                        await responseBody.CopyToAsync(originalBodyStream, context.RequestAborted);
                     }
                 }
                 finally
@@ -142,7 +142,7 @@ public class RequestLoggingMiddleware
 #pragma warning restore S6667 // Logging in a catch clause should pass the caught exception as a parameter.
 
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await response.WriteAsync(JsonSerializer.Serialize(validationResponse));
+                    await response.WriteAsync(JsonSerializer.Serialize(validationResponse), context.RequestAborted);
                     break;
 
                 case INotFoundException notFoundException:
@@ -154,7 +154,7 @@ public class RequestLoggingMiddleware
                     );
 
                     response.StatusCode = (int)HttpStatusCode.NotFound;
-                    await response.WriteAsync(JsonSerializer.Serialize(notFoundResponse));
+                    await response.WriteAsync(JsonSerializer.Serialize(notFoundResponse), context.RequestAborted);
                     break;
 
                 case IAdminApiException adminApiException:
@@ -177,7 +177,7 @@ public class RequestLoggingMiddleware
                     response.StatusCode = adminApiException.StatusCode.HasValue
                         ? (int)adminApiException.StatusCode
                         : 500;
-                    await response.WriteAsync(JsonSerializer.Serialize(new { message = message }));
+                    await response.WriteAsync(JsonSerializer.Serialize(new { message = message }), context.RequestAborted);
                     break;
 
                 case BadHttpRequestException:
@@ -193,7 +193,7 @@ public class RequestLoggingMiddleware
                         ex
                     );
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await response.WriteAsync(JsonSerializer.Serialize(new { message = "The request body contains malformed JSON. Please ensure your data is properly formatted and try again." }));
+                    await response.WriteAsync(JsonSerializer.Serialize(new { message = "The request body contains malformed JSON. Please ensure your data is properly formatted and try again." }), context.RequestAborted);
                     break;
 
                 default:
@@ -215,7 +215,8 @@ public class RequestLoggingMiddleware
                             {
                                 message = "The server encountered an unexpected condition that prevented it from fulfilling the request."
                             }
-                        )
+                        ),
+                        context.RequestAborted
                     );
                     break;
             }
