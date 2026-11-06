@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Commands;
 using EdFi.Ods.AdminApi.Infrastructure.Database.Queries;
@@ -31,8 +32,8 @@ public class ValidateApplicationExistsQueryTests
         public bool? Enabled { get; init; }
     }
 
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"ValidateApplicationExistsQueryTests_{Guid.NewGuid()}")
             .Options);
 

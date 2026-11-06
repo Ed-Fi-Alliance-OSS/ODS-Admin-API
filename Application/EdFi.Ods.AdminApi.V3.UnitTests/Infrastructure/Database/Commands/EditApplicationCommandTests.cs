@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
@@ -19,8 +20,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class EditApplicationCommandTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"EditAppCmdV3_{Guid.NewGuid()}")
             .Options);
 
@@ -297,6 +298,125 @@ public class EditApplicationCommandTests
         edOrgs.ShouldAllBe(aeo => aeo.ApiClients.Count == 3);
         edOrgs.Select(aeo => aeo.ApiClients).Distinct().Count().ShouldBe(2);
         ctx.ApiClients.Select(c => c.Name).OrderBy(n => n).ShouldBe(new[] { "cred-a", "cred-b", "cred-c" });
+    }
+
+    private static (Application App, ApiClient Inheriting, ApiClient Narrowed) SeedApplication(
+        AdminApiSqlServerUsersContext ctx, params long[] edOrgIds)
+    {
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        var inheriting = new ApiClient(true) { Name = "A", Application = app };
+        var narrowed = new ApiClient(true) { Name = "B", Application = app };
+        ctx.ApiClients.Add(inheriting);
+        ctx.ApiClients.Add(narrowed);
+        ctx.SetInheritsApplicationEducationOrganizations(inheriting, true);
+        ctx.SetInheritsApplicationEducationOrganizations(narrowed, false);
+        foreach (var id in edOrgIds)
+        {
+            var row = new ApplicationEducationOrganization { Application = app, EducationOrganizationId = id, ApiClients = [inheriting] };
+            if (id == edOrgIds[0])
+            {
+                row.ApiClients.Add(narrowed);
+            }
+
+            ctx.ApplicationEducationOrganizations.Add(row);
+        }
+
+        ctx.SaveChanges();
+        return (app, inheriting, narrowed);
+    }
+
+    private static Application Reload(AdminApiSqlServerUsersContext ctx, int applicationId) =>
+        ctx.Applications
+            .Include(a => a.ApplicationEducationOrganizations).ThenInclude(r => r.ApiClients)
+            .Include(a => a.ApiClients)
+            .Single(a => a.ApplicationId == applicationId);
+
+    private static long[] EdOrgsOf(AdminApiSqlServerUsersContext ctx, ApiClient client) =>
+        ctx.ApplicationEducationOrganizations
+            .Where(r => r.ApiClients.Any(c => c.ApiClientId == client.ApiClientId))
+            .Select(r => r.EducationOrganizationId)
+            .OrderBy(i => i)
+            .ToArray();
+
+    [Test]
+    public void Apply_AddedEdOrg_GoesOnlyToInheritingClients()
+    {
+        using var ctx = CreateContext();
+        var (app, a, b) = SeedApplication(ctx, 1, 2);
+
+        ApplicationEducationOrganizationSync.Apply(ctx, Reload(ctx, app.ApplicationId), [1, 2, 3]);
+        ctx.SaveChanges();
+
+        EdOrgsOf(ctx, a).ShouldBe(new long[] { 1, 2, 3 });
+        EdOrgsOf(ctx, b).ShouldBe(new long[] { 1 });
+    }
+
+    [Test]
+    public void Apply_RemovedEdOrg_RemovedFromEveryClient()
+    {
+        using var ctx = CreateContext();
+        var (app, a, b) = SeedApplication(ctx, 1, 2);
+
+        ApplicationEducationOrganizationSync.Apply(ctx, Reload(ctx, app.ApplicationId), [2]);
+        ctx.SaveChanges();
+
+        ctx.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).ShouldBe(new long[] { 2 });
+        EdOrgsOf(ctx, b).ShouldBeEmpty();
+        EdOrgsOf(ctx, a).ShouldBe(new long[] { 2 });
+    }
+
+    [Test]
+    public void Apply_UnchangedRows_KeepTheirIds()
+    {
+        using var ctx = CreateContext();
+        var (app, _, _) = SeedApplication(ctx, 1, 2);
+        var before = ctx.ApplicationEducationOrganizations
+            .ToDictionary(r => r.EducationOrganizationId, r => r.ApplicationEducationOrganizationId);
+
+        ApplicationEducationOrganizationSync.Apply(ctx, Reload(ctx, app.ApplicationId), [1, 2, 3]);
+        ctx.SaveChanges();
+
+        var after = ctx.ApplicationEducationOrganizations
+            .ToDictionary(r => r.EducationOrganizationId, r => r.ApplicationEducationOrganizationId);
+        after[1].ShouldBe(before[1]);
+        after[2].ShouldBe(before[2]);
+        after.Count.ShouldBe(3);
+    }
+
+    [Test]
+    public void Apply_InheritingClientMissingALink_IsRepaired()
+    {
+        using var ctx = CreateContext();
+        var (app, a, b) = SeedApplication(ctx, 1, 2);
+        var loaded = Reload(ctx, app.ApplicationId);
+        loaded.ApplicationEducationOrganizations.Single(r => r.EducationOrganizationId == 2).ApiClients
+            .Remove(loaded.ApiClients.Single(c => c.ApiClientId == a.ApiClientId));
+        ctx.SaveChanges();
+
+        ApplicationEducationOrganizationSync.Apply(ctx, Reload(ctx, app.ApplicationId), [1, 2]);
+        ctx.SaveChanges();
+
+        EdOrgsOf(ctx, a).ShouldBe(new long[] { 1, 2 });
+        EdOrgsOf(ctx, b).ShouldBe(new long[] { 1 });
+    }
+
+    [Test]
+    public void Apply_ZeroClients_Works()
+    {
+        using var ctx = CreateContext();
+        var vendor = new Vendor { VendorName = "V1" };
+        var app = new Application { ApplicationName = "App", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        ctx.SaveChanges();
+
+        ApplicationEducationOrganizationSync.Apply(ctx, Reload(ctx, app.ApplicationId), [1, 2, 2]);
+        ctx.SaveChanges();
+
+        ctx.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).OrderBy(i => i)
+            .ShouldBe(new long[] { 1, 2 });
     }
 
     private class EditApplicationModelStub : IEditApplicationModel

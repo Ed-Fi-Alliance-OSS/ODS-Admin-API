@@ -9,9 +9,9 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
-using FluentValidation.Results;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V3.Features.ApiClients;
@@ -23,7 +23,7 @@ public class EditApiClient : IFeature
         AdminApiEndpointBuilder.MapPut(endpoints, "/apiClients/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
-            .BuildForVersions(AdminApiVersions.V3);
+            .BuildForVersions(string.Empty, true, AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(IEditApiClientCommand editApiClientCommand,
@@ -39,13 +39,17 @@ public class EditApiClient : IFeature
 
     private static void GuardAgainstInvalidEntityReferences(EditApiClientRequest request, IUsersContext db)
     {
+        UnresolvedReferenceGuard.EnsureExists(
+            db.Applications.Find(request.ApplicationId) is not null,
+            $"Application with ID {request.ApplicationId} not found.");
+
         ValidateDataStoreIds(request, db);
     }
 
     private static void ValidateDataStoreIds(EditApiClientRequest request, IUsersContext db)
     {
         var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
-        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
+        UnresolvedReferenceGuard.EnsureIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "EditApiClientRequest")]
@@ -65,6 +69,14 @@ public class EditApiClient : IFeature
 
         [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? DataStoreIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEditEducationOrganizationIdsDescription, Nullable = false)]
+        public IEnumerable<long>? EducationOrganizationIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEditInheritsApplicationEducationOrganizationsDescription, Nullable = false)]
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 
     public class Validator : AbstractValidator<IEditApiClientModel>

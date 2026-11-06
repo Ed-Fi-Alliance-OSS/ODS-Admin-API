@@ -116,6 +116,8 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
         switch (ex)
         {
             case ValidationException:
+            case ConflictException:
+            case BadRequestDataException:
             case INotFoundException:
                 _logger.Debug(
                     JsonSerializer.Serialize(
@@ -179,6 +181,9 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                !responseContentType.Contains("application/problem+json", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static string ToCamelCase(string name) =>
+        string.IsNullOrEmpty(name) ? name : char.ToLowerInvariant(name[0]) + name[1..];
+
     private static (int StatusCode, Microsoft.AspNetCore.Mvc.ProblemDetails ProblemDetails) CreateProblemDetails(
         Exception exception,
         string correlationId
@@ -193,6 +198,27 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                     validationErrors: validationException.Errors
                         .GroupBy(e => e.PropertyName)
                         .ToDictionary(g => g.Key, g => g.Select(x => x.ErrorMessage).ToArray()),
+                    correlationId: correlationId
+                )
+            ),
+            ConflictException conflictException => (
+                StatusCodes.Status409Conflict,
+                V3ProblemDetailsFactory.Create(
+                    status: StatusCodes.Status409Conflict,
+                    title: "Conflict",
+                    detail: conflictException.Message,
+                    type: conflictException.ProblemType,
+                    correlationId: correlationId
+                )
+            ),
+            BadRequestDataException badRequestDataException => (
+                StatusCodes.Status400BadRequest,
+                V3ProblemDetailsFactory.CreateData(
+                    detail: badRequestDataException.Message,
+                    errors: new Dictionary<string, string[]>
+                    {
+                        [ToCamelCase(badRequestDataException.PropertyName)] = [badRequestDataException.Message]
+                    },
                     correlationId: correlationId
                 )
             ),
@@ -226,6 +252,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                         : adminApiException.Message,
                     type: adminApiException.StatusCode switch
                     {
+                        HttpStatusCode.Conflict => AdminApiProblemTypes.Conflict,
                         < HttpStatusCode.InternalServerError => AdminApiProblemTypes.BadRequest,
                         HttpStatusCode.ServiceUnavailable => AdminApiProblemTypes.ServiceUnavailable,
                         _ => AdminApiProblemTypes.InternalServerError

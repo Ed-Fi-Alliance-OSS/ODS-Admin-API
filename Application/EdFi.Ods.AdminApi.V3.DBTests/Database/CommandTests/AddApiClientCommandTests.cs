@@ -7,7 +7,10 @@ using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
+using EdFi.Ods.AdminApi.V3.Features.ApiClients;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -231,12 +234,66 @@ internal class AddApiClientCommandTests : PlatformUsersContextTestBase
         });
     }
 
+    [Test]
+    public void GetApiClient_ReturnsJunctionEducationOrganizationIds()
+    {
+        var vendor = new Vendor
+        {
+            VendorId = 0,
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
+            VendorName = "Integration Tests Narrowed"
+        };
+
+        var application = new Application
+        {
+            ApplicationName = "Narrowed Application",
+            ClaimSetName = "FakeClaimSet",
+            OperationalContextUri = "http://test.com",
+            Profiles = null,
+            Vendor = vendor
+        };
+        application.ApplicationEducationOrganizations.Add(application.CreateApplicationEducationOrganization(1));
+        application.ApplicationEducationOrganizations.Add(application.CreateApplicationEducationOrganization(2));
+        application.ApplicationEducationOrganizations.Add(application.CreateApplicationEducationOrganization(3));
+
+        Save(application);
+
+        var newApiClientId = 0;
+        Transaction(usersContext =>
+        {
+            var result = new AddApiClientCommand(usersContext).Execute(new TestApiClient
+            {
+                Name = "Narrowed Credential",
+                ApplicationId = application.ApplicationId,
+                IsApproved = true,
+                DataStoreIds = null,
+                EducationOrganizationIds = [2]
+            }, _options);
+            newApiClientId = result.Id;
+        });
+
+        Transaction(usersContext =>
+        {
+            var result = ReadApiClient.GetApiClient(
+                new GetApiClientByIdQuery(usersContext),
+                new GetDataStoreIdsByApiClientIdQuery(usersContext),
+                usersContext,
+                newApiClientId).GetAwaiter().GetResult();
+
+            var model = ((Ok<ApiClientModel>)result).Value;
+            model.EducationOrganizationIds.ShouldBe(new long[] { 2 });
+            model.InheritsApplicationEducationOrganizations.ShouldBeFalse();
+        });
+    }
+
     private class TestApiClient : IAddApiClientModel
     {
         public string Name { get; set; }
         public bool IsApproved { get; set; }
         public int ApplicationId { get; set; }
         public IEnumerable<int> DataStoreIds { get; set; }
+        public IEnumerable<long> EducationOrganizationIds { get; set; }
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 }
 

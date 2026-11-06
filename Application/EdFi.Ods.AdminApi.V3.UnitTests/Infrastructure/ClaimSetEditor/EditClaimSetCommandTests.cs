@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.ClaimSetEditor;
@@ -25,8 +26,8 @@ public class EditClaimSetCommandTests
         new(new DbContextOptionsBuilder<SqlServerSecurityContext>()
             .UseInMemoryDatabase(databaseName: $"EditCSV3_sec_{Guid.NewGuid()}")
             .Options);
-    private static SqlServerUsersContext CreateUsrCtx() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateUsrCtx() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"EditCSV3_usr_{Guid.NewGuid()}")
             .Options);
 

@@ -1,0 +1,21 @@
+meta {
+  name: DELETE - Second Application
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{API_URL}}/v3/applications/{{EdOrgSecondApplicationId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("DELETE - Second Application: Status code is No Content", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

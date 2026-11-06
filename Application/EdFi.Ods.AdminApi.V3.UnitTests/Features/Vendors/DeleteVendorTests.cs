@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -25,10 +26,10 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
         [Test]
         public async Task Handle_WithExistingVendor_DeletesVendorAndReturnsNoContent()
         {
-            var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
                 .UseInMemoryDatabase(databaseName: $"DeleteVendor_{Guid.NewGuid()}")
                 .Options;
-            using var usersContext = new SqlServerUsersContext(contextOptions);
+            using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
             var vendor = new Vendor
             {
@@ -54,10 +55,10 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.Vendors
         [Test]
         public void Handle_WithUnknownVendorId_ThrowsNotFoundException()
         {
-            var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+            var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
                 .UseInMemoryDatabase(databaseName: $"DeleteVendor_{Guid.NewGuid()}")
                 .Options;
-            using var usersContext = new SqlServerUsersContext(contextOptions);
+            using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
             var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
             var deleteVendorCommand = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());

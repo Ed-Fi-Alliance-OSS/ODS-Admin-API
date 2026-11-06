@@ -8,6 +8,7 @@ using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.DBTestsShared;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using Shouldly;
@@ -205,6 +206,92 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
             apiClientOdsInstances.Count().ShouldBe(2);
         });
     }
+    [Test]
+    public void MoveClient_PersistsAtomically_OnSqlServer()
+    {
+        var vendor = new Vendor
+        {
+            VendorNamespacePrefixes = [new() { NamespacePrefix = "http://tests.com" }],
+            VendorName = "Move Vendor"
+        };
+        var user = new VendorUser { Email = "move@nowhere.com", FullName = "Move User", Vendor = vendor };
+        var source = NewApplication(vendor, "Move Source", 1, 2);
+        var target = NewApplication(vendor, "Move Target", 1, 2, 3);
+        var client = new ApiClient(true) { Name = "Move Client", IsApproved = true, UseSandbox = false };
+        source.ApiClients.Add(client);
+        foreach (var row in source.ApplicationEducationOrganizations)
+        {
+            client.ApplicationEducationOrganizations.Add(row);
+        }
+
+        Save(vendor, user, source, target);
+
+        Transaction(usersContext =>
+        {
+            new EditApiClientCommand(usersContext).Execute(new TestEditApplicationModel
+            {
+                Id = client.ApiClientId,
+                ApplicationId = target.ApplicationId,
+                Name = "Move Client",
+                IsApproved = true,
+                InheritsApplicationEducationOrganizations = true,
+            });
+        });
+
+        using var connection = new SqlConnection(ConnectionString);
+        connection.Open();
+
+        var applicationId = Scalar(connection,
+            "SELECT Application_ApplicationId FROM dbo.ApiClients WHERE ApiClientId = @id", client.ApiClientId);
+        applicationId.ShouldBe(target.ApplicationId);
+
+        var linked = Scalar(connection,
+            "SELECT COUNT(*) FROM dbo.ApiClientApplicationEducationOrganizations WHERE ApiClient_ApiClientId = @id",
+            client.ApiClientId);
+        linked.ShouldBe(3);
+
+        var pointingAtTarget = Scalar(connection,
+            @"SELECT COUNT(*) FROM dbo.ApiClientApplicationEducationOrganizations j
+              JOIN dbo.ApplicationEducationOrganizations a
+                ON a.ApplicationEducationOrganizationId = j.ApplicationEducationOrganization_ApplicationEducationOrganizationId
+              WHERE j.ApiClient_ApiClientId = @id AND a.Application_ApplicationId = " + target.ApplicationId,
+            client.ApiClientId);
+        pointingAtTarget.ShouldBe(3);
+
+        // The source Application keeps its own rows; only the join rows were replaced.
+        var sourceRows = Scalar(connection,
+            "SELECT COUNT(*) FROM dbo.ApplicationEducationOrganizations WHERE Application_ApplicationId = @id",
+            source.ApplicationId);
+        sourceRows.ShouldBe(2);
+    }
+
+    private static Application NewApplication(Vendor vendor, string name, params long[] edOrgIds)
+    {
+        var application = new Application
+        {
+            ApplicationName = name,
+            ClaimSetName = "FakeClaimSet",
+            Vendor = vendor,
+            OperationalContextUri = OperationalContext.DefaultOperationalContextUri
+        };
+
+        foreach (var id in edOrgIds)
+        {
+            application.ApplicationEducationOrganizations.Add(
+                new ApplicationEducationOrganization { EducationOrganizationId = id, Application = application });
+        }
+
+        return application;
+    }
+
+    private static int Scalar(SqlConnection connection, string sql, int id)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        command.Parameters.Add(new SqlParameter("@id", System.Data.SqlDbType.Int) { Value = id });
+        return (int)command.ExecuteScalar()!;
+    }
+
     private class TestEditApplicationModel : IEditApiClientModel
     {
         public int Id { get; set; }
@@ -212,6 +299,8 @@ internal class EditApiClientCommandTests : PlatformUsersContextTestBase
         public bool IsApproved { get; set; }
         public int ApplicationId { get; set; }
         public IEnumerable<int> DataStoreIds { get; set; }
+        public IEnumerable<long> EducationOrganizationIds { get; set; }
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 }
 

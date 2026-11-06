@@ -1,0 +1,293 @@
+# ADMINAPI-1540: scoping API clients to education organizations (Admin API 3).
+# This file walks through the "SEA" flow: one Application per vendor product
+# covering many LEAs, with one narrowed API client (key and secret) per LEA and no
+# default full-access client. It ends with moving a client to another Application.
+#
+# Update the claimSetName/dataStoreId variables below to values that exist in your
+# environment (use the GET requests in applications.http to look them up). Run the
+# requests in order: each one uses the IDs returned by the previous ones.
+#
+# Error type URNs used below:
+#   urn:ed-fi:management-api:bad-request:data
+#   urn:ed-fi:management-api:conflict
+#   urn:ed-fi:management-api:conflict:education-organization-scope
+
+@adminapi_url=https://localhost:7214
+@adminapi_client=adminapi_client
+@adminapi_secret=adminapi_SECRET_2025_rftyguhijkotgyhuijok
+@claimSetName=EdFiSandbox
+@dataStoreId=1
+
+### Register a new client
+POST {{adminapi_url}}/connect/register
+Content-Type: application/x-www-form-urlencoded
+
+ClientId={{adminapi_client}}&ClientSecret={{adminapi_secret}}&DisplayName=Admin+API+{{adminapi_client}}
+
+### Get a token
+# @name tokenRequest
+POST {{adminapi_url}}/connect/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: basic {{adminapi_client}}:{{adminapi_secret}}
+
+grant_type=client_credentials&scope=edfi_admin_api/full_access
+
+###
+@token={{tokenRequest.response.body.access_token}}
+
+
+### Step 1: create the vendor
+# @name createVendor
+POST {{adminapi_url}}/v3/vendors
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "company": "PowerSchool (edorg scope sample)",
+  "namespacePrefixes": "uri://ed-fi.org",
+  "contactName": "Sample Contact",
+  "contactEmailAddress": "sample.contact@example.com"
+}
+
+### Step 1b: read the vendor to get its id (the create call returns only a Location header)
+# @name getVendor
+GET {{createVendor.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+###
+@vendorId={{getVendor.response.body.id}}
+
+### Step 2: create the Application with no default client (createDefaultCredentials: false)
+# Returns 201 with key and secret set to null. Sending "enabled" or "dataStoreIds" together
+# with createDefaultCredentials: false returns 400 (urn:ed-fi:management-api:bad-request:data).
+# @name createApplication
+POST {{adminapi_url}}/v3/applications
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "applicationName": "PowerSchool SEA sample",
+  "vendorId": {{vendorId}},
+  "claimSetName": "{{claimSetName}}",
+  "educationOrganizationIds": [255901, 255902, 255903],
+  "createDefaultCredentials": false
+}
+
+### Step 2b: expected 400 - dataStoreIds with createDefaultCredentials: false
+POST {{adminapi_url}}/v3/applications
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "applicationName": "PowerSchool SEA sample (bad)",
+  "vendorId": {{vendorId}},
+  "claimSetName": "{{claimSetName}}",
+  "educationOrganizationIds": [255901],
+  "dataStoreIds": [{{dataStoreId}}],
+  "createDefaultCredentials": false
+}
+
+### Step 3: create one API client per LEA, narrowed to that LEA (repeat per LEA)
+# Returns 201 with the new client's key and secret. An education organization that is not on the
+# Application returns 400 (urn:ed-fi:management-api:bad-request:data).
+# @name createClientLea1
+POST {{adminapi_url}}/v3/apiClients
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "PowerSchool - LEA 255901",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "educationOrganizationIds": [255901]
+}
+
+### Step 3b: read the client back
+# Expect educationOrganizationIds [255901] and inheritsApplicationEducationOrganizations false.
+GET {{createClientLea1.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Step 3c: expected 400 - education organization that is not on the Application
+POST {{adminapi_url}}/v3/apiClients
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "PowerSchool - not on the Application",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "educationOrganizationIds": [999]
+}
+
+### Step 3d: a second client, for LEA 255902
+# @name createClientLea2
+POST {{adminapi_url}}/v3/apiClients
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "PowerSchool - LEA 255902",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "educationOrganizationIds": [255902]
+}
+
+### Step 4: distribute each key and secret to its LEA Security Administrator
+# The key and secret are only returned by the create call above. Each credential gets tokens
+# authorized only for its assigned LEA.
+
+### Step 5: a new LEA joins - add 255904 to the Application
+# Narrowed clients do not inherit 255904. Only a client created afterwards with [255904] is authorized for it.
+PUT {{adminapi_url}}/v3/applications/{{createApplication.response.body.id}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createApplication.response.body.id}},
+  "applicationName": "PowerSchool SEA sample",
+  "vendorId": {{vendorId}},
+  "claimSetName": "{{claimSetName}}",
+  "educationOrganizationIds": [255901, 255902, 255903, 255904]
+}
+
+### Step 5b: create the client for the new LEA
+# @name createClientLea4
+POST {{adminapi_url}}/v3/apiClients
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "name": "PowerSchool - LEA 255904",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "educationOrganizationIds": [255904]
+}
+
+### Step 5c: confirm LEA 255901's client did not pick up 255904
+GET {{createClientLea1.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Step 6: an LEA leaves - remove 255901 from the Application
+# 255901 is removed from every client. LEA 255901's client is left with an empty list
+# (no education organization access) but stays enabled; disable or delete it to cut it off completely.
+PUT {{adminapi_url}}/v3/applications/{{createApplication.response.body.id}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createApplication.response.body.id}},
+  "applicationName": "PowerSchool SEA sample",
+  "vendorId": {{vendorId}},
+  "claimSetName": "{{claimSetName}}",
+  "educationOrganizationIds": [255902, 255903, 255904]
+}
+
+### Step 6b: confirm the client for 255901 now has an empty list
+GET {{createClientLea1.response.headers.Location}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+### Step 7: a claim set change applies to every client of the Application
+# Send PUT /v3/applications/{id} (as in step 6) with a different claimSetName.
+
+### Step 8a: expected 409 - Application-level reset with more than one client
+# (urn:ed-fi:management-api:conflict). Use the per-client reset instead.
+PUT {{adminapi_url}}/v3/applications/{{createApplication.response.body.id}}/reset-credential
+Authorization: bearer {{token}}
+
+### Step 8b: rotate one LEA's credential
+PUT {{adminapi_url}}/v3/apiClients/{{createClientLea2.response.body.id}}/reset-credential
+Authorization: bearer {{token}}
+
+### Step 9: replace a client's education organization list
+# All values must be on the Application. Omitting educationOrganizationIds (and the flag) keeps the current list.
+PUT {{adminapi_url}}/v3/apiClients/{{createClientLea2.response.body.id}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createClientLea2.response.body.id}},
+  "name": "PowerSchool - LEA 255902",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "educationOrganizationIds": [255902, 255903]
+}
+
+### Step 10: return the client to inheriting from the Application
+# The client then follows future Application education organization changes.
+PUT {{adminapi_url}}/v3/apiClients/{{createClientLea2.response.body.id}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createClientLea2.response.body.id}},
+  "name": "PowerSchool - LEA 255902",
+  "isApproved": true,
+  "applicationId": {{createApplication.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "inheritsApplicationEducationOrganizations": true
+}
+
+### Move a client: create a second Application
+# @name createApplication2
+POST {{adminapi_url}}/v3/applications
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "applicationName": "PowerSchool SEA sample 2",
+  "vendorId": {{vendorId}},
+  "claimSetName": "{{claimSetName}}",
+  "educationOrganizationIds": [255902, 255903],
+  "createDefaultCredentials": false
+}
+
+### Move a client: expected 409 when the client is narrowed to education organizations the target does not have
+# createClientLea4 is narrowed to 255904, which is not on the second Application, and neither
+# educationOrganizationIds nor inheritsApplicationEducationOrganizations is sent
+# (urn:ed-fi:management-api:conflict:education-organization-scope).
+PUT {{adminapi_url}}/v3/apiClients/{{createClientLea4.response.body.id}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createClientLea4.response.body.id}},
+  "name": "PowerSchool - LEA 255904",
+  "isApproved": true,
+  "applicationId": {{createApplication2.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}]
+}
+
+### Move a client: send the new scope along with the move
+PUT {{adminapi_url}}/v3/apiClients/{{createClientLea4.response.body.id}}
+Content-Type: application/json
+Authorization: bearer {{token}}
+
+{
+  "id": {{createClientLea4.response.body.id}},
+  "name": "PowerSchool - LEA 255904",
+  "isApproved": true,
+  "applicationId": {{createApplication2.response.body.id}},
+  "dataStoreIds": [{{dataStoreId}}],
+  "educationOrganizationIds": [255902]
+}
+
+### Clean up
+DELETE {{adminapi_url}}/v3/applications/{{createApplication2.response.body.id}}
+Authorization: bearer {{token}}
+
+###
+DELETE {{adminapi_url}}/v3/applications/{{createApplication.response.body.id}}
+Authorization: bearer {{token}}
+
+###
+DELETE {{adminapi_url}}/v3/vendors/{{vendorId}}
+Authorization: bearer {{token}}

@@ -7,10 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -21,8 +23,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Commands;
 [TestFixture]
 public class AddApiClientCommandTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"AddApiClientV3_{Guid.NewGuid()}")
             .Options);
     private static IOptions<AppSettings> DefaultOptions() =>
@@ -190,11 +192,89 @@ public class AddApiClientCommandTests
         ctx.ApplicationEducationOrganizations.Count().ShouldBe(0);
     }
 
+    private static Application AddApplicationWithEdOrgs(AdminApiSqlServerUsersContext ctx, params long[] edOrgIds)
+    {
+        var vendor = new Vendor { VendorName = "V1" };
+        ctx.Vendors.Add(vendor);
+        var app = new Application { ApplicationName = "App1", ClaimSetName = "CS", Vendor = vendor, OperationalContextUri = "uri" };
+        ctx.Applications.Add(app);
+        foreach (var id in edOrgIds)
+        {
+            ctx.ApplicationEducationOrganizations.Add(new ApplicationEducationOrganization { EducationOrganizationId = id, Application = app });
+        }
+        ctx.SaveChanges();
+        ctx.ChangeTracker.Clear();
+        return app;
+    }
+
+    [Test]
+    public void Execute_NeitherField_LinksAllApplicationEdOrgsAndInherits()
+    {
+        using var ctx = CreateContext();
+        var app = AddApplicationWithEdOrgs(ctx, 1, 2, 3);
+
+        var result = new AddApiClientCommand(ctx).Execute(
+            new AddApiClientModelStub { Name = "c", IsApproved = true, ApplicationId = app.ApplicationId },
+            DefaultOptions());
+
+        ctx.ChangeTracker.Clear();
+        var created = ctx.ApiClients.Include(c => c.ApplicationEducationOrganizations).Single(c => c.ApiClientId == result.Id);
+        created.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).OrderBy(i => i).ShouldBe(new long[] { 1, 2, 3 });
+        ctx.GetInheritsApplicationEducationOrganizations(created).ShouldBeTrue();
+    }
+
+    [Test]
+    public void Execute_Narrowed_LinksOnlyListedRowsAndStoresFalse()
+    {
+        using var ctx = CreateContext();
+        var app = AddApplicationWithEdOrgs(ctx, 1, 2, 3);
+
+        var result = new AddApiClientCommand(ctx).Execute(
+            new AddApiClientModelStub { Name = "c", IsApproved = true, ApplicationId = app.ApplicationId, EducationOrganizationIds = [2] },
+            DefaultOptions());
+
+        ctx.ChangeTracker.Clear();
+        var created = ctx.ApiClients.Include(c => c.ApplicationEducationOrganizations).Single(c => c.ApiClientId == result.Id);
+        created.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).ShouldBe(new long[] { 2 });
+        ctx.GetInheritsApplicationEducationOrganizations(created).ShouldBeFalse();
+        ctx.ApplicationEducationOrganizations.Count().ShouldBe(3);
+    }
+
+    [Test]
+    public void Execute_NarrowedWithDuplicateIds_LinksEachOnce()
+    {
+        using var ctx = CreateContext();
+        var app = AddApplicationWithEdOrgs(ctx, 1, 2, 3);
+
+        var result = new AddApiClientCommand(ctx).Execute(
+            new AddApiClientModelStub { Name = "c", IsApproved = true, ApplicationId = app.ApplicationId, EducationOrganizationIds = [2, 2, 3] },
+            DefaultOptions());
+
+        ctx.ChangeTracker.Clear();
+        var created = ctx.ApiClients.Include(c => c.ApplicationEducationOrganizations).Single(c => c.ApiClientId == result.Id);
+        created.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).OrderBy(i => i).ShouldBe(new long[] { 2, 3 });
+    }
+
+    [Test]
+    public void Execute_IdNotOnApplication_ThrowsBadRequestData()
+    {
+        using var ctx = CreateContext();
+        var app = AddApplicationWithEdOrgs(ctx, 1, 2, 3);
+
+        Should.Throw<BadRequestDataException>(() =>
+            new AddApiClientCommand(ctx).Execute(
+                new AddApiClientModelStub { Name = "c", IsApproved = true, ApplicationId = app.ApplicationId, EducationOrganizationIds = [99] },
+                DefaultOptions()));
+        ctx.ApiClients.Count().ShouldBe(0);
+    }
+
     private class AddApiClientModelStub : IAddApiClientModel
     {
         public string Name { get; init; } = string.Empty;
         public bool IsApproved { get; init; }
         public int ApplicationId { get; init; }
         public IEnumerable<int>? DataStoreIds { get; init; }
+        public IEnumerable<long>? EducationOrganizationIds { get; init; }
+        public bool? InheritsApplicationEducationOrganizations { get; init; }
     }
 }

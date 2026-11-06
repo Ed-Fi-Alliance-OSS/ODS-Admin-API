@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.MultiTenancy;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -66,16 +67,16 @@ public class TenantSpecificDbContextProvider : ITenantSpecificDbContextProvider
 
         if (_dbEngine.Equals(DatabaseEngineEnum.SqlServer, StringComparison.OrdinalIgnoreCase))
         {
-            var usersOptionsBuilder = new DbContextOptionsBuilder<SqlServerUsersContext>();
+            var usersOptionsBuilder = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>();
             usersOptionsBuilder.UseSqlServer(tenantConfiguration.AdminConnectionString);
-            return new SqlServerUsersContext(usersOptionsBuilder.Options);
+            return new AdminApiSqlServerUsersContext(usersOptionsBuilder.Options);
         }
         else if (_dbEngine.Equals(DatabaseEngineEnum.PostgreSql, StringComparison.OrdinalIgnoreCase))
         {
-            var usersOptionsBuilder = new DbContextOptionsBuilder<PostgresUsersContext>();
+            var usersOptionsBuilder = new DbContextOptionsBuilder<AdminApiPostgresUsersContext>();
             usersOptionsBuilder.UseNpgsql(tenantConfiguration.AdminConnectionString);
             usersOptionsBuilder.UseLowerCaseNamingConvention();
-            return new PostgresUsersContext(usersOptionsBuilder.Options);
+            return new AdminApiPostgresUsersContext(usersOptionsBuilder.Options);
         }
         else
         {

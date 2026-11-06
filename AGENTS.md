@@ -31,5 +31,5 @@ Short run/build/architecture notes — see `docs/developer.md` for full procedur
 
 * Build helper: `./build.ps1` (common commands: `build`, `UnitTest`, `IntegrationTest`, `run`).
 * Local run options: `build.ps1 run`, Docker compose, or Visual Studio launch profiles.
-* DB migrations: scripts and artifacts under `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`. Only this (v2) copy is actually applied by the Docker migration-runner scripts — the `EdFi.Ods.AdminApi.V3/Artifacts/` copy is a docs-only duplicate kept in sync by convention; add new migrations to both, but know that only the v2 copy has any functional effect.
+* DB migrations: scripts and artifacts under `Application/EdFi.Ods.AdminApi/Artifacts/` and `eng/run-dbup-migrations.ps1`. The v2 copy is applied by the v2 Docker migration-runner scripts, while `Docker/V3/db.*.admin.Dockerfile` copies from `EdFi.Ods.AdminApi.V3/Artifacts/`, so the V3 copy is applied by local V3 Docker builds. Keep both copies identical when adding a new script.
 * Architecture: feature-based layout; `IUsersContext` handles `EdFi_Admin`, `ISecurityContext` handles `EdFi_Security` (EF Core); AutoMapper mappings in `AdminApiMappingProfile.cs`.

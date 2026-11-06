@@ -1,0 +1,30 @@
+meta {
+  name: GET - ApiClient Narrowed
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{API_URL}}/v3/apiClients/{{EdOrgClientId}}
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("GET ApiClient narrowed: Status code is OK", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+
+  const result = res.getBody();
+  test("GET ApiClient narrowed: educationOrganizationIds is [255901]", function () {
+      expect(result.educationOrganizationIds).to.deep.equal([255901]);
+  });
+
+  test("GET ApiClient narrowed: inheritsApplicationEducationOrganizations is false", function () {
+      expect(result.inheritsApplicationEducationOrganizations).to.equal(false);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

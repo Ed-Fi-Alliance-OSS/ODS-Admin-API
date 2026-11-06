@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
@@ -24,10 +25,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithUnknownVendor_ThrowsNotFoundException()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var deleteApplicationCommand = A.Fake<IDeleteApplicationCommand>();
         var command = new DeleteVendorCommand(usersContext, deleteApplicationCommand, A.Fake<IDeletedEntityAuditCapture>());
@@ -38,10 +39,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithExistingVendor_RemovesVendorAndUsers()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var vendor = new Vendor
         {
@@ -66,10 +67,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithSystemReservedVendor_ThrowsArgumentException()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var vendor = new Vendor
         {
@@ -88,10 +89,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithVendorHavingApplications_InvokesDeleteApplicationCommandForEachApplication()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var vendor = new Vendor
         {
@@ -121,10 +122,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithUserHavingApiClient_RemovesApiClientBeforeRemovingUser()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var user = new User { FullName = "Alice", Email = "alice@acme.org" };
         var vendor = new Vendor
@@ -152,10 +153,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithVendorHavingApplications_RecordsOnlyTheVendorNotTheCascadedApplication()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var vendor = new Vendor { VendorName = "Acme Vendor" };
         usersContext.Vendors.Add(vendor);
@@ -182,10 +183,10 @@ public class DeleteVendorCommandTests
     [Test]
     public void Execute_WithVendorHavingApplications_RealCascadeStillRecordsOnlyTheVendor()
     {
-        var contextOptions = new DbContextOptionsBuilder<SqlServerUsersContext>()
+        var contextOptions = new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"DeleteVendorCommand_{Guid.NewGuid()}")
             .Options;
-        using var usersContext = new SqlServerUsersContext(contextOptions);
+        using var usersContext = new AdminApiSqlServerUsersContext(contextOptions);
 
         var vendor = new Vendor { VendorName = "Acme Vendor" };
         usersContext.Vendors.Add(vendor);

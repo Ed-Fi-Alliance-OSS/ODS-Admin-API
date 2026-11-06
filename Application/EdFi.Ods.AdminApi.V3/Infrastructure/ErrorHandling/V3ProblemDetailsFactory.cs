@@ -42,6 +42,24 @@ public static class V3ProblemDetailsFactory
         return problemDetails;
     }
 
+    public static ProblemDetails CreateData(
+        string detail,
+        IDictionary<string, string[]> errors,
+        string? correlationId = null
+    ) =>
+        Create(
+            status: StatusCodes.Status400BadRequest,
+            title: "Bad Request",
+            detail: detail,
+            type: AdminApiProblemTypes.BadRequestData,
+            correlationId: correlationId,
+            extensions: new Dictionary<string, object?>
+            {
+                ["validationErrors"] = errors,
+                ["errors"] = errors
+            }
+        );
+
     public static ProblemDetails CreateValidation(
         string detail,
         IDictionary<string, string[]> validationErrors,

@@ -67,4 +67,5 @@ public static class FeatureConstants
     public const string ApiClientApplicationIdDescription = "Application id";
     public const string ApiClientNameLengthValidationMessage = "The Api Client Name {Name} would be too long for Admin App to set up necessary ApiClient records." +
                         " Consider shortening the name by {ExtraCharactersInName} character(s).";
+    public const string ApplicationResetCredentialNoApiClientsConflictMessage = "This Application has no ApiClients to reset. Use POST /v2/apiClients to add one first.";
 }

@@ -10,7 +10,7 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.V3.Features.ApiClients;
 using FakeItEasy;
-using FluentValidation;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Shouldly;
@@ -61,7 +61,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             var ex = Should.Throw<TargetInvocationException>(() =>
                 _validateMethod.Invoke(null, new object[] { request, _fakeDb })
             );
-            ex.InnerException.ShouldBeOfType<ValidationException>();
+            ex.InnerException.ShouldBeOfType<ConflictException>();
             ex.InnerException.Message.ShouldContain("not found in database");
         }
 
@@ -74,7 +74,7 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             var ex = Should.Throw<TargetInvocationException>(() =>
                 _validateMethod.Invoke(null, new object[] { request, _fakeDb })
             );
-            ex.InnerException.ShouldBeOfType<ValidationException>();
+            ex.InnerException.ShouldBeOfType<ConflictException>();
             ex.InnerException.Message.ShouldContain("not found in database");
         }
 

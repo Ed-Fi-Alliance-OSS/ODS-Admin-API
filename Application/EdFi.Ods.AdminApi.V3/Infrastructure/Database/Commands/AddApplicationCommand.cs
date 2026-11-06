@@ -6,6 +6,7 @@
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -28,6 +29,8 @@ public class AddApplicationCommand : IAddApplicationCommand
 
     public AddApplicationResult Execute(IAddApplicationModel applicationModel, IOptions<AppSettings> options)
     {
+        var createDefaultCredentials = applicationModel.CreateDefaultCredentials != false;
+
         var profiles = applicationModel.ProfileIds != null
            ? _usersContext.Profiles.Where(p => applicationModel.ProfileIds!.Contains(p.ProfileId))
            : null;
@@ -35,33 +38,40 @@ public class AddApplicationCommand : IAddApplicationCommand
         var vendor = _usersContext.Vendors.Include(x => x.Users)
             .Single(v => v.VendorId == applicationModel.VendorId);
 
-        var dataStores = applicationModel.DataStoreIds != null
+        var dataStores = createDefaultCredentials && applicationModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => applicationModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
 
         var user = vendor.Users.FirstOrDefault();
 
-        var apiClient = new ApiClient(true)
+        ApiClient? apiClient = null;
+
+        if (createDefaultCredentials)
         {
-            Name = applicationModel.ApplicationName?.Trim(),
-            IsApproved = applicationModel.Enabled ?? true,
-            UseSandbox = false,
-            KeyStatus = "Active",
-            User = user,
-        };
+            apiClient = new ApiClient(true)
+            {
+                Name = applicationModel.ApplicationName?.Trim(),
+                IsApproved = applicationModel.Enabled ?? true,
+                UseSandbox = false,
+                KeyStatus = "Active",
+                User = user,
+            };
+        }
+
+        var clients = apiClient is null ? new List<ApiClient>() : new List<ApiClient> { apiClient };
 
         var applicationEdOrgs = applicationModel.EducationOrganizationIds == null
             ? Enumerable.Empty<ApplicationEducationOrganization>()
             : applicationModel.EducationOrganizationIds.Select(id => new ApplicationEducationOrganization
             {
-                ApiClients = new List<ApiClient> { apiClient },
+                ApiClients = new List<ApiClient>(clients),
                 EducationOrganizationId = id
             });
 
         var application = new Application
         {
             ApplicationName = applicationModel.ApplicationName?.Trim(),
-            ApiClients = new List<ApiClient> { apiClient },
+            ApiClients = new List<ApiClient>(clients),
             ApplicationEducationOrganizations = new List<ApplicationEducationOrganization>(applicationEdOrgs),
             ClaimSetName = applicationModel.ClaimSetName,
             Profiles = new List<Profile>(),
@@ -79,7 +89,12 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         _usersContext.Applications.Add(application);
 
-        if (dataStores != null && dataStores.Count() > 0)
+        if (apiClient is not null)
+        {
+            _usersContext.SetInheritsApplicationEducationOrganizations(apiClient, true);
+        }
+
+        if (apiClient is not null && dataStores != null && dataStores.Count() > 0)
         {
             foreach (var dataStore in dataStores)
             {
@@ -96,8 +111,8 @@ public class AddApplicationCommand : IAddApplicationCommand
         return new AddApplicationResult
         {
             ApplicationId = application.ApplicationId,
-            Key = apiClient.Key,
-            Secret = apiClient.Secret
+            Key = apiClient?.Key,
+            Secret = apiClient?.Secret
         };
     }
 }
@@ -111,6 +126,7 @@ public interface IAddApplicationModel
     IEnumerable<long>? EducationOrganizationIds { get; }
     IEnumerable<int>? DataStoreIds { get; }
     bool? Enabled { get; }
+    bool? CreateDefaultCredentials { get; }
 }
 
 public class AddApplicationResult

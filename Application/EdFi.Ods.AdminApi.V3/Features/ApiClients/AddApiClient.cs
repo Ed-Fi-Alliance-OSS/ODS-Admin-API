@@ -7,13 +7,14 @@ using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Features;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.Common.Settings;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Queries;
 using FluentValidation;
-using FluentValidation.Results;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -26,13 +27,19 @@ public class AddApiClient : IFeature
         AdminApiEndpointBuilder.MapPost(endpoints, "/apiClients", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponse<ApiClientResult>(201))
-            .BuildForVersions(AdminApiVersions.V3);
+            .BuildForVersions(string.Empty, true, AdminApiVersions.V3);
     }
 
-    public static async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options, HttpContext httpContext)
+    public static async Task<IResult> Handle(Validator validator, IAddApiClientCommand addApiClientCommand, IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery, IUsersContext db, AddApiClientRequest request, IOptions<AppSettings> options, HttpContext httpContext)
     {
         await validator.GuardAsync(request);
         GuardAgainstInvalidEntityReferences(request, db);
+
+        if (getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(request.ApplicationId, request.Name?.Trim()))
+        {
+            throw new ConflictException(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
+        }
+
         var addedApiClientResult = addApiClientCommand.Execute(request, options);
         var model = ApiClientMapper.ToResult(addedApiClientResult);
         var absoluteLocation = ResourceUrlHelper.BuildAbsoluteResourceUrl(httpContext, AdminApiMode.V3, $"/apiClients/{model.Id}");
@@ -41,8 +48,9 @@ public class AddApiClient : IFeature
 
     private static void GuardAgainstInvalidEntityReferences(AddApiClientRequest request, IUsersContext db)
     {
-        if (null == db.Applications.Find(request.ApplicationId))
-            throw new ValidationException([new ValidationFailure(nameof(request.ApplicationId), $"Application with ID {request.ApplicationId} not found.")]);
+        UnresolvedReferenceGuard.EnsureExists(
+            db.Applications.Find(request.ApplicationId) is not null,
+            $"Application with ID {request.ApplicationId} not found.");
 
         ValidateDataStoreIds(request, db);
     }
@@ -50,7 +58,7 @@ public class AddApiClient : IFeature
     private static void ValidateDataStoreIds(AddApiClientRequest request, IUsersContext db)
     {
         var allDataStoreIds = new HashSet<int>(db.OdsInstances.Select(p => p.OdsInstanceId));
-        EntityReferenceValidator.ValidateIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
+        UnresolvedReferenceGuard.EnsureIdsExist(request.DataStoreIds, allDataStoreIds, nameof(request.DataStoreIds));
     }
 
     [SwaggerSchema(Title = "AddApiClientRequest")]
@@ -67,16 +75,20 @@ public class AddApiClient : IFeature
 
         [SwaggerSchema(Description = FeatureConstants.DataStoreIdsDescription, Nullable = false)]
         public IEnumerable<int>? DataStoreIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientEducationOrganizationIdsDescription, Nullable = false)]
+        public IEnumerable<long>? EducationOrganizationIds { get; set; }
+
+        [SwaggerOptional]
+        [SwaggerSchema(Description = FeatureConstants.ApiClientInheritsApplicationEducationOrganizationsDescription, Nullable = false)]
+        public bool? InheritsApplicationEducationOrganizations { get; set; }
     }
 
     public class Validator : AbstractValidator<AddApiClientRequest>
     {
-        private readonly IGetApiClientsByApplicationIdQuery _getApiClientsByApplicationIdQuery;
-
-        public Validator(IGetApiClientsByApplicationIdQuery getApiClientsByApplicationIdQuery)
+        public Validator()
         {
-            _getApiClientsByApplicationIdQuery = getApiClientsByApplicationIdQuery;
-
             RuleFor(m => m.Name)
              .NotEmpty();
 
@@ -92,10 +104,6 @@ public class AddApiClient : IFeature
                 .NotEmpty()
                 .WithMessage(FeatureConstants.DataStoreIdsValidationMessage);
 
-            RuleFor(m => m)
-                .Must(BeUniqueCombinedKey)
-                .WithMessage(FeatureConstants.ApiClientCombinedKeyMustBeUnique);
-
             static bool BeWithinApiClientNameMaxLength<T>(IAddApiClientModel model, string? name, ValidationContext<T> context)
             {
                 var extraCharactersInName = name!.Length - ValidationConstants.MaximumApiClientNameLength;
@@ -107,11 +115,6 @@ public class AddApiClient : IFeature
                 context.MessageFormatter.AppendArgument("ExtraCharactersInName", extraCharactersInName);
                 return false;
             }
-        }
-
-        private bool BeUniqueCombinedKey(AddApiClientRequest request)
-        {
-            return !_getApiClientsByApplicationIdQuery.ExistsByApplicationIdAndName(request.ApplicationId, request.Name?.Trim());
         }
     }
 }

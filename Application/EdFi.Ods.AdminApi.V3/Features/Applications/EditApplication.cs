@@ -11,9 +11,9 @@ using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
 using EdFi.Ods.AdminApi.V3.Infrastructure;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Commands;
 using EdFi.Ods.AdminApi.V3.Infrastructure.Database.Commands;
+using EdFi.Ods.AdminApi.V3.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using FluentValidation;
-using FluentValidation.Results;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EdFi.Ods.AdminApi.V3.Features.Applications;
@@ -25,7 +25,7 @@ public class EditApplication : IFeature
         AdminApiEndpointBuilder.MapPut(endpoints, "/applications/{id}", Handle)
             .WithDefaultSummaryAndDescription()
             .WithRouteOptions(b => b.WithResponseCode(204))
-            .BuildForVersions(AdminApiVersions.V3);
+            .BuildForVersions(string.Empty, true, AdminApiVersions.V3);
     }
 
     public static async Task<IResult> Handle(IEditApplicationCommand editApplicationCommand,
@@ -41,8 +41,9 @@ public class EditApplication : IFeature
 
     private static void GuardAgainstInvalidEntityReferences(EditApplicationRequest request, IUsersContext db)
     {
-        if (null == db.Vendors.Find(request.VendorId))
-            throw new ValidationException(new[] { new ValidationFailure(nameof(request.VendorId), $"Vendor with ID {request.VendorId} not found.") });
+        UnresolvedReferenceGuard.EnsureExists(
+            db.Vendors.Find(request.VendorId) is not null,
+            $"Vendor with ID {request.VendorId} not found.");
 
         ValidateProfileIds(request, db);
     }
@@ -50,7 +51,7 @@ public class EditApplication : IFeature
     private static void ValidateProfileIds(EditApplicationRequest request, IUsersContext db)
     {
         var allProfileIds = new HashSet<int>(db.Profiles.Select(p => p.ProfileId));
-        EntityReferenceValidator.ValidateIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
+        UnresolvedReferenceGuard.EnsureIdsExist(request.ProfileIds, allProfileIds, nameof(request.ProfileIds));
     }
 
     // ADMINAPI-1484: enabled/dataStoreIds are per-ApiClient concerns and no longer part of

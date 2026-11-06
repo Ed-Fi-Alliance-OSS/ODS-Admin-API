@@ -5,6 +5,7 @@
 
 using System;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Admin.DataAccess.Models;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Settings;
@@ -19,8 +20,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Infrastructure.Database.Queries;
 [TestFixture]
 public class GetAllApplicationsQueryTests
 {
-    private static SqlServerUsersContext CreateContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"GetAllAppsV3_{Guid.NewGuid()}")
             .Options);
     private static IOptions<AppSettings> DefaultOptions() =>

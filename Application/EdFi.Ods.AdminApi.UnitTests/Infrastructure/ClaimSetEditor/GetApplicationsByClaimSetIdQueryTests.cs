@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Infrastructure.ClaimSetEditor;
 using AdminApplication = EdFi.Admin.DataAccess.Models.Application;
 using AdminVendor = EdFi.Admin.DataAccess.Models.Vendor;
@@ -25,8 +26,8 @@ public class GetApplicationsByClaimSetIdQueryTests
             .UseInMemoryDatabase(databaseName: $"AppsByClaimSet_sec_{Guid.NewGuid()}")
             .Options);
 
-    private static SqlServerUsersContext CreateUsersContext() =>
-        new(new DbContextOptionsBuilder<SqlServerUsersContext>()
+    private static AdminApiSqlServerUsersContext CreateUsersContext() =>
+        new(new DbContextOptionsBuilder<AdminApiSqlServerUsersContext>()
             .UseInMemoryDatabase(databaseName: $"AppsByClaimSet_usr_{Guid.NewGuid()}")
             .Options);
 

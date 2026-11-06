@@ -5,6 +5,7 @@
 
 using EdFi.Admin.DataAccess.Contexts;
 using EdFi.Admin.DataAccess.Models;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.ErrorHandling;
 using EdFi.Ods.AdminApi.Common.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,13 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             .SingleOrDefault(a => a.ApplicationId == apiClientModel.ApplicationId)
                 ?? throw new NotFoundException<int>("application", apiClientModel.ApplicationId);
 
+        var scope = ClientEducationOrganizationScopeResolver.Resolve(
+            apiClientModel.EducationOrganizationIds,
+            apiClientModel.InheritsApplicationEducationOrganizations,
+            application.ApplicationEducationOrganizations.Select(r => r.EducationOrganizationId).ToList(),
+            current: null,
+            isMove: false);
+
         var dataStores = apiClientModel.DataStoreIds != null
             ? _usersContext.OdsInstances.Where(o => apiClientModel.DataStoreIds.Contains(o.OdsInstanceId))
             : null;
@@ -43,11 +51,15 @@ public class AddApiClientCommand(IUsersContext usersContext) : IAddApiClientComm
             KeyStatus = "Active",
             User = application.Vendor.Users.FirstOrDefault(),
             // ADMINAPI-1514: attach to the Application's existing education-organization
-            // rows rather than creating parallel copies of them.
-            ApplicationEducationOrganizations = application.ApplicationEducationOrganizations.ToList(),
+            // rows rather than creating parallel copies of them. ADMINAPI-1540: only the
+            // rows in the resolved scope (all of them unless the client is narrowed).
+            ApplicationEducationOrganizations = application.ApplicationEducationOrganizations
+                .Where(r => scope.EducationOrganizationIds.Contains(r.EducationOrganizationId))
+                .ToList(),
         };
 
         _usersContext.ApiClients.Add(apiClient);
+        _usersContext.SetInheritsApplicationEducationOrganizations(apiClient, scope.Inherits);
 
         if (dataStores != null && dataStores.Any())
         {
@@ -80,6 +92,8 @@ public interface IAddApiClientModel
     bool IsApproved { get; }
     int ApplicationId { get; }
     IEnumerable<int>? DataStoreIds { get; }
+    IEnumerable<long>? EducationOrganizationIds { get; }
+    bool? InheritsApplicationEducationOrganizations { get; }
 }
 public class AddApiClientResult
 {

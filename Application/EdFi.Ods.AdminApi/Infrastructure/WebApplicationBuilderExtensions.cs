@@ -12,6 +12,7 @@ using EdFi.Ods.AdminApi.Common.Constants;
 using EdFi.Ods.AdminApi.Common.Infrastructure;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Audit;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Context;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Documentation;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Extensions;
 using EdFi.Ods.AdminApi.Common.Infrastructure.Helpers;
@@ -428,7 +429,7 @@ public static class WebApplicationBuilderExtensions
                         )
                     );
 
-                    webApplicationBuilder.Services.AddScoped<IUsersContext>(sp => new PostgresUsersContext(
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(sp => new AdminApiPostgresUsersContext(
                         AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
                     ));
                 }
@@ -460,7 +461,7 @@ public static class WebApplicationBuilderExtensions
 
                     webApplicationBuilder.Services.AddScoped<IUsersContext>(
                         (sp) =>
-                            new SqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
+                            new AdminApiSqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
                     );
                 }
                 else
@@ -497,7 +498,7 @@ public static class WebApplicationBuilderExtensions
                         )
                     );
 
-                    webApplicationBuilder.Services.AddScoped<IUsersContext>(sp => new PostgresUsersContext(
+                    webApplicationBuilder.Services.AddScoped<IUsersContext>(sp => new AdminApiPostgresUsersContext(
                         AdminDbContextOptions(sp, DatabaseEngineEnum.PostgreSql)
                     ));
                 }
@@ -529,7 +530,7 @@ public static class WebApplicationBuilderExtensions
 
                     webApplicationBuilder.Services.AddScoped<IUsersContext>(
                         (sp) =>
-                            new SqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
+                            new AdminApiSqlServerUsersContext(AdminDbContextOptions(sp, DatabaseEngineEnum.SqlServer))
                     );
                 }
                 else

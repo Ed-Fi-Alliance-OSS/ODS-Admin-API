@@ -3,6 +3,7 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -269,5 +270,93 @@ public class V3RequestErrorMiddlewareTests
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
         body.ShouldBe(existingBody);
+    }
+
+    private static async Task<(int Status, JsonDocument Doc)> RunAsync(Exception ex)
+    {
+        var middleware = new V3RequestErrorMiddleware(_ => throw ex);
+        var context = new DefaultHttpContext();
+        context.Response.Body = new MemoryStream();
+
+        await middleware.InvokeAsync(context);
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEndAsync();
+        return (context.Response.StatusCode, JsonDocument.Parse(body));
+    }
+
+    [Test]
+    public async Task ConflictException_Default_Returns409Conflict()
+    {
+        var (status, doc) = await RunAsync(new ConflictException("Already exists"));
+        using (doc)
+        {
+            status.ShouldBe(StatusCodes.Status409Conflict);
+            doc.RootElement.GetProperty("status").GetInt32().ShouldBe(409);
+            doc.RootElement.GetProperty("type").GetString().ShouldBe("urn:ed-fi:management-api:conflict");
+            doc.RootElement.GetProperty("detail").GetString().ShouldBe("Already exists");
+        }
+    }
+
+    [Test]
+    public async Task ConflictException_WithScopeType_Returns409WithThatType()
+    {
+        var (status, doc) = await RunAsync(
+            new ConflictException("Out of scope", AdminApiProblemTypes.ConflictEducationOrganizationScope));
+        using (doc)
+        {
+            status.ShouldBe(StatusCodes.Status409Conflict);
+            doc.RootElement.GetProperty("type").GetString()
+                .ShouldBe("urn:ed-fi:management-api:conflict:education-organization-scope");
+            doc.RootElement.GetProperty("detail").GetString().ShouldBe("Out of scope");
+        }
+    }
+
+    [Test]
+    public async Task AdminApiException_WithConflictStatus_Returns409Conflict()
+    {
+        var (status, doc) = await RunAsync(
+            new AdminApiException("Multiple clients") { StatusCode = HttpStatusCode.Conflict });
+        using (doc)
+        {
+            status.ShouldBe(StatusCodes.Status409Conflict);
+            doc.RootElement.GetProperty("type").GetString().ShouldBe("urn:ed-fi:management-api:conflict");
+        }
+    }
+
+    [Test]
+    public async Task BadRequestDataException_Returns400DataWithFieldError()
+    {
+        var (status, doc) = await RunAsync(
+            new BadRequestDataException("educationOrganizationIds", "Must not be empty"));
+        using (doc)
+        {
+            status.ShouldBe(StatusCodes.Status400BadRequest);
+            doc.RootElement.GetProperty("type").GetString().ShouldBe("urn:ed-fi:management-api:bad-request:data");
+            doc.RootElement.GetProperty("title").GetString().ShouldBe("Bad Request");
+            doc.RootElement.GetProperty("validationErrors").GetProperty("educationOrganizationIds")[0]
+                .GetString().ShouldContain("Must not be empty");
+            doc.RootElement.GetProperty("errors").GetProperty("educationOrganizationIds")[0]
+                .GetString().ShouldContain("Must not be empty");
+        }
+    }
+
+    [Test]
+    public void UnresolvedReferenceGuard_MissingId_ThrowsConflictUnresolvedReference()
+    {
+        var ex = Should.Throw<ConflictException>(
+            () => UnresolvedReferenceGuard.EnsureIdsExist(new[] { 1, 9 }, new[] { 1 }, "ProfileIds"));
+        ex.ProblemType.ShouldBe(AdminApiProblemTypes.ConflictUnresolvedReference);
+        ex.Message.ShouldContain("9");
+    }
+
+    [Test]
+    public void UnresolvedReferenceGuard_NullOrEmptyRequested_DoesNotThrow()
+    {
+        UnresolvedReferenceGuard.EnsureIdsExist<int>(null, new[] { 1 }, "ProfileIds");
+        UnresolvedReferenceGuard.EnsureIdsExist(Array.Empty<int>(), Array.Empty<int>(), "ProfileIds");
+        UnresolvedReferenceGuard.EnsureExists(true, "x");
+        Should.Throw<ConflictException>(() => UnresolvedReferenceGuard.EnsureExists(false, "missing"))
+            .ProblemType.ShouldBe(AdminApiProblemTypes.ConflictUnresolvedReference);
     }
 }

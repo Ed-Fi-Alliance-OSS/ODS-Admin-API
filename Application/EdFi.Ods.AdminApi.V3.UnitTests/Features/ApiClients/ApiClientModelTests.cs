@@ -23,7 +23,8 @@ namespace EdFi.Ods.AdminApi.V3.UnitTests.Features.ApiClients
             model.IsApproved.ShouldBeTrue();
             model.ApplicationId.ShouldBe(0);
             model.KeyStatus.ShouldBe("Active");
-            model.EducationOrganizationIds.ShouldBeNull();
+            model.EducationOrganizationIds.ShouldBeEmpty();
+            model.InheritsApplicationEducationOrganizations.ShouldBeFalse();
             model.DataStoreIds.ShouldBeNull();
         }
 

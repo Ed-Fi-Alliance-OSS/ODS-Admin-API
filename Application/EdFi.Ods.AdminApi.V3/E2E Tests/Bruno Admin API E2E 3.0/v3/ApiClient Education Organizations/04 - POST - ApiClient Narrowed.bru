@@ -1,0 +1,42 @@
+meta {
+  name: POST - ApiClient Narrowed
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{API_URL}}/v3/apiClients
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "EdOrg Scope Client 255901",
+    "isApproved": true,
+    "applicationId": {{EdOrgApplicationId}},
+    "dataStoreIds": [{{EdOrgDataStoreId}}],
+    "educationOrganizationIds": [255901]
+  }
+}
+
+script:post-response {
+  test("POST ApiClient narrowed: Status code is Created", function () {
+      expect(res.getStatus()).to.equal(201);
+  });
+
+  const result = res.getBody();
+  test("POST ApiClient narrowed: Response includes key and secret", function () {
+      expect(result.key).to.be.a("string");
+      expect(result.secret).to.be.a("string");
+  });
+
+  const location = res.getHeaders().location;
+  if (location) {
+      bru.setVar("EdOrgClientId", String(location).split("/").pop());
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -6,6 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using EdFi.Admin.DataAccess.Contexts;
+using EdFi.Ods.AdminApi.Common.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using Respawn;
@@ -46,14 +47,14 @@ public abstract class PlatformUsersContextTestBase
         {
             foreach (var entity in entities)
             {
-                ((SqlServerUsersContext)usersContext).Add(entity);
+                ((AdminApiSqlServerUsersContext)usersContext).Add(entity);
             }
         });
     }
 
     protected void Transaction(Action<IUsersContext> action)
     {
-        using var usersContext = new SqlServerUsersContext(GetDbContextOptions());
+        using var usersContext = new AdminApiSqlServerUsersContext(GetDbContextOptions());
         using var transaction = (usersContext).Database.BeginTransaction();
         action(usersContext);
         usersContext.SaveChanges();

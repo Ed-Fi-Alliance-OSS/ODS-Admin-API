@@ -33,7 +33,7 @@ public static class ApiClientMapper
         };
     }
 
-    public static ApiClientModel ToModel(ApiClient source, IList<int> dataStoreIds)
+    public static ApiClientModel ToModel(ApiClient source, IList<int> dataStoreIds, bool inheritsApplicationEducationOrganizations)
     {
         return new ApiClientModel
         {
@@ -43,6 +43,7 @@ public static class ApiClientMapper
             ApplicationId = source.Application?.ApplicationId ?? 0,
             KeyStatus = source.KeyStatus,
             IsApproved = source.IsApproved,
+            InheritsApplicationEducationOrganizations = inheritsApplicationEducationOrganizations,
             EducationOrganizationIds = source.ApplicationEducationOrganizations
                 .Select(eu => eu.EducationOrganizationId)
                 .ToList(),
@@ -52,12 +53,14 @@ public static class ApiClientMapper
 
     public static List<ApiClientModel> ToModelList(
         IEnumerable<ApiClient> source,
-        IReadOnlyDictionary<int, IList<int>> dataStoreIdsByApiClientId)
+        IReadOnlyDictionary<int, IList<int>> dataStoreIdsByApiClientId,
+        IReadOnlyDictionary<int, bool> inheritsByApiClientId)
     {
         return source.Select(apiClient =>
         {
             dataStoreIdsByApiClientId.TryGetValue(apiClient.ApiClientId, out var dataStoreIds);
-            return ToModel(apiClient, dataStoreIds ?? new List<int>());
+            inheritsByApiClientId.TryGetValue(apiClient.ApiClientId, out var inherits);
+            return ToModel(apiClient, dataStoreIds ?? new List<int>(), inherits);
         }).ToList();
     }
 }
