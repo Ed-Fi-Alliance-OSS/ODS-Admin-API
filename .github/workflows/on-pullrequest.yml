@@ -126,7 +126,11 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: built-application
-          path: Application
+          # Exclude the unit test results: After Pull Request globs every artifact for *.trx,
+          # and copies here were counted as a second (and, via the integration job, a third) run.
+          path: |
+            Application
+            !Application/**/*.trx
           retention-days: 1
 
   run-integration-tests:
@@ -157,6 +161,13 @@ jobs:
           name: built-application
           path: Application
 
+      # The downloaded build output references NuGet packages by path in the local package
+      # cache, which is empty on this fresh runner. Without a restore, MSBuild skips the
+      # Microsoft.NET.Test.Sdk imports (Exists() conditions), IsTestProject is never set, and
+      # `dotnet test --no-build` exits 0 without running or reporting anything.
+      - name: Restore NuGet packages
+        run: dotnet restore Application/Ed-Fi-ODS-AdminApi.sln --locked-mode
+
       - name: Run Integration Tests
         if: success()
         run: ./build.ps1 -Command IntegrationTest -NoBuild -Configuration Debug -UseIntegratedSecurity:$false -DbUsername "sa" -DbPassword ${{ env.DB_Password }}
@@ -165,11 +176,20 @@ jobs:
         if: always()
         run: ./eng/write-test-summary.ps1 -Path "Application/*DBTests/*.csproj.trx" -Title "Integration tests"
 
+      - name: Verify integration test results exist
+        if: success()
+        run: |
+          $results = @(Get-ChildItem -Path "Application/*DBTests/*.csproj.trx" -File)
+          if ($results.Count -eq 0) {
+            throw "No integration test result files were produced. dotnet test ran without executing any tests."
+          }
+          Write-Host "Integration test result files: $($results.Count)"
+
       - name: Upload Test Results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: csharp-integration-tests
-          path: "**/*.trx"
+          path: "Application/*DBTests/*.csproj.trx"
           retention-days: 5
 
   event_file:
