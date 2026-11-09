@@ -76,10 +76,6 @@ jobs:
         if: success()
         run: ./build.ps1 -Command UnitTest -NoBuild -Configuration Debug -RunCoverageAnalysis
 
-      - name: Write unit test summary
-        if: always()
-        run: ./eng/write-test-summary.ps1 -Path "Application/*.UnitTests/*.csproj.trx" -Title "Unit tests"
-
       - name: Write coverage summary
         if: success()
         run: |
@@ -171,10 +167,6 @@ jobs:
       - name: Run Integration Tests
         if: success()
         run: ./build.ps1 -Command IntegrationTest -NoBuild -Configuration Debug -UseIntegratedSecurity:$false -DbUsername "sa" -DbPassword ${{ env.DB_Password }}
-
-      - name: Write integration test summary
-        if: always()
-        run: ./eng/write-test-summary.ps1 -Path "Application/*DBTests/*.csproj.trx" -Title "Integration tests"
 
       - name: Verify integration test results exist
         if: success()
