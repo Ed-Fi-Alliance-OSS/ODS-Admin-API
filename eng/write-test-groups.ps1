@@ -101,14 +101,21 @@ function Write-Section {
         $skipped = ($rows.Values | Measure-Object -Property Skipped -Sum).Sum
         $status = if ($failed -gt 0) { "❌" } else { "✅" }
         $Lines.Add("")
-        $Lines.Add("<details><summary>$status ${section}: $total tests, $passed passed, $failed failed, $skipped skipped</summary>")
+        $summary = "$status ${section}: $total tests, $passed passed"
+        if ($failed -gt 0) { $summary += ", $failed failed" }
+        $summary += ", $skipped skipped"
+        $Lines.Add("<details><summary>$summary</summary>")
         $Lines.Add("")
-        $Lines.Add("| $GroupHeader | Tests | Passed | Failed | Skipped |")
-        $Lines.Add("| --- | ---: | ---: | ---: | ---: |")
+        # The Failed column appears only when something in this table failed.
+        $failedHeader = if ($failed -gt 0) { " Failed |" } else { "" }
+        $failedAlign  = if ($failed -gt 0) { " ---: |" } else { "" }
+        $Lines.Add("| $GroupHeader | Tests | Passed |$failedHeader Skipped |")
+        $Lines.Add("| --- | ---: | ---: |$failedAlign ---: |")
         foreach ($group in ($rows.Keys | Sort-Object)) {
             $r = $rows[$group]
             $mark = if ($r.Failed -gt 0) { "❌ " } else { "" }
-            $Lines.Add("| $mark$group | $($r.Total) | $($r.Passed) | $($r.Failed) | $($r.Skipped) |")
+            $failedCell = if ($failed -gt 0) { " $($r.Failed) |" } else { "" }
+            $Lines.Add("| $mark$group | $($r.Total) | $($r.Passed) |$failedCell $($r.Skipped) |")
         }
         $Lines.Add("")
         $Lines.Add("</details>")
