@@ -214,17 +214,14 @@ Alternatively, you can run both unit and integration tests together with:
 In GitHub Actions, the pull request and E2E workflows append a table of test
 results (and, for unit tests, the coverage summary `coveragereport/SummaryGithub.md`)
 to the run page with [`eng/write-test-summary.ps1`](../eng/write-test-summary.ps1).
-Each result file also gets a collapsed per-suite table: TRX results are grouped by test
-class namespace and Bruno JUnit results by request folder. The same script prints the
-markdown locally when `GITHUB_STEP_SUMMARY` is not set, for example:
-`./eng/write-test-summary.ps1 -Path "Application/*.UnitTests/*.csproj.trx" -Title "Unit tests"`.
+The same script prints the markdown table locally when `GITHUB_STEP_SUMMARY` is not
+set, for example: `./eng/write-test-summary.ps1 -Path "Application/*.UnitTests/*.csproj.trx" -Title "Unit tests"`.
 
 The *After Pull Request* workflow (`workflow_run`, so it runs with the default branch's
 scripts and a write token) then combines the unit, integration and E2E results of the
 latest completed runs for the commit into a single "Test summary" pull request comment,
-updated in place through [`eng/post-pr-comment.ps1`](../eng/post-pr-comment.ps1). Because
-`workflow_run` workflows execute from the default branch, changes to that workflow can be
-tried from a branch with *Run workflow* and the id of a completed run.
+updated in place. Because `workflow_run` workflows execute from the default branch, changes
+to that workflow can be tried from a branch with *Run workflow* and the id of a completed run.
 
 Additionally, there is a set of end-to-end (E2E) tests written for Bruno (open source alternative to Postman), in  
 [E2E Tests](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for more information.

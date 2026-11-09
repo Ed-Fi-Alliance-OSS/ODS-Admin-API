@@ -55,10 +55,10 @@ jobs:
           event_name: ${{ github.event.workflow_run.event }}
           files: "artifacts/**/*.trx"
 
-      # DEVOPS-162: one "Test summary" comment per PR with unit, integration and E2E results by
-      # suite, rebuilt from the latest completed run of each workflow for the commit and updated in
-      # place. On workflow_run this checks out the default branch, so scripts from the PR head never
-      # run with the write token; test results downloaded from the runs are treated as data only.
+      # DEVOPS-162: one "Test summary" comment per PR with unit, integration and E2E results,
+      # rebuilt from the latest completed run of each workflow for the commit and updated in place.
+      # On workflow_run this checks out the default branch, so scripts from the PR head never run
+      # with the write token; test results downloaded from the runs are treated as data only.
       - name: Checkout the summary scripts
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -103,7 +103,8 @@ jobs:
           )
 
           $body = [System.Text.StringBuilder]::new()
-          [void] $body.AppendLine("## Test summary")
+          [void] $body.AppendLine("<!-- devops-162-test-summary -->")
+          [void] $body.AppendLine("# Test summary")
           [void] $body.AppendLine()
           [void] $body.AppendLine("Results for $sha from the latest completed run of each workflow. Sections are added as workflows finish.")
 
@@ -111,7 +112,7 @@ jobs:
             $runId = gh run list --repo $repo --commit $sha --workflow $workflow.Name --status completed --limit 1 --json databaseId --jq '.[0].databaseId // empty'
             [void] $body.AppendLine()
             if (-not $runId) {
-              [void] $body.AppendLine("### ⏳ $($workflow.Name)")
+              [void] $body.AppendLine("## ⏳ $($workflow.Name)")
               [void] $body.AppendLine()
               [void] $body.AppendLine("Not finished yet.")
               continue
@@ -134,7 +135,7 @@ jobs:
 
             foreach ($report in $workflow.Reports) {
               $section = New-TemporaryFile
-              ./eng/write-test-summary.ps1 -Path $report.Path -Title $report.Title -OutputPath $section.FullName -HeadingLevel 3
+              ./eng/write-test-summary.ps1 -Path $report.Path -Title $report.Title -OutputPath $section.FullName
               [void] $body.Append((Get-Content -LiteralPath $section.FullName -Raw))
               Remove-Item -LiteralPath $section.FullName
             }
@@ -147,5 +148,13 @@ jobs:
       - name: Post the test summary comment
         if: steps.context.outputs.pull_request != ''
         run: |
-          ./eng/post-pr-comment.ps1 -PullRequest ${{ steps.context.outputs.pull_request }} `
-            -Marker "<!-- devops-162-test-summary -->" -BodyPath "test-summary-comment.md"
+          $repo = "${{ github.repository }}"
+          $pullRequest = "${{ steps.context.outputs.pull_request }}"
+          # Update the existing comment (found by its marker) or create it.
+          $commentId = gh api "repos/$repo/issues/$pullRequest/comments?per_page=100" --paginate --jq 'first(.[] | select(.body | contains("<!-- devops-162-test-summary -->")) | .id) // empty'
+          if ($commentId) {
+            gh api -X PATCH "repos/$repo/issues/comments/$commentId" -F body=@test-summary-comment.md --jq .html_url
+          }
+          else {
+            gh api -X POST "repos/$repo/issues/$pullRequest/comments" -F body=@test-summary-comment.md --jq .html_url
+          }
