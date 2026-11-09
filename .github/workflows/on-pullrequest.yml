@@ -31,6 +31,25 @@ jobs:
     with:
       config-file-path: ./.github/workflows/bidi-config.json
 
+  dependency-review:
+    name: Dependency Review ("Dependabot on PR")
+    # The action derives base and head refs only from pull_request events; a manual dispatch would fail.
+    if: github.event_name == 'pull_request' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # DEVOPS-162: post the vulnerability summary as a PR comment
+    steps:
+      - name: Checkout the Repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          # Fork heads get a read-only token; the action would only log a warning, so skip the comment there.
+          comment-summary-in-pr: ${{ github.event.pull_request.head.repo.full_name == github.repository && 'always' || 'never' }}
+          show-patched-versions: true
+
   run-cs-tests:
     name: Run C# Tests
     runs-on: ubuntu-latest
@@ -70,10 +89,6 @@ jobs:
           name: csharp-tests
           path: "**/*.trx"
           retention-days: 5
-
-      - name: Dependency Review ("Dependabot on PR")
-        if: ${{ !github.event.repository.fork }}
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
       - name: Initialize CodeQL
         if: success()
