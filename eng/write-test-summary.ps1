@@ -19,7 +19,8 @@
     whether the job fails.
 
 .PARAMETER Path
-    One or more paths or wildcard patterns of result files.
+    One or more paths or wildcard patterns of result files. A "**/" segment
+    matches any directory depth, e.g. "artifacts/**/*.trx".
 
 .PARAMETER Title
     Heading for the summary section.
@@ -29,6 +30,9 @@
 
 .PARAMETER MaxFailures
     Maximum number of failed tests listed. Default 50.
+
+.PARAMETER HeadingLevel
+    Markdown heading level of the title (1-6). Default 2.
 
 .EXAMPLE
     ./eng/write-test-summary.ps1 -Path "Application/*.UnitTests/*.csproj.trx" -Title "Unit tests"
@@ -50,11 +54,34 @@ param(
 
     [ValidateRange(0, 1000)]
     [int]
-    $MaxFailures = 50
+    $MaxFailures = 50,
+
+    [ValidateRange(1, 6)]
+    [int]
+    $HeadingLevel = 2
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+# Expands the -Path patterns; "**/" recurses from the directory before it.
+function Resolve-ResultFile {
+    param([string[]] $Patterns)
+
+    foreach ($pattern in $Patterns) {
+        if ($pattern -match '^(.*?)\*\*[\\/](.+)$') {
+            $basePattern = if ($Matches[1]) { $Matches[1] } else { "." }
+            $leaf = $Matches[2]
+            foreach ($base in @(Get-Item -Path $basePattern -ErrorAction SilentlyContinue | Where-Object { $_.PSIsContainer })) {
+                Get-ChildItem -LiteralPath $base.FullName -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.FullName.Substring($base.FullName.Length).TrimStart('\', '/').Replace('\', '/') -like $leaf }
+            }
+        }
+        else {
+            Get-ChildItem -Path $pattern -File -ErrorAction SilentlyContinue
+        }
+    }
+}
 
 function Format-Duration {
     param([double] $Seconds)
@@ -263,12 +290,13 @@ function ConvertFrom-ResultFile {
 }
 
 $lines = [System.Collections.Generic.List[string]]::new()
+$heading = "#" * $HeadingLevel
 
 try {
-    $files = @($Path | ForEach-Object { Get-ChildItem -Path $_ -File -ErrorAction SilentlyContinue } | Sort-Object FullName -Unique)
+    $files = @(Resolve-ResultFile -Patterns $Path | Sort-Object FullName -Unique)
 
     if ($files.Count -eq 0) {
-        $lines.Add("## $Title")
+        $lines.Add("$heading $Title")
         $lines.Add("")
         $lines.Add("No result files found for: $($Path -join ', ')")
         Write-Host "$Title`: no result files found for $($Path -join ', ')"
@@ -285,7 +313,7 @@ try {
 
         $status = if ($sumFailed -gt 0 -or $allFailures.Count -gt 0) { "❌" } else { "✅" }
 
-        $lines.Add("## $status $Title")
+        $lines.Add("$heading $status $Title")
         $lines.Add("")
         $lines.Add("| File | Total | Passed | Failed | Skipped | Duration |")
         $lines.Add("| --- | ---: | ---: | ---: | ---: | ---: |")
@@ -329,7 +357,7 @@ try {
     }
 }
 catch {
-    $lines.Add("## $Title")
+    $lines.Add("$heading $Title")
     $lines.Add("")
     $lines.Add("Could not build the test summary: $($_.Exception.Message)")
     Write-Host "Could not build the test summary: $($_.Exception.Message)"

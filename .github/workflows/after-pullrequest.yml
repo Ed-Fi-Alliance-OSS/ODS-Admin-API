@@ -8,8 +8,17 @@ on:
   workflow_run:
     workflows:
       - "On Pull Request"
+      - "Admin API V1 E2E Tests + ODS 6"
+      - "Admin API V2 E2E Tests + ODS 7"
+      - "Admin API V3 E2E Tests + ODS 7"
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Id of a completed workflow run to report on (used to test this workflow from a branch)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -18,23 +27,114 @@ jobs:
   report-test-results:
     name: Report Test Results
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion != 'skipped'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'skipped'
 
     permissions:
       actions: read
       checks: write
       pull-requests: write
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Download and Extract Artifacts
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'On Pull Request'
         uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
         with:
           run_id: ${{ github.event.workflow_run.id }}
           path: artifacts
 
       - name: Publish Test Results
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.name == 'On Pull Request'
         uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
         with:
           commit: ${{ github.event.workflow_run.head_sha }}
           event_file: artifacts/Event File/event.json
           event_name: ${{ github.event.workflow_run.event }}
           files: "artifacts/**/*.trx"
+
+      # DEVOPS-162: one "Test summary" comment per PR with unit, integration and E2E results by
+      # suite, rebuilt from the latest completed run of each workflow for the commit and updated in
+      # place. On workflow_run this checks out the default branch, so scripts from the PR head never
+      # run with the write token; test results downloaded from the runs are treated as data only.
+      - name: Checkout the summary scripts
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          sparse-checkout: eng
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Resolve the commit and pull request
+        id: context
+        run: |
+          $runId = "${{ inputs.run_id || github.event.workflow_run.id }}"
+          $run = gh run view $runId --repo "${{ github.repository }}" --json headSha,event,name | ConvertFrom-Json
+          Write-Host "Run $runId ($($run.name), $($run.event)) at $($run.headSha)"
+
+          $pullRequest = ""
+          if ($run.event -eq "pull_request") {
+            $pullRequest = gh api "repos/${{ github.repository }}/commits/$($run.headSha)/pulls" --jq '[.[] | select(.state == "open")][0].number // empty'
+          }
+          if (-not $pullRequest) { Write-Host "No open pull request for this run; nothing to comment on." }
+
+          "sha=$($run.headSha)" >> $env:GITHUB_OUTPUT
+          "pull_request=$pullRequest" >> $env:GITHUB_OUTPUT
+
+      - name: Build the test summary comment
+        if: steps.context.outputs.pull_request != ''
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $repo = "${{ github.repository }}"
+          $sha = "${{ steps.context.outputs.sha }}"
+
+          $workflows = @(
+            @{ Name = "On Pull Request"; Dir = "on-pullrequest"; Artifacts = @("csharp-tests", "csharp-integration-tests")
+               Reports = @(
+                 @{ Title = "Unit tests";        Path = "results/on-pullrequest/csharp-tests/**/*.trx" },
+                 @{ Title = "Integration tests"; Path = "results/on-pullrequest/csharp-integration-tests/**/*.trx" }) }
+            @{ Name = "Admin API V1 E2E Tests + ODS 6"; Dir = "e2e-v1"; Artifacts = @("test-results-v1-*")
+               Reports = @(@{ Title = "V1 E2E tests"; Path = "results/e2e-v1/**/*.xml" }) }
+            @{ Name = "Admin API V2 E2E Tests + ODS 7"; Dir = "e2e-v2"; Artifacts = @("test-xml-results-v2-*")
+               Reports = @(@{ Title = "V2 E2E tests"; Path = "results/e2e-v2/**/*.xml" }) }
+            @{ Name = "Admin API V3 E2E Tests + ODS 7"; Dir = "e2e-v3"; Artifacts = @("test-xml-results-v3-*")
+               Reports = @(@{ Title = "V3 E2E tests"; Path = "results/e2e-v3/**/*.xml" }) }
+          )
+
+          $body = [System.Text.StringBuilder]::new()
+          [void] $body.AppendLine("## Test summary")
+          [void] $body.AppendLine()
+          [void] $body.AppendLine("Results for $sha from the latest completed run of each workflow. Sections are added as workflows finish.")
+
+          foreach ($workflow in $workflows) {
+            $runId = gh run list --repo $repo --commit $sha --workflow $workflow.Name --status completed --limit 1 --json databaseId --jq '.[0].databaseId // empty'
+            [void] $body.AppendLine()
+            if (-not $runId) {
+              [void] $body.AppendLine("### ⏳ $($workflow.Name)")
+              [void] $body.AppendLine()
+              [void] $body.AppendLine("Not finished yet.")
+              continue
+            }
+
+            $patterns = @($workflow.Artifacts | ForEach-Object { @("--pattern", $_) })
+            gh run download $runId --repo $repo --dir "results/$($workflow.Dir)" @patterns 2>&1 | ForEach-Object { Write-Host $_ }
+            if ($LASTEXITCODE -ne 0) { Write-Host "No matching artifacts on run $runId" }
+
+            foreach ($report in $workflow.Reports) {
+              $section = New-TemporaryFile
+              ./eng/write-test-summary.ps1 -Path $report.Path -Title $report.Title -OutputPath $section.FullName -HeadingLevel 3
+              [void] $body.Append((Get-Content -LiteralPath $section.FullName -Raw))
+              Remove-Item -LiteralPath $section.FullName
+            }
+            [void] $body.AppendLine("_$($workflow.Name): [run $runId](https://github.com/$repo/actions/runs/$runId)_")
+          }
+
+          Set-Content -LiteralPath "test-summary-comment.md" -Value $body.ToString() -Encoding utf8
+          Write-Host "Comment body: $($body.Length) chars"
+
+      - name: Post the test summary comment
+        if: steps.context.outputs.pull_request != ''
+        run: |
+          ./eng/post-pr-comment.ps1 -PullRequest ${{ steps.context.outputs.pull_request }} `
+            -Marker "<!-- devops-162-test-summary -->" -BodyPath "test-summary-comment.md"
