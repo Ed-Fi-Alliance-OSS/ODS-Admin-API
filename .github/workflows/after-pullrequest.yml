@@ -117,9 +117,20 @@ jobs:
               continue
             }
 
-            $patterns = @($workflow.Artifacts | ForEach-Object { @("--pattern", $_) })
-            gh run download $runId --repo $repo --dir "results/$($workflow.Dir)" @patterns 2>&1 | ForEach-Object { Write-Host $_ }
-            if ($LASTEXITCODE -ne 0) { Write-Host "No matching artifacts on run $runId" }
+            # A re-run leaves one artifact per attempt under the same name, so download by id, newest per name.
+            $artifacts = @(gh api "repos/$repo/actions/runs/$runId/artifacts?per_page=100" --jq '[.artifacts[] | select(.expired | not) | {id, name, created_at}]' | ConvertFrom-Json)
+            $wanted = @($artifacts | Where-Object { $name = $_.name; @($workflow.Artifacts | Where-Object { $name -like $_ }).Count -gt 0 } |
+              Group-Object -Property name | ForEach-Object { $_.Group | Sort-Object -Property created_at -Descending | Select-Object -First 1 })
+            if ($wanted.Count -eq 0) { Write-Host "No matching artifacts on run $runId" }
+            foreach ($artifact in $wanted) {
+              $target = "results/$($workflow.Dir)/$($artifact.name)"
+              New-Item -ItemType Directory -Force -Path $target | Out-Null
+              gh api "repos/$repo/actions/artifacts/$($artifact.id)/zip" > "$target.zip"
+              if ($LASTEXITCODE -ne 0) { Write-Host "Could not download artifact $($artifact.name) ($($artifact.id))"; continue }
+              Expand-Archive -LiteralPath "$target.zip" -DestinationPath $target -Force
+              Remove-Item -LiteralPath "$target.zip"
+              Write-Host "Downloaded $($artifact.name) (id $($artifact.id), created $($artifact.created_at))"
+            }
 
             foreach ($report in $workflow.Reports) {
               $section = New-TemporaryFile
