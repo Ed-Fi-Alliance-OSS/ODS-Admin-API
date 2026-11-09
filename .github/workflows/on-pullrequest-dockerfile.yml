@@ -80,15 +80,32 @@ jobs:
           dockerfile=$(echo "${{ matrix.dockerfile.path }}" | awk -F"/" '{print $NF}')
 
           lower_path=$(echo "${{ matrix.dockerfile.path }}" | tr '[:upper:]' '[:lower:]')
-          if [[ "${{ matrix.dockerfile.type }}" == "published" && "$lower_path" == *db-admin/pgsql* ]]
-          then
-            docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context shared=../../../../ --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
-          elif [[ "$lower_path" == *v3* || "$lower_path" == *v2* || "$lower_path" == *v1* ]]
-          then
-            docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=../.. --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
-          else
-            docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=.. --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
-          fi
+          build() {
+            if [[ "${{ matrix.dockerfile.type }}" == "published" && "$lower_path" == *db-admin/pgsql* ]]
+            then
+              docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context shared=../../../../ --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
+            elif [[ "$lower_path" == *v3* || "$lower_path" == *v2* || "$lower_path" == *v1* ]]
+            then
+              docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=../.. --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
+            else
+              docker build -f "$dockerfile" -t "${{ matrix.dockerfile.name }}" --build-context assets=.. --build-arg="ADMIN_API_VERSION=${{ steps.versions.outputs.VERSION }}" .
+            fi
+          }
+
+          # DEVOPS-162: retry only on transient registry errors (base image pulls); build errors fail at once.
+          PATTERN='unexpected status|500 Internal Server Error|502 Bad Gateway|503 Service Unavailable|toomanyrequests|TLS handshake timeout|failed to resolve source metadata|connection reset by peer|unexpected EOF'
+          set -o pipefail
+          for attempt in 1 2 3; do
+            echo "::group::docker build (attempt $attempt of 3)"
+            build 2>&1 | tee build.log; rc=$?
+            echo "::endgroup::"
+            [ $rc -eq 0 ] && break
+            if [ $attempt -eq 3 ] || ! grep -qiE "$PATTERN" build.log; then
+              echo "::error::docker build failed (exit $rc) after $attempt attempt(s)"; exit $rc
+            fi
+            echo "::warning::Transient registry error during docker build; retrying"
+            sleep $(( attempt == 1 ? 15 : 45 ))
+          done
 
       - name: Analyze
         uses: docker/scout-action@7c6b6c3f7844478ace1ffd4e7aef649053d1f87d # v1.24.0
