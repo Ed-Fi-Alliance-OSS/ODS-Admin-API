@@ -37,7 +37,8 @@ public class AddOdsInstanceManage : IFeature
     private const int MaxOdsInstanceManageNameLength = 46;
     private static readonly Regex _validOdsInstanceManageNamePattern = new(
         "^[A-Za-z0-9 _]+$",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        RegexOptions.Compiled | RegexOptions.CultureInvariant,
+        TimeSpan.FromSeconds(1));
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints)
     {

@@ -44,7 +44,7 @@ public class AddApplicationCommand : IAddApplicationCommand
             }
         }
         var profiles = applicationModel.ProfileIds != null
-           ? _usersContext.Profiles.Where(p => applicationModel.ProfileIds!.Contains(p.ProfileId))
+           ? _usersContext.Profiles.Where(p => applicationModel.ProfileIds.Contains(p.ProfileId))
            : null;
 
         var vendor = _usersContext.Vendors.Include(x => x.Users)
@@ -94,7 +94,7 @@ public class AddApplicationCommand : IAddApplicationCommand
 
         _usersContext.Applications.Add(application);
 
-        if (odsInstances != null && odsInstances.Count() > 0)
+        if (odsInstances != null && odsInstances.Any())
         {
             foreach (var odsInstance in odsInstances)
             {

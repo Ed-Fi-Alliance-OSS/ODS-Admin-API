@@ -20,7 +20,7 @@ public class TagByResourceUrlFilter : IOperationFilter
         if (urlParts.Length == 0)
             return;
 
-        var isVersionPart = new Regex("(v)\\d+");
+        var isVersionPart = new Regex("(v)\\d+", RegexOptions.None, TimeSpan.FromSeconds(1));
         var resourceName = isVersionPart.IsMatch(urlParts[0])
             ? urlParts[1] : urlParts[0];
 

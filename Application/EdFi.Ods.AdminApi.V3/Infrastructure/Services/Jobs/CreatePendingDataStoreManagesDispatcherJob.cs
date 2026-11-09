@@ -49,7 +49,7 @@ public class CreatePendingDataStoreManagesDispatcherJob(
             var eligibleOdsInstanceManages = await adminApiDbContext.OdsInstanceManages
                 .Where(instance => instance.Status == OdsInstanceManageStatus.PendingCreate.ToString() || instance.Status == OdsInstanceManageStatus.CreateFailed.ToString())
                 .OrderBy(instance => instance.Id)
-                .ToListAsync();
+                .ToListAsync(context.CancellationToken);
 
             foreach (var odsInstanceManage in eligibleOdsInstanceManages)
             {
@@ -64,14 +64,14 @@ public class CreatePendingDataStoreManagesDispatcherJob(
                     odsInstanceManage.Status = OdsInstanceManageStatus.CreateError.ToString();
                     odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                     odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                    await adminApiDbContext.SaveChangesAsync();
+                    await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
                     continue;
                 }
 
                 odsInstanceManage.Status = OdsInstanceManageStatus.PendingCreate.ToString();
                 odsInstanceManage.LastModifiedDate = DateTime.UtcNow;
                 odsInstanceManage.LastRefreshed = DateTime.UtcNow;
-                await adminApiDbContext.SaveChangesAsync();
+                await adminApiDbContext.SaveChangesAsync(context.CancellationToken);
 
                 await ScheduleCreateJobAsync(context, odsInstanceManage.Id, tenantName);
             }

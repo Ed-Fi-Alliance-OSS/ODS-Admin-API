@@ -67,7 +67,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
             if (context.Response.StatusCode == 400)
             {
                 responseBody.Seek(0, SeekOrigin.Begin);
-                var responseContent = await new StreamReader(responseBody).ReadToEndAsync();
+                var responseContent = await new StreamReader(responseBody).ReadToEndAsync(context.RequestAborted);
 
                 if (responseContent.Contains("\"error\": \"invalid_scope\"") ||
                     responseContent.Contains("\"error\":\"invalid_scope\""))
@@ -76,12 +76,12 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
                 }
 
                 responseBody.Seek(0, SeekOrigin.Begin);
-                await responseBody.CopyToAsync(originalBodyStream);
+                await responseBody.CopyToAsync(originalBodyStream, context.RequestAborted);
             }
             else
             {
                 responseBody.Seek(0, SeekOrigin.Begin);
-                await responseBody.CopyToAsync(originalBodyStream);
+                await responseBody.CopyToAsync(originalBodyStream, context.RequestAborted);
             }
         }
         catch (Exception ex)
@@ -144,7 +144,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
 
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails), context.RequestAborted);
     }
 
     private static async Task EnsureProblemDetailsForMalformedJsonRequestAsync(HttpContext context)
@@ -163,7 +163,7 @@ public class V3RequestErrorMiddleware(RequestDelegate next)
         );
 
         context.Response.ContentType = "application/problem+json";
-        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails), context.RequestAborted);
     }
 
     private static bool IsEligibleForMalformedJsonFallback(HttpContext context)
