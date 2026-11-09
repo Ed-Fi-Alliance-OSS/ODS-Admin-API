@@ -43,6 +43,14 @@ jobs:
       # time one of the workflows above finishes, the results of the latest completed run of every
       # workflow for that commit are collected and published again, so the comment fills in as the
       # workflows complete. Downloaded results are data only; no code from the PR runs here.
+      # Default-branch scripts under workflow_run (never code from the PR head); the branch's under dispatch.
+      - name: Checkout the summary scripts
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          sparse-checkout: eng
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: Resolve the commit and pull request
         id: context
         run: |
@@ -107,3 +115,22 @@ jobs:
           files: |
             artifacts/**/*.trx
             artifacts/**/*.xml
+
+      # DEVOPS-162: .NET results by feature namespace and E2E results by resource folder, on the run
+      # page and as one PR comment updated in place (the Test Results comment above cannot be extended).
+      - name: Summarize results by area
+        if: steps.context.outputs.pull_request != ''
+        run: ./eng/write-test-groups.ps1 -Path artifacts -OutputPath test-groups.md
+
+      - name: Post or update the results-by-area comment
+        if: steps.context.outputs.pull_request != ''
+        run: |
+          $repo = "${{ github.repository }}"
+          $pullRequest = "${{ steps.context.outputs.pull_request }}"
+          $commentId = gh api "repos/$repo/issues/$pullRequest/comments?per_page=100" --paginate --jq 'first(.[] | select(.body | contains("<!-- devops-162-test-groups -->")) | .id) // empty'
+          if ($commentId) {
+            gh api -X PATCH "repos/$repo/issues/comments/$commentId" -F body=@test-groups.md --jq .html_url
+          }
+          else {
+            gh api -X POST "repos/$repo/issues/$pullRequest/comments" -F body=@test-groups.md --jq .html_url
+          }
