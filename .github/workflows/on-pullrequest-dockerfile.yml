@@ -27,8 +27,7 @@ jobs:
   docker-analysis:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
-      pull-requests: write
+      security-events: write # DEVOPS-162: the PR comment moved to the image-summary job
     strategy:
       fail-fast: false
       matrix:
@@ -98,6 +97,7 @@ jobs:
           image: local://${{ matrix.dockerfile.name }}
           sarif-file: sarif-${{ matrix.dockerfile.name }}.output.json
           summary: true
+          write-comment: false # DEVOPS-162: matrix jobs overwrote one comment; image-summary posts one table
 
       - name: Upload SARIF result
         id: upload-sarif
@@ -105,3 +105,52 @@ jobs:
         uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           sarif_file: sarif-${{ matrix.dockerfile.name }}.output.json
+
+      - name: Upload Scout SARIF for the PR summary
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scout-${{ matrix.dockerfile.name }}
+          path: sarif-${{ matrix.dockerfile.name }}.output.json
+          retention-days: 5
+          if-no-files-found: ignore
+
+  image-summary:
+    name: Image vulnerability summary
+    needs: docker-analysis
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # DEVOPS-162: one comment per PR instead of one overwritten Scout comment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Download Scout SARIF files
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: scout-*
+          path: scout-sarif
+          merge-multiple: true
+
+      - name: Build summary
+        shell: pwsh
+        run: ./eng/write-image-summary.ps1 -SarifDir scout-sarif -RunUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" -OutputPath image-summary.md
+
+      - name: Post or update PR comment
+        # Fork heads have a read-only token. Advisory: the summary is already on the run page.
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          MARKER: "<!-- devops-162-image-summary -->"
+        run: |
+          cid=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+                --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -n 1)
+          if [ -n "$cid" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$cid" -F body=@image-summary.md --jq .html_url
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@image-summary.md --jq .html_url
+          fi
