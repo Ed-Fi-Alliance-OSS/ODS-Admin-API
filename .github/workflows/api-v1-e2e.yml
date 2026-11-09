@@ -46,6 +46,11 @@ jobs:
         shell: pwsh
         run: ./eng/run-bruno-e2e.ps1 -ApiVersion 1 -DbEngine ${{ matrix.dbEngine }} -ReportSuffix ${{ matrix.dbEngine }}
 
+      - name: Write test summary
+        if: always()
+        shell: pwsh
+        run: ./eng/write-test-summary.ps1 -Path 'Application/EdFi.Ods.AdminApi/E2E Tests/V1/Bruno Admin API E2E refactor/report-${{ matrix.dbEngine }}.xml' -Title 'V1 E2E ${{ matrix.dbEngine }}'
+
       - name: Get Docker logs
         if: failure()
         run: |
@@ -104,18 +109,13 @@ jobs:
           path: test-results
           merge-multiple: true
 
-      - name: Inspect results for JIRA report
+      - name: Write E2E totals
+        run: ./eng/write-test-summary.ps1 -Path 'test-results/report-*.xml' -Title 'V1 E2E totals'
+
+      - name: Check expected reports
         run: |
           $expectedReports = @('report-mssql.xml', 'report-pgsql.xml')
           $missingReports = @($expectedReports | Where-Object { -not (Test-Path (Join-Path 'test-results' $_)) })
           if ($missingReports.Count -gt 0) {
             throw "Missing expected XML reports: $($missingReports -join ', ')"
           }
-          Get-ChildItem -Path 'test-results' -Recurse -Filter 'report-*.xml' | ForEach-Object {
-            [xml]$xmlContent = Get-Content -Path $_.FullName
-            $failed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property failures -Sum | Select-Object -ExpandProperty Sum)
-            $passed = [int]($xmlContent.testsuites.testsuite | Measure-Object -Property tests -Sum | Select-Object -ExpandProperty Sum) - $failed
-            if ($passed -lt 1) {
-              Write-Output "No tests recorded in report ($($_.Name)). Uploading manually."
-            }
-            }
