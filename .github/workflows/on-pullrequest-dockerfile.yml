@@ -27,7 +27,7 @@ jobs:
   docker-analysis:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write # DEVOPS-162: the PR comment moved to the image-summary job
+      security-events: write
     strategy:
       fail-fast: false
       matrix:
@@ -92,7 +92,7 @@ jobs:
             fi
           }
 
-          # DEVOPS-162: retry only on transient registry errors (base image pulls); build errors fail at once.
+          # Retry only on transient registry errors (base image pulls); build errors fail at once.
           PATTERN='unexpected status|500 Internal Server Error|502 Bad Gateway|503 Service Unavailable|toomanyrequests|TLS handshake timeout|failed to resolve source metadata|connection reset by peer|unexpected EOF'
           set -o pipefail
           for attempt in 1 2 3; do
@@ -118,7 +118,7 @@ jobs:
           image: local://${{ matrix.dockerfile.name }}
           sarif-file: sarif-${{ matrix.dockerfile.name }}.output.json
           summary: true
-          write-comment: false # DEVOPS-162: matrix jobs overwrote one comment; image-summary posts one table
+          write-comment: false # the image-summary job posts one table for all images
 
       - name: Upload SARIF result
         id: upload-sarif
@@ -141,9 +141,13 @@ jobs:
     needs: docker-analysis
     if: always()
     runs-on: ubuntu-latest
+    # Serialize comment updates per PR so overlapping runs cannot post twice or overwrite newer results.
+    concurrency:
+      group: image-summary-${{ github.event.pull_request.number || github.run_id }}
+      cancel-in-progress: false
     permissions:
       contents: read
-      pull-requests: write # DEVOPS-162: one comment per PR instead of one overwritten Scout comment
+      pull-requests: write # only this job comments on the PR
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -155,9 +159,24 @@ jobs:
           path: scout-sarif
           merge-multiple: true
 
+      - name: Read image names from the docker-analysis matrix
+        id: matrix
+        run: |
+          images=$(yq '.jobs.docker-analysis.strategy.matrix.dockerfile[].name' .github/workflows/on-pullrequest-dockerfile.yml | paste -sd, -)
+          if [ -z "$images" ]; then
+            echo "::error::Could not read the image names from the docker-analysis matrix"; exit 1
+          fi
+          echo "images=$images" >> "$GITHUB_OUTPUT"
+
       - name: Build summary
         shell: pwsh
-        run: ./eng/write-image-summary.ps1 -SarifDir scout-sarif -RunUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" -OutputPath image-summary.md
+        env:
+          EXPECTED_IMAGES: ${{ steps.matrix.outputs.images }}
+        run: |
+          ./eng/write-image-summary.ps1 -SarifDir scout-sarif `
+            -ExpectedImages ($env:EXPECTED_IMAGES -split ',') `
+            -RunUrl "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" `
+            -OutputPath image-summary.md
 
       - name: Post or update PR comment
         # Fork heads have a read-only token. Advisory: the summary is already on the run page.
@@ -166,8 +185,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
-          MARKER: "<!-- devops-162-image-summary -->"
         run: |
+          # The script writes its marker comment as the first line of the summary.
+          MARKER=$(head -n 1 image-summary.md)
           cid=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
                 --jq ".[] | select(.body | contains(\"$MARKER\")) | .id" | head -n 1)
           if [ -n "$cid" ]; then

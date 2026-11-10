@@ -13,6 +13,9 @@
     written to -OutputPath (used as a pull request comment body) and appended to
     $env:GITHUB_STEP_SUMMARY when that variable is set. The script always exits 0.
 
+    Images named in -ExpectedImages that have no SARIF file get a "not analyzed" row, so an
+    image whose build or scan failed does not silently drop out of the table.
+
     Severity comes from the rule's tags (CRITICAL, HIGH, MEDIUM, LOW, UNSPECIFIED). When a rule
     has no such tag, its security-severity (CVSS) score is bucketed: >= 9.0 critical,
     >= 7.0 high, >= 4.0 medium, otherwise low.
@@ -26,8 +29,16 @@
 .PARAMETER OutputPath
     Markdown file to write.
 
+.PARAMETER ExpectedImages
+    Image names that should have a SARIF file (the docker-analysis matrix names). Empty entries
+    are ignored. Images in this list without a file are reported as not analyzed.
+
+.PARAMETER Marker
+    HTML comment written as the first line of the output. The workflow reads it back to find and
+    update the existing PR comment.
+
 .EXAMPLE
-    ./eng/write-image-summary.ps1 -SarifDir scout-sarif -RunUrl "https://github.com/org/repo/actions/runs/1" -OutputPath image-summary.md
+    ./eng/write-image-summary.ps1 -SarifDir scout-sarif -ExpectedImages postgres,development -RunUrl "https://github.com/org/repo/actions/runs/1" -OutputPath image-summary.md
 #>
 [CmdletBinding()]
 param(
@@ -41,7 +52,13 @@ param(
 
     [Parameter(Mandatory = $true)]
     [string]
-    $OutputPath
+    $OutputPath,
+
+    [string[]]
+    $ExpectedImages = @(),
+
+    [string]
+    $Marker = "<!-- docker-scout-image-summary -->"
 )
 
 Set-StrictMode -Version Latest
@@ -69,6 +86,18 @@ function Get-Severity {
     return "UNSPECIFIED"
 }
 
+function Get-Prop {
+    # Returns a property value, or $null when the object or the property is missing.
+    # SARIF allows "rules" and "results" to be absent or null on a clean image, and under
+    # Set-StrictMode a direct access such as $run.results throws when the key is not there.
+    param($Object, [string] $Name)
+
+    if ($null -eq $Object) { return $null }
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) { return $null }
+    return $property.Value
+}
+
 function Get-ImageCounts {
     param([System.IO.FileInfo] $File)
 
@@ -77,36 +106,54 @@ function Get-ImageCounts {
 
     try {
         $sarif = Get-Content -LiteralPath $File.FullName -Raw | ConvertFrom-Json
-        foreach ($run in @($sarif.runs)) {
+        foreach ($run in @(Get-Prop $sarif "runs")) {
+            if ($null -eq $run) { continue }
             $rules = @{}
-            foreach ($rule in @($run.tool.driver.rules)) { $rules[$rule.id] = $rule }
-            foreach ($result in @($run.results)) {
-                $rule = $rules[$result.ruleId]
-                $severity = Get-Severity -RuleProperties $(if ($rule) { $rule.properties } else { $null })
+            $driver = Get-Prop (Get-Prop $run "tool") "driver"
+            foreach ($rule in @(Get-Prop $driver "rules")) {
+                $id = Get-Prop $rule "id"
+                if ($id) { $rules["$id"] = $rule }
+            }
+            foreach ($result in @(Get-Prop $run "results")) {
+                if ($null -eq $result) { continue }
+                $rule = $null
+                $ruleId = Get-Prop $result "ruleId"
+                if ($ruleId) { $rule = $rules["$ruleId"] }
+                $severity = Get-Severity -RuleProperties (Get-Prop $rule "properties")
                 $counts[$severity]++
             }
         }
     }
     catch {
-        $counts.Error = $_.Exception.Message
+        $counts.Error = "could not read SARIF: $($_.Exception.Message)"
     }
 
     return [pscustomobject] $counts
 }
 
 $lines = [System.Collections.Generic.List[string]]::new()
-$lines.Add("<!-- devops-162-image-summary -->")
+$lines.Add($Marker)
 $lines.Add("## Docker Scout: vulnerabilities in images built from this PR")
 $lines.Add("")
 
 $files = @(Get-ChildItem -Path (Join-Path $SarifDir "sarif-*.output.json") -File -ErrorAction SilentlyContinue | Sort-Object Name)
+$rows = @($files | ForEach-Object { Get-ImageCounts -File $_ })
 
-if ($files.Count -eq 0) {
+$found = @($rows | ForEach-Object { $_.Image })
+$missing = @($ExpectedImages | ForEach-Object { "$_".Trim() } | Where-Object { $_ -and ($_ -notin $found) } | Sort-Object -Unique)
+foreach ($image in $missing) {
+    $rows += [pscustomobject]@{
+        Image = $image; CRITICAL = 0; HIGH = 0; MEDIUM = 0; LOW = 0; UNSPECIFIED = 0
+        Error = "not analyzed: no SARIF file, the build or Scout step failed or was skipped"
+    }
+}
+$rows = @($rows | Sort-Object Image)
+
+if ($rows.Count -eq 0) {
     $lines.Add("No Scout SARIF files were found in ``$SarifDir``; see [this run]($RunUrl) for the image analysis jobs.")
     Write-Host "No SARIF files found in $SarifDir"
 }
 else {
-    $rows = @($files | ForEach-Object { Get-ImageCounts -File $_ })
     $hasUnspecified = @($rows | Where-Object { $_.UNSPECIFIED -gt 0 }).Count -gt 0
 
     $header = "| Image | Critical | High | Medium | Low |"
@@ -117,7 +164,7 @@ else {
 
     foreach ($row in $rows) {
         if ($row.Error) {
-            $lines.Add("| $($row.Image) | could not read SARIF: $($row.Error.Replace('|', '\|')) |" + (" |" * $(if ($hasUnspecified) { 4 } else { 3 })))
+            $lines.Add("| $($row.Image) | $($row.Error.Replace('|', '\|')) |" + (" |" * $(if ($hasUnspecified) { 4 } else { 3 })))
             continue
         }
         $cells = "| $($row.Image) | $($row.CRITICAL) | $($row.HIGH) | $($row.MEDIUM) | $($row.LOW) |"
@@ -133,6 +180,11 @@ else {
     }
 
     $lines.Add("")
+    if ($missing.Count -gt 0) {
+        $lines.Add("**$($valid.Count) of $($rows.Count) images analyzed.** Not analyzed: $(($missing | ForEach-Object { "``$_``" }) -join ', '). Check the failed jobs in [this run]($RunUrl).")
+        $lines.Add("")
+        Write-Warning "Not analyzed: $($missing -join ', ')"
+    }
     $lines.Add("Counts from ``docker scout cves`` on each image built in [this run]($RunUrl). Full tables are in each job's summary. Alerts for ``main`` are in the Security tab.")
     Write-Host ("Images: {0}; totals critical {1}, high {2}, medium {3}, low {4}" -f $valid.Count,
         ($valid | Measure-Object -Property CRITICAL -Sum).Sum, ($valid | Measure-Object -Property HIGH -Sum).Sum,

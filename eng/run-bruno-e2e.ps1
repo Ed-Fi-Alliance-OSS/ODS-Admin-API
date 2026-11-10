@@ -179,7 +179,7 @@ function Assert-ExitCode([string]$step) {
 }
 
 # ---------------------------------------------------------------------------
-# Helper: retry a native command on transient registry errors (DEVOPS-162)
+# Helper: retry a native command on transient registry errors
 # ---------------------------------------------------------------------------
 $script:RegistryErrorPattern = 'unexpected status|500 Internal Server Error|502 Bad Gateway|503 Service Unavailable|toomanyrequests|TLS handshake timeout|failed to resolve source metadata|connection reset by peer|unexpected EOF'
 
@@ -246,7 +246,7 @@ if (-not $SkipDockerBuild) {
     # ---------------------------------------------------------------------------
     Write-Host ""
     Write-Host "🐳 Starting containers..." -ForegroundColor Yellow
-    # Pull and build separately so transient registry errors can be retried (DEVOPS-162).
+    # Pull and build separately so transient registry errors can be retried.
     # V1 pulls the ODS/API images; V2 and V3 build every service, so pull is a no-op there.
     Invoke-WithRetry -Name "docker compose pull" -Command {
         docker compose -f $composeFile --env-file $envFile pull --ignore-buildable
