@@ -11,6 +11,7 @@
     * [Resetting the Database State](#resetting-the-database-state)
     * [Running Locally in Docker](#running-locally-in-docker)
     * [Running Unit Tests, Integration Tests, and Generating Code Coverage Reports](#running-unit-tests-integration-tests-and-generating-code-coverage-reports)
+  * [Docker Image Tags](#docker-image-tags)
   * [Application Architecture](#application-architecture)
     * [Database Layer](#database-layer)
     * [Validation](#validation)
@@ -217,6 +218,28 @@ Additionally, there is a set of end-to-end (E2E) tests written for Bruno (open s
 Run bruno e2e tests for a particular specification (v1, v2, v3) locally, e.g: `./eng/run-e2e-bruno.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`.
 
 All three test suites should pass successfully before merging new code into the `main` branch.
+
+## Docker Image Tags
+
+The `On Pre-Release` and `Docker Publish` workflows compute the Docker Hub tags with
+`eng/docker-tags.sh`. For the Admin API image:
+
+* Pre-releases (`alpha`) get only `pre`.
+* A release `vX.Y.Z` always gets `vX.Y.Z`. It also gets `vX.Y`, `vX` and `latest`, but each
+  of those moving tags only when `vX.Y.Z` is the highest final release of its group
+  (same minor, same major, and all releases, respectively). Final releases are read from the
+  repository's git tags, so nothing is hardcoded and `v3` is handled the same way.
+* The database images keep their own tags (`vX.Y.Z` and `vX.Y`, plus the `-6.2` forms) and are
+  not affected by the rules above.
+* The image label `org.opencontainers.image.version` is `vX.Y.Z`.
+
+Run the tag tests with `bash eng/tests/docker-tags.test.sh`.
+
+To repoint tags of an already published release (for example, `v2` and `latest` after a release
+that missed them) without rebuilding: run the `Docker Publish` workflow from the Actions tab with
+`ref` set to the release tag (for example `v2.4.0`) and `retag-only` checked. It repoints the
+computed tags to the existing `<image>:vX.Y.Z` manifest in Docker Hub, preserving all platforms,
+and fails if that image does not exist.
 
 ## Application Architecture
 
