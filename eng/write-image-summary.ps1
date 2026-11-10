@@ -181,7 +181,8 @@ else {
 
     $lines.Add("")
     if ($missing.Count -gt 0) {
-        $lines.Add("**$($valid.Count) of $($rows.Count) images analyzed.** Not analyzed: $(($missing | ForEach-Object { "``$_``" }) -join ', '). Check the failed jobs in [this run]($RunUrl).")
+        $missingList = ($missing | ForEach-Object { '`' + $_ + '`' }) -join ', '
+        $lines.Add("**$($valid.Count) of $($rows.Count) images analyzed.** Not analyzed: $missingList. Check the failed jobs in [this run]($RunUrl).")
         $lines.Add("")
         Write-Warning "Not analyzed: $($missing -join ', ')"
     }
