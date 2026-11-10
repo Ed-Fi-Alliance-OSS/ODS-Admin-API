@@ -97,7 +97,11 @@ jobs:
           set -o pipefail
           for attempt in 1 2 3; do
             echo "::group::docker build (attempt $attempt of 3)"
-            build 2>&1 | tee build.log; rc=$?
+            if build 2>&1 | tee build.log; then
+              rc=0
+            else
+              rc=$?
+            fi
             echo "::endgroup::"
             [ $rc -eq 0 ] && break
             if [ $attempt -eq 3 ] || ! grep -qiE "$PATTERN" build.log; then
