@@ -28,6 +28,12 @@ jobs:
     name: Report Test Results
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'skipped'
+    # The four workflow_run triggers can finish within seconds of each other. Serialize runs per
+    # commit so two of them never create duplicate comments or let an older run publish last.
+    # Queuing is safe: every run collects the latest results from all four workflows.
+    concurrency:
+      group: after-pr-${{ github.event.workflow_run.head_sha || inputs.run_id }}
+      cancel-in-progress: false
 
     permissions:
       actions: read
