@@ -32,9 +32,9 @@
       },
       "Microsoft.Identity.Client": {
         "type": "Direct",
-        "requested": "[4.91.1, )",
-        "resolved": "4.91.1",
-        "contentHash": "o3loEgTbvlVlret7jG76SfOoeRWQQqyY11+rQXvkI9tQzs5I3C1FDkD3hZTMefC5LBeGZu3nRK9MJXiVcW4skQ==",
+        "requested": "[4.92.0, )",
+        "resolved": "4.92.0",
+        "contentHash": "mvzvyZ0pG8gODD8+76u1HfpHzHk/Df8ylLdrrJImWdbAcV0PUx41Q/S3eojIAhH9T+upRf2cxKRli9208GC3Bw==",
         "dependencies": {
           "Microsoft.IdentityModel.Abstractions": "8.14.0"
         }
@@ -1064,7 +1064,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.14, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.14, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
-          "Microsoft.Identity.Client": "[4.91.1, )",
+          "Microsoft.Identity.Client": "[4.92.0, )",
           "NJsonSchema": "[11.6.1, )",
           "Npgsql": "[10.0.3, )",
           "OpenIddict.EntityFrameworkCore": "[7.7.2, )",
@@ -1083,7 +1083,7 @@
           "EdFi.Suite3.Admin.DataAccess": "[7.3.67, )",
           "EdFi.Suite3.Security.DataAccess": "[7.4.102, )",
           "FluentValidation.AspNetCore": "[11.3.1, )",
-          "Microsoft.Identity.Client": "[4.91.1, )",
+          "Microsoft.Identity.Client": "[4.92.0, )",
           "NUnit": "[5.0.0, )",
           "Respawn": "[7.0.0, )",
           "Shouldly": "[4.3.0, )"
@@ -1096,7 +1096,7 @@
           "Dapper": "[2.1.89, )",
           "EdFi.Ods.AdminApi.Common": "[0.1.0, )",
           "Microsoft.Data.SqlClient": "[7.1.1, )",
-          "Microsoft.Identity.Client": "[4.91.1, )"
+          "Microsoft.Identity.Client": "[4.92.0, )"
         }
       },
       "edfi.ods.adminapi.v1": {
@@ -1120,7 +1120,7 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.14, )",
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.14, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
-          "Microsoft.Identity.Client": "[4.91.1, )",
+          "Microsoft.Identity.Client": "[4.92.0, )",
           "NJsonSchema": "[11.6.1, )",
           "Newtonsoft.Json": "[13.0.4, )",
           "Npgsql": "[10.0.3, )",
@@ -1148,7 +1148,7 @@
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.14, )",
           "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.14, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
-          "Microsoft.Identity.Client": "[4.91.1, )",
+          "Microsoft.Identity.Client": "[4.92.0, )",
           "NJsonSchema": "[11.6.1, )",
           "Npgsql": "[10.0.3, )",
           "OpenIddict.AspNetCore": "[7.7.2, )",
