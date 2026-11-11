@@ -321,6 +321,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - publish-package
+    # Serialize tag preparation and registry writes across both Docker publishing
+    # workflows so an older release cannot overwrite moving tags (vX, latest) set
+    # by a newer one. Keep the group name identical in docker-publish.yml.
+    concurrency:
+      group: docker-publish
+      cancel-in-progress: false
     steps:
       - name: Wait 20s
         # Give Azure Artifacts caching a moment to catch up

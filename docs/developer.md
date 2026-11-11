@@ -241,6 +241,15 @@ that missed them) without rebuilding: run the `Docker Publish` workflow from the
 computed tags to the existing `<image>:vX.Y.Z` manifest in Docker Hub, preserving all platforms,
 and fails if that image does not exist.
 
+The Docker publishing jobs of both workflows share the concurrency group `docker-publish` with
+`cancel-in-progress: false`, so tag preparation and registry writes run one at a time. This
+prevents an older release (for example `v2.4.0`) that finishes after a newer one (`v2.4.1`) from
+moving `v2` and `latest` back. A run that waits starts computing its tags only once the previous
+one ends, so it sees the newer release. GitHub keeps only one pending run per group: if more than
+one run is queued behind an active one, the older pending run is cancelled. In that case rerun it
+from the Actions tab with `Docker Publish` (use `retag-only` if the image was already published).
+Keep the group name identical in both workflows.
+
 ## Application Architecture
 
 The Admin API source code uses ASP.NET but it does not follow the traditional
