@@ -39,3 +39,5 @@ updates:
         update-types:
           - "minor"
           - "patch"
+
+# DEVOPS-162: throwaway change from a fork to verify the after-pullrequest.yml PR lookup. Do not merge.
