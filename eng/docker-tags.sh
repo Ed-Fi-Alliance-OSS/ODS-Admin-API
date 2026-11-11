@@ -117,8 +117,10 @@ else
     raw_tags="$(printf '%s\n' "$listing" | sed 's#.*refs/tags/##')"
   fi
 
-  # Final releases only; the version being published always counts
-  final_tags="$(printf '%s\n%s\n' "$raw_tags" "$VERSION_TAG" | grep -E "$PLAIN_PATTERN" || true)"
+  # Final releases only; the version being published always counts. The
+  # "Pre-Release-" prefix is stripped so final-shaped prefixed tags (e.g.
+  # Pre-Release-v2.4.1) count the same as the refs being published.
+  final_tags="$(printf '%s\n%s\n' "$raw_tags" "$VERSION_TAG" | sed 's/^Pre-Release-//' | grep -E "$PLAIN_PATTERN" || true)"
 
   # is_highest <ERE>: the published version is the highest among final tags matching ERE
   is_highest() {

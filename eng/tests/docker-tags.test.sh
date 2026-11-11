@@ -59,6 +59,13 @@ assert_eq "v2.4.0" "$(get VERSION_TAG)" "strips_prerelease_prefix VERSION_TAG"
 run $'v2.3.5' --ref v2.4.0
 assert_eq "$ALL_TAGS" "$(get APITAGS)" "self_not_in_list"
 
+run $'v2.3.5\nPre-Release-v2.4.0\nPre-Release-v2.4.1' --ref Pre-Release-v2.4.0
+assert_eq "api:v2.4.0" "$(get APITAGS)" "prefixed_newer_tag_blocks_moving_tags"
+assert_eq "" "$(get APITAGS_ALIASES)" "prefixed_newer_tag_blocks_moving_tags ALIASES"
+
+run $'v2.3.5\nPre-Release-v2.4.1-alpha.0.7' --ref v2.4.0
+assert_eq "$ALL_TAGS" "$(get APITAGS)" "prefixed_alpha_tag_ignored"
+
 run $'v2.3.4\nv2.3.5\nv2.4.0' --ref v2.3.5
 assert_eq "api:v2.3.5,api:v2.3" "$(get APITAGS)" "older_patch_keeps_minor_only"
 
