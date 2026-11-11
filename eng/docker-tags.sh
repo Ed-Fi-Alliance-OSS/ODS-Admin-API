@@ -89,14 +89,13 @@ MINOR="${MAJOR}.${MINOR_NUMBER}"
 PLAIN_PATTERN='^v[0-9]+\.[0-9]+\.[0-9]+$'
 api_tags=()
 
-if [[ "$MINOR_ONLY" == "true" ]]
-then
-  api_tags=("$MINOR")
-elif [[ ! "$VERSION_TAG" =~ $PLAIN_PATTERN ]]
-then
-  # Other pre-releases (e.g. rc) never move the major or latest tags
-  api_tags=("$VERSION_TAG" "$MINOR")
-else
+# Lists the final releases (vX.Y.Z) known to git, plus the version being
+# published, into $final_tags. The "Pre-Release-" prefix is stripped so
+# final-shaped prefixed tags (e.g. Pre-Release-v2.4.1) count the same as the
+# refs being published.
+load_final_tags() {
+  local raw_tags remote listing
+
   if [[ -n "${EXISTING_TAGS+x}" ]]
   then
     raw_tags="$EXISTING_TAGS"
@@ -117,20 +116,34 @@ else
     raw_tags="$(printf '%s\n' "$listing" | sed 's#.*refs/tags/##')"
   fi
 
-  # Final releases only; the version being published always counts. The
-  # "Pre-Release-" prefix is stripped so final-shaped prefixed tags (e.g.
-  # Pre-Release-v2.4.1) count the same as the refs being published.
   final_tags="$(printf '%s\n%s\n' "$raw_tags" "$VERSION_TAG" | sed 's/^Pre-Release-//' | grep -E "$PLAIN_PATTERN" || true)"
+}
 
-  # is_highest <ERE>: the published version is the highest among final tags matching ERE
-  is_highest() {
-    local top
-    top="$(printf '%s\n' "$final_tags" | { grep -E "$1" || true; } | sort -V | tail -n 1)"
-    [[ "$top" == "$VERSION_TAG" ]]
-  }
+# is_highest <ERE>: the published version is the highest among final tags matching ERE
+is_highest() {
+  local top
+  top="$(printf '%s\n' "$final_tags" | { grep -E "$1" || true; } | sort -V | tail -n 1)"
+  [[ "$top" == "$VERSION_TAG" ]]
+}
+
+MINOR_PATTERN="^${MINOR//./\\.}\\."
+
+if [[ ! "$VERSION_TAG" =~ $PLAIN_PATTERN ]]
+then
+  # Other pre-releases (e.g. rc) are published by version only: they never move
+  # the minor, major or latest tags.
+  [[ "$MINOR_ONLY" != "true" ]] || fail "--minor-only requires a final release, got ${VERSION_TAG}"
+  api_tags=("$VERSION_TAG")
+elif [[ "$MINOR_ONLY" == "true" ]]
+then
+  load_final_tags
+  is_highest "$MINOR_PATTERN" || fail "${VERSION_TAG} is not the highest release of ${MINOR}; publishing ${MINOR} would roll it back"
+  api_tags=("$MINOR")
+else
+  load_final_tags
 
   api_tags=("$VERSION_TAG")
-  if is_highest "^${MINOR//./\\.}\\."
+  if is_highest "$MINOR_PATTERN"
   then
     api_tags+=("$MINOR")
   fi

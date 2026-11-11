@@ -89,7 +89,11 @@ assert_eq "db:pre-for-6.2" "$(get DBTAGS6x)" "alpha DBTAGS6x"
 assert_eq "v2.5.0-alpha.0.132" "$(get VERSION_TAG)" "alpha VERSION_TAG"
 
 run $'v2.4.0' --ref v2.5.0-rc.1
-assert_eq "api:v2.5.0-rc.1,api:v2.5" "$(get APITAGS)" "hyphen_prerelease"
+assert_eq "api:v2.5.0-rc.1" "$(get APITAGS)" "hyphen_prerelease"
+assert_eq "" "$(get APITAGS_ALIASES)" "hyphen_prerelease APITAGS_ALIASES"
+
+run $'v2.4.0\nv2.4.1' --ref v2.4.0-rc.1
+assert_eq "api:v2.4.0-rc.1" "$(get APITAGS)" "hyphen_prerelease_keeps_stable_minor"
 
 run $'v2.3.5\nv2.4.0' --ref v2.4.0
 assert_eq "db:v2.4.0,db:v2.4" "$(get DBTAGS)" "db_unchanged_final DBTAGS"
@@ -100,6 +104,19 @@ assert_eq "api:v2.4" "$(get APITAGS)" "minor_only APITAGS"
 assert_eq "db:v2.4" "$(get DBTAGS)" "minor_only DBTAGS"
 assert_eq "db:v2.4-6.2" "$(get DBTAGS6x)" "minor_only DBTAGS6x"
 assert_eq "" "$(get APITAGS_ALIASES)" "minor_only APITAGS_ALIASES"
+
+run $'v2.4.0\nv2.4.1' --ref v2.4.0 --minor-only
+assert_eq "1" "$RC" "minor_only_older_patch_fails"
+assert_eq "" "$OUT" "minor_only_older_patch_fails no output"
+
+run $'v2.4.0\nv2.4.1\nv2.5.0' --ref v2.4.1 --minor-only
+assert_eq "api:v2.4" "$(get APITAGS)" "minor_only_highest_of_minor_ignores_newer_minor"
+
+run $'v2.4.0\nPre-Release-v2.4.1' --ref Pre-Release-v2.4.0 --minor-only
+assert_eq "1" "$RC" "minor_only_prefixed_newer_tag_fails"
+
+run $'v2.4.0' --ref v2.5.0-rc.1 --minor-only
+assert_eq "1" "$RC" "minor_only_hyphen_prerelease_fails"
 
 run $'v2.4.0' --ref main
 assert_eq "1" "$RC" "invalid_ref_fails"

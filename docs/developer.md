@@ -224,11 +224,15 @@ All three test suites should pass successfully before merging new code into the 
 The `On Pre-Release` and `Docker Publish` workflows compute the Docker Hub tags with
 `eng/docker-tags.sh`. For the Admin API image:
 
-* Pre-releases (`alpha`) get only `pre`.
+* Pre-releases (`alpha`) get only `pre`. Any other suffixed ref (for example `vX.Y.Z-rc.1`) gets
+  only its own version tag, never `vX.Y`, `vX` or `latest`.
 * A release `vX.Y.Z` always gets `vX.Y.Z`. It also gets `vX.Y`, `vX` and `latest`, but each
   of those moving tags only when `vX.Y.Z` is the highest final release of its group
   (same minor, same major, and all releases, respectively). Final releases are read from the
   repository's git tags, so nothing is hardcoded and `v3` is handled the same way.
+* The `publish-only-minor-image` input (`--minor-only`) only publishes `vX.Y`, and only when
+  `vX.Y.Z` is the highest final release of its minor. Otherwise the run fails, so an older
+  release cannot roll `vX.Y` back.
 * The database images keep their own tags (`vX.Y.Z` and `vX.Y`, plus the `-6.2` forms) and are
   not affected by the rules above.
 * The image label `org.opencontainers.image.version` is `vX.Y.Z`.
