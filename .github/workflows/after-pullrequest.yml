@@ -64,9 +64,12 @@ jobs:
           $run = gh run view $runId --repo "${{ github.repository }}" --json headSha,event,name | ConvertFrom-Json
           Write-Host "Run $runId ($($run.name), $($run.event)) at $($run.headSha)"
 
+          # Match the open pull request by head SHA. commits/{sha}/pulls returns nothing for a head
+          # commit that lives in a fork, so fork PRs would silently get no comments and no check.
           $pullRequest = ""
           if ($run.event -eq "pull_request") {
-            $pullRequest = gh api "repos/${{ github.repository }}/commits/$($run.headSha)/pulls" --jq '[.[] | select(.state == "open")][0].number // empty'
+            $filter = '[.[] | select(.head.sha == "' + $run.headSha + '")][0].number // empty'
+            $pullRequest = gh api "repos/${{ github.repository }}/pulls?state=open&per_page=100" --paginate --jq $filter
           }
           if (-not $pullRequest) { Write-Host "No open pull request for this run; nothing to report." }
 
