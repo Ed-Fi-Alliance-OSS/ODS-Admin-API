@@ -21,6 +21,11 @@ on:
         required: false
         type: boolean
         default: false
+      retag-only:
+        description: 'Only repoint API image tags (e.g., latest, v2) to the existing release image; no build'
+        required: false
+        type: boolean
+        default: false
 
 
 env:
@@ -35,7 +40,19 @@ jobs:
   docker-publish:
     name: Publish to Docker Hub
     runs-on: ubuntu-latest
+    # Serialize tag preparation and registry writes across both Docker publishing
+    # workflows so an older release cannot overwrite moving tags (vX, latest) set
+    # by a newer one. Keep the group name identical in on-prerelease.yml.
+    concurrency:
+      group: docker-publish
+      cancel-in-progress: false
     steps:
+      - name: Checkout the repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          sparse-checkout: eng
+          persist-credentials: false
+
       - name: Prepare Tags
         id: prepare-tags
         shell: bash
@@ -45,53 +62,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          REF="$RELEASE_REF"
-
-          if [[ ! "$REF" =~ ^(Pre-Release-)?v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          # Pre-releases get the tag "pre". Releases get the version plus the
+          # shortened minor (vX.Y) and major (vX) forms and "latest" for the API
+          # image, each moving tag only when this is the highest release of its
+          # group. See eng/docker-tags.sh, which also validates the release tag.
+          args=(--ref "$RELEASE_REF" --api-image "$IMAGE_NAME" --db-image "$DATABASE_IMAGE_NAME")
+          if [[ "$MINOR_ONLY" == "true" ]]
           then
-            echo "Invalid release tag: $REF" >&2
-            exit 1
+            args+=(--minor-only)
           fi
 
-          if [[ "$REF" == Pre-Release-* ]]
-          then
-            # Remove Pre-Release prefix
-            PREFIX="Pre-Release-"
-            PACKAGEVERSION="${REF#"$PREFIX"}"
-          else
-            PACKAGEVERSION="$REF"
-          fi
-
-          if [[ "$PACKAGEVERSION" == *alpha* ]]
-          then
-            # Pre-releases get the tag "pre"
-            APITAGS="${{ env.IMAGE_NAME }}:pre"
-            DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:pre"
-            DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:pre-for-6.2"
-          else
-            # Releases get the version, plus shortened form for minor release.
-            # We are not using shortened form for major or using "latest"
-            # because they are too imprecise.
-            MINOR="$(echo "${PACKAGEVERSION}" | awk -F"." '{print $1"."$2}')"
-            if [[ "$MINOR_ONLY" == "true" ]]
-            then
-              APITAGS="${{ env.IMAGE_NAME }}:${MINOR}"
-              DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
-              DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:${MINOR}-6.2"
-            else
-              APITAGS="${{ env.IMAGE_NAME }}:${PACKAGEVERSION},${{ env.IMAGE_NAME }}:${MINOR}"
-              DBTAGS="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION},${{ env.DATABASE_IMAGE_NAME }}:${MINOR}"
-              DBTAGS6x="${{ env.DATABASE_IMAGE_NAME }}:${PACKAGEVERSION}-6.2,${{ env.DATABASE_IMAGE_NAME }}:${MINOR}-6.2"
-            fi
-          fi
-
-          SEMVERSION="${PACKAGEVERSION:1}"  # strip off the leading 'v'
-          {
-            echo "APITAGS=$APITAGS"
-            echo "DBTAGS=$DBTAGS"
-            echo "DBTAGS6x=$DBTAGS6x"
-            echo "VERSION=$SEMVERSION"
-          } >> "$GITHUB_OUTPUT"
+          bash eng/docker-tags.sh "${args[@]}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Docker Hub
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
@@ -100,18 +81,59 @@ jobs:
           password: ${{ env.DOCKER_HUB_TOKEN }}
 
       - name: Set up QEMU
+        if: inputs.retag-only != true
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e  # v4.3.0
 
+      - name: Retag API image (no rebuild)
+        if: inputs.retag-only == true
+        shell: bash
+        env:
+          ALIASES: ${{ steps.prepare-tags.outputs.APITAGS_ALIASES }}
+          SOURCE_TAG: ${{ steps.prepare-tags.outputs.VERSION_TAG }}
+        run: |
+          set -euo pipefail
+
+          SOURCE="${IMAGE_NAME}:${SOURCE_TAG}"
+
+          if [[ -z "$ALIASES" ]]
+          then
+            echo "Nothing to retag for ${SOURCE}: pre-release refs have no moving tags, and a release that is not the highest of its group moves none." >&2
+            exit 1
+          fi
+
+          if ! inspect_output="$(docker buildx imagetools inspect "$SOURCE" 2>&1)"
+          then
+            echo "Unable to inspect source image ${SOURCE} (not published yet, or an authentication, rate-limit or network error):" >&2
+            echo "$inspect_output" >&2
+            exit 1
+          fi
+
+          tag_args=()
+          IFS=',' read -ra TAGS <<< "$ALIASES"
+          for tag in "${TAGS[@]}"
+          do
+            tag_args+=(-t "$tag")
+          done
+
+          # Repoints the tags at the existing manifest list in the registry:
+          # no rebuild, all platforms preserved, same digest as the source.
+          docker buildx imagetools create "${tag_args[@]}" "$SOURCE"
+          docker buildx imagetools inspect "${TAGS[0]}"
+
       - name: Extract metadata (tags, labels) for admin api image
         id: metaapi
+        if: inputs.retag-only != true
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302  # v6.2.0
         with:
           images: ${{ env.IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.prepare-tags.outputs.VERSION_TAG }}
 
       - name: Build and push admin api image
+        if: inputs.retag-only != true
         uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
         with:
           context: "{{defaultContext}}:Docker"
@@ -128,11 +150,13 @@ jobs:
 
       - name: Extract metadata (tags, labels) for admin api database image
         id: metadatabase
+        if: inputs.retag-only != true
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302  # v6.2.0
         with:
           images: ${{ env.DATABASE_IMAGE_NAME }}
 
       - name: Build and push admin api database image 7.x
+        if: inputs.retag-only != true
         uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
         with:
           context: "{{defaultContext}}:Docker/Settings/V2/DB-Admin/pgsql"
@@ -149,7 +173,7 @@ jobs:
 
       - name: Build and push admin api database image 6.x
         uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
-        if: inputs.publish-6x-image == true
+        if: inputs.publish-6x-image == true && inputs.retag-only != true
         with:
           context: "{{defaultContext}}:Docker/Settings/V1/DB-Admin/pgsql"
           cache-from: type=registry,ref=${{ env.DATABASE_IMAGE_NAME }}:pre-for-6.2

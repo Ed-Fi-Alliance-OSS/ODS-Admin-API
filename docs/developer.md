@@ -11,6 +11,7 @@
     * [Resetting the Database State](#resetting-the-database-state)
     * [Running Locally in Docker](#running-locally-in-docker)
     * [Running Unit Tests, Integration Tests, and Generating Code Coverage Reports](#running-unit-tests-integration-tests-and-generating-code-coverage-reports)
+  * [Docker Image Tags](#docker-image-tags)
   * [Application Architecture](#application-architecture)
     * [Database Layer](#database-layer)
     * [Validation](#validation)
@@ -227,6 +228,45 @@ Additionally, there is a set of end-to-end (E2E) tests written for Bruno (open s
 Run bruno e2e tests for a particular specification (v1, v2, v3) locally, e.g: `./eng/run-e2e-bruno.ps1 -ApiVersion 2 -TenantMode multitenant -TearDown`.
 
 All three test suites should pass successfully before merging new code into the `main` branch.
+
+## Docker Image Tags
+
+The `On Pre-Release` and `Docker Publish` workflows compute the Docker Hub tags with
+`eng/docker-tags.sh`. For the Admin API image:
+
+* Pre-releases (`alpha`) get only `pre`. Any other suffixed ref (for example `vX.Y.Z-rc.1`) gets
+  only its own version tag, never `vX.Y`, `vX` or `latest`. The same applies to its database
+  images (`vX.Y.Z-rc.1` and `vX.Y.Z-rc.1-6.2`), so they never replace the stable `vX.Y` ones.
+* A release `vX.Y.Z` always gets `vX.Y.Z`. It also gets `vX.Y`, `vX` and `latest`, but each
+  of those moving tags only when `vX.Y.Z` is the highest final release of its group
+  (same minor, same major, and all releases, respectively). Final releases are read from the
+  repository's git tags, so nothing is hardcoded and `v3` is handled the same way.
+* The `publish-only-minor-image` input (`--minor-only`) only publishes `vX.Y`, and only when
+  `vX.Y.Z` is the highest final release of its minor. Otherwise the run fails, so an older
+  release cannot roll `vX.Y` back. Combined with `retag-only`, it repoints `vX.Y` to the
+  existing `vX.Y.Z` image.
+* For final releases, the database images get `vX.Y.Z` and `vX.Y` (plus the `-6.2` forms),
+  regardless of the highest-of-group rule. Pre-release and `-rc` refs follow their own rules above.
+* If `EXISTING_TAGS` (a manual override of the git tag list) is empty, it is ignored and tags are
+  read from the remote.
+* The image label `org.opencontainers.image.version` is `vX.Y.Z`.
+
+Run the tag tests with `bash eng/tests/docker-tags.test.sh`.
+
+To repoint tags of an already published release (for example, `v2` and `latest` after a release
+that missed them) without rebuilding: run the `Docker Publish` workflow from the Actions tab with
+`ref` set to the release tag (for example `v2.4.0`) and `retag-only` checked. It repoints the
+computed tags to the existing `<image>:vX.Y.Z` manifest in Docker Hub, preserving all platforms,
+and fails if that image does not exist.
+
+The Docker publishing jobs of both workflows share the concurrency group `docker-publish` with
+`cancel-in-progress: false`, so tag preparation and registry writes run one at a time. This
+prevents an older release (for example `v2.4.0`) that finishes after a newer one (`v2.4.1`) from
+moving `v2` and `latest` back. A run that waits starts computing its tags only once the previous
+one ends, so it sees the newer release. GitHub keeps only one pending run per group: if more than
+one run is queued behind an active one, the older pending run is cancelled. In that case rerun it
+from the Actions tab with `Docker Publish` (use `retag-only` if the image was already published).
+Keep the group name identical in both workflows.
 
 ## Application Architecture
 
