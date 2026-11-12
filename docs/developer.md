@@ -212,6 +212,16 @@ Alternatively, you can run both unit and integration tests together with:
 > Code coverage analysis requires the `reportgenerator` tool.  
 > Install it with: `dotnet tool install -g dotnet-reportgenerator-globaltool`
 
+In GitHub Actions, the unit test job appends the coverage summary
+(`coveragereport/SummaryGithub.md`) to the run page, and the *After Pull Request*
+workflow publishes the unit, integration and E2E results of the latest completed runs for
+the commit as one "Test Results" pull request comment and check run
+(`EnricoMi/publish-unit-test-result-action`), plus a second "Test results by area" comment
+from [`eng/write-test-groups.ps1`](../eng/write-test-groups.ps1): .NET results by feature
+namespace per project and E2E results by resource folder per version. It is a `workflow_run`
+workflow, so it executes from the default branch; changes to it can be tried from a branch
+with *Run workflow* and the id of a completed run.
+
 Additionally, there is a set of end-to-end (E2E) tests written for Bruno (open source alternative to Postman), in  
 [E2E Tests](../Application/EdFi.Ods.AdminApi/E2E%20Tests/README.md) for more information.
 

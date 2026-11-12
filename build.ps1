@@ -322,7 +322,7 @@ function GenerateCoverageReport {
     )
 
     Invoke-Execute {
-        reportgenerator -reports:"Application/$Filter/TestResults/**/*.cobertura.xml" -targetdir:"$script:targetDir" -reporttypes:Html
+        reportgenerator -reports:"Application/$Filter/TestResults/**/*.cobertura.xml" -targetdir:"$script:targetDir" -reporttypes:"Html;MarkdownSummaryGithub"
     }
 }
 

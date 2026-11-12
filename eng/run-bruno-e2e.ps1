@@ -179,6 +179,39 @@ function Assert-ExitCode([string]$step) {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: retry a native command on transient registry errors
+# ---------------------------------------------------------------------------
+$script:RegistryErrorPattern = 'unexpected status|500 Internal Server Error|502 Bad Gateway|503 Service Unavailable|toomanyrequests|TLS handshake timeout|failed to resolve source metadata|connection reset by peer|unexpected EOF'
+
+function Invoke-WithRetry {
+    param(
+        [Parameter(Mandatory)] [string] $Name,
+        [Parameter(Mandatory)] [scriptblock] $Command,
+        [int] $MaxAttempts = 3,
+        [int[]] $DelaysSeconds = @(15, 45)
+    )
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        Write-Host "▶ $Name (attempt $attempt of $MaxAttempts)" -ForegroundColor Yellow
+        $previous = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"   # docker writes progress to stderr
+        $captured = @()
+        & $Command 2>&1 | ForEach-Object { "$_" } | Tee-Object -Variable captured
+        $code = $LASTEXITCODE
+        $ErrorActionPreference = $previous
+        if ($code -eq 0) { return }
+
+        $transient = ($captured -join "`n") -match $script:RegistryErrorPattern
+        if (-not $transient -or $attempt -eq $MaxAttempts) {
+            Write-Host "❌ $Name failed (exit $code) after $attempt attempt(s)" -ForegroundColor Red
+            exit $code
+        }
+        $delay = $DelaysSeconds[[Math]::Min($attempt - 1, $DelaysSeconds.Count - 1)]
+        Write-Host "⚠️  Transient registry error. Retrying in ${delay}s..." -ForegroundColor Yellow
+        Start-Sleep -Seconds $delay
+    }
+}
+
+# ---------------------------------------------------------------------------
 # 1. Prepare Docker context
 # ---------------------------------------------------------------------------
 if (-not $SkipDockerBuild) {
@@ -213,7 +246,15 @@ if (-not $SkipDockerBuild) {
     # ---------------------------------------------------------------------------
     Write-Host ""
     Write-Host "🐳 Starting containers..." -ForegroundColor Yellow
-    docker compose -f $composeFile --env-file $envFile up -d --build
+    # Pull and build separately so transient registry errors can be retried.
+    # V1 pulls the ODS/API images; V2 and V3 build every service, so pull is a no-op there.
+    Invoke-WithRetry -Name "docker compose pull" -Command {
+        docker compose -f $composeFile --env-file $envFile pull --ignore-buildable
+    }
+    Invoke-WithRetry -Name "docker compose build" -Command {
+        docker compose -f $composeFile --env-file $envFile build --progress=plain
+    }
+    docker compose -f $composeFile --env-file $envFile up -d
     Assert-ExitCode "docker compose up"
 }
 

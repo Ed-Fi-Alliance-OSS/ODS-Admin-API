@@ -8,8 +8,17 @@ on:
   workflow_run:
     workflows:
       - "On Pull Request"
+      - "Admin API V1 E2E Tests + ODS 6"
+      - "Admin API V2 E2E Tests + ODS 7"
+      - "Admin API V3 E2E Tests + ODS 7"
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Id of a completed workflow run to report on (used to test this workflow from a branch)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -18,23 +27,119 @@ jobs:
   report-test-results:
     name: Report Test Results
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion != 'skipped'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'skipped'
+    # The four workflow_run triggers can finish within seconds of each other. Serialize runs per
+    # commit so two of them never create duplicate comments or let an older run publish last.
+    # Queuing is safe: every run collects the latest results from all four workflows.
+    concurrency:
+      group: after-pr-${{ github.event.workflow_run.head_sha || inputs.run_id }}
+      cancel-in-progress: false
 
     permissions:
       actions: read
       checks: write
       pull-requests: write
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Download and Extract Artifacts
-        uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
+      # DEVOPS-162: one "Test Results" comment per PR covering unit, integration and E2E tests. Each
+      # time one of the workflows above finishes, the results of the latest completed run of every
+      # workflow for that commit are collected and published again, so the comment fills in as the
+      # workflows complete. Downloaded results are data only; no code from the PR runs here.
+      # Default-branch scripts under workflow_run (never code from the PR head); the branch's under dispatch.
+      - name: Checkout the summary scripts
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          run_id: ${{ github.event.workflow_run.id }}
-          path: artifacts
+          sparse-checkout: eng
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Resolve the commit and pull request
+        id: context
+        run: |
+          $runId = "${{ inputs.run_id || github.event.workflow_run.id }}"
+          $run = gh run view $runId --repo "${{ github.repository }}" --json headSha,event,name | ConvertFrom-Json
+          Write-Host "Run $runId ($($run.name), $($run.event)) at $($run.headSha)"
+
+          # Match the open pull request by head SHA. commits/{sha}/pulls returns nothing for a head
+          # commit that lives in a fork, so fork PRs would silently get no comments and no check.
+          $pullRequest = ""
+          if ($run.event -eq "pull_request") {
+            $filter = '[.[] | select(.head.sha == "' + $run.headSha + '")][0].number // empty'
+            $pullRequest = gh api "repos/${{ github.repository }}/pulls?state=open&per_page=100" --paginate --jq $filter
+          }
+          if (-not $pullRequest) { Write-Host "No open pull request for this run; nothing to report." }
+
+          "sha=$($run.headSha)" >> $env:GITHUB_OUTPUT
+          "pull_request=$pullRequest" >> $env:GITHUB_OUTPUT
+
+      - name: Download test results from all workflows for this commit
+        id: download
+        if: steps.context.outputs.pull_request != ''
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $repo = "${{ github.repository }}"
+          $sha = "${{ steps.context.outputs.sha }}"
+          $workflows = @(
+            @{ Name = "On Pull Request";                Artifacts = @("csharp-tests", "csharp-integration-tests", "Event File") }
+            @{ Name = "Admin API V1 E2E Tests + ODS 6"; Artifacts = @("test-results-v1-*") }
+            @{ Name = "Admin API V2 E2E Tests + ODS 7"; Artifacts = @("test-xml-results-v2-*") }
+            @{ Name = "Admin API V3 E2E Tests + ODS 7"; Artifacts = @("test-xml-results-v3-*") }
+          )
+
+          foreach ($workflow in $workflows) {
+            $runId = gh run list --repo $repo --commit $sha --workflow $workflow.Name --status completed --limit 1 --json databaseId --jq '.[0].databaseId // empty'
+            if (-not $runId) { Write-Host "$($workflow.Name): not finished yet"; continue }
+
+            # A re-run leaves one artifact per attempt under the same name, so download by id, newest per name.
+            $artifacts = @(gh api "repos/$repo/actions/runs/$runId/artifacts?per_page=100" --jq '[.artifacts[] | select(.expired | not) | {id, name, created_at}]' | ConvertFrom-Json)
+            $wanted = @($artifacts | Where-Object { $name = $_.name; @($workflow.Artifacts | Where-Object { $name -like $_ }).Count -gt 0 } |
+              Group-Object -Property name | ForEach-Object { $_.Group | Sort-Object -Property created_at -Descending | Select-Object -First 1 })
+            if ($wanted.Count -eq 0) { Write-Host "$($workflow.Name): run $runId has no matching artifacts" }
+            foreach ($artifact in $wanted) {
+              $target = "artifacts/$($artifact.name)"
+              New-Item -ItemType Directory -Force -Path $target | Out-Null
+              gh api "repos/$repo/actions/artifacts/$($artifact.id)/zip" > "$target.zip"
+              if ($LASTEXITCODE -ne 0) { Write-Host "Could not download artifact $($artifact.name) ($($artifact.id))"; continue }
+              Expand-Archive -LiteralPath "$target.zip" -DestinationPath $target -Force
+              Remove-Item -LiteralPath "$target.zip"
+              Write-Host "$($workflow.Name): downloaded $($artifact.name) from run $runId (created $($artifact.created_at))"
+            }
+          }
+
+          # The source event file lets the action comment on fork PRs too; fall back to this run's event.
+          $eventFile = if (Test-Path "artifacts/Event File/event.json") { "artifacts/Event File/event.json" } else { "" }
+          "event_file=$eventFile" >> $env:GITHUB_OUTPUT
 
       - name: Publish Test Results
+        if: steps.context.outputs.pull_request != ''
         uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
         with:
-          commit: ${{ github.event.workflow_run.head_sha }}
-          event_file: artifacts/Event File/event.json
-          event_name: ${{ github.event.workflow_run.event }}
-          files: "artifacts/**/*.trx"
+          commit: ${{ steps.context.outputs.sha }}
+          event_file: ${{ steps.download.outputs.event_file || github.event_path }}
+          event_name: ${{ steps.download.outputs.event_file && 'pull_request' || github.event_name }}
+          files: |
+            artifacts/**/*.trx
+            artifacts/**/*.xml
+
+      # DEVOPS-162: .NET results by feature namespace and E2E results by resource folder, on the run
+      # page and as one PR comment updated in place (the Test Results comment above cannot be extended).
+      - name: Summarize results by area
+        if: steps.context.outputs.pull_request != ''
+        run: ./eng/write-test-groups.ps1 -Path artifacts -OutputPath test-groups.md
+
+      - name: Post or update the results-by-area comment
+        if: steps.context.outputs.pull_request != ''
+        run: |
+          $repo = "${{ github.repository }}"
+          $pullRequest = "${{ steps.context.outputs.pull_request }}"
+          $commentId = gh api "repos/$repo/issues/$pullRequest/comments?per_page=100" --paginate --jq 'first(.[] | select(.body | contains("<!-- devops-162-test-groups -->")) | .id) // empty'
+          if ($commentId) {
+            gh api -X PATCH "repos/$repo/issues/comments/$commentId" -F body=@test-groups.md --jq .html_url
+          }
+          else {
+            gh api -X POST "repos/$repo/issues/$pullRequest/comments" -F body=@test-groups.md --jq .html_url
+          }
