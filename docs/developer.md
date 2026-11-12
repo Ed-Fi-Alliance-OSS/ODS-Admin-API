@@ -235,16 +235,20 @@ The `On Pre-Release` and `Docker Publish` workflows compute the Docker Hub tags 
 `eng/docker-tags.sh`. For the Admin API image:
 
 * Pre-releases (`alpha`) get only `pre`. Any other suffixed ref (for example `vX.Y.Z-rc.1`) gets
-  only its own version tag, never `vX.Y`, `vX` or `latest`.
+  only its own version tag, never `vX.Y`, `vX` or `latest`. The same applies to its database
+  images (`vX.Y.Z-rc.1` and `vX.Y.Z-rc.1-6.2`), so they never replace the stable `vX.Y` ones.
 * A release `vX.Y.Z` always gets `vX.Y.Z`. It also gets `vX.Y`, `vX` and `latest`, but each
   of those moving tags only when `vX.Y.Z` is the highest final release of its group
   (same minor, same major, and all releases, respectively). Final releases are read from the
   repository's git tags, so nothing is hardcoded and `v3` is handled the same way.
 * The `publish-only-minor-image` input (`--minor-only`) only publishes `vX.Y`, and only when
   `vX.Y.Z` is the highest final release of its minor. Otherwise the run fails, so an older
-  release cannot roll `vX.Y` back.
-* The database images keep their own tags (`vX.Y.Z` and `vX.Y`, plus the `-6.2` forms) and are
-  not affected by the rules above.
+  release cannot roll `vX.Y` back. Combined with `retag-only`, it repoints `vX.Y` to the
+  existing `vX.Y.Z` image.
+* For final releases, the database images get `vX.Y.Z` and `vX.Y` (plus the `-6.2` forms),
+  regardless of the highest-of-group rule. Pre-release and `-rc` refs follow their own rules above.
+* If `EXISTING_TAGS` (a manual override of the git tag list) is empty, it is ignored and tags are
+  read from the remote.
 * The image label `org.opencontainers.image.version` is `vX.Y.Z`.
 
 Run the tag tests with `bash eng/tests/docker-tags.test.sh`.

@@ -8,6 +8,10 @@
 
 set -u
 
+# Ignore the developer's git config (e.g. commit.gpgsign=true) in the fixture repo
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_CONFIG_NOSYSTEM=1
+
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT="$HERE/../docker-tags.sh"
 failures=0
@@ -91,9 +95,13 @@ assert_eq "v2.5.0-alpha.0.132" "$(get VERSION_TAG)" "alpha VERSION_TAG"
 run $'v2.4.0' --ref v2.5.0-rc.1
 assert_eq "api:v2.5.0-rc.1" "$(get APITAGS)" "hyphen_prerelease"
 assert_eq "" "$(get APITAGS_ALIASES)" "hyphen_prerelease APITAGS_ALIASES"
+assert_eq "db:v2.5.0-rc.1" "$(get DBTAGS)" "hyphen_prerelease DBTAGS"
+assert_eq "db:v2.5.0-rc.1-6.2" "$(get DBTAGS6x)" "hyphen_prerelease DBTAGS6x"
 
 run $'v2.4.0\nv2.4.1' --ref v2.4.0-rc.1
 assert_eq "api:v2.4.0-rc.1" "$(get APITAGS)" "hyphen_prerelease_keeps_stable_minor"
+assert_eq "db:v2.4.0-rc.1" "$(get DBTAGS)" "hyphen_prerelease_keeps_stable_minor DBTAGS"
+assert_eq "db:v2.4.0-rc.1-6.2" "$(get DBTAGS6x)" "hyphen_prerelease_keeps_stable_minor DBTAGS6x"
 
 run $'v2.3.5\nv2.4.0' --ref v2.4.0
 assert_eq "db:v2.4.0,db:v2.4" "$(get DBTAGS)" "db_unchanged_final DBTAGS"
@@ -103,7 +111,7 @@ run $'v2.3.5\nv2.4.0' --ref v2.4.0 --minor-only
 assert_eq "api:v2.4" "$(get APITAGS)" "minor_only APITAGS"
 assert_eq "db:v2.4" "$(get DBTAGS)" "minor_only DBTAGS"
 assert_eq "db:v2.4-6.2" "$(get DBTAGS6x)" "minor_only DBTAGS6x"
-assert_eq "" "$(get APITAGS_ALIASES)" "minor_only APITAGS_ALIASES"
+assert_eq "api:v2.4" "$(get APITAGS_ALIASES)" "minor_only APITAGS_ALIASES"
 
 run $'v2.4.0\nv2.4.1' --ref v2.4.0 --minor-only
 assert_eq "1" "$RC" "minor_only_older_patch_fails"
@@ -121,14 +129,21 @@ assert_eq "1" "$RC" "minor_only_hyphen_prerelease_fails"
 run $'v2.4.0' --ref main
 assert_eq "1" "$RC" "invalid_ref_fails"
 
+# An empty EXISTING_TAGS must not be treated as "no other releases": it falls back
+# to the remote lookup, which fails here because the remote does not exist.
+OUT="$(EXISTING_TAGS="" TAGS_REMOTE="/nonexistent/repo" bash "$SCRIPT" --ref v2.4.0 --api-image api --db-image db 2>/dev/null)"
+RC=$?
+assert_eq "1" "$RC" "empty_existing_tags_fails_open_guard"
+assert_eq "" "$OUT" "empty_existing_tags_fails_open_guard no output"
+
 # remote lookup through git ls-remote
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 git init -q "$TMP/repo"
-git -C "$TMP/repo" -c user.name=test -c user.email=test@example.com commit -q --allow-empty -m init
+git -C "$TMP/repo" -c user.name=test -c user.email=test@example.com -c commit.gpgsign=false commit -q --allow-empty -m init
 for t in v2.3.5 v2.4.0 Pre-Release-v2.4.0
 do
-  git -C "$TMP/repo" tag "$t"
+  git -C "$TMP/repo" -c tag.gpgsign=false tag "$t"
 done
 
 run_remote "$TMP/repo" --ref v2.4.0

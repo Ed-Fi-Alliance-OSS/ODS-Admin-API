@@ -10,7 +10,7 @@
 #   docker-tags.sh --ref <ref> --api-image <name> --db-image <name> [--minor-only]
 #
 # Environment:
-#   EXISTING_TAGS  Newline-separated git tag names. When set, no remote lookup is done.
+#   EXISTING_TAGS  Newline-separated git tag names. When non-empty, no remote lookup is done.
 #   TAGS_REMOTE    Git remote used to list tags. Defaults to
 #                  https://github.com/${GITHUB_REPOSITORY}.git
 #
@@ -18,7 +18,8 @@
 #   VERSION          Version without the leading "v"
 #   VERSION_TAG      Version with the leading "v" (no "Pre-Release-" prefix)
 #   APITAGS          Comma-separated image:tag list for the Admin API image
-#   APITAGS_ALIASES  APITAGS without the <api-image>:<VERSION_TAG> entry (empty if none)
+#   APITAGS_ALIASES  Tags that repoint to <api-image>:<VERSION_TAG>: APITAGS without that
+#                    entry, or the minor tag with --minor-only (empty if none)
 #   DBTAGS           Comma-separated image:tag list for the database image (7.x)
 #   DBTAGS6x         Comma-separated image:tag list for the database image (6.x)
 #
@@ -96,7 +97,7 @@ api_tags=()
 load_final_tags() {
   local raw_tags remote listing
 
-  if [[ -n "${EXISTING_TAGS+x}" ]]
+  if [[ -n "${EXISTING_TAGS:-}" ]]
   then
     raw_tags="$EXISTING_TAGS"
   else
@@ -158,8 +159,11 @@ else
 fi
 
 aliases=""
-if [[ "$MINOR_ONLY" != "true" ]]
+if [[ "$MINOR_ONLY" == "true" ]]
 then
+  # The minor tag is the only tag published, and it is an alias of vX.Y.Z
+  aliases="$(join_tags "$API_IMAGE" "$MINOR")"
+else
   aliases="$(join_tags "$API_IMAGE" "${api_tags[@]:1}")"
 fi
 
@@ -167,6 +171,11 @@ if [[ "$MINOR_ONLY" == "true" ]]
 then
   db_tags=("$MINOR")
   db6x_tags=("${MINOR}-6.2")
+elif [[ ! "$VERSION_TAG" =~ $PLAIN_PATTERN ]]
+then
+  # Non-final refs (e.g. rc) never replace the stable minor database image
+  db_tags=("$VERSION_TAG")
+  db6x_tags=("${VERSION_TAG}-6.2")
 else
   db_tags=("$VERSION_TAG" "$MINOR")
   db6x_tags=("${VERSION_TAG}-6.2" "${MINOR}-6.2")
