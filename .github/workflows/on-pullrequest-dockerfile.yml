@@ -126,6 +126,9 @@ jobs:
         uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           sarif_file: sarif-${{ matrix.dockerfile.name }}.output.json
+          # One category per image. Without it all ten uploads share one category and each
+          # upload marks the previous image's alerts as fixed, so the Security tab shows one image.
+          category: scout/${{ matrix.dockerfile.name }}
 
       - name: Upload Scout SARIF for the PR summary
         if: always()
