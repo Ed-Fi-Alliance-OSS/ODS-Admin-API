@@ -641,8 +641,8 @@
       },
       "NJsonSchema.Annotations": {
         "type": "Transitive",
-        "resolved": "11.6.1",
-        "contentHash": "WA4z8iK+0SOh2/qoo7rtEanj/LjJZ8oWWoXI8u1xcYMk6VzHONqpabJBYGrzqDO41ld+VQHOFL+B8MXncIVSSA=="
+        "resolved": "11.6.2",
+        "contentHash": "C0CfVivVJjyEr/m/z2QXuzPnChVwFLqd+5kM+cE4gkM5ukF+QI30IPrep88wSPeYaeQL3LB/RG5PFGOxVsdHNg=="
       },
       "OpenIddict": {
         "type": "Transitive",
@@ -984,13 +984,13 @@
           "Microsoft.Extensions.Caching.Memory": "[10.0.15, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "Microsoft.Identity.Client": "[4.92.0, )",
-          "NJsonSchema": "[11.6.1, )",
+          "NJsonSchema": "[11.6.2, )",
           "Npgsql": "[10.0.3, )",
           "OpenIddict.EntityFrameworkCore": "[7.8.0, )",
-          "Quartz": "[4.7.1, )",
+          "Quartz": "[4.7.3, )",
           "Swashbuckle.AspNetCore": "[10.3.1, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.3.1, )",
-          "System.Security.Cryptography.Pkcs": "[10.0.14, )",
+          "System.Security.Cryptography.Pkcs": "[10.0.15, )",
           "log4net": "[3.5.0, )"
         }
       },
@@ -1026,7 +1026,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "[10.0.15, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "Microsoft.Identity.Client": "[4.92.0, )",
-          "NJsonSchema": "[11.6.1, )",
+          "NJsonSchema": "[11.6.2, )",
           "Newtonsoft.Json": "[13.0.4, )",
           "Npgsql": "[10.0.3, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.1, )",
@@ -1054,11 +1054,11 @@
           "Microsoft.EntityFrameworkCore.Abstractions": "[10.0.15, )",
           "Microsoft.Extensions.Logging.Log4Net.AspNetCore": "[10.0.0, )",
           "Microsoft.Identity.Client": "[4.92.0, )",
-          "NJsonSchema": "[11.6.1, )",
+          "NJsonSchema": "[11.6.2, )",
           "Npgsql": "[10.0.3, )",
           "OpenIddict.AspNetCore": "[7.8.0, )",
           "OpenIddict.EntityFrameworkCore": "[7.8.0, )",
-          "Quartz": "[4.7.1, )",
+          "Quartz": "[4.7.3, )",
           "Swashbuckle.AspNetCore": "[10.3.1, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.3.1, )",
           "Swashbuckle.AspNetCore.Filters": "[10.0.1, )"
@@ -1311,11 +1311,11 @@
       },
       "NJsonSchema": {
         "type": "CentralTransitive",
-        "requested": "[11.6.1, )",
-        "resolved": "11.6.1",
-        "contentHash": "miqvNY4OSXCWVqaMqt0A8VUkij0UH1oPosHMLP+t6/nWNSSzWDPmm7G2DjVW7M9evy0x5DE2pS/DDTtKCpbzSQ==",
+        "requested": "[11.6.2, )",
+        "resolved": "11.6.2",
+        "contentHash": "AnJ5QFeBVPdVplRPT4Z692y7+q5wegWXzyv6Wp4kBP3UUXmTYNLLWhihbQjZDHsA7KC/dWqAIndH61pzcP8oIQ==",
         "dependencies": {
-          "NJsonSchema.Annotations": "11.6.1",
+          "NJsonSchema.Annotations": "11.6.2",
           "Namotion.Reflection": "3.5.0",
           "Newtonsoft.Json": "13.0.3"
         }
@@ -1359,9 +1359,9 @@
       },
       "Quartz": {
         "type": "CentralTransitive",
-        "requested": "[4.7.1, )",
-        "resolved": "4.7.1",
-        "contentHash": "NK162pVlx2D7W1jvAnU8Zo+MNmcQ4sxqxrShdxi4YgTkoO2Tom7rxax48oBRjdvxJ6k7k4mN1UpYZRxOL1w3/A==",
+        "requested": "[4.7.3, )",
+        "resolved": "4.7.3",
+        "contentHash": "/eX2Xo6eJAfupXGRjmcCy5Jpn/6NOBXDuUKTK2tY228yQ23tYUv0eeejwEbNlyxEJITIv1ajddTmYib+mMBxmQ==",
         "dependencies": {
           "Microsoft.Extensions.Configuration.Binder": "10.0.0",
           "Microsoft.Extensions.DependencyInjection": "10.0.0",
@@ -1405,9 +1405,9 @@
       },
       "System.Security.Cryptography.Pkcs": {
         "type": "CentralTransitive",
-        "requested": "[10.0.14, )",
-        "resolved": "10.0.14",
-        "contentHash": "Wz+IgL2xpg8KJ4i2VWj6uz1PmZNu4Q0Ljlwd73P9Vze5NcOBtctLii3itV0PB2MpOqwqDEGfB6RCdv94A4E5yQ=="
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "4jEv/lXDuQkh60lPU3hlwASErXdv1ZMKmsxVuBfZWiVKT5Q2QGo58kTa6rN519+PU+m4Hsj1m3yT8fN+Xw0XZw=="
       }
     }
   }
