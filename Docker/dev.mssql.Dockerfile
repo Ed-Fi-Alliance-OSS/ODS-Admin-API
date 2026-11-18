@@ -30,7 +30,7 @@ RUN export ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 RUN dotnet restore && dotnet build -c Release
 RUN dotnet publish -c Release /p:EnvironmentName=$ASPNETCORE_ENVIRONMENT --no-build -o /app/EdFi.Ods.AdminApi
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.15-alpine3.24-amd64@sha256:ed42cb3ee02b2898476dda732dd5d5207598b4080f511cf49c2430512b05d074 AS runtimebase
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.15-alpine3.24-amd64@sha256:ca5fcc45a7632e09463199812ed63c240148ddd2a2bffacfd5e20252ad0c8f90 AS runtimebase
 RUN apk upgrade --no-cache && \
     apk add dos2unix=~7 bash=~5 gettext=~1 icu=~78.1-r0 krb5-libs=~1 curl openssl=~3.5.9 musl=~1.2.6 && \
     addgroup -S edfi && adduser -S edfi -G edfi

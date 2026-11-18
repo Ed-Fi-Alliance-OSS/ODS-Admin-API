@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0.15-alpine3.24-amd64@sha256:ed42cb3ee02b2898476dda732dd5d5207598b4080f511cf49c2430512b05d074 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.15-alpine3.24-amd64@sha256:ca5fcc45a7632e09463199812ed63c240148ddd2a2bffacfd5e20252ad0c8f90 AS base
 RUN apk upgrade --no-cache && \
     apk add --no-cache unzip=~6 dos2unix=~7 bash=~5 gettext=~1 jq=~1 icu=~78.1-r0 krb5-libs=~1 openssl=~3.5.9 musl=~1.2.6 && \
     addgroup -S edfi && adduser -S edfi -G edfi
