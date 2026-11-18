@@ -30,7 +30,7 @@ RUN sed -i 's/\r$//' /tmp/entrypoint.sh && \
     sed -i 's/\r$//' /tmp/AdminApiScripts/Security/PgSql/* && \
     chmod -R 777 /tmp/AdminApiScripts/Security/PgSql/*
 
-FROM dhi.io/postgres:16@sha256:2a65f96da464f30cc07fa4edd7fe5b6fbfbe314149fc55651de3a2d84dc5faf8 AS base
+FROM dhi.io/postgres:16@sha256:b5dde2a748199e346e7d59456b59931dbeef5a6b7c856e3f3586e17fff9b9239 AS base
 USER root
 
 FROM base AS setup
