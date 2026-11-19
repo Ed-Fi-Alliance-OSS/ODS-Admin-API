@@ -462,7 +462,7 @@
           "Swashbuckle.AspNetCore": "[10.3.1, )",
           "Swashbuckle.AspNetCore.Annotations": "[10.3.1, )",
           "System.Security.Cryptography.Pkcs": "[10.0.15, )",
-          "log4net": "[3.5.0, )"
+          "log4net": "[3.6.0, )"
         }
       },
       "Asp.Versioning.Http": {
@@ -576,9 +576,9 @@
       },
       "log4net": {
         "type": "CentralTransitive",
-        "requested": "[3.5.0, )",
-        "resolved": "3.5.0",
-        "contentHash": "JJJ1L3/WJZA8OAyaz0ghG8+DNo2t9qn0nbV3HzIBVMheO62R1Zdz+mvyizpYsYDu/+k35tg324r2P/LCvAtfKw==",
+        "requested": "[3.6.0, )",
+        "resolved": "3.6.0",
+        "contentHash": "LKkom1WX2wJWe7COrfGvQwaobvLrzxI2ky/IrEFyQlsmj/HGTy284fKiTqb1IusL7zozOgKlzAp56twVMyujBw==",
         "dependencies": {
           "System.Configuration.ConfigurationManager": "4.5.0"
         }
