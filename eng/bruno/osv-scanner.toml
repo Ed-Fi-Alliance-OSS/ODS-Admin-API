@@ -1,7 +1,9 @@
+# See ADMINAPI-1545 / DEVOPS-163.
 # Bruno and its dependencies are used only for E2E testing, not shipped with the API.
 # Keep vulnerability scanning enabled for non-development dependencies.
 [[PackageOverrides]]
 ecosystem = "npm"
 group = "dev"
 vulnerability.ignore = true
+effectiveUntil = 2027-05-19
 reason = "Bruno CLI and its development dependencies are used only for E2E tests."
