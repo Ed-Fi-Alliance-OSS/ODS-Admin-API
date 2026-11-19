@@ -1,0 +1,7 @@
+# Bruno and its dependencies are used only for E2E testing, not shipped with the API.
+# Keep vulnerability scanning enabled for non-development dependencies.
+[[PackageOverrides]]
+ecosystem = "npm"
+group = "dev"
+vulnerability.ignore = true
+reason = "Bruno CLI and its development dependencies are used only for E2E tests."
