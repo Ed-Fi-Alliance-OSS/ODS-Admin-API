@@ -19,7 +19,7 @@ ARG SECURITY_VERSION="7.2.48"
 USER root
 
 RUN useradd -M -s /bin/bash -u 10099 -g 0 edfi  && \
-    mkdir -p -m 770 /var/opt/edfi && chgrp -R 0 /var/opt/edfi && \
+    mkdir -p -m 770 /var/opt/edfi && chgrp -R 0 /var/opt/edfi /var/opt/mssql && \
     wget -nv -O /tmp/sqlpackage.zip "https://aka.ms/sqlpackage-linux" && \
     unzip -o /tmp/sqlpackage.zip -d /opt/sqlpackage && \
     chmod +x /opt/sqlpackage/sqlpackage
@@ -60,6 +60,6 @@ EXPOSE 1433
 
 USER edfi
 
-CMD ["/bin/bash", "/tmp/init/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/tmp/init/entrypoint.sh"]
 
 

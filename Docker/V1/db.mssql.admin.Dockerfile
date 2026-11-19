@@ -24,7 +24,7 @@ COPY --from=assets Application/EdFi.Ods.AdminApi/Artifacts/MsSql/Structure/Admin
 RUN useradd -M -s /bin/bash -u 10099 -g 0 edfi  && \
     mkdir -p /var/opt/edfi && \
     chmod 770 /var/opt/edfi && \
-    chgrp -R 0 /var/opt/edfi && \
+    chgrp -R 0 /var/opt/edfi /var/opt/mssql && \
     wget --no-check-certificate -nv -O /tmp/sqlpackage.zip "https://aka.ms/sqlpackage-linux" && \
     unzip -o /tmp/sqlpackage.zip -d /opt/sqlpackage && \
     chmod +x /opt/sqlpackage/sqlpackage
@@ -52,4 +52,4 @@ RUN wget -q -O /tmp/EdFi_Admin.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed
 EXPOSE 1433
 USER edfi
 
-CMD ["/bin/bash", "/tmp/init/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/tmp/init/entrypoint.sh"]
