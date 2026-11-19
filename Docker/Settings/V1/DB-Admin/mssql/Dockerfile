@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-FROM mcr.microsoft.com/mssql/server:2019-CU32-ubuntu-20.04@sha256:7a879e9af3557e81a3b3ad14acd071e3638788387f394d27a9d3404b28e954ce as base
+FROM mcr.microsoft.com/mssql/server:2022-CU28-ubuntu-22.04@sha256:4525e3efac9f3e241cb003bb2ff2a82818b502f37e12049d788b1a9fa7e13b7f as base
 USER root
 RUN apt-get update && apt-get install unzip -y dos2unix busybox openssl>=3.1.7-r0 libxml2>=2.12.5-r0 musl>=1.2.4_git20230717-r5
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"

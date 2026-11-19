@@ -38,7 +38,7 @@ RUN apk add --no-cache dos2unix=7.5.5-r0 unzip=6.0-r16 wget=1.25.0-r3 && \
     dos2unix /tmp/3-run-adminapi-migrations.sh && \
     rm -f /tmp/EdFi_AdminApi_Scripts.zip
 
-FROM dhi.io/postgres:16@sha256:b5dde2a748199e346e7d59456b59931dbeef5a6b7c856e3f3586e17fff9b9239 AS setup
+FROM dhi.io/postgres:16.16-debian13@sha256:b5dde2a748199e346e7d59456b59931dbeef5a6b7c856e3f3586e17fff9b9239 AS setup
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
 ARG POSTGRES_USER=postgres
