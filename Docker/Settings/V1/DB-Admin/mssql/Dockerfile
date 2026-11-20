@@ -3,7 +3,7 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-FROM mcr.microsoft.com/mssql/server@sha256:d7f2c670f0cd807b4dc466b8887bd2b39a4561f624c154896f5564ea38efd13a as base
+FROM mcr.microsoft.com/mssql/server:2022-CU28-ubuntu-22.04@sha256:4525e3efac9f3e241cb003bb2ff2a82818b502f37e12049d788b1a9fa7e13b7f as base
 USER root
 RUN apt-get update && apt-get install unzip -y dos2unix busybox openssl>=3.1.7-r0 libxml2>=2.12.5-r0 musl>=1.2.4_git20230717-r5
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
@@ -21,7 +21,7 @@ COPY entrypoint.sh /tmp/init/entrypoint.sh
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
 
 RUN useradd -M -s /bin/bash -u 10099 -g 0 edfi  && \
-    mkdir -p -m 770 /var/opt/edfi && chgrp -R 0 /var/opt/edfi && \
+    mkdir -p -m 770 /var/opt/edfi && chgrp -R 0 /var/opt/edfi /var/opt/mssql && \
     wget -nv -O /tmp/sqlpackage.zip "https://aka.ms/sqlpackage-linux" && \
     unzip -o /tmp/sqlpackage.zip -d /opt/sqlpackage && \
     chmod +x /opt/sqlpackage/sqlpackage
@@ -52,4 +52,4 @@ RUN wget -q -O /tmp/EdFi_Admin.zip "https://pkgs.dev.azure.com/ed-fi-alliance/Ed
 EXPOSE 1433
 USER edfi
 
-CMD ["/bin/bash", "/tmp/init/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/tmp/init/entrypoint.sh"]

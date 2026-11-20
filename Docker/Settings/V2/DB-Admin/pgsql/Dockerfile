@@ -3,10 +3,9 @@
 # The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 # See the LICENSE and NOTICES files in the project root for more information.
 
-ARG POSTGRES_BASE_IMAGE=dhi.io/postgres:16@sha256:2a65f96da464f30cc07fa4edd7fe5b6fbfbe314149fc55651de3a2d84dc5faf8
 FROM edfialliance/ods-api-db-admin:7.3.2@sha256:3e248e1a11b352c8ffc00a71cc80e9b9e1dd4a3b3018acabe8e918e56d8a085e AS legacy_assets
 
-FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS prep
+FROM alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS prep
 
 ARG ADMIN_API_VERSION
 ENV VERSION="${ADMIN_API_VERSION:-2.2.0}"
@@ -39,8 +38,7 @@ RUN apk add --no-cache dos2unix=7.5.5-r0 unzip=6.0-r16 wget=1.25.0-r3 && \
     dos2unix /tmp/3-run-adminapi-migrations.sh && \
     rm -f /tmp/EdFi_AdminApi_Scripts.zip
 
-# hadolint ignore=DL3006
-FROM ${POSTGRES_BASE_IMAGE} AS setup
+FROM dhi.io/postgres:16.16-debian13@sha256:b5dde2a748199e346e7d59456b59931dbeef5a6b7c856e3f3586e17fff9b9239 AS setup
 LABEL maintainer="Ed-Fi Alliance, LLC and Contributors <techsupport@ed-fi.org>"
 
 ARG POSTGRES_USER=postgres
