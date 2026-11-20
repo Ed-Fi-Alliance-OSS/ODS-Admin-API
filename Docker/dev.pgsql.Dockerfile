@@ -42,7 +42,6 @@ RUN apk upgrade --no-cache && \
     apk add --no-cache \
         bash=~5 \
         dos2unix=~7 \
-        gettext=~1 \
         icu=~78.1-r0 \
         krb5-libs=~1 \
         musl=~1.2.6 \
