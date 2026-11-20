@@ -108,8 +108,7 @@ public class EditResourceClaimActions : IFeature
 
             RuleFor(m => m).Custom((resourceClaimOnClaimSetRequest, context) =>
             {
-                ClaimSet claimSet;
-                claimSet = getClaimSetByIdQuery.Execute(resourceClaimOnClaimSetRequest.ClaimSetId);
+                ClaimSet claimSet = getClaimSetByIdQuery.Execute(resourceClaimOnClaimSetRequest.ClaimSetId);
                 var actions = getAllActionsQuery.Execute().Select(x => x.ActionName).ToList();
                 if (!claimSet.IsEditable)
                 {
