@@ -30,6 +30,7 @@ jobs:
     name: Delete Unnecessary Pre-Releases
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
@@ -69,6 +70,7 @@ jobs:
   promote-Azure-artifact:
     name: Promote Azure Artifact
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:

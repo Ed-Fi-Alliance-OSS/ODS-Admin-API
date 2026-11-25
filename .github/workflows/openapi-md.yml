@@ -21,6 +21,7 @@ jobs:
   generate-openapi:
     name: Generate OpenAPI v2/v3 specs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         shell: pwsh
@@ -79,3 +80,4 @@ jobs:
             docs/api-specifications/openapi-yaml/admin-api-v2-${{ steps.resolve-version.outputs.version }}.yaml
             docs/api-specifications/openapi-yaml/admin-api-v3-${{ steps.resolve-version.outputs.version }}.yaml
           if-no-files-found: error
+          retention-days: 14

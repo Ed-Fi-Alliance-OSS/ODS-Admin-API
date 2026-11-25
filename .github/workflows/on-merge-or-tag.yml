@@ -23,6 +23,7 @@ jobs:
     # Was not successful filtering out alpha in on.push.tags, so try filtering at the job level
     if: "! contains(github.ref_name, 'alpha')"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         shell: pwsh

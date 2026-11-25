@@ -28,6 +28,7 @@ jobs:
   pack:
     name: Build, Pack, SBOM and Attest
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       id-token: write          # Sigstore signing (actions/attest)
@@ -249,7 +250,7 @@ jobs:
           name: "${{ env.PACKAGE_NAME }}-NuGet"
           path: ./*.nupkg
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 14
 
       - name: Upload release assets as Artifacts
         if: success()
@@ -258,7 +259,7 @@ jobs:
           name: "${{ env.PACKAGE_NAME }}-ReleaseAssets"
           path: release-assets/
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 14
 
   # Only this job holds a write token. The bundles are offline copies of attestations
   # already stored in GitHub, so verification does not depend on this handoff.
@@ -266,6 +267,7 @@ jobs:
     name: Attach SBOM and attestations to the release
     needs: pack
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
     steps:
@@ -289,6 +291,7 @@ jobs:
     if: github.repository_owner == 'Ed-Fi-Alliance-OSS'
     needs: pack
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         shell: pwsh
@@ -319,6 +322,7 @@ jobs:
     name: Publish to Docker Hub
     if: github.repository_owner == 'Ed-Fi-Alliance-OSS'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs:
       - publish-package
     # Serialize tag preparation and registry writes across both Docker publishing

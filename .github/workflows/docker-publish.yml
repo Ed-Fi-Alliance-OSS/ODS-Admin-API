@@ -40,6 +40,7 @@ jobs:
   docker-publish:
     name: Publish to Docker Hub
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # Serialize tag preparation and registry writes across both Docker publishing
     # workflows so an older release cannot overwrite moving tags (vX, latest) set
     # by a newer one. Keep the group name identical in on-prerelease.yml.
