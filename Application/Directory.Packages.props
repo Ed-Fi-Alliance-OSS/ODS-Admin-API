@@ -18,7 +18,7 @@
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <!-- Testing -->
     <PackageVersion Include="Dapper" Version="2.1.89" />
-    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="FakeItEasy" Version="9.0.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
     <PackageVersion Include="Moq" Version="4.21.0" />
@@ -47,7 +47,7 @@
     <!-- Microsoft Core -->
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.92.0" />
-    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.38.1" />
+    <PackageVersion Include="Microsoft.SqlServer.SqlManagementObjects" Version="181.46.0" />
     <!-- Code Analysis -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.36.0.15337" />
@@ -61,8 +61,8 @@
     <!-- NuGet -->
     <PackageVersion Include="NuGet.Protocol" Version="6.14.3" />
     <!-- OpenIddict -->
-    <PackageVersion Include="OpenIddict.AspNetCore" Version="7.8.0" />
-    <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.8.0" />
+    <PackageVersion Include="OpenIddict.AspNetCore" Version="7.9.0" />
+    <PackageVersion Include="OpenIddict.EntityFrameworkCore" Version="7.9.0" />
     <!-- Swagger -->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.3.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="10.3.1" />
