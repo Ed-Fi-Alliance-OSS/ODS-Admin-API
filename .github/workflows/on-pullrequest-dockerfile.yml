@@ -23,6 +23,12 @@ env:
 
 permissions: read-all
 
+# DEVOPS-165: a new push to a pull request cancels its older run. Other events get a group of
+# their own (run_id), so runs on main, tags and schedules are never cancelled or replaced.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   docker-analysis:
     runs-on: ubuntu-latest
