@@ -50,3 +50,62 @@ updates:
       semver-minor-days: 7
       semver-major-days: 14
       default-days: 7
+
+  # Base images. Dependabot only reads literal FROM lines (not ARG-based ones) and only in
+  # files whose name contains "Dockerfile", so every folder that holds one is listed.
+  - package-ecosystem: docker
+    directories:
+      - /Docker
+      - /Docker/V1
+      - /Docker/V2
+      - /Docker/V3
+      - /Docker/Settings/V1/DB-Admin/mssql
+      - /Docker/Settings/V1/DB-Admin/pgsql
+      - /Docker/Settings/V1/DB-Ods/mssql
+      - /Docker/Settings/V1/gateway
+      - /Docker/Settings/V2/DB-Admin/mssql
+      - /Docker/Settings/V2/DB-Admin/pgsql
+      - /Docker/Settings/V2/DB-Ods/mssql
+      - /Docker/Settings/V2/gateway
+      - /Docker/Settings/V3/DB-Admin/mssql
+      - /Docker/Settings/V3/DB-Admin/pgsql
+      - /Docker/Settings/shared/DB-Ods/mssql
+      - /Docker/Settings/shared/DB-Ods/pgsql
+      - /Docker/Settings/shared/gateway
+    target-branch: main
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    # One PR per image across all directories, so an aspnet bump changes the four API
+    # Dockerfiles together and one E2E run validates it.
+    groups:
+      base-images:
+        group-by: dependency-name
+    registries:
+      - dhi
+
+  # Workflow actions. Pins are commit SHAs with a version comment; Dependabot updates both.
+  # Every bump also needs the new SHA approved in Ed-Fi-Actions/action-allowedlist/approved.json,
+  # otherwise the "Scan Actions" check fails on the bot PR. Monthly and grouped keeps that to
+  # one allowlist update per month.
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: main
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+# dhi.io requires a login. The two values are Dependabot secrets (Settings, Secrets and
+# variables, Dependabot), separate from the Actions secrets of the same name.
+registries:
+  dhi:
+    type: docker-registry
+    url: https://dhi.io
+    username: ${{ secrets.DOCKER_USERNAME }}
+    password: ${{ secrets.DOCKER_HUB_TOKEN }}
