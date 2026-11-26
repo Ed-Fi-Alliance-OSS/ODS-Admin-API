@@ -33,13 +33,14 @@
       },
       "Microsoft.SqlServer.SqlManagementObjects": {
         "type": "Direct",
-        "requested": "[181.38.1, )",
-        "resolved": "181.38.1",
-        "contentHash": "kgjaZexyzdYrpJXVKhjz/5L3bvALl+cxjRjLHRA84nheqRU4zVDJMm3MZCKUhRpxSScE7W5Ym0LqxqaE8cGtfw==",
+        "requested": "[181.46.0, )",
+        "resolved": "181.46.0",
+        "contentHash": "bX8QVQtqr84AN1vJTrw3lDLgkkO7xaAekjMkLSulK7SSY1sQAy/Wda4JonMs/vZEXgPQipG803mjqwfLi3WNsQ==",
         "dependencies": {
           "Microsoft.Data.SqlClient": "6.1.6",
           "System.Data.OleDb": "8.0.0",
           "System.Management": "8.0.0",
+          "System.Security.Cryptography.Pkcs": "9.0.21",
           "System.Security.Cryptography.ProtectedData": "9.0.11",
           "System.Security.Permissions": "8.0.0"
         }
