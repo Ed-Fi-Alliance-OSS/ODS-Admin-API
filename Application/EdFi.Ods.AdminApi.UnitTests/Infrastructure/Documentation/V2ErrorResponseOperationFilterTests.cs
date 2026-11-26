@@ -82,9 +82,9 @@ public class V2ErrorResponseOperationFilterTests
     {
         var existing = new OpenApiSchema();
         var operation = Operation("500");
-        ((OpenApiResponse)operation.Responses!["500"]).Content = new Dictionary<string, OpenApiMediaType>
+        ((OpenApiResponse)operation.Responses!["500"]).Content = new Dictionary<string, IOpenApiMediaType>
         {
-            ["application/json"] = new() { Schema = existing }
+            ["application/json"] = new OpenApiMediaType { Schema = existing }
         };
 
         _filter.Apply(operation, Context("v2/vendors"));

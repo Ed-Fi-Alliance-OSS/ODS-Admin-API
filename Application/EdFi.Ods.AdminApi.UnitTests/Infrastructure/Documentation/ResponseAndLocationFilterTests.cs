@@ -74,7 +74,7 @@ public class ResponseAndLocationFilterTests
                 ["202"] = new OpenApiResponse
                 {
                     Description = "Accepted",
-                    Content = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() }
+                    Content = new Dictionary<string, IOpenApiMediaType> { ["application/json"] = new OpenApiMediaType() }
                 }
             }
         };

@@ -35,7 +35,10 @@ public class ResponseExampleOperationFilter : IOperationFilter
                 continue;
             }
 
-            mediaType.Example = JsonNode.Parse(example.ExampleJson);
+            if (mediaType is OpenApiMediaType concreteMediaType)
+            {
+                concreteMediaType.Example = JsonNode.Parse(example.ExampleJson);
+            }
         }
     }
 }
