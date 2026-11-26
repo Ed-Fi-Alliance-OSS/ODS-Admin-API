@@ -22,7 +22,7 @@ public class TokenEndpointBodyDescriptionFilter : IOperationFilter
             return;
 
         var requestBody = operation.RequestBody as OpenApiRequestBody ?? new OpenApiRequestBody();
-        requestBody.Content = new Dictionary<string, OpenApiMediaType>
+        requestBody.Content = new Dictionary<string, IOpenApiMediaType>
         {
             { "application/x-www-form-urlencoded", BuildTokenRequestBodyDescription() }
         };

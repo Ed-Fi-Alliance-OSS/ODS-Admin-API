@@ -41,7 +41,10 @@ public class ProfileRequestExampleFilter : IOperationFilter
             if ((schema.Key.ToLower().Contains("addprofilerequest") || schema.Key.ToLower().Contains("editprofilerequest"))
                 && schema.Value is OpenApiSchema profileRequestSchema)
             {
-                profileRequestSchema.Example = JsonValue.Create(JsonConvert.SerializeObject(profileRequest, Formatting.Indented));
+                profileRequestSchema.Examples =
+                [
+                    JsonValue.Create(JsonConvert.SerializeObject(profileRequest, Formatting.Indented))
+                ];
             }
         }
     }

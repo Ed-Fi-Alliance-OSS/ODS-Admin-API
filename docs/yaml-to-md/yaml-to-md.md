@@ -7,7 +7,7 @@ The Admin API 2x uses the library called Swashbuckle to expose the Swagger/OpenA
 
 - Open a command line in the root of the repository and run the following command:
 ```
-dotnet tool install Swashbuckle.AspNetCore.Cli --version 6.5.0
+dotnet tool install Swashbuckle.AspNetCore.Cli --version 11.0.1
 ```
 
 Check the .config/dotnet-tools.json file and verify if you have the section called swashbuckle.aspnetcore.cli
@@ -17,7 +17,7 @@ Check the .config/dotnet-tools.json file and verify if you have the section call
   "isRoot": true,
   "tools": {
     "swashbuckle.aspnetcore.cli": {
-      "version": "6.5.0",
+      "version": "11.0.1",
       "commands": [
         "swagger"
       ],
@@ -31,7 +31,7 @@ Check the .config/dotnet-tools.json file and verify if you have the section call
 
 - If everything goes well, we can proceed to generate the api description with following command:
 ```
-dotnet tool run swagger tofile --output ..\..\docs\swagger.yaml --yaml .\bin\Debug\net10.0\EdFi.Ods.AdminApi.dll v2
+dotnet tool run swagger tofile --output ..\..\docs\swagger.yaml --yaml .\bin\Debug\net10.0\EdFi.Ods.AdminApi.dll 2.4.0
 ``` 
 For more details check [Swashbuckle.AspNetCore](https://github.com/domaindrivendev/Swashbuckle.AspNetCore#swashbuckleaspnetcorecli)
 

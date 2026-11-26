@@ -47,22 +47,22 @@ public class V2ErrorResponseOperationFilter : IOperationFilter
         }
     }
 
-    private static Dictionary<string, OpenApiMediaType>? BuildContent(string statusCode, string route) =>
+    private static Dictionary<string, IOpenApiMediaType>? BuildContent(string statusCode, string route) =>
         statusCode switch
         {
             "400" when route.Equals(TokenRoute, StringComparison.OrdinalIgnoreCase) =>
-                new Dictionary<string, OpenApiMediaType>
+                new Dictionary<string, IOpenApiMediaType>
                 {
                     // A missing or invalid tenant header fails validation before the token request is
                     // handled, and is returned as a validation error rather than an OAuth error.
-                    [ProblemJsonContentType] = new()
+                    [ProblemJsonContentType] = new OpenApiMediaType
                     {
                         Schema = new OpenApiSchema
                         {
                             OneOf = [Reference(OAuthErrorResultId), Reference(ValidationErrorResultId)]
                         }
                     },
-                    [JsonContentType] = new() { Schema = Reference(OAuthErrorResultId) }
+                    [JsonContentType] = new OpenApiMediaType { Schema = Reference(OAuthErrorResultId) }
                 },
             "400" when route.Equals(RegisterRoute, StringComparison.OrdinalIgnoreCase) =>
                 ProblemJson(Reference(ValidationErrorResultId)),
@@ -76,7 +76,7 @@ public class V2ErrorResponseOperationFilter : IOperationFilter
             _ => null
         };
 
-    private static Dictionary<string, OpenApiMediaType> ProblemJson(IOpenApiSchema schema) =>
+    private static Dictionary<string, IOpenApiMediaType> ProblemJson(IOpenApiSchema schema) =>
         new() { [ProblemJsonContentType] = new OpenApiMediaType { Schema = schema } };
 
     private static OpenApiSchemaReference Reference(string id) => new(id);

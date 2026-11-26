@@ -33,7 +33,7 @@ public class ProblemDetailsResponseOperationFilter : IOperationFilter
             if (response.Content is { Count: > 0 })
                 continue;
 
-            response.Content = new Dictionary<string, OpenApiMediaType>
+            response.Content = new Dictionary<string, IOpenApiMediaType>
             {
                 [ProblemJsonContentType] = new OpenApiMediaType { Schema = schema }
             };
