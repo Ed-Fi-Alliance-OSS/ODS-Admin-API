@@ -141,7 +141,7 @@ jobs:
     needs: run-cs-tests
     env:
       DB_Password: P@55w0rd
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: pwsh
