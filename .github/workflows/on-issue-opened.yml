@@ -15,6 +15,7 @@ permissions:
 jobs:
   manage-community-issues:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: github.event.issue.user.type != 'bot'
     steps:
       - name: Check if user has repository access

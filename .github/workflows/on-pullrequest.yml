@@ -42,6 +42,7 @@ jobs:
     # The action derives base and head refs only from pull_request events; a manual dispatch would fail.
     if: github.event_name == 'pull_request' && !github.event.repository.fork
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write # DEVOPS-162: post the vulnerability summary as a PR comment
@@ -59,6 +60,7 @@ jobs:
   run-cs-tests:
     name: Run C# Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: pwsh
@@ -99,6 +101,7 @@ jobs:
         with:
           name: Coverage Report
           path: coveragereport
+          retention-days: 14
 
       - name: Upload Test Results
         if: ${{ !cancelled() }}
@@ -142,6 +145,7 @@ jobs:
     env:
       DB_Password: P@55w0rd
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: pwsh
@@ -195,9 +199,11 @@ jobs:
   event_file:
     name: "Event File"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
     - name: Upload
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: Event File
         path: ${{ github.event_path }}
+        retention-days: 5
