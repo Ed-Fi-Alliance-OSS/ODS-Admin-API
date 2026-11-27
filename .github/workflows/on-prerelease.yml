@@ -41,7 +41,7 @@ jobs:
       admin-api-version: ${{ steps.versions.outputs.admin-api }}
 
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           # The build never pushes; keep the token out of .git/config for the build tooling.
@@ -245,7 +245,7 @@ jobs:
 
       - name: Upload Packages as Artifacts
         if: success()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "${{ env.PACKAGE_NAME }}-NuGet"
           path: ./*.nupkg
@@ -254,7 +254,7 @@ jobs:
 
       - name: Upload release assets as Artifacts
         if: success()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "${{ env.PACKAGE_NAME }}-ReleaseAssets"
           path: release-assets/
@@ -272,7 +272,7 @@ jobs:
       contents: write
     steps:
       - name: Download release assets
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "${{ env.PACKAGE_NAME }}-ReleaseAssets"
           path: release-assets
@@ -296,9 +296,9 @@ jobs:
       run:
         shell: pwsh
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Get Artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.PACKAGE_NAME }}-NuGet
 
@@ -337,7 +337,7 @@ jobs:
         run: sleep 20
 
       - name: Checkout the repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: eng
           persist-credentials: false
@@ -355,16 +355,16 @@ jobs:
             --db-image "$DATABASE_IMAGE_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_HUB_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e  # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
 
       - name: Extract metadata (tags, labels) for admin api image
         id: metaapi
@@ -375,7 +375,7 @@ jobs:
             org.opencontainers.image.version=${{ steps.prepare-tags.outputs.VERSION_TAG }}
 
       - name: Build and push admin api image
-        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
         with:
           context: "{{defaultContext}}:Docker"
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:pre
@@ -396,7 +396,7 @@ jobs:
           images: ${{ env.DATABASE_IMAGE_NAME }}
 
       - name: Build and push admin api database image 7.x
-        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
         with:
           context: "{{defaultContext}}:Docker/Settings/V2/DB-Admin/pgsql"
           build-contexts: |
@@ -411,7 +411,7 @@ jobs:
           push: true
 
       - name: Build and push admin api database image 6.x
-        uses: docker/build-push-action@b32b51a8eda65d6793cd0494a773d4f6bcef32dc  # v6.11.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
         if: startsWith(github.event.release.tag_name, 'Pre-Release') || startsWith(github.event.release.tag_name, 'v1.')
         with:
           context: "{{defaultContext}}:Docker/Settings/V1/DB-Admin/pgsql"
